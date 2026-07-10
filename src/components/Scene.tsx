@@ -138,7 +138,8 @@ function SceneContent({
   return (
     <>
       <color attach="background" args={['#03040a']} />
-      <fog attach="fog" args={['#03040a', lite ? 38 : 42, lite ? 72 : 80]} />
+      {/* Fog starts farther so backdrop constellation remains readable */}
+      <fog attach="fog" args={['#03040a', lite ? 48 : 52, lite ? 90 : 100]} />
 
       <ViewCamera viewMode={viewMode} />
 

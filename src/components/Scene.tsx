@@ -13,6 +13,7 @@ import {
   FloorRings,
   SceneSparkles,
 } from './SceneEffects'
+import { VietnamConstellation } from './VietnamConstellation'
 
 interface Props {
   kols: Kol[]
@@ -147,8 +148,24 @@ function SceneContent({
       <pointLight position={[-12, -4, 10]} intensity={0.55} color="#67e8f9" />
       <pointLight position={[0, 8, -10]} intensity={lite ? 0.35 : 0.4} color="#a78bfa" />
 
+      {/* Cosmic Vietnam constellation — far behind KOLs, both modes */}
+      <VietnamConstellation lite={lite} />
+
       {/* 2.5D: light stage + depth, no heavy VFX */}
-      {lite && <StageFloor />}
+      {lite && (
+        <>
+          <Stars
+            radius={90}
+            depth={40}
+            count={900}
+            factor={2.2}
+            saturation={0}
+            fade
+            speed={0.25}
+          />
+          <StageFloor />
+        </>
+      )}
 
       {/* Full 3D: liquid atmosphere */}
       {!lite && (
@@ -164,11 +181,11 @@ function SceneContent({
           <Stars
             radius={90}
             depth={50}
-            count={2400}
-            factor={3.5}
+            count={1800}
+            factor={3.2}
             saturation={0}
             fade
-            speed={0.45}
+            speed={0.4}
           />
           <SceneSparkles />
           <FloatingDust />

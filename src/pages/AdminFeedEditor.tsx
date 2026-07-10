@@ -6,12 +6,16 @@ import {
   createEmptyPost,
   exportFeedJson,
   fetchSeedFeed,
+  getAdminToken,
   hasFeedOverride,
   importFeedJson,
-  loadFeed,
+  loadFeedWithSource,
   normalizePost,
-  saveFeed,
+  saveFeedLocal,
+  saveFeedToServer,
+  setAdminToken,
   sortPostsLatest,
+  type FeedSource,
 } from '../lib/feedStore'
 import { AvatarImg } from '../components/AvatarImg'
 import { NICHE_COLORS } from '../types'
@@ -26,21 +30,24 @@ interface Props {
 export function AdminFeedEditor({ kols, onToast, addSignal = 0 }: Props) {
   const [feed, setFeed] = useState<Tier1Feed | null>(null)
   const [loading, setLoading] = useState(true)
+  const [savingServer, setSavingServer] = useState(false)
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [draft, setDraft] = useState<FeedPost | null>(null)
   const [dirty, setDirty] = useState(false)
   const [query, setQuery] = useState('')
+  const [feedSource, setFeedSource] = useState<FeedSource | 'unknown'>('unknown')
+  const [tokenInput, setTokenInput] = useState(() => getAdminToken())
   const [isOverride, setIsOverride] = useState(() => hasFeedOverride())
 
   const refresh = useCallback(async () => {
     setLoading(true)
     try {
-      const data = await loadFeed()
+      const { feed: data, source } = await loadFeedWithSource()
       setFeed(data)
+      setFeedSource(source)
       setIsOverride(hasFeedOverride())
     } catch (e) {
       onToast(e instanceof Error ? e.message : 'Load feed failed')
-      // Still allow empty editor if seed fails
       setFeed({
         generatedAt: new Date().toISOString(),
         source: 'admin',
@@ -51,6 +58,7 @@ export function AdminFeedEditor({ kols, onToast, addSignal = 0 }: Props) {
         postCount: 0,
         posts: [],
       })
+      setFeedSource('local')
     } finally {
       setLoading(false)
     }
@@ -96,16 +104,8 @@ export function AdminFeedEditor({ kols, onToast, addSignal = 0 }: Props) {
     [kols],
   )
 
-  const persist = (next: Tier1Feed, note?: string) => {
-    const saved = saveFeed(next, note)
-    setFeed(saved)
-    setIsOverride(true)
-    setDirty(false)
-    onToast('Đã lưu Feed vào localStorage')
-  }
-
-  const onSaveDraft = () => {
-    if (!feed || !draft) return
+  const buildFeedWithDraft = (): Tier1Feed | null => {
+    if (!feed || !draft) return null
     const fixed = normalizePost({
       ...draft,
       handle: draft.handle.replace(/^@/, '').trim(),
@@ -117,9 +117,58 @@ export function AdminFeedEditor({ kols, onToast, addSignal = 0 }: Props) {
     const posts = feed.posts.some((p) => p.id === fixed.id)
       ? feed.posts.map((p) => (p.id === fixed.id ? fixed : p))
       : [fixed, ...feed.posts]
-    persist({ ...feed, posts }, 'edit post')
+    return { ...feed, posts }
+  }
+
+  const persistLocal = (next: Tier1Feed, note?: string) => {
+    const saved = saveFeedLocal(next, note)
+    setFeed(saved)
+    setFeedSource('local')
+    setIsOverride(true)
+    setDirty(false)
+    onToast('Đã lưu local (browser)')
+    return saved
+  }
+
+  const onSaveDraft = () => {
+    const next = buildFeedWithDraft()
+    if (!next || !draft) return
+    const saved = persistLocal(next, 'edit post')
+    const fixed = saved.posts.find((p) => p.id === draft.id) || draft
     setSelectedId(fixed.id)
     setDraft(fixed)
+  }
+
+  const onSaveServer = async () => {
+    const next = buildFeedWithDraft() || feed
+    if (!next) {
+      onToast('Chưa có feed để lưu')
+      return
+    }
+    setSavingServer(true)
+    // Always mirror local first
+    const local = saveFeedLocal(next, 'before server')
+    setFeed(local)
+    const result = await saveFeedToServer(local, 'admin save')
+    setSavingServer(false)
+    if (result.ok) {
+      setFeed(result.feed)
+      setFeedSource('server')
+      setIsOverride(true)
+      setDirty(false)
+      if (draft) {
+        const fixed = result.feed.posts.find((p) => p.id === draft.id)
+        if (fixed) setDraft(fixed)
+      }
+      onToast('Đã lưu lên server — mọi user sẽ thấy feed này')
+    } else {
+      onToast(`Server lỗi: ${result.error}`)
+    }
+  }
+
+  const onSaveToken = () => {
+    setAdminToken(tokenInput)
+    onToast(tokenInput.trim() ? 'Đã lưu admin token (local)' : 'Đã xóa token')
   }
 
   const emptyFeed = (): Tier1Feed => ({
@@ -161,7 +210,7 @@ export function AdminFeedEditor({ kols, onToast, addSignal = 0 }: Props) {
     if (!feed || !draft) return
     if (!confirm(`Xóa post của @${draft.handle}?`)) return
     const posts = feed.posts.filter((p) => p.id !== draft.id)
-    persist({ ...feed, posts }, 'delete post')
+    persistLocal({ ...feed, posts }, 'delete post')
     setSelectedId(null)
     setDraft(null)
   }
@@ -177,7 +226,8 @@ export function AdminFeedEditor({ kols, onToast, addSignal = 0 }: Props) {
       setDraft(null)
       setDirty(false)
       setIsOverride(false)
-      onToast('Đã reset Feed về seed')
+      setFeedSource('seed')
+      onToast('Đã reset local về seed (server không đổi)')
     } catch (e) {
       onToast(e instanceof Error ? e.message : 'Reset failed')
     }
@@ -199,14 +249,23 @@ export function AdminFeedEditor({ kols, onToast, addSignal = 0 }: Props) {
     try {
       const text = await file.text()
       const data = importFeedJson(text)
-      persist(data, 'import')
+      persistLocal(data, 'import')
       setSelectedId(null)
       setDraft(null)
-      onToast(`Imported ${data.posts.length} posts`)
+      onToast(`Imported ${data.posts.length} posts (local)`)
     } catch (e) {
       onToast(e instanceof Error ? e.message : 'Import failed')
     }
   }
+
+  const sourceLabel =
+    feedSource === 'server'
+      ? 'Server (KV)'
+      : feedSource === 'local'
+        ? 'Local browser'
+        : feedSource === 'seed'
+          ? 'Seed JSON'
+          : '…'
 
   const patchDraft = <K extends keyof FeedPost>(key: K, value: FeedPost[K]) => {
     if (!draft) return
@@ -221,17 +280,39 @@ export function AdminFeedEditor({ kols, onToast, addSignal = 0 }: Props) {
       <div className="admin-ai-banner glass" style={{ marginBottom: 12 }}>
         <strong>Tier 1 Feed</strong>
         <span>
-          Chỉnh posts hiển thị trên panel <em>Feed</em> của map. Lưu{' '}
-          <code>localStorage</code> key <code>vn-kol-map-feed-v1</code> (cùng
-          browser). Nguồn hiện tại:{' '}
-          <strong>{isOverride ? 'Admin override' : 'Seed JSON'}</strong>
+          Nguồn load:{' '}
+          <strong>{sourceLabel}</strong>
           {feed ? ` · ${feed.postCount} posts · ${feed.kolCount} voices` : ''}.
+          Ưu tiên: <em>Server KV</em> → local → seed. Sau khi cấu hình Vercel KV
+          + token, bấm <strong>Save to server</strong> để mọi user thấy cùng feed.
+          Xem <code>docs/FEED_SERVER.md</code>.
         </span>
       </div>
 
       <div className="admin-feed-toolbar glass">
+        <label className="admin-feed-token">
+          <span>Server token</span>
+          <input
+            type="password"
+            value={tokenInput}
+            onChange={(e) => setTokenInput(e.target.value)}
+            placeholder="FEED_ADMIN_TOKEN"
+            autoComplete="off"
+          />
+        </label>
+        <button type="button" className="btn" onClick={onSaveToken}>
+          Save token
+        </button>
         <button type="button" className="btn btn--primary" onClick={onAdd}>
           + Add post
+        </button>
+        <button
+          type="button"
+          className="btn btn--primary"
+          onClick={() => void onSaveServer()}
+          disabled={savingServer || !feed}
+        >
+          {savingServer ? 'Saving…' : 'Save to server'}
         </button>
         <button type="button" className="btn" onClick={onExport} disabled={!feed}>
           Export JSON
@@ -250,16 +331,15 @@ export function AdminFeedEditor({ kols, onToast, addSignal = 0 }: Props) {
           />
         </label>
         <button type="button" className="btn btn--danger" onClick={() => void onResetSeed()}>
-          Reset seed
+          Reset local
         </button>
         <button type="button" className="btn" onClick={() => void refresh()}>
           Reload
         </button>
-        {isOverride && (
-          <span className="admin-count" style={{ alignSelf: 'center' }}>
-            Override ON
-          </span>
-        )}
+        <span className="admin-count" style={{ alignSelf: 'center' }}>
+          {sourceLabel}
+          {isOverride ? ' · local cache' : ''}
+        </span>
       </div>
 
       {loading && !feed ? (
@@ -346,7 +426,15 @@ export function AdminFeedEditor({ kols, onToast, addSignal = 0 }: Props) {
                   </div>
                   <div className="admin-editor-actions">
                     <button type="button" className="btn" onClick={onSaveDraft}>
-                      Save post
+                      Save local
+                    </button>
+                    <button
+                      type="button"
+                      className="btn btn--primary"
+                      onClick={() => void onSaveServer()}
+                      disabled={savingServer}
+                    >
+                      {savingServer ? 'Saving…' : 'Save to server'}
                     </button>
                     <button type="button" className="btn btn--danger" onClick={onDelete}>
                       Delete
@@ -481,9 +569,10 @@ export function AdminFeedEditor({ kols, onToast, addSignal = 0 }: Props) {
                 </section>
 
                 <p className="admin-hint">
-                  Save post ghi cả feed vào localStorage. Map panel Feed đọc store
-                  này ngay (cùng browser). Export JSON để backup / commit seed sau
-                  vào <code>public/feed/tier1-feed.json</code>.
+                  <strong>Save local</strong> = browser này.{' '}
+                  <strong>Save to server</strong> = Vercel KV (mọi user). Cần dán
+                  token khớp env <code>FEED_ADMIN_TOKEN</code>. Map load server
+                  trước, rồi local, rồi seed.
                 </p>
               </>
             )}

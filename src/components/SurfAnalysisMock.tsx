@@ -82,9 +82,6 @@ export function SurfAnalysisMock({ kol }: Props) {
           />
           <h3 className="surf-analysis__title">Surf AI Analysis</h3>
         </div>
-        <p className="surf-analysis__sub">
-          Mockup — giả lập pipeline Surf AI (~3s), trả báo cáo PDF trên R2.
-        </p>
       </div>
 
       <button

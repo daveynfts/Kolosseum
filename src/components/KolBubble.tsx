@@ -2,8 +2,13 @@ import { Suspense, useMemo, useRef, useState } from 'react'
 import { useFrame, useLoader, useThree } from '@react-three/fiber'
 import { Billboard, Float, Html, Sparkles } from '@react-three/drei'
 import * as THREE from 'three'
-import type { Kol } from '../types'
-import { NICHE_COLORS, primaryNiche } from '../types'
+import type { Kol, StatusLabel } from '../types'
+import {
+  NICHE_COLORS,
+  primaryNiche,
+  STATUS_EMOJI,
+  STATUS_LABELS,
+} from '../types'
 import { radiusForScore } from '../lib/layout'
 import { xAvatarTextureUrl } from '../lib/avatar'
 import { AvatarImg } from './AvatarImg'
@@ -83,7 +88,10 @@ function AvatarNode({
 
   const color = NICHE_COLORS[primaryNiche(kol)]
   const baseR = radiusForScore(kol.score) * (lite ? 1.08 : 1)
-  const isHot = kol.statusLabel === 'hot' || kol.hotScore >= 78
+  const status = (kol.statusLabel ?? 'stable') as StatusLabel
+  const statusEmoji = STATUS_EMOJI[status] ?? '🟢'
+  const statusTitle = STATUS_LABELS[status] ?? 'Stable'
+  const isHot = status === 'hot' || kol.hotScore >= 78
   const isFocus = selected || hovered
   const phase = useMemo(() => Math.random() * Math.PI * 2, [])
   const segs = lite ? 48 : 64
@@ -259,6 +267,24 @@ function AvatarNode({
               <meshBasicMaterial color="#fbbf24" depthWrite toneMapped={false} />
             </mesh>
           )}
+
+          {/* Status emoji badge — always on map (matches filter chips) */}
+          {!dimmed && (
+            <Html
+              center
+              position={[baseR * 0.78, baseR * 0.78, 0.03]}
+              style={{ pointerEvents: 'none' }}
+              zIndexRange={[30, 0]}
+            >
+              <span
+                className="map-status-emoji"
+                title={statusTitle}
+                aria-label={statusTitle}
+              >
+                {statusEmoji}
+              </span>
+            </Html>
+          )}
         </Billboard>
 
         {isFocus && !dimmed && (
@@ -278,9 +304,15 @@ function AvatarNode({
                 className="bubble-label__avatar"
               />
               <div className="bubble-label__text">
-                <span className="bubble-label__name">{kol.displayName}</span>
+                <span className="bubble-label__name">
+                  <span className="bubble-label__status" title={statusTitle}>
+                    {statusEmoji}
+                  </span>{' '}
+                  {kol.displayName}
+                </span>
                 <span className="bubble-label__meta">
-                  @{kol.handle} · T{kol.tier ?? '—'} · {formatNum(kol.followers)}
+                  @{kol.handle} · T{kol.tier ?? '—'} · {formatNum(kol.followers)} ·{' '}
+                  {statusTitle}
                 </span>
               </div>
             </div>
@@ -504,6 +536,23 @@ function AvatarNode({
                 <meshBasicMaterial color="#fbbf24" toneMapped={false} />
               </mesh>
             )}
+
+            {!dimmed && (
+              <Html
+                center
+                position={[baseR * 0.82, baseR * 0.82, 0.05]}
+                style={{ pointerEvents: 'none' }}
+                zIndexRange={[40, 0]}
+              >
+                <span
+                  className="map-status-emoji"
+                  title={statusTitle}
+                  aria-label={statusTitle}
+                >
+                  {statusEmoji}
+                </span>
+              </Html>
+            )}
           </group>
         </Billboard>
       </Float>
@@ -525,9 +574,15 @@ function AvatarNode({
               className="bubble-label__avatar"
             />
             <div className="bubble-label__text">
-              <span className="bubble-label__name">{kol.displayName}</span>
+              <span className="bubble-label__name">
+                <span className="bubble-label__status" title={statusTitle}>
+                  {statusEmoji}
+                </span>{' '}
+                {kol.displayName}
+              </span>
               <span className="bubble-label__meta">
-                @{kol.handle} · T{kol.tier ?? '—'} · {formatNum(kol.followers)}
+                @{kol.handle} · T{kol.tier ?? '—'} · {formatNum(kol.followers)} ·{' '}
+                {statusTitle}
               </span>
             </div>
           </div>

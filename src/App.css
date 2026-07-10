@@ -1085,6 +1085,47 @@ button.view-toggle-btn.is-active {
   box-shadow: 0 0 12px rgba(34, 211, 238, 0.5);
 }
 
+.map-status-emoji {
+  display: grid;
+  place-items: center;
+  width: 1.35em;
+  height: 1.35em;
+  font-size: 14px;
+  line-height: 1;
+  border-radius: 999px;
+  background: rgba(8, 10, 18, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+  user-select: none;
+  font-variant-emoji: emoji;
+}
+
+.bubble-label__status {
+  font-variant-emoji: emoji;
+  margin-right: 2px;
+}
+
+.legend-status-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px 10px;
+  margin: 8px 0 10px;
+}
+
+.legend-status-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.78rem;
+  color: var(--text-secondary, #cbd5e1);
+}
+
+.legend-status-emoji {
+  font-size: 1rem;
+  line-height: 1;
+  font-variant-emoji: emoji;
+}
+
 .legend-bubble--hot {
   box-shadow: 0 0 0 2px rgba(244, 114, 182, 0.7);
   background: #f472b6;

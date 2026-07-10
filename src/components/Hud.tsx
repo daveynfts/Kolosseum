@@ -334,13 +334,25 @@ export function Hud({
             <span className="legend-bubble legend-bubble--lg" />
             <span>Size ≈ followers + score</span>
           </div>
-          <div className="legend-row">
-            <span className="legend-bubble legend-bubble--hot" />
-            <span>Hot = status / 7d pace</span>
+          <div className="legend-status-grid" aria-label="Status emoji">
+            {(
+              [
+                'hot',
+                'active',
+                'stable',
+                'quiet',
+                'dormant',
+              ] as StatusLabel[]
+            ).map((s) => (
+              <div key={s} className="legend-status-item">
+                <span className="legend-status-emoji">{STATUS_EMOJI[s]}</span>
+                <span>{STATUS_LABELS[s]}</span>
+              </div>
+            ))}
           </div>
           <div className="legend-row">
             <span className="legend-bubble legend-bubble--color" />
-            <span>Filters: tier · status · niche</span>
+            <span>Ring color = niche · gold pip = Tier 1</span>
           </div>
           <p className="legend-note">
             Top Score always re-sorts the current filter set. Shortlist max 5 ·

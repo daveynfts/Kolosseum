@@ -21,8 +21,12 @@ interface Props {
 
 export function KolBubble(props: Props) {
   return (
-    <TextureErrorBoundary fallback={<AvatarNode {...props} map={null} />}>
-      <Suspense fallback={<AvatarNode {...props} map={null} />}>
+    <TextureErrorBoundary
+      fallback={<AvatarNode {...props} map={null} loadState="error" />}
+    >
+      <Suspense
+        fallback={<AvatarNode {...props} map={null} loadState="loading" />}
+      >
         <AvatarWithTexture {...props} />
       </Suspense>
     </TextureErrorBoundary>
@@ -49,8 +53,10 @@ function AvatarWithTexture(props: Props) {
     texture.anisotropy = 16
   }
   texture.needsUpdate = true
-  return <AvatarNode {...props} map={texture} />
+  return <AvatarNode {...props} map={texture} loadState="ready" />
 }
+
+type LoadState = 'ready' | 'loading' | 'error'
 
 function AvatarNode({
   kol,
@@ -60,7 +66,8 @@ function AvatarNode({
   onSelect,
   map,
   lite = false,
-}: Props & { map: THREE.Texture | null }) {
+  loadState = 'ready',
+}: Props & { map: THREE.Texture | null; loadState?: LoadState }) {
   const glowRef = useRef<THREE.Mesh>(null)
   const discRef = useRef<THREE.Group>(null)
   const orbitRef = useRef<THREE.Group>(null)
@@ -79,10 +86,13 @@ function AvatarNode({
   const isHot = kol.statusLabel === 'hot' || kol.hotScore >= 78
   const isFocus = selected || hovered
   const phase = useMemo(() => Math.random() * Math.PI * 2, [])
-  const initial = kol.displayName.trim().charAt(0).toUpperCase() || '?'
   const segs = lite ? 48 : 64
   // Static scale in 2.5D — no per-frame pulse (was causing flicker)
   const liteScale = isFocus ? 1.12 : 1
+  const hasFace = !!map
+  // Neutral placeholder while texture loads / on error — no letter flash
+  const placeholderColor = loadState === 'loading' ? '#1e293b' : '#0f172a'
+  const faceColor = hasFace ? color : placeholderColor
 
   useFrame((state) => {
     // 2.5D: skip all per-frame motion on avatars (stable, no flicker)
@@ -174,9 +184,19 @@ function AvatarNode({
           <mesh position={[0, 0, -0.02]} renderOrder={0}>
             <circleGeometry args={[baseR * 1.18, segs]} />
             <meshBasicMaterial
-              color={color}
+              color={hasFace ? color : placeholderColor}
               transparent
-              opacity={dimmed ? 0.12 : isHot ? 0.38 : 0.28}
+              opacity={
+                dimmed
+                  ? 0.08
+                  : hasFace
+                    ? isHot
+                      ? 0.38
+                      : 0.28
+                    : loadState === 'loading'
+                      ? 0.35
+                      : 0.22
+              }
               depthWrite={false}
               depthTest
               toneMapped={false}
@@ -201,9 +221,9 @@ function AvatarNode({
               />
             ) : (
               <meshBasicMaterial
-                color={color}
-                transparent={dimmed}
-                opacity={dimmed ? 0.35 : 1}
+                color={faceColor}
+                transparent
+                opacity={dimmed ? 0.25 : loadState === 'loading' ? 0.85 : 0.7}
                 depthWrite={!dimmed}
                 side={THREE.FrontSide}
                 toneMapped={false}
@@ -215,9 +235,17 @@ function AvatarNode({
           <mesh position={[0, 0, 0.01]} renderOrder={2}>
             <ringGeometry args={[baseR * 0.98, baseR * 1.08, segs]} />
             <meshBasicMaterial
-              color={color}
+              color={hasFace ? color : '#334155'}
               transparent
-              opacity={dimmed ? 0.2 : isFocus ? 0.95 : 0.75}
+              opacity={
+                dimmed
+                  ? 0.12
+                  : hasFace
+                    ? isFocus
+                      ? 0.95
+                      : 0.75
+                    : 0.35
+              }
               depthWrite={false}
               depthTest
               side={THREE.FrontSide}
@@ -225,27 +253,11 @@ function AvatarNode({
             />
           </mesh>
 
-          {kol.tier === 1 && !dimmed && (
+          {kol.tier === 1 && !dimmed && hasFace && (
             <mesh position={[baseR * 0.7, baseR * 0.7, 0.02]} renderOrder={3}>
               <circleGeometry args={[baseR * 0.15, 16]} />
               <meshBasicMaterial color="#fbbf24" depthWrite toneMapped={false} />
             </mesh>
-          )}
-
-          {!map && !dimmed && (
-            <Html center style={{ pointerEvents: 'none' }} zIndexRange={[10, 0]}>
-              <div
-                className="disc-initial"
-                style={{
-                  width: baseR * 52,
-                  height: baseR * 52,
-                  fontSize: baseR * 26,
-                  color: '#fff',
-                }}
-              >
-                {initial}
-              </div>
-            </Html>
           )}
         </Billboard>
 
@@ -453,15 +465,15 @@ function AvatarNode({
                 />
               ) : (
                 <meshBasicMaterial
-                  color={color}
+                  color={faceColor}
                   transparent
-                  opacity={dimmed ? 0.35 : 0.95}
+                  opacity={dimmed ? 0.25 : loadState === 'loading' ? 0.85 : 0.7}
                   side={THREE.DoubleSide}
                 />
               )}
             </mesh>
 
-            {!dimmed && (
+            {!dimmed && hasFace && (
               <mesh position={[0, baseR * 0.35, 0.01]} scale={[0.85, 0.35, 1]}>
                 <circleGeometry args={[baseR * 0.55, 32]} />
                 <meshBasicMaterial
@@ -473,23 +485,7 @@ function AvatarNode({
               </mesh>
             )}
 
-            {!map && !dimmed && (
-              <Html center style={{ pointerEvents: 'none' }} zIndexRange={[20, 0]}>
-                <div
-                  className="disc-initial"
-                  style={{
-                    width: baseR * 52,
-                    height: baseR * 52,
-                    fontSize: baseR * 26,
-                    color: '#fff',
-                  }}
-                >
-                  {initial}
-                </div>
-              </Html>
-            )}
-
-            {isHot && !dimmed && (
+            {isHot && !dimmed && hasFace && (
               <mesh position={[0, 0, 0.02]}>
                 <ringGeometry args={[baseR * 1.2, baseR * 1.3, 72]} />
                 <meshBasicMaterial
@@ -502,7 +498,7 @@ function AvatarNode({
               </mesh>
             )}
 
-            {kol.tier === 1 && !dimmed && (
+            {kol.tier === 1 && !dimmed && hasFace && (
               <mesh position={[baseR * 0.72, baseR * 0.72, 0.04]}>
                 <circleGeometry args={[baseR * 0.17, 24]} />
                 <meshBasicMaterial color="#fbbf24" toneMapped={false} />

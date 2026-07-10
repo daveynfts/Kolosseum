@@ -5,7 +5,7 @@ import {
   mediaPublicUrl,
   r2Exists,
   r2PutBytes,
-} from './r2'
+} from './r2.js'
 
 /** Soft cap ~2MB per image for admin-curated feed */
 const MAX_BYTES = 2_000_000

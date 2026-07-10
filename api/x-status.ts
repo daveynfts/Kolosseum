@@ -5,8 +5,8 @@
  * If FEED_ADMIN_TOKEN is set, require Authorization: Bearer <token>
  */
 import type { VercelRequest, VercelResponse } from '@vercel/node'
-import { env, r2Client } from '../lib/server/r2'
-import { cacheRemoteImage } from '../lib/server/mediaCache'
+import { env, r2Client } from '../lib/server/r2.js'
+import { cacheRemoteImage } from '../lib/server/mediaCache.js'
 
 type TweetOut = {
   id: string

@@ -17,7 +17,7 @@ import {
   r2Delete,
   r2GetJson,
   r2PutJson,
-} from '../lib/server/r2'
+} from '../lib/server/r2.js'
 
 type FeedBody = {
   posts?: unknown[]

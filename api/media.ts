@@ -11,7 +11,7 @@ import {
   r2Client,
   r2Configured,
   r2GetObject,
-} from '../lib/server/r2'
+} from '../lib/server/r2.js'
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   res.setHeader('Access-Control-Allow-Origin', '*')

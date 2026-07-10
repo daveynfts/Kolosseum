@@ -267,26 +267,9 @@ function AvatarNode({
               <meshBasicMaterial color="#fbbf24" depthWrite toneMapped={false} />
             </mesh>
           )}
-
-          {/* Status emoji badge — always on map (matches filter chips) */}
-          {!dimmed && (
-            <Html
-              center
-              position={[baseR * 0.78, baseR * 0.78, 0.03]}
-              style={{ pointerEvents: 'none' }}
-              zIndexRange={[30, 0]}
-            >
-              <span
-                className="map-status-emoji"
-                title={statusTitle}
-                aria-label={statusTitle}
-              >
-                {statusEmoji}
-              </span>
-            </Html>
-          )}
         </Billboard>
 
+        {/* Pill + status emoji only on hover / select */}
         {isFocus && !dimmed && (
           <Html
             center
@@ -304,14 +287,12 @@ function AvatarNode({
                 className="bubble-label__avatar"
               />
               <div className="bubble-label__text">
-                <span className="bubble-label__name">
-                  <span className="bubble-label__status" title={statusTitle}>
-                    {statusEmoji}
-                  </span>{' '}
-                  {kol.displayName}
-                </span>
+                <span className="bubble-label__name">{kol.displayName}</span>
                 <span className="bubble-label__meta">
-                  @{kol.handle} · T{kol.tier ?? '—'} · {formatNum(kol.followers)} ·{' '}
+                  @{kol.handle} · T{kol.tier ?? '—'} · {formatNum(kol.followers)}
+                </span>
+                <span className="bubble-label__status-pill" title={statusTitle}>
+                  <span aria-hidden>{statusEmoji}</span>
                   {statusTitle}
                 </span>
               </div>
@@ -536,27 +517,11 @@ function AvatarNode({
                 <meshBasicMaterial color="#fbbf24" toneMapped={false} />
               </mesh>
             )}
-
-            {!dimmed && (
-              <Html
-                center
-                position={[baseR * 0.82, baseR * 0.82, 0.05]}
-                style={{ pointerEvents: 'none' }}
-                zIndexRange={[40, 0]}
-              >
-                <span
-                  className="map-status-emoji"
-                  title={statusTitle}
-                  aria-label={statusTitle}
-                >
-                  {statusEmoji}
-                </span>
-              </Html>
-            )}
           </group>
         </Billboard>
       </Float>
 
+      {/* Pill + status emoji only on hover / select */}
       {isFocus && !dimmed && (
         <Html
           center
@@ -574,14 +539,12 @@ function AvatarNode({
               className="bubble-label__avatar"
             />
             <div className="bubble-label__text">
-              <span className="bubble-label__name">
-                <span className="bubble-label__status" title={statusTitle}>
-                  {statusEmoji}
-                </span>{' '}
-                {kol.displayName}
-              </span>
+              <span className="bubble-label__name">{kol.displayName}</span>
               <span className="bubble-label__meta">
-                @{kol.handle} · T{kol.tier ?? '—'} · {formatNum(kol.followers)} ·{' '}
+                @{kol.handle} · T{kol.tier ?? '—'} · {formatNum(kol.followers)}
+              </span>
+              <span className="bubble-label__status-pill" title={statusTitle}>
+                <span aria-hidden>{statusEmoji}</span>
                 {statusTitle}
               </span>
             </div>

@@ -4,7 +4,12 @@ import { SceneErrorBoundary } from './components/SceneErrorBoundary'
 import { Hud } from './components/Hud'
 import { FeedPanel } from './components/FeedPanel'
 import { ComparePanel } from './components/ComparePanel'
-import { loadKols, visibleKols as onlyVisible } from './lib/kolStore'
+import {
+  KOLS_EVENT,
+  loadKols,
+  loadKolsWithSource,
+  visibleKols as onlyVisible,
+} from './lib/kolStore'
 import type { ViewMode } from './lib/layout'
 import type { Kol, Niche, StatusLabel } from './types'
 import { kolMatchesNiche } from './types'
@@ -44,16 +49,33 @@ function App() {
     }
   }, [])
 
-  // Reload when returning from admin (hashchange / focus)
+  // Shared KOL list: server R2 first, then local/seed
   useEffect(() => {
-    const reload = () => setKols(loadKols())
-    window.addEventListener('focus', reload)
-    window.addEventListener('hashchange', reload)
-    window.addEventListener('storage', reload)
+    let cancelled = false
+    void (async () => {
+      const { kols: list } = await loadKolsWithSource()
+      if (!cancelled) setKols(list)
+    })()
     return () => {
-      window.removeEventListener('focus', reload)
-      window.removeEventListener('hashchange', reload)
-      window.removeEventListener('storage', reload)
+      cancelled = true
+    }
+  }, [])
+
+  // Reload when returning from admin / multi-tab / after admin save
+  useEffect(() => {
+    const reloadLocal = () => setKols(loadKols())
+    const reloadServer = () => {
+      void loadKolsWithSource().then(({ kols: list }) => setKols(list))
+    }
+    window.addEventListener('focus', reloadServer)
+    window.addEventListener('hashchange', reloadServer)
+    window.addEventListener('storage', reloadLocal)
+    window.addEventListener(KOLS_EVENT, reloadLocal)
+    return () => {
+      window.removeEventListener('focus', reloadServer)
+      window.removeEventListener('hashchange', reloadServer)
+      window.removeEventListener('storage', reloadLocal)
+      window.removeEventListener(KOLS_EVENT, reloadLocal)
     }
   }, [])
 

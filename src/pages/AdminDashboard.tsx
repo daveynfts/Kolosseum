@@ -17,9 +17,13 @@ import {
   getStoreMeta,
   importKolsJson,
   loadKols,
+  loadKolsWithSource,
   recalculateScores,
-  saveKols,
+  saveKolsLocal,
+  saveKolsToServer,
+  type KolSource,
 } from '../lib/kolStore'
+import { getAdminToken, setAdminToken } from '../lib/feedStore'
 import { FIELD_META, SOURCE_LABELS, type FieldSource } from '../lib/fieldMeta'
 import { AvatarImg } from '../components/AvatarImg'
 import { AdminFeedEditor } from './AdminFeedEditor'
@@ -48,11 +52,28 @@ export function AdminDashboard() {
   const [toast, setToast] = useState<string | null>(null)
   const [dirty, setDirty] = useState(false)
   const [feedAddSignal, setFeedAddSignal] = useState(0)
+  const [kolSource, setKolSource] = useState<KolSource | 'loading'>('loading')
+  const [savingServer, setSavingServer] = useState(false)
+  const [tokenInput, setTokenInput] = useState(() => getAdminToken())
 
   useEffect(() => {
     const onHash = () => setTab(tabFromHash())
     window.addEventListener('hashchange', onHash)
     return () => window.removeEventListener('hashchange', onHash)
+  }, [])
+
+  // Load shared R2 copy first so admin sees same data as everyone
+  useEffect(() => {
+    let cancelled = false
+    void (async () => {
+      const { kols: list, source } = await loadKolsWithSource()
+      if (cancelled) return
+      setKols(list)
+      setKolSource(source)
+    })()
+    return () => {
+      cancelled = true
+    }
   }, [])
 
   const goTab = (t: Tab) => {
@@ -107,14 +128,38 @@ export function AdminDashboard() {
     window.setTimeout(() => setToast(null), 2600)
   }
 
-  const persist = useCallback(
-    (next: Kol[], note?: string) => {
-      setKols(next)
-      saveKols(next, note)
-      setDirty(false)
-      flash('Đã lưu vào localStorage')
+  const persistLocal = useCallback((next: Kol[], note?: string) => {
+    setKols(next)
+    saveKolsLocal(next, note)
+    setKolSource('local')
+    setDirty(false)
+    flash('Đã lưu local (chỉ máy này) — bấm «Save to server» để mọi người thấy')
+  }, [])
+
+  const persistServer = useCallback(
+    async (next: Kol[], note?: string) => {
+      setSavingServer(true)
+      try {
+        const token = tokenInput.trim() || getAdminToken()
+        if (token) setAdminToken(token)
+        // Always mirror local first
+        saveKolsLocal(next, note)
+        setKols(next)
+        const result = await saveKolsToServer(next, note, token)
+        if (!result.ok) {
+          setDirty(false)
+          setKolSource('local')
+          flash(`Local OK · Server lỗi: ${result.error}`)
+          return
+        }
+        setDirty(false)
+        setKolSource('server')
+        flash(`Đã lưu server (${result.count} KOLs) — mọi người sẽ thấy sau refresh`)
+      } finally {
+        setSavingServer(false)
+      }
     },
-    [],
+    [tokenInput],
   )
 
   const onSaveDraft = () => {
@@ -130,7 +175,26 @@ export function AdminDashboard() {
     const next = kols.some((k) => k.id === fixed.id)
       ? kols.map((k) => (k.id === fixed.id ? fixed : k))
       : [...kols, fixed]
-    persist(next, 'admin edit')
+    // Default save goes to server when token present
+    void persistServer(next, 'admin edit')
+    setSelectedId(fixed.id)
+    setDraft(fixed)
+  }
+
+  const onSaveLocalOnly = () => {
+    if (!draft) return
+    const niches = getKolNiches(draft)
+    const fixed = recalculateScores({
+      ...draft,
+      handle: draft.handle.replace(/^@/, '').trim(),
+      niches,
+      niche: niches[0] ?? 'Multi',
+      dataSource: draft.dataSource === 'x-live' ? 'x-live+admin' : 'admin',
+    })
+    const next = kols.some((k) => k.id === fixed.id)
+      ? kols.map((k) => (k.id === fixed.id ? fixed : k))
+      : [...kols, fixed]
+    persistLocal(next, 'admin edit local')
     setSelectedId(fixed.id)
     setDraft(fixed)
   }
@@ -163,7 +227,7 @@ export function AdminDashboard() {
     if (!draft) return
     if (!confirm(`Xóa @${draft.handle} khỏi store?`)) return
     const next = kols.filter((k) => k.id !== draft.id)
-    persist(next, 'admin delete')
+    void persistServer(next, 'admin delete')
     setSelectedId(null)
     setDraft(null)
     setTab('list')
@@ -172,7 +236,7 @@ export function AdminDashboard() {
   const onResetSeed = () => {
     if (
       !confirm(
-        'Reset về seed sheetKols.ts (xóa chỉnh sửa localStorage)?',
+        'Reset về seed sheetKols.ts (xóa chỉnh sửa local)? Server không tự xóa — cần Save to server sau nếu muốn đồng bộ seed.',
       )
     )
       return
@@ -182,7 +246,12 @@ export function AdminDashboard() {
     setSelectedId(null)
     setDraft(null)
     setDirty(false)
-    flash('Đã reset về seed')
+    setKolSource('seed')
+    flash('Đã reset local về seed')
+  }
+
+  const onPushAllToServer = () => {
+    void persistServer(kols, 'admin push all')
   }
 
   const onExport = () => {
@@ -200,10 +269,10 @@ export function AdminDashboard() {
     try {
       const text = await file.text()
       const list = importKolsJson(text)
-      persist(list, 'admin import')
+      void persistServer(list, 'admin import')
       setSelectedId(null)
       setDraft(null)
-      flash(`Imported ${list.length} KOLs`)
+      flash(`Imported ${list.length} KOLs — đang đẩy server…`)
     } catch (e) {
       flash(e instanceof Error ? e.message : 'Import failed')
     }
@@ -235,7 +304,8 @@ export function AdminDashboard() {
           <div>
             <h1>Admin Dashboard</h1>
             <p>
-              Điều chỉnh KOL & chỉ số · lưu localStorage · map đọc store này
+              Điều chỉnh KOL & bio · đồng bộ server (R2) cho mọi người · source:{' '}
+              <strong>{kolSource}</strong>
             </p>
           </div>
         </div>
@@ -259,6 +329,17 @@ export function AdminDashboard() {
           <button type="button" className="btn btn--primary" onClick={() => goTab('feed')}>
             Tier 1 Feed
           </button>
+          {tab !== 'feed' && (
+            <button
+              type="button"
+              className="btn btn--primary"
+              disabled={savingServer}
+              onClick={onPushAllToServer}
+              title="Đẩy toàn bộ list KOL lên R2 (mọi visitor thấy)"
+            >
+              {savingServer ? 'Saving…' : 'Save all → server'}
+            </button>
+          )}
           <button type="button" className="btn" onClick={onExport}>
             Export KOLs
           </button>
@@ -282,16 +363,35 @@ export function AdminDashboard() {
       </header>
 
       <div className="admin-ai-banner glass">
-        <strong>Ghi chú AI</strong>
+        <strong>Đồng bộ server</strong>
         <span>
-          Badge <em className="src src-ai">AI</em> = chỉ số / assessment do pipeline AI
-          sinh (heuristic). <em className="src src-x">X</em> = profile X lúc sync.{' '}
-          <em className="src src-human">Human</em> = sheet/admin.{' '}
-          <em className="src src-sample">Sample</em> = sample post 7d (có thể capped).
-          Admin override luôn được — bấm Save để map dùng giá trị của bạn.
+          Lưu local chỉ máy bạn. Để <em>mọi người</em> thấy: dán{' '}
+          <code>FEED_ADMIN_TOKEN</code> (cùng token Feed) → Save. Source hiện tại:{' '}
+          <strong>{kolSource}</strong>
+          {meta.updatedAt ? ` · local cache ${meta.updatedAt.slice(0, 19)}` : ''}.
         </span>
+        <label className="admin-token-row">
+          Token
+          <input
+            type="password"
+            value={tokenInput}
+            onChange={(e) => setTokenInput(e.target.value)}
+            placeholder="FEED_ADMIN_TOKEN"
+            autoComplete="off"
+          />
+        </label>
+        <button
+          type="button"
+          className="btn"
+          onClick={() => {
+            setAdminToken(tokenInput)
+            flash(tokenInput.trim() ? 'Đã lưu token' : 'Đã xóa token')
+          }}
+        >
+          Save token
+        </button>
         <button type="button" className="btn" onClick={() => setTab('legend')}>
-          Xem bảng nguồn field
+          Field legend
         </button>
       </div>
 
@@ -503,8 +603,22 @@ export function AdminDashboard() {
                     <p>{draft.displayName}</p>
                   </div>
                   <div className="admin-editor-actions">
-                    <button type="button" className="btn" onClick={onSaveDraft}>
-                      Save
+                    <button
+                      type="button"
+                      className="btn btn--primary"
+                      disabled={savingServer}
+                      onClick={onSaveDraft}
+                      title="Lưu KOL này + đẩy cả list lên server (R2)"
+                    >
+                      {savingServer ? 'Saving…' : 'Save → server'}
+                    </button>
+                    <button
+                      type="button"
+                      className="btn"
+                      onClick={onSaveLocalOnly}
+                      title="Chỉ máy này"
+                    >
+                      Save local
                     </button>
                     <button
                       type="button"
@@ -846,9 +960,10 @@ export function AdminDashboard() {
                 </section>
 
                 <p className="admin-hint">
-                  Save ghi vào <code>localStorage</code> key{' '}
-                  <code>vn-kol-map-admin-v1</code>. Map public đọc store này (ẩn KOL
-                  có Hidden). Export JSON để backup / commit seed sau.
+                  <strong>Save → server</strong> ghi R2 key <code>kols/v1.json</code>{' '}
+                  (mọi visitor load từ <code>/api/kols</code>). Cần token{' '}
+                  <code>FEED_ADMIN_TOKEN</code>. Save local chỉ cache máy này. KOL
+                  Hidden vẫn ẩn trên map public.
                 </p>
               </>
             )}

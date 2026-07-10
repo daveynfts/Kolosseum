@@ -60,6 +60,8 @@ export function r2PublicBase(): string {
 }
 
 export const FEED_OBJECT_KEY = 'feed/v1.json'
+/** Shared KOL list (admin edits) — same bucket, different key */
+export const KOLS_OBJECT_KEY = 'kols/v1.json'
 
 export function mediaObjectKey(id: string) {
   return `media/${id}`

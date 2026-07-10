@@ -1,21 +1,46 @@
 import { SHEET_KOLS } from '../data/sheetKols'
 import type { Kol, Niche, StatusLabel } from '../types'
+import { withBase } from './base'
+import { getAdminToken } from './feedStore'
 
 const STORAGE_KEY = 'vn-kol-map-admin-v3'
 const STORAGE_VERSION = 3
+export const KOLS_EVENT = 'vn-kol-kols-updated'
 
 export interface KolStorePayload {
   version: number
   updatedAt: string
   kols: Kol[]
   note?: string
+  source?: string
+  count?: number
+}
+
+export type KolSource = 'server' | 'local' | 'seed'
+
+export interface LoadKolsResult {
+  kols: Kol[]
+  source: KolSource
+  updatedAt: string | null
+}
+
+function kolsApiUrl() {
+  return withBase('/api/kols')
 }
 
 function cloneSeed(): Kol[] {
   return JSON.parse(JSON.stringify(SHEET_KOLS)) as Kol[]
 }
 
-export function loadKols(): Kol[] {
+function emitKolsEvent(kols: Kol[]) {
+  try {
+    window.dispatchEvent(new CustomEvent(KOLS_EVENT, { detail: { kols } }))
+  } catch {
+    /* ignore */
+  }
+}
+
+export function loadKolsLocal(): Kol[] {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
     if (!raw) return cloneSeed()
@@ -29,18 +54,32 @@ export function loadKols(): Kol[] {
   }
 }
 
-export function saveKols(kols: Kol[], note?: string): void {
+/** Sync load: localStorage → seed. Prefer loadKolsWithSource() for server. */
+export function loadKols(): Kol[] {
+  return loadKolsLocal()
+}
+
+export function saveKolsLocal(kols: Kol[], note?: string): void {
   const payload: KolStorePayload = {
     version: STORAGE_VERSION,
     updatedAt: new Date().toISOString(),
     kols,
     note,
+    source: note ? `admin local · ${note}` : 'admin local',
+    count: kols.length,
   }
   localStorage.setItem(STORAGE_KEY, JSON.stringify(payload))
+  emitKolsEvent(kols)
+}
+
+/** @deprecated use saveKolsLocal or saveKolsToServer */
+export function saveKols(kols: Kol[], note?: string): void {
+  saveKolsLocal(kols, note)
 }
 
 export function clearKolsStore(): void {
   localStorage.removeItem(STORAGE_KEY)
+  emitKolsEvent(cloneSeed())
 }
 
 export function getStoreMeta(): { updatedAt: string | null; count: number } {
@@ -51,6 +90,149 @@ export function getStoreMeta(): { updatedAt: string | null; count: number } {
     return { updatedAt: data.updatedAt ?? null, count: data.kols?.length ?? 0 }
   } catch {
     return { updatedAt: null, count: 0 }
+  }
+}
+
+/** GET /api/kols — null if empty / error. */
+export async function fetchServerKols(): Promise<KolStorePayload | null> {
+  try {
+    const res = await fetch(`${kolsApiUrl()}?t=${Date.now()}`, {
+      method: 'GET',
+      headers: { Accept: 'application/json' },
+    })
+    if (res.status === 404 || res.status === 503) return null
+    if (!res.ok) return null
+    const data = (await res.json()) as KolStorePayload
+    if (!data?.kols || !Array.isArray(data.kols) || data.kols.length === 0) {
+      return null
+    }
+    return data
+  } catch {
+    return null
+  }
+}
+
+/**
+ * Load priority:
+ * 1) Server R2 (shared for everyone)
+ * 2) localStorage
+ * 3) seed sheetKols.ts
+ */
+export async function loadKolsWithSource(): Promise<LoadKolsResult> {
+  const server = await fetchServerKols()
+  if (server) {
+    try {
+      localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify({
+          ...server,
+          version: server.version ?? STORAGE_VERSION,
+          updatedAt: server.updatedAt || new Date().toISOString(),
+          count: server.kols.length,
+        }),
+      )
+    } catch {
+      /* ignore */
+    }
+    return {
+      kols: server.kols,
+      source: 'server',
+      updatedAt: server.updatedAt ?? null,
+    }
+  }
+
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY)
+    if (raw) {
+      const data = JSON.parse(raw) as KolStorePayload
+      if (data?.kols?.length) {
+        return {
+          kols: data.kols,
+          source: 'local',
+          updatedAt: data.updatedAt ?? null,
+        }
+      }
+    }
+  } catch {
+    /* ignore */
+  }
+
+  return { kols: cloneSeed(), source: 'seed', updatedAt: null }
+}
+
+export type ServerSaveResult =
+  | { ok: true; count: number; updatedAt: string }
+  | { ok: false; error: string; status?: number }
+
+/** PUT /api/kols + local mirror. Uses FEED_ADMIN_TOKEN. */
+export async function saveKolsToServer(
+  kols: Kol[],
+  note?: string,
+  tokenOverride?: string,
+): Promise<ServerSaveResult> {
+  const token = (tokenOverride ?? getAdminToken()).trim()
+  if (!token) {
+    return {
+      ok: false,
+      error:
+        'Chưa có admin token — dán FEED_ADMIN_TOKEN (cùng token Feed) vào ô Token.',
+    }
+  }
+
+  const payload: KolStorePayload = {
+    version: STORAGE_VERSION,
+    updatedAt: new Date().toISOString(),
+    kols,
+    note,
+    source: note ? `admin server · ${note}` : 'admin server r2',
+    count: kols.length,
+  }
+
+  try {
+    const res = await fetch(kolsApiUrl(), {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(payload),
+    })
+    const body = (await res.json().catch(() => ({}))) as {
+      error?: string
+      message?: string
+      updatedAt?: string
+      count?: number
+    }
+    if (!res.ok) {
+      return {
+        ok: false,
+        status: res.status,
+        error:
+          body.message ||
+          body.error ||
+          `Server ${res.status}${
+            res.status === 401
+              ? ' — token không khớp FEED_ADMIN_TOKEN trên Vercel'
+              : res.status === 503
+                ? ' — chưa cấu hình R2 / FEED_ADMIN_TOKEN'
+                : ''
+          }`,
+      }
+    }
+
+    // Mirror local for fast reopen
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(payload))
+    emitKolsEvent(kols)
+    return {
+      ok: true,
+      count: body.count ?? kols.length,
+      updatedAt: body.updatedAt || payload.updatedAt,
+    }
+  } catch (e) {
+    return {
+      ok: false,
+      error: e instanceof Error ? e.message : 'Network error',
+    }
   }
 }
 
@@ -138,7 +320,11 @@ export function importKolsJson(text: string): Kol[] {
   const data = JSON.parse(text) as { kols?: Kol[] } | Kol[]
   const list = Array.isArray(data) ? data : data.kols
   if (!list || !Array.isArray(list)) throw new Error('Invalid JSON: missing kols[]')
-  return list.map((k) => ({ ...createEmptyKol(), ...k, id: k.id || `admin-${k.handle}` }))
+  return list.map((k) => ({
+    ...createEmptyKol(),
+    ...k,
+    id: k.id || `admin-${k.handle}`,
+  }))
 }
 
 const NICHES: Niche[] = [

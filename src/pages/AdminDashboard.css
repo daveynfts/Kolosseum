@@ -179,6 +179,25 @@
   font-size: 0.8rem;
 }
 
+.admin-token-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.82rem;
+  color: var(--text-secondary, #94a3b8);
+}
+
+.admin-token-row input {
+  min-width: 160px;
+  max-width: 220px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(0, 0, 0, 0.25);
+  color: #e2e8f0;
+  font-size: 0.82rem;
+}
+
 .admin-check {
   display: inline-flex;
   align-items: center;

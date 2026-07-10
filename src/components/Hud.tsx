@@ -177,12 +177,9 @@ export function Hud({
                 {s === 'All' ? (
                   'All'
                 ) : (
-                  <>
-                    <span className="chip-emoji" aria-hidden>
-                      {STATUS_EMOJI[s]}
-                    </span>
-                    {STATUS_LABELS[s]}
-                  </>
+                  <span className="chip-emoji" aria-hidden>
+                    {STATUS_EMOJI[s]}
+                  </span>
                 )}
               </button>
             ))}
@@ -193,7 +190,7 @@ export function Hud({
               <button
                 key={n}
                 type="button"
-                className={`chip chip--sm ${filterNiche === n ? 'chip--active' : ''}`}
+                className={`chip chip--sm chip--niche ${filterNiche === n ? 'chip--active' : ''}`}
                 style={
                   n !== 'All'
                     ? ({

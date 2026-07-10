@@ -68,35 +68,36 @@
 
 /* ——— Single-line header ——— */
 .hud-bar {
-  top: 12px;
-  left: 16px;
-  right: 16px;
+  top: 10px;
+  left: 12px;
+  right: 12px;
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 6px 10px 6px 8px;
-  border-radius: 16px;
-  min-height: 48px;
-  max-height: 52px;
+  gap: 6px;
+  padding: 4px 8px 4px 6px;
+  border-radius: 12px;
+  min-height: 36px;
+  max-height: 40px;
   /* allow toggle/actions to stay visible; filters scroll */
-  overflow: visible;
+  overflow: hidden;
+  z-index: 40;
 }
 
 .hud-bar.glass {
-  overflow: visible;
+  overflow: hidden;
 }
 
 .hud-bar__brand {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   flex-shrink: 0;
-  padding-right: 4px;
+  padding-right: 2px;
 }
 
 .hud-bar__brand h1 {
   margin: 0;
-  font-size: 0.92rem;
+  font-size: 0.78rem;
   font-weight: 650;
   letter-spacing: -0.03em;
   white-space: nowrap;
@@ -119,15 +120,15 @@
 }
 
 .brand-mark--sm {
-  width: 30px;
-  height: 30px;
-  border-radius: 10px;
+  width: 22px;
+  height: 22px;
+  border-radius: 7px;
 }
 
 .hud-bar__divider {
   width: 1px;
   align-self: stretch;
-  margin: 4px 0;
+  margin: 3px 0;
   background: rgba(255, 255, 255, 0.12);
   flex-shrink: 0;
 }
@@ -137,11 +138,12 @@
   min-width: 0;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 5px;
   overflow-x: auto;
   overflow-y: hidden;
   scrollbar-width: none;
   -ms-overflow-style: none;
+  mask-image: linear-gradient(90deg, #000 0%, #000 92%, transparent 100%);
 }
 
 .hud-bar__filters::-webkit-scrollbar {
@@ -151,7 +153,7 @@
 .hud-bar__actions {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
   flex-shrink: 0;
   flex-grow: 0;
   margin-left: auto;
@@ -159,23 +161,60 @@
 
 .filter-seg--inline {
   flex-shrink: 0;
+  display: inline-flex;
+  gap: 1px;
+  padding: 2px;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .filter-chips--inline {
   display: flex;
   flex-wrap: nowrap;
-  gap: 4px;
+  gap: 3px;
   flex-shrink: 0;
 }
 
 .chip--sm {
-  padding: 4px 8px;
-  font-size: 0.65rem;
+  padding: 2px 6px;
+  font-size: 0.6rem;
+  line-height: 1.2;
+  min-height: 22px;
+  border-radius: 999px;
+}
+
+.chip--status.chip--emoji.chip--sm {
+  padding: 2px 5px;
+  min-width: 22px;
+  justify-content: center;
+  gap: 0;
+}
+
+.chip--status.chip--emoji .chip-emoji {
+  font-size: 0.78rem;
+  line-height: 1;
+}
+
+.chip--niche.chip--sm {
+  padding: 2px 6px 2px 5px;
+  max-width: 5.6rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chip--niche .chip-dot {
+  width: 5px;
+  height: 5px;
+  flex-shrink: 0;
 }
 
 .pill--sm {
-  padding: 5px 10px;
-  font-size: 0.68rem;
+  padding: 3px 8px;
+  font-size: 0.62rem;
+  min-height: 22px;
+  line-height: 1.2;
 }
 
 .pill {
@@ -249,12 +288,12 @@ button.view-toggle-btn.is-active {
 
 .view-toggle--bar {
   display: inline-flex;
-  gap: 2px;
-  padding: 3px;
+  gap: 1px;
+  padding: 2px;
   border-radius: 999px;
   background: rgba(15, 23, 42, 0.55);
   border: 1px solid rgba(125, 211, 252, 0.35);
-  box-shadow: 0 0 16px rgba(125, 211, 252, 0.12);
+  box-shadow: 0 0 10px rgba(125, 211, 252, 0.1);
   flex-shrink: 0;
   flex-grow: 0;
   z-index: 5;
@@ -266,14 +305,16 @@ button.view-toggle-btn.is-active {
   background: transparent;
   color: #94a3b8;
   font: inherit;
-  font-size: 0.72rem;
+  font-size: 0.62rem;
   font-weight: 700;
   letter-spacing: 0.02em;
-  padding: 6px 12px;
+  padding: 3px 8px;
   border-radius: 999px;
   cursor: pointer;
   white-space: nowrap;
   transition: background 0.15s, color 0.15s;
+  min-height: 22px;
+  line-height: 1.2;
 }
 
 .view-toggle--bar button.is-active {
@@ -310,9 +351,11 @@ button.view-toggle-btn.is-active {
   background: transparent;
   color: var(--text-secondary);
   font: inherit;
-  font-size: 0.68rem;
+  font-size: 0.6rem;
   font-weight: 600;
-  padding: 5px 10px;
+  padding: 2px 7px;
+  min-height: 20px;
+  line-height: 1.2;
   border-radius: var(--radius-pill);
   cursor: pointer;
   transition: 0.15s ease;
@@ -2429,14 +2472,20 @@ button.view-toggle-btn.is-active {
   }
 
   .hud-bar {
-    left: 10px;
-    right: 10px;
-    top: 10px;
-    max-height: 48px;
+    left: 8px;
+    right: 8px;
+    top: 8px;
+    max-height: 38px;
+    gap: 4px;
+    padding: 3px 6px 3px 5px;
   }
 
   .hud-bar__brand h1 {
-    font-size: 0.82rem;
+    font-size: 0.72rem;
+  }
+
+  .chip--niche.chip--sm {
+    max-width: 4.2rem;
   }
 
   .feed-panel {

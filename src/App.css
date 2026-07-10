@@ -707,6 +707,27 @@ button.view-toggle-btn.is-active {
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
 }
 
+/* Compact chips in header — must win over base .chip padding */
+.hud-bar .chip.chip--sm {
+  padding: 2px 6px;
+  font-size: 0.6rem;
+  line-height: 1.2;
+  min-height: 22px;
+  gap: 4px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+}
+
+.hud-bar .chip.chip--status.chip--emoji.chip--sm {
+  padding: 2px 5px;
+  min-width: 22px;
+  gap: 0;
+}
+
+.hud-bar .chip.chip--niche.chip--sm {
+  padding: 2px 6px 2px 5px;
+  max-width: 5.6rem;
+}
+
 .chip:hover {
   border-color: rgba(255, 255, 255, 0.22);
   color: var(--text-primary);

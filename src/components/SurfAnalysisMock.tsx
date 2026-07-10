@@ -43,7 +43,7 @@ export function SurfAnalysisMock({ kol }: Props) {
 
     setPhase('running')
     setProgress(0)
-    setMessage('Surf đang phân tích smart followers, engagement & mindshare…')
+    setMessage('Surf AI đang phân tích smart followers, engagement & mindshare…')
 
     const started = Date.now()
     const DURATION = 3000
@@ -71,12 +71,20 @@ export function SurfAnalysisMock({ kol }: Props) {
   return (
     <div className="surf-analysis glass">
       <div className="surf-analysis__head">
-        <div>
-          <h3 className="surf-analysis__title">Phân tích AI · Surf</h3>
-          <p className="surf-analysis__sub">
-            Mockup — giả lập pipeline Surf (~3s), trả báo cáo PDF đã lưu trên R2.
-          </p>
+        <div className="surf-analysis__brand">
+          <img
+            src="/surf-logo.png"
+            alt="Surf AI"
+            className="surf-analysis__brand-logo"
+            width={22}
+            height={22}
+            draggable={false}
+          />
+          <h3 className="surf-analysis__title">Surf AI Analysis</h3>
         </div>
+        <p className="surf-analysis__sub">
+          Mockup — giả lập pipeline Surf AI (~3s), trả báo cáo PDF trên R2.
+        </p>
       </div>
 
       <button
@@ -84,16 +92,23 @@ export function SurfAnalysisMock({ kol }: Props) {
         className={`surf-btn ${phase === 'running' ? 'is-running' : ''} ${phase === 'done' ? 'is-done' : ''}`}
         onClick={runAnalysis}
         disabled={phase === 'running'}
-        title="Chạy phân tích AI (Surf mock)"
+        title="Surf AI Analysis"
         aria-label="Chạy phân tích Surf AI"
       >
-        <SurfLogo />
+        <img
+          src="/surf-logo.png"
+          alt=""
+          className="surf-btn__logo"
+          width={18}
+          height={18}
+          draggable={false}
+        />
         <span className="surf-btn__label">
           {phase === 'running'
             ? 'Analyzing…'
             : phase === 'done'
-              ? 'Chạy lại'
-              : 'Analyze with Surf'}
+              ? 'Run again'
+              : 'Surf AI'}
         </span>
       </button>
 
@@ -130,45 +145,10 @@ export function SurfAnalysisMock({ kol }: Props) {
 
       <ul className="surf-analysis__steps">
         <li className={progress > 5 ? 'is-on' : ''}>Profile & followers</li>
-        <li className={progress > 35 ? 'is-on' : ''}>Smart followers (Surf)</li>
+        <li className={progress > 35 ? 'is-on' : ''}>Smart followers (Surf AI)</li>
         <li className={progress > 65 ? 'is-on' : ''}>Engagement window</li>
         <li className={progress >= 100 ? 'is-on' : ''}>Export PDF → R2</li>
       </ul>
     </div>
-  )
-}
-
-/** Stylized Surf mark (mock brand lockup — not official asset) */
-function SurfLogo() {
-  return (
-    <span className="surf-logo" aria-hidden>
-      <svg width="28" height="28" viewBox="0 0 32 32" fill="none">
-        <defs>
-          <linearGradient id="surfGrad" x1="4" y1="4" x2="28" y2="28">
-            <stop stopColor="#22d3ee" />
-            <stop offset="0.55" stopColor="#818cf8" />
-            <stop offset="1" stopColor="#e879f9" />
-          </linearGradient>
-        </defs>
-        <rect width="32" height="32" rx="9" fill="url(#surfGrad)" />
-        <path
-          d="M6 18c3-6 6-8 10-6s7 2 10-2"
-          stroke="#0b1020"
-          strokeWidth="2.2"
-          strokeLinecap="round"
-          fill="none"
-          opacity="0.9"
-        />
-        <path
-          d="M6 22c3.5-4.5 6.5-5.5 10-3.5s6.5 1.5 10-2"
-          stroke="#0b1020"
-          strokeWidth="1.6"
-          strokeLinecap="round"
-          fill="none"
-          opacity="0.55"
-        />
-        <circle cx="22" cy="10" r="2.2" fill="#0b1020" opacity="0.75" />
-      </svg>
-    </span>
   )
 }

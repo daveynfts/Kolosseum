@@ -145,11 +145,18 @@ export function AdminFeedEditor({ kols, onToast, addSignal = 0 }: Props) {
       onToast('Chưa có feed để lưu')
       return
     }
+    // Always use token currently in the input (not only previously saved)
+    const token = tokenInput.trim()
+    if (!token) {
+      onToast('Nhập Server token (= FEED_ADMIN_TOKEN trên Vercel) rồi Save to server')
+      return
+    }
+    setAdminToken(token)
     setSavingServer(true)
     // Always mirror local first
     const local = saveFeedLocal(next, 'before server')
     setFeed(local)
-    const result = await saveFeedToServer(local, 'admin save')
+    const result = await saveFeedToServer(local, 'admin save', token)
     setSavingServer(false)
     if (result.ok) {
       setFeed(result.feed)
@@ -162,13 +169,21 @@ export function AdminFeedEditor({ kols, onToast, addSignal = 0 }: Props) {
       }
       onToast('Đã lưu lên server — mọi user sẽ thấy feed này')
     } else {
-      onToast(`Server lỗi: ${result.error}`)
+      const hint =
+        result.status === 401
+          ? ' — Token sai hoặc khác FEED_ADMIN_TOKEN (Production). Không dùng Redis token.'
+          : ''
+      onToast(`Server lỗi: ${result.error}${hint}`)
     }
   }
 
   const onSaveToken = () => {
     setAdminToken(tokenInput)
-    onToast(tokenInput.trim() ? 'Đã lưu admin token (local)' : 'Đã xóa token')
+    onToast(
+      tokenInput.trim()
+        ? 'Đã lưu admin token (local) — giờ bấm Save to server'
+        : 'Đã xóa token',
+    )
   }
 
   const emptyFeed = (): Tier1Feed => ({
@@ -334,12 +349,12 @@ export function AdminFeedEditor({ kols, onToast, addSignal = 0 }: Props) {
 
       <div className="admin-feed-toolbar glass">
         <label className="admin-feed-token">
-          <span>Server token</span>
+          <span>Server token (= FEED_ADMIN_TOKEN, không phải Redis)</span>
           <input
             type="password"
             value={tokenInput}
             onChange={(e) => setTokenInput(e.target.value)}
-            placeholder="FEED_ADMIN_TOKEN"
+            placeholder="dán FEED_ADMIN_TOKEN từ Vercel"
             autoComplete="off"
           />
         </label>

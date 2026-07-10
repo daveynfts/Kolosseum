@@ -135,8 +135,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           env: envPresence(),
         })
       }
-      if (bearer(req) !== secret) {
-        return res.status(401).json({ error: 'unauthorized' })
+      const got = bearer(req)
+      if (!got || got !== secret) {
+        return res.status(401).json({
+          error: 'unauthorized',
+          message:
+            'Token mismatch. Use FEED_ADMIN_TOKEN from Vercel env (not Redis/Upstash token). Paste exact value, no extra spaces/quotes.',
+          // Length only — helps debug without leaking secrets
+          hint: {
+            receivedLen: got.length,
+            expectedLen: secret.length,
+            hasBearer: !!(req.headers.authorization || '').toLowerCase().startsWith('bearer '),
+          },
+        })
       }
 
       const body = (

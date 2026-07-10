@@ -125,6 +125,7 @@ export type ServerSaveResult =
 export async function saveFeedToServer(
   feed: Tier1Feed,
   note?: string,
+  tokenOverride?: string,
 ): Promise<ServerSaveResult> {
   const next = normalizeFeed({
     ...feed,
@@ -133,7 +134,7 @@ export async function saveFeedToServer(
     mode: 'admin',
   })
 
-  const token = getAdminToken()
+  const token = (tokenOverride ?? getAdminToken()).trim()
   if (!token) {
     return {
       ok: false,
@@ -162,9 +163,11 @@ export async function saveFeedToServer(
           body.message ||
           body.error ||
           `Server ${res.status}${
-            res.status === 503
-              ? ' — chưa cấu hình Vercel KV / FEED_ADMIN_TOKEN'
-              : ''
+            res.status === 401
+              ? ' — token không khớp FEED_ADMIN_TOKEN trên Vercel'
+              : res.status === 503
+                ? ' — chưa cấu hình Redis / FEED_ADMIN_TOKEN'
+                : ''
           }`,
       }
     }

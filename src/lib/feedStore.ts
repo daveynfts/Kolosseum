@@ -166,7 +166,7 @@ export async function saveFeedToServer(
             res.status === 401
               ? ' — token không khớp FEED_ADMIN_TOKEN trên Vercel'
               : res.status === 503
-                ? ' — chưa cấu hình Redis / FEED_ADMIN_TOKEN'
+                ? ' — chưa cấu hình R2 / FEED_ADMIN_TOKEN (xem docs/FEED_SERVER.md)'
                 : ''
           }`,
       }

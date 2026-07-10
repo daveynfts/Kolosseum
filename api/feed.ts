@@ -1,15 +1,23 @@
 /**
- * Vercel Serverless: GET/PUT shared Tier-1 feed JSON.
+ * Shared Tier-1 feed JSON on Cloudflare R2.
  *
- * Env (any pair works):
- *   UPSTASH_REDIS_REST_URL + UPSTASH_REDIS_REST_TOKEN
- *   KV_REST_API_URL + KV_REST_API_TOKEN
- *   FEED_ADMIN_TOKEN  (required for PUT/DELETE)
+ * Env:
+ *   R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET_NAME
+ *   FEED_ADMIN_TOKEN (PUT/DELETE)
+ * Optional:
+ *   R2_PUBLIC_BASE_URL — public CDN for media (not required for feed JSON)
  */
 import type { VercelRequest, VercelResponse } from '@vercel/node'
-import { env, envPresence, pickRedisCreds, redisClient } from '../lib/server/redis'
-
-const FEED_KEY = 'vn-kol-map:feed:v1'
+import {
+  env,
+  envPresence,
+  FEED_OBJECT_KEY,
+  r2Client,
+  r2Configured,
+  r2Delete,
+  r2GetJson,
+  r2PutJson,
+} from '../lib/server/r2'
 
 type FeedBody = {
   posts?: unknown[]
@@ -38,44 +46,33 @@ function bearer(req: VercelRequest): string {
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   cors(res)
-  if (req.method === 'OPTIONS') {
-    return res.status(204).end()
-  }
+  if (req.method === 'OPTIONS') return res.status(204).end()
 
   if (req.method === 'GET' && (req.query.debug === '1' || req.query.debug === 'true')) {
-    const { url, token } = pickRedisCreds()
     return res.status(200).json({
       ok: true,
-      redisReady: !!(url && token),
-      urlHost: url
-        ? (() => {
-            try {
-              return new URL(url).host
-            } catch {
-              return 'invalid_url'
-            }
-          })()
-        : null,
+      storage: 'cloudflare-r2',
+      r2Ready: r2Configured(),
       env: envPresence(),
-      hint: !url || !token
-        ? 'URL or TOKEN empty in this deployment. Check Production env + Redeploy.'
-        : 'Creds visible to function.',
+      hint: r2Configured()
+        ? 'R2 creds visible to function.'
+        : 'Set R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET_NAME + Redeploy.',
     })
   }
 
-  const redis = redisClient()
-  if (!redis) {
+  const client = r2Client()
+  if (!client) {
     return res.status(503).json({
-      error: 'redis_not_configured',
+      error: 'r2_not_configured',
       message:
-        'Server cannot see Redis REST URL+TOKEN. Debug: /api/feed?debug=1',
+        'Cloudflare R2 not configured. Set R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET_NAME. Debug: /api/feed?debug=1',
       env: envPresence(),
     })
   }
 
   try {
     if (req.method === 'GET') {
-      const data = await redis.get<FeedBody>(FEED_KEY)
+      const data = await r2GetJson<FeedBody>(client, FEED_OBJECT_KEY)
       if (!data || !Array.isArray(data.posts)) {
         return res.status(404).json({
           error: 'empty',
@@ -90,7 +87,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       if (!secret) {
         return res.status(503).json({
           error: 'token_not_configured',
-          message: 'Set FEED_ADMIN_TOKEN in Vercel env (Production) + Redeploy.',
+          message: 'Set FEED_ADMIN_TOKEN in Vercel env + Redeploy.',
           env: envPresence(),
         })
       }
@@ -99,13 +96,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         return res.status(401).json({
           error: 'unauthorized',
           message:
-            'Token mismatch. Use FEED_ADMIN_TOKEN from Vercel env (not Redis token).',
+            'Token mismatch. Use FEED_ADMIN_TOKEN (not R2/Upstash keys).',
           hint: {
             receivedLen: got.length,
             expectedLen: secret.length,
-            hasBearer: !!(req.headers.authorization || '')
-              .toLowerCase()
-              .startsWith('bearer '),
           },
         })
       }
@@ -124,16 +118,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       const payload: FeedBody = {
         ...body,
         mode: 'admin',
-        source: body.source || 'admin server',
+        source: body.source || 'admin server r2',
         generatedAt: new Date().toISOString(),
         postCount: body.posts.length,
       }
 
-      await redis.set(FEED_KEY, payload)
+      await r2PutJson(client, FEED_OBJECT_KEY, payload)
       return res.status(200).json({
         ok: true,
         postCount: body.posts.length,
         generatedAt: payload.generatedAt,
+        storage: 'r2',
       })
     }
 
@@ -142,7 +137,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       if (!secret || bearer(req) !== secret) {
         return res.status(401).json({ error: 'unauthorized' })
       }
-      await redis.del(FEED_KEY)
+      await r2Delete(client, FEED_OBJECT_KEY)
       return res.status(200).json({ ok: true, cleared: true })
     }
 

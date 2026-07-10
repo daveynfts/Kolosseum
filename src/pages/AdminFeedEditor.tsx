@@ -347,7 +347,7 @@ export function AdminFeedEditor({ kols, onToast, addSignal = 0 }: Props) {
 
   const sourceLabel =
     feedSource === 'server'
-      ? 'Server (KV)'
+      ? 'Server (R2)'
       : feedSource === 'local'
         ? 'Local browser'
         : feedSource === 'seed'
@@ -413,9 +413,9 @@ export function AdminFeedEditor({ kols, onToast, addSignal = 0 }: Props) {
           Nguồn load:{' '}
           <strong>{sourceLabel}</strong>
           {feed ? ` · ${feed.postCount} posts · ${feed.kolCount} voices` : ''}.
-          Ưu tiên: <em>Server KV</em> → local → seed. Sau khi cấu hình Vercel KV
-          + token, bấm <strong>Save to server</strong> để mọi user thấy cùng feed.
-          Xem <code>docs/FEED_SERVER.md</code>.
+          Ưu tiên: <em>Cloudflare R2</em> → local → seed. Cấu hình R2 env trên
+          Vercel + token, rồi <strong>Save to server</strong> / <strong>Fetch từ
+          X</strong> (ảnh cache R2). Xem <code>docs/FEED_SERVER.md</code>.
         </span>
       </div>
 

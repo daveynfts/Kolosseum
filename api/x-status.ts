@@ -1,13 +1,11 @@
 /**
- * Fetch an X/Twitter status by URL (snapshot at fetch time) via fxtwitter,
- * cache photo media into Redis, return Admin-ready post fields.
+ * Fetch X status by URL (snapshot) via fxtwitter; cache photos on Cloudflare R2.
  *
  * GET /api/x-status?url=https://x.com/user/status/123
- * Auth optional but recommended: Authorization: Bearer FEED_ADMIN_TOKEN
- *   (if FEED_ADMIN_TOKEN is set, require it — reduces abuse)
+ * If FEED_ADMIN_TOKEN is set, require Authorization: Bearer <token>
  */
 import type { VercelRequest, VercelResponse } from '@vercel/node'
-import { env, redisClient } from '../lib/server/redis'
+import { env, r2Client } from '../lib/server/r2'
 import { cacheRemoteImage } from '../lib/server/mediaCache'
 
 type TweetOut = {
@@ -47,7 +45,6 @@ function bearer(req: VercelRequest): string {
   return ''
 }
 
-/** Parse status id + handle from common X URLs. */
 function parseXStatusUrl(raw: string): { id: string; handle?: string } | null {
   try {
     const u = new URL(raw.trim())
@@ -57,11 +54,9 @@ function parseXStatusUrl(raw: string): { id: string; handle?: string } | null {
         host,
       )
     ) {
-      // bare status id
       if (/^\d{5,25}$/.test(raw.trim())) return { id: raw.trim() }
       return null
     }
-    // /user/status/123 or /i/web/status/123
     const m = u.pathname.match(
       /\/(?:i\/web\/)?(?:([^/]+)\/)?status(?:es)?\/(\d{5,25})/i,
     )
@@ -83,7 +78,7 @@ function extractMediaUrls(tweet: Record<string, unknown>): string[] {
   const urls: string[] = []
   const media = tweet.media as
     | {
-        all?: Array<{ url?: string; type?: string }>
+        all?: Array<{ url?: string; type?: string; thumbnail_url?: string }>
         photos?: Array<{ url?: string }>
       }
     | undefined
@@ -95,12 +90,9 @@ function extractMediaUrls(tweet: Record<string, unknown>): string[] {
   if (media?.all) {
     for (const m of media.all) {
       if (m?.url && (m.type === 'photo' || !m.type)) urls.push(m.url)
-      // video poster sometimes in thumbnail_url
-      const t = (m as { thumbnail_url?: string }).thumbnail_url
-      if (t) urls.push(t)
+      if (m?.thumbnail_url) urls.push(m.thumbnail_url)
     }
   }
-  // fallback entities
   const entities = tweet.entities as
     | { media?: Array<{ media_url_https?: string }> }
     | undefined
@@ -114,15 +106,9 @@ function extractMediaUrls(tweet: Record<string, unknown>): string[] {
 
 function toIso(created: unknown): string {
   if (!created) return new Date().toISOString()
-  if (typeof created === 'string') {
+  if (typeof created === 'string' || typeof created === 'number') {
     const d = new Date(created)
     if (!Number.isNaN(d.getTime())) return d.toISOString()
-    // twitter format: "Thu Jul 10 02:04:23 +0000 2026"
-    const d2 = new Date(created)
-    if (!Number.isNaN(d2.getTime())) return d2.toISOString()
-  }
-  if (typeof created === 'number') {
-    return new Date(created).toISOString()
   }
   return new Date().toISOString()
 }
@@ -134,15 +120,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(405).json({ error: 'method_not_allowed' })
   }
 
-  // If token configured, require it (stops open proxy abuse)
   const secret = env('FEED_ADMIN_TOKEN')
-  if (secret) {
-    if (bearer(req) !== secret) {
-      return res.status(401).json({
-        error: 'unauthorized',
-        message: 'Authorization: Bearer FEED_ADMIN_TOKEN required',
-      })
-    }
+  if (secret && bearer(req) !== secret) {
+    return res.status(401).json({
+      error: 'unauthorized',
+      message: 'Authorization: Bearer FEED_ADMIN_TOKEN required',
+    })
   }
 
   const rawUrl = String(req.query.url || req.query.u || '').trim()
@@ -187,7 +170,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         continue
       }
       const data = (await r.json()) as Record<string, unknown>
-      // fxtwitter: { tweet: {...} } | vxtwitter flat
       const t = (data.tweet || data) as Record<string, unknown>
       if (t && (t.text || t.full_text || t.id || t.tweetID)) {
         tweet = t
@@ -216,9 +198,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       tweet.user_screen_name ||
       'unknown',
   ).replace(/^@/, '')
-  const displayName = String(
-    author.name || author.display_name || handle,
-  )
+  const displayName = String(author.name || author.display_name || handle)
   const text = String(tweet.text || tweet.full_text || tweet.content || '')
   const id = String(tweet.id || tweet.tweetID || parsed.id)
   const likes = num(tweet.likes ?? tweet.favorite_count ?? tweet.favourites)
@@ -228,7 +208,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const createdAt = toIso(
     tweet.created_at || tweet.createdAt || tweet.date || tweet.timestamp,
   )
-  const isReply = !!(tweet.replying_to || tweet.in_reply_to_status_id || tweet.is_reply)
+  const isReply = !!(
+    tweet.replying_to ||
+    tweet.in_reply_to_status_id ||
+    tweet.is_reply
+  )
   const url = `https://x.com/${handle}/status/${id}`
   const avatarRemote = String(
     author.avatar_url ||
@@ -239,24 +223,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   const mediaOriginal = extractMediaUrls(tweet)
   const mediaCached: string[] = []
-  const redis = redisClient()
+  const client = r2Client()
 
-  if (redis && mediaOriginal.length) {
+  if (client && mediaOriginal.length) {
     for (const m of mediaOriginal.slice(0, 4)) {
-      const result = await cacheRemoteImage(redis, m)
+      const result = await cacheRemoteImage(client, m)
       mediaCached.push(result.cachedUrl)
     }
   }
 
-  // Prefer cached paths; fall back to original if nothing cached
   const media =
-    mediaCached.length > 0
-      ? mediaCached
-      : mediaOriginal.slice(0, 4)
+    mediaCached.length > 0 ? mediaCached : mediaOriginal.slice(0, 4)
 
-  // Optional: cache author avatar too (not required for feed card)
-  if (redis && avatarRemote) {
-    await cacheRemoteImage(redis, avatarRemote)
+  if (client && avatarRemote) {
+    await cacheRemoteImage(client, avatarRemote)
   }
 
   const out: TweetOut = {
@@ -271,7 +251,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     views,
     media,
     mediaOriginal,
-    mediaCached: mediaCached.filter((u) => u.includes('/api/media')),
+    mediaCached: mediaCached.filter(
+      (u) => u.includes('/api/media') || u.includes('/media/'),
+    ),
     isReply,
     url,
     avatarLocal: `/avatars/${handle}.jpg`,
@@ -284,7 +266,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     ok: true,
     post: out,
     cache: {
-      redis: !!redis,
+      storage: 'cloudflare-r2',
+      r2: !!client,
       imagesCached: out.mediaCached.length,
       imagesTotal: mediaOriginal.length,
     },

@@ -10,9 +10,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1084.0",
     "@react-three/drei": "^10.7.7",
     "@react-three/fiber": "^9.6.1",
-    "@upstash/redis": "^1.38.0",
     "@vercel/node": "^5.8.23",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",

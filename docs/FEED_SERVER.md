@@ -31,13 +31,30 @@ R2_BUCKET_NAME=vn-kol-map
 FEED_ADMIN_TOKEN=your-admin-password
 ```
 
-Optional public media CDN:
+Optional public media CDN (same as **daveynfts.com**):
 
 ```
 R2_PUBLIC_BASE_URL=https://pub-xxxx.r2.dev
+# or alias used by daveynfts-review:
+R2_PUBLIC_URL=https://...
 ```
 
 (Enable public access on bucket or use custom domain.)
+
+### Reuse env from daveynfts.com
+
+If KOL Radar shares the same R2 bucket/token as the main site, **copy the same variables** from that Vercel project into VietNamKOLsRadar:
+
+| Variable | Same as daveynfts? |
+|----------|-------------------|
+| `R2_ACCOUNT_ID` | Yes |
+| `R2_ACCESS_KEY_ID` | Yes |
+| `R2_SECRET_ACCESS_KEY` | Yes |
+| `R2_BUCKET_NAME` | Yes (shared bucket OK) |
+| `R2_PUBLIC_URL` | Yes (alias supported) |
+| `FEED_ADMIN_TOKEN` | **New** — only for KOL feed write |
+
+Objects are namespaced: `feed/v1.json`, `media/{id}` — will not overwrite random daveynfts upload paths if those use different key prefixes.
 
 ### 3. Redeploy
 

@@ -1,10 +1,19 @@
 import type { FeedPost, Tier1Feed } from '../types/feed'
+import { withBase } from './base'
 
 const STORAGE_KEY = 'vn-kol-map-feed-v1'
 const TOKEN_KEY = 'vn-kol-feed-admin-token'
-const SEED_URL = '/feed/tier1-feed.json'
-const API_URL = '/api/feed'
 export const FEED_EVENT = 'vn-kol-feed-updated'
+
+function seedUrl() {
+  return withBase('/feed/tier1-feed.json')
+}
+function feedApiUrl() {
+  return withBase('/api/feed')
+}
+function xStatusApiUrl(xUrl: string) {
+  return `${withBase('/api/x-status')}?url=${encodeURIComponent(xUrl.trim())}`
+}
 
 export type FeedSource = 'server' | 'local' | 'seed'
 
@@ -43,7 +52,7 @@ export function loadFeedFromStorage(): Tier1Feed | null {
 }
 
 export async function fetchSeedFeed(): Promise<Tier1Feed> {
-  const res = await fetch(`${SEED_URL}?t=${Date.now()}`)
+  const res = await fetch(`${seedUrl()}?t=${Date.now()}`)
   if (!res.ok) throw new Error(`HTTP ${res.status}`)
   return normalizeFeed((await res.json()) as Tier1Feed)
 }
@@ -51,7 +60,7 @@ export async function fetchSeedFeed(): Promise<Tier1Feed> {
 /** GET /api/feed — returns null on 404/503/network. */
 export async function fetchServerFeed(): Promise<Tier1Feed | null> {
   try {
-    const res = await fetch(`${API_URL}?t=${Date.now()}`, {
+    const res = await fetch(`${feedApiUrl()}?t=${Date.now()}`, {
       method: 'GET',
       headers: { Accept: 'application/json' },
     })
@@ -143,7 +152,7 @@ export async function saveFeedToServer(
   }
 
   try {
-    const res = await fetch(API_URL, {
+    const res = await fetch(feedApiUrl(), {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -195,7 +204,7 @@ export async function clearFeedServer(): Promise<ServerSaveResult> {
     return { ok: false, error: 'Chưa có admin token' }
   }
   try {
-    const res = await fetch(API_URL, {
+    const res = await fetch(feedApiUrl(), {
       method: 'DELETE',
       headers: { Authorization: `Bearer ${token}` },
     })
@@ -330,9 +339,8 @@ export async function fetchXStatusFromUrl(
   tokenOverride?: string,
 ): Promise<XStatusFetchResult> {
   const token = (tokenOverride ?? getAdminToken()).trim()
-  const q = encodeURIComponent(xUrl.trim())
   try {
-    const res = await fetch(`/api/x-status?url=${q}`, {
+    const res = await fetch(xStatusApiUrl(xUrl), {
       headers: {
         Accept: 'application/json',
         ...(token ? { Authorization: `Bearer ${token}` } : {}),

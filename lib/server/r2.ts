@@ -19,7 +19,7 @@ export function envPresence() {
     R2_ACCESS_KEY_ID: !!env('R2_ACCESS_KEY_ID'),
     R2_SECRET_ACCESS_KEY: !!env('R2_SECRET_ACCESS_KEY'),
     R2_BUCKET_NAME: !!env('R2_BUCKET_NAME'),
-    R2_PUBLIC_BASE_URL: !!env('R2_PUBLIC_BASE_URL'),
+    R2_PUBLIC_BASE_URL: !!(env('R2_PUBLIC_BASE_URL') || env('R2_PUBLIC_URL')),
     FEED_ADMIN_TOKEN: !!env('FEED_ADMIN_TOKEN'),
     VERCEL_ENV: process.env.VERCEL_ENV || null,
   }
@@ -51,9 +51,12 @@ export function r2Bucket(): string {
   return env('R2_BUCKET_NAME')
 }
 
-/** Optional public CDN/base URL, e.g. https://media.example.com or https://pub-xxx.r2.dev */
+/**
+ * Optional public CDN/base URL for media.
+ * Supports daveynfts.com naming: R2_PUBLIC_URL (alias of R2_PUBLIC_BASE_URL).
+ */
 export function r2PublicBase(): string {
-  return env('R2_PUBLIC_BASE_URL').replace(/\/$/, '')
+  return (env('R2_PUBLIC_BASE_URL') || env('R2_PUBLIC_URL')).replace(/\/$/, '')
 }
 
 export const FEED_OBJECT_KEY = 'feed/v1.json'

@@ -1,8 +1,10 @@
 /** X profile images — served from local cache in /public/avatars */
 
+import { withBase } from './base'
+
 export function xAvatarUrl(handle: string): string {
   const clean = handle.replace(/^@/, '').trim()
-  return `/avatars/${encodeURIComponent(clean)}.jpg`
+  return withBase(`/avatars/${encodeURIComponent(clean)}.jpg`)
 }
 
 export function xAvatarTextureUrl(handle: string): string {

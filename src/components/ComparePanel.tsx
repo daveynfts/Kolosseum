@@ -1,5 +1,11 @@
 import type { Kol } from '../types'
-import { NICHE_COLORS, STATUS_COLORS, STATUS_LABELS } from '../types'
+import {
+  getKolNiches,
+  NICHE_COLORS,
+  primaryNiche,
+  STATUS_COLORS,
+  STATUS_LABELS,
+} from '../types'
 import type { StatusLabel } from '../types'
 import { AvatarImg } from './AvatarImg'
 
@@ -110,7 +116,7 @@ export function ComparePanel({
                         handle={k.handle}
                         name={k.displayName}
                         size={40}
-                        color={NICHE_COLORS[k.niche]}
+                        color={NICHE_COLORS[primaryNiche(k)]}
                       />
                       <div>
                         <strong>{k.displayName}</strong>
@@ -140,11 +146,11 @@ export function ComparePanel({
                     <span
                       className="tag"
                       style={{
-                        color: NICHE_COLORS[k.niche],
-                        borderColor: `${NICHE_COLORS[k.niche]}55`,
+                        color: NICHE_COLORS[primaryNiche(k)],
+                        borderColor: `${NICHE_COLORS[primaryNiche(k)]}55`,
                       }}
                     >
-                      {k.niche}
+                      {getKolNiches(k).join(' · ')}
                     </span>
                     {k.isTop30 && <span className="tag tag--muted">Top30</span>}
                   </div>
@@ -214,7 +220,8 @@ function exportRow(k: Kol) {
     handle: k.handle,
     name: k.displayName,
     tier: k.tier ?? '',
-    niche: k.niche,
+    niche: primaryNiche(k),
+    niches: getKolNiches(k).join('|'),
     status: k.statusLabel ?? '',
     followers: k.followers,
     score: k.score,

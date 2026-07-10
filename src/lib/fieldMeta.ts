@@ -40,9 +40,16 @@ export const FIELD_META: FieldMeta[] = [
   },
   {
     key: 'niche',
-    label: 'Niche',
+    label: 'Primary niche',
     source: 'human',
-    note: 'Map từ Type sheet; add KOL có thể AI đoán từ bio',
+    note: 'Hạng mục chính (màu bubble) = niches[0]',
+    group: 'identity',
+  },
+  {
+    key: 'niches',
+    label: 'Niches (multi)',
+    source: 'human',
+    note: 'Nhiều hạng mục content; filter map khớp bất kỳ niche nào',
     group: 'identity',
   },
   {

@@ -1,6 +1,12 @@
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react'
 import type { Kol, Niche, StatusLabel } from '../types'
-import { NICHE_COLORS, STATUS_COLORS, STATUS_LABELS } from '../types'
+import {
+  getKolNiches,
+  NICHE_COLORS,
+  primaryNiche,
+  STATUS_COLORS,
+  STATUS_LABELS,
+} from '../types'
 import {
   ADMIN_NICHES,
   ADMIN_STATUSES,
@@ -112,9 +118,12 @@ export function AdminDashboard() {
 
   const onSaveDraft = () => {
     if (!draft) return
+    const niches = getKolNiches(draft)
     const fixed = recalculateScores({
       ...draft,
       handle: draft.handle.replace(/^@/, '').trim(),
+      niches,
+      niche: niches[0] ?? 'Multi',
       dataSource: draft.dataSource === 'x-live' ? 'x-live+admin' : 'admin',
     })
     const next = kols.some((k) => k.id === fixed.id)
@@ -123,6 +132,19 @@ export function AdminDashboard() {
     persist(next, 'admin edit')
     setSelectedId(fixed.id)
     setDraft(fixed)
+  }
+
+  const toggleDraftNiche = (n: Niche) => {
+    if (!draft) return
+    const cur = getKolNiches(draft)
+    const next = cur.includes(n) ? cur.filter((x) => x !== n) : [...cur, n]
+    const niches = next.length ? next : (['Multi'] as Niche[])
+    setDraft({
+      ...draft,
+      niches,
+      niche: niches[0],
+    })
+    setDirty(true)
   }
 
   const onAdd = () => {
@@ -398,12 +420,17 @@ export function AdminDashboard() {
                         handle={k.handle}
                         name={k.displayName}
                         size={32}
-                        color={NICHE_COLORS[k.niche]}
+                        color={NICHE_COLORS[primaryNiche(k)]}
                       />
                     </td>
                     <td>
                       <strong>{k.displayName}</strong>
-                      <div className="muted">@{k.handle}</div>
+                      <div className="muted">
+                        @{k.handle}
+                        {getKolNiches(k).length > 1
+                          ? ` · ${getKolNiches(k).join(', ')}`
+                          : ` · ${primaryNiche(k)}`}
+                      </div>
                     </td>
                     <td>T{k.tier}</td>
                     <td>
@@ -531,19 +558,40 @@ export function AdminDashboard() {
                         <option value={3}>3</option>
                       </select>
                     </Field>
-                    <Field label="Niche" source="human">
-                      <select
-                        value={draft.niche}
-                        onChange={(e) =>
-                          patchDraft('niche', e.target.value as Niche)
-                        }
-                      >
-                        {ADMIN_NICHES.map((n) => (
-                          <option key={n} value={n}>
-                            {n}
-                          </option>
-                        ))}
-                      </select>
+                    <Field
+                      label="Niches (multi — chọn nhiều hạng mục content)"
+                      source="human"
+                    >
+                      <div className="admin-niche-multi">
+                        {ADMIN_NICHES.map((n) => {
+                          const on = getKolNiches(draft).includes(n)
+                          return (
+                            <label
+                              key={n}
+                              className={`admin-niche-chip ${on ? 'is-on' : ''}`}
+                              style={
+                                on
+                                  ? {
+                                      borderColor: `${NICHE_COLORS[n]}88`,
+                                      color: NICHE_COLORS[n],
+                                    }
+                                  : undefined
+                              }
+                            >
+                              <input
+                                type="checkbox"
+                                checked={on}
+                                onChange={() => toggleDraftNiche(n)}
+                              />
+                              {n}
+                            </label>
+                          )
+                        })}
+                      </div>
+                      <span className="admin-hint" style={{ margin: '6px 0 0' }}>
+                        Primary (màu bubble) = hạng mục đầu:{' '}
+                        <strong>{primaryNiche(draft)}</strong>
+                      </span>
                     </Field>
                     <Field label="Type raw" source="human">
                       <input

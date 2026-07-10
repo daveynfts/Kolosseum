@@ -3,7 +3,7 @@ import { useFrame, useLoader, useThree } from '@react-three/fiber'
 import { Billboard, Float, Html, Sparkles } from '@react-three/drei'
 import * as THREE from 'three'
 import type { Kol } from '../types'
-import { NICHE_COLORS } from '../types'
+import { NICHE_COLORS, primaryNiche } from '../types'
 import { radiusForScore } from '../lib/layout'
 import { xAvatarTextureUrl } from '../lib/avatar'
 import { AvatarImg } from './AvatarImg'
@@ -71,7 +71,7 @@ function AvatarNode({
     map.anisotropy = Math.min(16, gl.capabilities.getMaxAnisotropy())
   }
 
-  const color = NICHE_COLORS[kol.niche]
+  const color = NICHE_COLORS[primaryNiche(kol)]
   const baseR = radiusForScore(kol.score) * (lite ? 1.08 : 1)
   const isHot = kol.statusLabel === 'hot' || kol.hotScore >= 78
   const isFocus = selected || hovered

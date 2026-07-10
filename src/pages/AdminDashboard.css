@@ -612,6 +612,35 @@
   color: var(--text-tertiary);
 }
 
+.admin-niche-multi {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.admin-niche-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(0, 0, 0, 0.25);
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  cursor: pointer;
+  user-select: none;
+}
+
+.admin-niche-chip input {
+  accent-color: #7dd3fc;
+}
+
+.admin-niche-chip.is-on {
+  background: rgba(255, 255, 255, 0.06);
+}
+
 .admin-toast {
   position: fixed;
   bottom: 20px;

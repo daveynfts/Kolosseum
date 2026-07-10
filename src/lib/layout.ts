@@ -1,4 +1,5 @@
 import type { Kol, Niche } from '../types'
+import { primaryNiche } from '../types'
 
 /** Fibonacci sphere + niche cluster bias for a readable 3D cloud */
 export function positionForKol(
@@ -6,7 +7,7 @@ export function positionForKol(
   index: number,
   total: number,
 ): [number, number, number] {
-  const nicheIndex = Math.max(0, nicheOrder.indexOf(kol.niche))
+  const nicheIndex = Math.max(0, nicheOrder.indexOf(primaryNiche(kol)))
   const clusterAngle = (nicheIndex / nicheOrder.length) * Math.PI * 2
 
   const phi = Math.acos(1 - (2 * (index + 0.5)) / total)

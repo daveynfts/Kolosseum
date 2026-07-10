@@ -7,6 +7,7 @@ import { ComparePanel } from './components/ComparePanel'
 import { loadKols, visibleKols as onlyVisible } from './lib/kolStore'
 import type { ViewMode } from './lib/layout'
 import type { Kol, Niche, StatusLabel } from './types'
+import { kolMatchesNiche } from './types'
 import './App.css'
 
 const SHORTLIST_MAX = 5
@@ -61,7 +62,7 @@ function App() {
   const visibleKols = useMemo(() => {
     return publicKols.filter((k) => {
       if (filterTier !== 'All' && k.tier !== filterTier) return false
-      if (filterNiche !== 'All' && k.niche !== filterNiche) return false
+      if (!kolMatchesNiche(k, filterNiche)) return false
       if (filterStatus !== 'All' && k.statusLabel !== filterStatus) return false
       return true
     })
@@ -123,9 +124,15 @@ function App() {
         viewMode={viewMode}
         feedOpen={feedOpen}
         compareOpen={compareOpen}
-        onFilter={setFilterNiche}
-        onFilterTier={setFilterTier}
-        onFilterStatus={setFilterStatus}
+        onFilter={(n) =>
+          setFilterNiche((prev) => (n !== 'All' && prev === n ? 'All' : n))
+        }
+        onFilterTier={(t) =>
+          setFilterTier((prev) => (t !== 'All' && prev === t ? 'All' : t))
+        }
+        onFilterStatus={(s) =>
+          setFilterStatus((prev) => (s !== 'All' && prev === s ? 'All' : s))
+        }
         onSelect={(k) => setSelectedId(k?.id ?? null)}
         onToggleRotate={() => setAutoRotate((v) => !v)}
         onViewMode={onViewMode}

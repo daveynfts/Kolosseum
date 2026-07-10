@@ -3,6 +3,7 @@ import { Canvas, useThree } from '@react-three/fiber'
 import { OrbitControls, Stars } from '@react-three/drei'
 import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib'
 import type { Kol, Niche } from '../types'
+import { kolMatchesNiche } from '../types'
 import type { ViewMode } from '../lib/layout'
 import { KolBubble } from './KolBubble'
 import { positionForKol, positionForKol25d } from '../lib/layout'
@@ -43,7 +44,7 @@ function Bubbles({
   return (
     <>
       {kols.map((kol) => {
-        const dimmed = filterNiche !== 'All' && kol.niche !== filterNiche
+        const dimmed = !kolMatchesNiche(kol, filterNiche)
         const pos = positions.get(kol.id)
         if (!pos) return null
         return (

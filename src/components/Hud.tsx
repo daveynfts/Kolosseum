@@ -1,6 +1,12 @@
 import { useMemo, type CSSProperties } from 'react'
 import type { Kol, Niche, StatusLabel } from '../types'
-import { NICHE_COLORS, STATUS_COLORS, STATUS_LABELS } from '../types'
+import {
+  getKolNiches,
+  NICHE_COLORS,
+  primaryNiche,
+  STATUS_COLORS,
+  STATUS_LABELS,
+} from '../types'
 import type { ViewMode } from '../lib/layout'
 import { AvatarImg } from './AvatarImg'
 
@@ -131,6 +137,13 @@ export function Hud({
                 type="button"
                 className={`seg-btn ${filterTier === t ? 'is-active' : ''}`}
                 onClick={() => onFilterTier(t)}
+                title={
+                  t === 'All'
+                    ? 'Show all tiers'
+                    : filterTier === t
+                      ? 'Click again to clear'
+                      : `Filter Tier ${t}`
+                }
               >
                 {t === 'All' ? 'All' : `T${t}`}
               </button>
@@ -151,6 +164,13 @@ export function Hud({
                     : undefined
                 }
                 onClick={() => onFilterStatus(s)}
+                title={
+                  s === 'All'
+                    ? 'Show all status'
+                    : filterStatus === s
+                      ? 'Click again to clear'
+                      : `Filter ${STATUS_LABELS[s]}`
+                }
               >
                 {s !== 'All' && <i className="chip-dot" />}
                 {s === 'All' ? 'All' : STATUS_LABELS[s]}
@@ -172,6 +192,13 @@ export function Hud({
                     : undefined
                 }
                 onClick={() => onFilter(n)}
+                title={
+                  n === 'All'
+                    ? 'Show all niches'
+                    : filterNiche === n
+                      ? 'Click again to clear'
+                      : `Filter ${n}`
+                }
               >
                 {n !== 'All' && <i className="chip-dot" />}
                 {n === 'All' ? 'All' : n}
@@ -235,7 +262,7 @@ export function Hud({
                           handle={k.handle}
                           name={k.displayName}
                           size={34}
-                          color={NICHE_COLORS[k.niche]}
+                          color={NICHE_COLORS[primaryNiche(k)]}
                           className="rank-avatar"
                         />
                         <span className="rank-main">
@@ -245,6 +272,9 @@ export function Hud({
                           <small>
                             @{k.handle} · T{k.tier}
                             {k.isTop30 ? ' · 7d' : ''}
+                            {getKolNiches(k).length > 1
+                              ? ` · ${getKolNiches(k).join('+')}`
+                              : ''}
                           </small>
                           <span className="rank-meta-row">
                             <span
@@ -270,7 +300,7 @@ export function Hud({
                             <i
                               style={{
                                 width: `${Math.min(100, k.score)}%`,
-                                background: `linear-gradient(90deg, ${NICHE_COLORS[k.niche]}, rgba(255,255,255,0.55))`,
+                                background: `linear-gradient(90deg, ${NICHE_COLORS[primaryNiche(k)]}, rgba(255,255,255,0.55))`,
                               }}
                             />
                           </span>
@@ -278,7 +308,7 @@ export function Hud({
                         <span className="rank-score-wrap">
                           <span
                             className="rank-score"
-                            style={{ color: NICHE_COLORS[k.niche] }}
+                            style={{ color: NICHE_COLORS[primaryNiche(k)] }}
                           >
                             {k.score.toFixed(0)}
                           </span>
@@ -344,14 +374,14 @@ export function Hud({
           </button>
           <div
             className="detail-accent"
-            style={{ background: NICHE_COLORS[selected.niche] }}
+            style={{ background: NICHE_COLORS[primaryNiche(selected)] }}
           />
           <div className="detail-head">
             <AvatarImg
               handle={selected.handle}
               name={selected.displayName}
               size={52}
-              color={NICHE_COLORS[selected.niche]}
+              color={NICHE_COLORS[primaryNiche(selected)]}
               className="detail-avatar"
             />
             <div>
@@ -402,15 +432,18 @@ export function Hud({
                 Verified
               </span>
             )}
-            <span
-              className="tag"
-              style={{
-                color: NICHE_COLORS[selected.niche],
-                borderColor: `${NICHE_COLORS[selected.niche]}55`,
-              }}
-            >
-              {selected.niche}
-            </span>
+            {getKolNiches(selected).map((n) => (
+              <span
+                key={n}
+                className="tag"
+                style={{
+                  color: NICHE_COLORS[n],
+                  borderColor: `${NICHE_COLORS[n]}55`,
+                }}
+              >
+                {n}
+              </span>
+            ))}
             <span
               className={`tag ${selected.deltaPct >= 0 ? 'tag--up' : 'tag--down'}`}
             >

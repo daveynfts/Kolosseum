@@ -96,6 +96,7 @@ export function createEmptyKol(): Kol {
     handle,
     displayName: 'New KOL',
     niche: 'Multi',
+    niches: ['Multi'],
     tier: 2 as 1 | 2 | 3,
     typeRaw: 'ALL',
     smartFollowers: 50,

@@ -273,6 +273,49 @@ export function AdminFeedEditor({ kols, onToast, addSignal = 0 }: Props) {
     setDirty(true)
   }
 
+  /** When handle changes, keep URL / avatar / displayName in sync. */
+  const onHandleChange = (raw: string) => {
+    if (!draft) return
+    const handle = raw.replace(/^@/, '').trim()
+    const prev = draft.handle
+    const kol = kols.find((k) => k.handle.toLowerCase() === handle.toLowerCase())
+
+    // Display name: map KOL name if known; else if still defaulted to old handle, follow new handle
+    let displayName = draft.displayName
+    if (kol) {
+      displayName = kol.displayName
+    } else if (
+      !displayName ||
+      displayName === prev ||
+      displayName === `@${prev}` ||
+      displayName.toLowerCase() === prev.toLowerCase()
+    ) {
+      displayName = handle || draft.displayName
+    }
+
+    // URL: always refresh profile link; rewrite status URLs that used old handle
+    let url = `https://x.com/${handle}`
+    const oldUrl = draft.url || ''
+    if (oldUrl.includes('/status/') && prev) {
+      url = oldUrl.replace(
+        new RegExp(`x\\.com/${prev.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`, 'i'),
+        `x.com/${handle}`,
+      )
+      if (!url.includes(handle)) url = `https://x.com/${handle}`
+    }
+
+    const avatarLocal = `/avatars/${handle}.jpg`
+
+    setDraft({
+      ...draft,
+      handle,
+      displayName,
+      url,
+      avatarLocal,
+    })
+    setDirty(true)
+  }
+
   const mediaText = draft?.media?.join('\n') ?? ''
 
   return (
@@ -446,11 +489,13 @@ export function AdminFeedEditor({ kols, onToast, addSignal = 0 }: Props) {
                   <h3>Post content</h3>
                   <div className="admin-fields">
                     <label className="admin-field">
-                      <span className="admin-field-label">Handle</span>
+                      <span className="admin-field-label">
+                        Handle (đổi handle → auto URL / avatar / name)
+                      </span>
                       <input
                         list="tier1-handles"
                         value={draft.handle}
-                        onChange={(e) => patchDraft('handle', e.target.value)}
+                        onChange={(e) => onHandleChange(e.target.value)}
                       />
                       <datalist id="tier1-handles">
                         {tier1Handles.map((h) => (

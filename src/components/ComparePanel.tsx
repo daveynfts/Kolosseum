@@ -3,7 +3,7 @@ import {
   getKolNiches,
   NICHE_COLORS,
   primaryNiche,
-  STATUS_COLORS,
+  formatStatus,
   STATUS_LABELS,
 } from '../types'
 import type { StatusLabel } from '../types'
@@ -134,14 +134,8 @@ export function ComparePanel({
                   </div>
                   <div className="compare-tags">
                     <span className="tag tag--tier">T{k.tier}</span>
-                    <span
-                      className="tag"
-                      style={{
-                        color: STATUS_COLORS[st],
-                        borderColor: `${STATUS_COLORS[st]}66`,
-                      }}
-                    >
-                      {STATUS_LABELS[st]}
+                    <span className="tag tag--status-emoji" title={STATUS_LABELS[st]}>
+                      {formatStatus(st)}
                     </span>
                     <span
                       className="tag"

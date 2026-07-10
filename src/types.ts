@@ -74,6 +74,7 @@ export const NICHE_COLORS: Record<Niche, string> = {
   Multi: '#94a3b8',
 }
 
+/** @deprecated Prefer STATUS_EMOJI for UI; kept for rare legacy styling */
 export const STATUS_COLORS: Record<StatusLabel, string> = {
   hot: '#f472b6',
   active: '#34d399',
@@ -88,6 +89,25 @@ export const STATUS_LABELS: Record<StatusLabel, string> = {
   stable: 'Stable',
   quiet: 'Quiet',
   dormant: 'Dormant',
+}
+
+/** Status identity via emoji (replaces colored dots/text). */
+export const STATUS_EMOJI: Record<StatusLabel, string> = {
+  hot: '🔥',
+  active: '⚡',
+  stable: '🟢',
+  quiet: '🌙',
+  dormant: '💤',
+}
+
+/** e.g. "🔥 Hot" */
+export function formatStatus(status: StatusLabel | string | undefined | null): string {
+  if (!status) return '—'
+  const key = String(status).toLowerCase() as StatusLabel
+  const emoji = STATUS_EMOJI[key]
+  const label = STATUS_LABELS[key]
+  if (emoji && label) return `${emoji} ${label}`
+  return String(status)
 }
 
 const NICHE_SET = new Set<string>([

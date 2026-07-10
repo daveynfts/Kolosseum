@@ -363,6 +363,35 @@ button.view-toggle-btn.is-active {
   border-color: color-mix(in srgb, var(--chip-color, #a5b4fc) 70%, transparent);
 }
 
+.chip--emoji {
+  gap: 5px;
+}
+
+.chip--emoji .chip-emoji {
+  font-size: 0.95em;
+  line-height: 1;
+  filter: saturate(1.05);
+}
+
+.chip--status.chip--emoji.chip--active {
+  border-color: rgba(165, 180, 252, 0.55);
+  box-shadow:
+    0 0 16px rgba(129, 140, 248, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.14);
+}
+
+.rank-status--emoji,
+.tag--status-emoji,
+.status-emoji-label {
+  color: #e2e8f0 !important;
+  font-variant-emoji: emoji;
+  letter-spacing: 0.01em;
+}
+
+.tag--status-emoji {
+  border-color: rgba(148, 163, 184, 0.28) !important;
+}
+
 .pill--active {
   border-color: rgba(129, 140, 248, 0.55);
   color: #c7d2fe;

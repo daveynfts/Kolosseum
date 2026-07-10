@@ -1,10 +1,11 @@
 import { useMemo, type CSSProperties } from 'react'
 import type { Kol, Niche, StatusLabel } from '../types'
 import {
+  formatStatus,
   getKolNiches,
   NICHE_COLORS,
   primaryNiche,
-  STATUS_COLORS,
+  STATUS_EMOJI,
   STATUS_LABELS,
 } from '../types'
 import type { ViewMode } from '../lib/layout'
@@ -155,14 +156,7 @@ export function Hud({
               <button
                 key={s}
                 type="button"
-                className={`chip chip--status chip--sm ${filterStatus === s ? 'chip--active' : ''}`}
-                style={
-                  s !== 'All'
-                    ? ({
-                        ['--chip-color' as string]: STATUS_COLORS[s],
-                      } as CSSProperties)
-                    : undefined
-                }
+                className={`chip chip--status chip--emoji chip--sm ${filterStatus === s ? 'chip--active' : ''}`}
                 onClick={() => onFilterStatus(s)}
                 title={
                   s === 'All'
@@ -172,8 +166,16 @@ export function Hud({
                       : `Filter ${STATUS_LABELS[s]}`
                 }
               >
-                {s !== 'All' && <i className="chip-dot" />}
-                {s === 'All' ? 'All' : STATUS_LABELS[s]}
+                {s === 'All' ? (
+                  'All'
+                ) : (
+                  <>
+                    <span className="chip-emoji" aria-hidden>
+                      {STATUS_EMOJI[s]}
+                    </span>
+                    {STATUS_LABELS[s]}
+                  </>
+                )}
               </button>
             ))}
           </div>
@@ -278,15 +280,10 @@ export function Hud({
                           </small>
                           <span className="rank-meta-row">
                             <span
-                              className="rank-status"
-                              style={{
-                                color:
-                                  STATUS_COLORS[
-                                    (k.statusLabel ?? 'stable') as StatusLabel
-                                  ],
-                              }}
+                              className="rank-status rank-status--emoji"
+                              title={STATUS_LABELS[(k.statusLabel ?? 'stable') as StatusLabel]}
                             >
-                              {k.statusLabel ?? '—'}
+                              {formatStatus(k.statusLabel)}
                             </span>
                             <span>{fmt(k.followers)}</span>
                             {k.activity7dPosts != null && (
@@ -418,13 +415,10 @@ export function Hud({
             )}
             {selected.statusLabel && (
               <span
-                className="tag"
-                style={{
-                  color: STATUS_COLORS[selected.statusLabel],
-                  borderColor: `${STATUS_COLORS[selected.statusLabel]}66`,
-                }}
+                className="tag tag--status-emoji"
+                title={STATUS_LABELS[selected.statusLabel]}
               >
-                {STATUS_LABELS[selected.statusLabel]}
+                {formatStatus(selected.statusLabel)}
               </span>
             )}
             {selected.verified && (

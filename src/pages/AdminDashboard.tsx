@@ -4,7 +4,8 @@ import {
   getKolNiches,
   NICHE_COLORS,
   primaryNiche,
-  STATUS_COLORS,
+  formatStatus,
+  STATUS_EMOJI,
   STATUS_LABELS,
 } from '../types'
 import {
@@ -379,7 +380,7 @@ export function AdminDashboard() {
               <option value="All">All status</option>
               {ADMIN_STATUSES.map((s) => (
                 <option key={s} value={s}>
-                  {STATUS_LABELS[s]}
+                  {STATUS_EMOJI[s]} {STATUS_LABELS[s]}
                 </option>
               ))}
             </select>
@@ -434,13 +435,8 @@ export function AdminDashboard() {
                     </td>
                     <td>T{k.tier}</td>
                     <td>
-                      <span
-                        style={{
-                          color:
-                            STATUS_COLORS[(k.statusLabel ?? 'stable') as StatusLabel],
-                        }}
-                      >
-                        {k.statusLabel ?? '—'}
+                      <span className="status-emoji-label">
+                        {formatStatus(k.statusLabel)}
                       </span>
                     </td>
                     <td>{fmt(k.followers)}</td>
@@ -699,7 +695,7 @@ export function AdminDashboard() {
                       >
                         {ADMIN_STATUSES.map((s) => (
                           <option key={s} value={s}>
-                            {STATUS_LABELS[s]}
+                            {STATUS_EMOJI[s]} {STATUS_LABELS[s]}
                           </option>
                         ))}
                       </select>

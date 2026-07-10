@@ -1,70 +1,44 @@
-# Deploy under `daveynfts.com/vietnamkolradar`
+# Domain: `radar.daveynfts.com`
 
 ## Architecture
 
 ```
-https://daveynfts.com/vietnamkolradar/*
-        │  rewrite (main site Vercel project)
+https://radar.daveynfts.com/*
+        │  DNS CNAME → Vercel
         ▼
-https://vietnamkolsradar.vercel.app/*
-        │  Vite base = /vietnamkolradar/
-        ▼
-Static assets + /api/* (feed, media, x-status)
+https://vietnamkolsradar.vercel.app  (project: vietnamkolsradar)
 ```
 
-## 1. KOL app (`VietNamKOLsRadar` / vietnamkolsradar)
+No reverse-proxy through daveynfts.com — main site stays independent (no extra hop).
 
-- Vite `base: '/vietnamkolradar/'` (see `vite.config.ts`)
-- Production URL: `https://vietnamkolsradar.vercel.app`
-- Client paths use `withBase()` so `/api/feed` → `/vietnamkolradar/api/feed`
+## Setup checklist
 
-## 2. Main site (`daveynfts.com`)
+### 1. Vercel (project **vietnamkolsradar**)
 
-On the **Vercel project that serves daveynfts.com** (currently `personal-news-board`), add rewrites:
+1. **Settings → Domains** → Add `radar.daveynfts.com`
+2. Follow Vercel DNS instructions (usually CNAME `radar` → `cname.vercel-dns.com`)
 
-```json
-{
-  "source": "/vietnamkolradar",
-  "destination": "https://vietnamkolsradar.vercel.app"
-},
-{
-  "source": "/vietnamkolradar/",
-  "destination": "https://vietnamkolsradar.vercel.app/"
-},
-{
-  "source": "/vietnamkolradar/:path*",
-  "destination": "https://vietnamkolsradar.vercel.app/:path*"
-}
-```
+### 2. DNS (Cloudflare / domain registrar)
 
-Same pattern as existing `/papercut` and `/agentswindler` rewrites.
+If DNS is on Cloudflare for `daveynfts.com`:
 
-If the live site is another repo than `daveynfts-review`, copy these rewrites there too.
+| Type | Name | Target |
+|------|------|--------|
+| CNAME | `radar` | `cname.vercel-dns.com` |
 
-## 3. URLs
+Proxy (orange cloud) optional; Vercel SSL works either way (if proxied, SSL mode Full).
 
-| Page | URL |
-|------|-----|
-| Map | https://daveynfts.com/vietnamkolradar/ |
-| Admin | https://daveynfts.com/vietnamkolradar/#/admin |
-| Feed admin | https://daveynfts.com/vietnamkolradar/#/admin/feed |
-| API | https://daveynfts.com/vietnamkolradar/api/feed |
+### 3. App config
 
-Direct Vercel URL still works: `https://vietnamkolsradar.vercel.app/vietnamkolradar/`  
-(with base path; root `/` may 404 assets — prefer subpath or set `VITE_BASE_PATH=/` for standalone only).
+- Vite `base: '/'` (default)
+- APIs: `/api/feed`, `/api/media`, `/api/x-status`
+- Admin: `https://radar.daveynfts.com/#/admin`
+- Feed admin: `https://radar.daveynfts.com/#/admin/feed`
 
-## 4. Local dev
+### 4. Remove old subpath (if added)
 
-```bash
-# default base /vietnamkolradar/
-npm run dev
-# open http://localhost:5173/vietnamkolradar/
+On **daveynfts.com** Vercel project, remove rewrites for `/vietnamkolradar` so traffic goes only to the subdomain.
 
-# root base (optional)
-set VITE_BASE_PATH=/
-npm run dev
-```
+## R2 / env
 
-## 5. R2 / env
-
-R2 env vars stay on **vietnamkolsradar** Vercel project (can mirror daveynfts R2 credentials). API is hit via the rewrite path; still executed on the KOL deployment.
+Keep R2 + `FEED_ADMIN_TOKEN` on **vietnamkolsradar** project (can mirror keys from main site).

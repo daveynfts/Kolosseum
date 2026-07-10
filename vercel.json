@@ -1,23 +1,5 @@
 {
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
-  "framework": "vite",
-  "rewrites": [
-    {
-      "source": "/vietnamkolradar/api/(.*)",
-      "destination": "/api/$1"
-    },
-    {
-      "source": "/vietnamkolradar",
-      "destination": "/index.html"
-    },
-    {
-      "source": "/vietnamkolradar/",
-      "destination": "/index.html"
-    },
-    {
-      "source": "/vietnamkolradar/(.*)",
-      "destination": "/$1"
-    }
-  ]
+  "framework": "vite"
 }

@@ -1,5 +1,5 @@
 /**
- * Public base path for deploy under daveynfts.com/vietnamkolradar/
+ * Public base path (default `/` for radar.daveynfts.com).
  * Vite injects import.meta.env.BASE_URL (always ends with /).
  */
 export function appBase(): string {

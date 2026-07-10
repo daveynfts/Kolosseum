@@ -6,6 +6,8 @@ import { getAdminToken } from './feedStore'
 const STORAGE_KEY = 'vn-kol-map-admin-v3'
 const STORAGE_VERSION = 3
 export const KOLS_EVENT = 'vn-kol-kols-updated'
+/** Global default Surf mock PDF (R2 public URL) */
+const SURF_DEFAULT_PDF_KEY = 'vn-kol-surf-default-pdf-v1'
 
 export interface KolStorePayload {
   version: number
@@ -14,6 +16,8 @@ export interface KolStorePayload {
   note?: string
   source?: string
   count?: number
+  /** Default R2 PDF for Surf AI mock analysis (all KOLs unless override) */
+  surfDefaultPdfUrl?: string
 }
 
 export type KolSource = 'server' | 'local' | 'seed'
@@ -22,6 +26,7 @@ export interface LoadKolsResult {
   kols: Kol[]
   source: KolSource
   updatedAt: string | null
+  surfDefaultPdfUrl?: string
 }
 
 function kolsApiUrl() {
@@ -59,6 +64,55 @@ export function loadKols(): Kol[] {
   return loadKolsLocal()
 }
 
+export function getSurfDefaultPdfUrl(): string {
+  try {
+    const fromStore = readStoredPayload()?.surfDefaultPdfUrl
+    if (fromStore?.trim()) return fromStore.trim()
+    return (localStorage.getItem(SURF_DEFAULT_PDF_KEY) || '').trim()
+  } catch {
+    return ''
+  }
+}
+
+export function setSurfDefaultPdfUrl(url: string): void {
+  const clean = url.trim()
+  try {
+    if (clean) localStorage.setItem(SURF_DEFAULT_PDF_KEY, clean)
+    else localStorage.removeItem(SURF_DEFAULT_PDF_KEY)
+  } catch {
+    /* ignore */
+  }
+  // Mirror into store payload if present
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY)
+    if (!raw) return
+    const data = JSON.parse(raw) as KolStorePayload
+    data.surfDefaultPdfUrl = clean || undefined
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
+  } catch {
+    /* ignore */
+  }
+}
+
+/** Per-KOL URL wins; else global admin default. */
+export function resolveSurfReportPdfUrl(kol: {
+  surfReportPdfUrl?: string
+}): string {
+  const per = (kol.surfReportPdfUrl || '').trim()
+  if (per) return per
+  return getSurfDefaultPdfUrl()
+}
+
+function readStoredPayload(): KolStorePayload | null {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY)
+    if (!raw) return null
+    return JSON.parse(raw) as KolStorePayload
+  } catch {
+    return null
+  }
+}
+
 export function saveKolsLocal(kols: Kol[], note?: string): void {
   const payload: KolStorePayload = {
     version: STORAGE_VERSION,
@@ -67,6 +121,7 @@ export function saveKolsLocal(kols: Kol[], note?: string): void {
     note,
     source: note ? `admin local · ${note}` : 'admin local',
     count: kols.length,
+    surfDefaultPdfUrl: getSurfDefaultPdfUrl() || undefined,
   }
   localStorage.setItem(STORAGE_KEY, JSON.stringify(payload))
   emitKolsEvent(kols)
@@ -122,6 +177,9 @@ export async function loadKolsWithSource(): Promise<LoadKolsResult> {
   const server = await fetchServerKols()
   if (server) {
     try {
+      if (server.surfDefaultPdfUrl) {
+        setSurfDefaultPdfUrl(server.surfDefaultPdfUrl)
+      }
       localStorage.setItem(
         STORAGE_KEY,
         JSON.stringify({
@@ -129,6 +187,8 @@ export async function loadKolsWithSource(): Promise<LoadKolsResult> {
           version: server.version ?? STORAGE_VERSION,
           updatedAt: server.updatedAt || new Date().toISOString(),
           count: server.kols.length,
+          surfDefaultPdfUrl:
+            server.surfDefaultPdfUrl || getSurfDefaultPdfUrl() || undefined,
         }),
       )
     } catch {
@@ -138,6 +198,8 @@ export async function loadKolsWithSource(): Promise<LoadKolsResult> {
       kols: server.kols,
       source: 'server',
       updatedAt: server.updatedAt ?? null,
+      surfDefaultPdfUrl:
+        server.surfDefaultPdfUrl || getSurfDefaultPdfUrl() || undefined,
     }
   }
 
@@ -146,10 +208,13 @@ export async function loadKolsWithSource(): Promise<LoadKolsResult> {
     if (raw) {
       const data = JSON.parse(raw) as KolStorePayload
       if (data?.kols?.length) {
+        if (data.surfDefaultPdfUrl) setSurfDefaultPdfUrl(data.surfDefaultPdfUrl)
         return {
           kols: data.kols,
           source: 'local',
           updatedAt: data.updatedAt ?? null,
+          surfDefaultPdfUrl:
+            data.surfDefaultPdfUrl || getSurfDefaultPdfUrl() || undefined,
         }
       }
     }
@@ -157,7 +222,12 @@ export async function loadKolsWithSource(): Promise<LoadKolsResult> {
     /* ignore */
   }
 
-  return { kols: cloneSeed(), source: 'seed', updatedAt: null }
+  return {
+    kols: cloneSeed(),
+    source: 'seed',
+    updatedAt: null,
+    surfDefaultPdfUrl: getSurfDefaultPdfUrl() || undefined,
+  }
 }
 
 export type ServerSaveResult =
@@ -186,6 +256,7 @@ export async function saveKolsToServer(
     note,
     source: note ? `admin server · ${note}` : 'admin server r2',
     count: kols.length,
+    surfDefaultPdfUrl: getSurfDefaultPdfUrl() || undefined,
   }
 
   try {

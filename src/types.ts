@@ -59,6 +59,11 @@ export interface Kol {
   activity7dSource?: 'sampled' | 'estimated'
   /** Admin: hide from public map */
   hidden?: boolean
+  /**
+   * Mock Surf AI report PDF on R2 (public URL).
+   * Opened after “phân tích AI” mock finishes (~3s).
+   */
+  surfReportPdfUrl?: string
 }
 
 export const NICHE_COLORS: Record<Niche, string> = {

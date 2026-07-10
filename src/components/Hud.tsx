@@ -1,4 +1,4 @@
-import { useMemo, type CSSProperties } from 'react'
+import { useEffect, useMemo, useState, type CSSProperties } from 'react'
 import type { Kol, Niche, StatusLabel } from '../types'
 import {
   formatStatus,
@@ -10,6 +10,7 @@ import {
 } from '../types'
 import type { ViewMode } from '../lib/layout'
 import { AvatarImg } from './AvatarImg'
+import { SurfAnalysisMock } from './SurfAnalysisMock'
 
 const NICHES: Array<Niche | 'All'> = [
   'All',
@@ -93,6 +94,13 @@ export function Hud({
     [kols],
   )
   const inShortlist = selected ? shortlistIds.includes(selected.id) : false
+  const [detailTab, setDetailTab] = useState<'overview' | 'analysis'>(
+    'overview',
+  )
+
+  useEffect(() => {
+    setDetailTab('overview')
+  }, [selected?.id])
 
   return (
     <>
@@ -416,108 +424,152 @@ export function Hud({
             </button>
           </div>
 
-          <p className="detail-bio-label">Hoạt động &amp; assessment (AI)</p>
-          <p className="detail-bio detail-bio--assess">{selected.bio}</p>
-          <div className="detail-tags">
-            <span className="tag tag--tier">Tier {selected.tier ?? '—'}</span>
-            {selected.isTop30 && (
-              <span className="tag" style={{ color: '#a5b4fc' }}>
-                Top 30 · 7d
-              </span>
-            )}
-            {selected.statusLabel && (
-              <span
-                className="tag tag--status-emoji"
-                title={STATUS_LABELS[selected.statusLabel]}
-              >
-                {formatStatus(selected.statusLabel)}
-              </span>
-            )}
-            {selected.verified && (
-              <span className="tag" style={{ color: '#7dd3fc' }}>
-                Verified
-              </span>
-            )}
-            {getKolNiches(selected).map((n) => (
-              <span
-                key={n}
-                className="tag"
-                style={{
-                  color: NICHE_COLORS[n],
-                  borderColor: `${NICHE_COLORS[n]}55`,
-                }}
-              >
-                {n}
-              </span>
-            ))}
-            <span
-              className={`tag ${selected.deltaPct >= 0 ? 'tag--up' : 'tag--down'}`}
+          <div className="detail-tabs" role="tablist" aria-label="Chi tiết KOL">
+            <button
+              type="button"
+              role="tab"
+              aria-selected={detailTab === 'overview'}
+              className={`detail-tab ${detailTab === 'overview' ? 'is-active' : ''}`}
+              onClick={() => setDetailTab('overview')}
             >
-              {selected.deltaPct >= 0 ? '▲' : '▼'}{' '}
-              {Math.abs(selected.deltaPct).toFixed(1)}% vs sheet
-            </span>
+              Tổng quan
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={detailTab === 'analysis'}
+              className={`detail-tab ${detailTab === 'analysis' ? 'is-active' : ''}`}
+              onClick={() => setDetailTab('analysis')}
+            >
+              Phân tích chi tiết
+            </button>
           </div>
 
-          <div className="stat-grid">
-            <Stat label="Followers (X)" value={fmt(selected.followers)} />
-            <Stat label="Score" value={selected.score.toFixed(1)} />
-            <Stat
-              label="7d posts"
-              value={
-                selected.activity7dPosts != null
-                  ? `${selected.activity7dPosts}${selected.activity7dSource === 'sampled' ? '*' : '≈'}`
-                  : '—'
-              }
-            />
-            <Stat
-              label="7d likes"
-              value={
-                selected.activity7dLikes != null
-                  ? fmt(selected.activity7dLikes)
-                  : '—'
-              }
-            />
-            <Stat
-              label="7d score"
-              value={
-                selected.activity7dScore != null
-                  ? selected.activity7dScore.toFixed(0)
-                  : '—'
-              }
-            />
-            <Stat
-              label="Posts/day (life)"
-              value={
-                selected.tweetsPerDay != null
-                  ? selected.tweetsPerDay.toFixed(1)
-                  : '—'
-              }
-            />
-          </div>
+          {detailTab === 'overview' && (
+            <>
+              <p className="detail-bio-label">Hoạt động &amp; assessment (AI)</p>
+              <p className="detail-bio detail-bio--assess">{selected.bio}</p>
+              <div className="detail-tags">
+                <span className="tag tag--tier">
+                  Tier {selected.tier ?? '—'}
+                </span>
+                {selected.isTop30 && (
+                  <span className="tag" style={{ color: '#a5b4fc' }}>
+                    Top 30 · 7d
+                  </span>
+                )}
+                {selected.statusLabel && (
+                  <span
+                    className="tag tag--status-emoji"
+                    title={STATUS_LABELS[selected.statusLabel]}
+                  >
+                    {formatStatus(selected.statusLabel)}
+                  </span>
+                )}
+                {selected.verified && (
+                  <span className="tag" style={{ color: '#7dd3fc' }}>
+                    Verified
+                  </span>
+                )}
+                {getKolNiches(selected).map((n) => (
+                  <span
+                    key={n}
+                    className="tag"
+                    style={{
+                      color: NICHE_COLORS[n],
+                      borderColor: `${NICHE_COLORS[n]}55`,
+                    }}
+                  >
+                    {n}
+                  </span>
+                ))}
+                <span
+                  className={`tag ${selected.deltaPct >= 0 ? 'tag--up' : 'tag--down'}`}
+                >
+                  {selected.deltaPct >= 0 ? '▲' : '▼'}{' '}
+                  {Math.abs(selected.deltaPct).toFixed(1)}% vs sheet
+                </span>
+              </div>
 
-          <div className="meters">
-            <Meter
-              label="Base (audience)"
-              value={selected.baseScore}
-              color={NICHE_COLORS[selected.niche]}
-            />
-            <Meter
-              label="Hot (pace / 7d blend)"
-              value={selected.hotScore}
-              color="#f472b6"
-            />
-            {selected.activity7dScore != null && (
-              <Meter
-                label={`7d activity (${selected.activity7dSource ?? '—'})`}
-                value={selected.activity7dScore}
-                color="#a78bfa"
-              />
-            )}
-            <Meter label="Composite" value={selected.score} color="#e2e8f0" />
-          </div>
-          <p className="detail-source">
-            * sampled = X search (may be capped). ≈ estimated lifetime pace × 7.
-          </p>
+              <div className="stat-grid">
+                <Stat label="Followers (X)" value={fmt(selected.followers)} />
+                <Stat label="Score" value={selected.score.toFixed(1)} />
+                <Stat
+                  label="7d posts"
+                  value={
+                    selected.activity7dPosts != null
+                      ? `${selected.activity7dPosts}${selected.activity7dSource === 'sampled' ? '*' : '≈'}`
+                      : '—'
+                  }
+                />
+                <Stat
+                  label="7d likes"
+                  value={
+                    selected.activity7dLikes != null
+                      ? fmt(selected.activity7dLikes)
+                      : '—'
+                  }
+                />
+                <Stat
+                  label="7d score"
+                  value={
+                    selected.activity7dScore != null
+                      ? selected.activity7dScore.toFixed(0)
+                      : '—'
+                  }
+                />
+                <Stat
+                  label="Posts/day (life)"
+                  value={
+                    selected.tweetsPerDay != null
+                      ? selected.tweetsPerDay.toFixed(1)
+                      : '—'
+                  }
+                />
+              </div>
+
+              <div className="meters">
+                <Meter
+                  label="Base (audience)"
+                  value={selected.baseScore}
+                  color={NICHE_COLORS[selected.niche]}
+                />
+                <Meter
+                  label="Hot (pace / 7d blend)"
+                  value={selected.hotScore}
+                  color="#f472b6"
+                />
+                {selected.activity7dScore != null && (
+                  <Meter
+                    label={`7d activity (${selected.activity7dSource ?? '—'})`}
+                    value={selected.activity7dScore}
+                    color="#a78bfa"
+                  />
+                )}
+                <Meter
+                  label="Composite"
+                  value={selected.score}
+                  color="#e2e8f0"
+                />
+              </div>
+              <p className="detail-source">
+                * sampled = X search (may be capped). ≈ estimated lifetime pace ×
+                7.
+              </p>
+            </>
+          )}
+
+          {detailTab === 'analysis' && (
+            <div className="detail-analysis-tab">
+              <SurfAnalysisMock kol={selected} />
+              <p className="detail-bio-label" style={{ marginTop: 14 }}>
+                Assessment ngắn (map)
+              </p>
+              <p className="detail-bio detail-bio--assess detail-bio--compact">
+                {selected.bio}
+              </p>
+            </div>
+          )}
         </aside>
       )}
     </>

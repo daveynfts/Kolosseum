@@ -16,10 +16,12 @@ import {
   exportKolsJson,
   getStoreMeta,
   importKolsJson,
+  getSurfDefaultPdfUrl,
   loadKols,
   loadKolsWithSource,
   recalculateScores,
   saveKolsToServer,
+  setSurfDefaultPdfUrl,
   type KolSource,
 } from '../lib/kolStore'
 import { getAdminToken, setAdminToken } from '../lib/feedStore'
@@ -54,6 +56,9 @@ export function AdminDashboard() {
   const [kolSource, setKolSource] = useState<KolSource | 'loading'>('loading')
   const [savingServer, setSavingServer] = useState(false)
   const [tokenInput, setTokenInput] = useState(() => getAdminToken())
+  const [surfDefaultPdf, setSurfDefaultPdf] = useState(() =>
+    getSurfDefaultPdfUrl(),
+  )
 
   useEffect(() => {
     const onHash = () => setTab(tabFromHash())
@@ -65,10 +70,12 @@ export function AdminDashboard() {
   useEffect(() => {
     let cancelled = false
     void (async () => {
-      const { kols: list, source } = await loadKolsWithSource()
+      const { kols: list, source, surfDefaultPdfUrl } =
+        await loadKolsWithSource()
       if (cancelled) return
       setKols(list)
       setKolSource(source)
+      if (surfDefaultPdfUrl) setSurfDefaultPdf(surfDefaultPdfUrl)
     })()
     return () => {
       cancelled = true
@@ -133,6 +140,7 @@ export function AdminDashboard() {
       try {
         const token = tokenInput.trim() || getAdminToken()
         if (token) setAdminToken(token)
+        setSurfDefaultPdfUrl(surfDefaultPdf)
         setKols(next)
         const result = await saveKolsToServer(next, note, token)
         if (!result.ok) {
@@ -147,7 +155,7 @@ export function AdminDashboard() {
         setSavingServer(false)
       }
     },
-    [tokenInput],
+    [tokenInput, surfDefaultPdf],
   )
 
   const onSaveDraft = () => {
@@ -361,6 +369,52 @@ export function AdminDashboard() {
         <button type="button" className="btn" onClick={() => setTab('legend')}>
           Field legend
         </button>
+      </div>
+
+      <div className="admin-surf-config glass">
+        <div className="admin-surf-config__head">
+          <strong>Surf AI mock · PDF R2</strong>
+          <span>
+            Link PDF công khai trên R2 dùng khi user bấm logo Surf trong tab
+            “Phân tích chi tiết”. Có thể ghi đè theo từng KOL ở Editor.
+          </span>
+        </div>
+        <label className="admin-surf-config__field">
+          <span>Default PDF URL (R2 public)</span>
+          <input
+            type="url"
+            value={surfDefaultPdf}
+            onChange={(e) => setSurfDefaultPdf(e.target.value)}
+            placeholder="https://pub-xxxx.r2.dev/radar/reports/sample.pdf"
+            autoComplete="off"
+          />
+        </label>
+        <div className="admin-surf-config__actions">
+          <button
+            type="button"
+            className="btn"
+            onClick={() => {
+              setSurfDefaultPdfUrl(surfDefaultPdf)
+              flash(
+                surfDefaultPdf.trim()
+                  ? 'Đã lưu default PDF (local). Bấm Save all để sync server.'
+                  : 'Đã xóa default PDF',
+              )
+            }}
+          >
+            Save PDF link
+          </button>
+          {surfDefaultPdf.trim() && (
+            <a
+              className="btn"
+              href={surfDefaultPdf.trim()}
+              target="_blank"
+              rel="noreferrer"
+            >
+              Test open PDF
+            </a>
+          )}
+        </div>
       </div>
 
       <div className="admin-stats">
@@ -697,6 +751,32 @@ export function AdminDashboard() {
                       style={{ whiteSpace: 'pre-wrap', minHeight: 180 }}
                     />
                   </Field>
+                </section>
+
+                <section className="admin-section">
+                  <h3>
+                    Surf AI report (mock) <SrcBadge source="ai" />
+                  </h3>
+                  <Field
+                    label="PDF R2 URL (override KOL — để trống = dùng default global)"
+                    source="ai"
+                  >
+                    <input
+                      type="url"
+                      value={draft.surfReportPdfUrl || ''}
+                      onChange={(e) =>
+                        patchDraft(
+                          'surfReportPdfUrl',
+                          e.target.value.trim() || undefined,
+                        )
+                      }
+                      placeholder="https://pub-xxxx.r2.dev/radar/reports/@handle.pdf"
+                    />
+                  </Field>
+                  <p className="admin-hint" style={{ marginTop: 8 }}>
+                    Map tab “Phân tích chi tiết” → bấm logo Surf → đợi 3s → mở
+                    PDF này (hoặc default global).
+                  </p>
                 </section>
 
                 <section className="admin-section">

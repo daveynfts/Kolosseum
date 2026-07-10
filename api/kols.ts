@@ -24,6 +24,8 @@ type KolsBody = {
   note?: string
   count?: number
   kols?: unknown[]
+  /** Global Surf mock PDF (R2 public URL) */
+  surfDefaultPdfUrl?: string
   [k: string]: unknown
 }
 
@@ -119,6 +121,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         note: body.note,
         count: body.kols.length,
         kols: body.kols,
+        surfDefaultPdfUrl:
+          typeof body.surfDefaultPdfUrl === 'string'
+            ? body.surfDefaultPdfUrl.trim() || undefined
+            : undefined,
       }
 
       await r2PutJson(client, KOLS_OBJECT_KEY, payload)

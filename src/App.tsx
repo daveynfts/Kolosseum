@@ -19,7 +19,7 @@ function readViewMode(): ViewMode {
   } catch {
     /* ignore */
   }
-  return '3d'
+  return '2d' // default 2.5D (lite cloud)
 }
 
 function App() {

@@ -6,6 +6,7 @@ import {
   createEmptyPost,
   exportFeedJson,
   fetchSeedFeed,
+  fetchXStatusFromUrl,
   getAdminToken,
   hasFeedOverride,
   importFeedJson,
@@ -38,6 +39,9 @@ export function AdminFeedEditor({ kols, onToast, addSignal = 0 }: Props) {
   const [feedSource, setFeedSource] = useState<FeedSource | 'unknown'>('unknown')
   const [tokenInput, setTokenInput] = useState(() => getAdminToken())
   const [isOverride, setIsOverride] = useState(() => hasFeedOverride())
+  const [xUrl, setXUrl] = useState('')
+  const [fetchingX, setFetchingX] = useState(false)
+  const [lastFetchNote, setLastFetchNote] = useState<string | null>(null)
 
   const refresh = useCallback(async () => {
     setLoading(true)
@@ -184,6 +188,74 @@ export function AdminFeedEditor({ kols, onToast, addSignal = 0 }: Props) {
         ? 'Đã lưu admin token (local) — giờ bấm Save to server'
         : 'Đã xóa token',
     )
+  }
+
+  const onFetchXUrl = async () => {
+    const url = xUrl.trim()
+    if (!url) {
+      onToast('Dán URL bài X (x.com/.../status/...)')
+      return
+    }
+    const token = tokenInput.trim()
+    if (token) setAdminToken(token)
+    setFetchingX(true)
+    setLastFetchNote(null)
+    const result = await fetchXStatusFromUrl(url, token || undefined)
+    setFetchingX(false)
+    if (!result.ok) {
+      onToast(`Fetch X lỗi: ${result.error}`)
+      return
+    }
+    const p = result.post
+    // Keep existing draft id if editing; else new id from tweet
+    const merged: FeedPost = normalizePost({
+      ...(draft || {}),
+      id: draft?.id || p.id,
+      handle: p.handle,
+      displayName: p.displayName,
+      text: p.text,
+      createdAt: p.createdAt,
+      likes: p.likes,
+      reposts: p.reposts,
+      replies: p.replies,
+      views: p.views,
+      media: p.media,
+      isReply: p.isReply,
+      url: p.url,
+      avatarLocal: p.avatarLocal,
+    })
+
+    // Ensure post is in feed list
+    setFeed((prev) => {
+      const base = prev ?? {
+        generatedAt: new Date().toISOString(),
+        source: 'admin',
+        mode: 'admin',
+        tier: 1,
+        kolCount: 0,
+        handles: [],
+        postCount: 0,
+        posts: [],
+      }
+      const exists = base.posts.some((x) => x.id === merged.id)
+      const posts = exists
+        ? base.posts.map((x) => (x.id === merged.id ? merged : x))
+        : [merged, ...base.posts]
+      return { ...base, posts }
+    })
+    setSelectedId(merged.id)
+    setDraft(merged)
+    setDirty(true)
+    setLoading(false)
+
+    const cached = result.cache?.imagesCached ?? 0
+    const total = result.cache?.imagesTotal ?? p.media?.length ?? 0
+    const note =
+      total > 0
+        ? `Đã fetch @${p.handle} · ảnh cache ${cached}/${total} (snapshot lúc ${new Date().toLocaleTimeString('vi-VN')})`
+        : `Đã fetch @${p.handle} · không có ảnh · snapshot ${new Date().toLocaleTimeString('vi-VN')}`
+    setLastFetchNote(note)
+    onToast(note)
   }
 
   const emptyFeed = (): Tier1Feed => ({
@@ -345,6 +417,37 @@ export function AdminFeedEditor({ kols, onToast, addSignal = 0 }: Props) {
           + token, bấm <strong>Save to server</strong> để mọi user thấy cùng feed.
           Xem <code>docs/FEED_SERVER.md</code>.
         </span>
+      </div>
+
+      <div className="admin-feed-toolbar glass admin-feed-fetch-row">
+        <label className="admin-feed-token admin-feed-xurl">
+          <span>Dán URL bài X → Fetch (snapshot + cache ảnh)</span>
+          <input
+            type="url"
+            value={xUrl}
+            onChange={(e) => setXUrl(e.target.value)}
+            placeholder="https://x.com/user/status/1234567890"
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault()
+                void onFetchXUrl()
+              }
+            }}
+          />
+        </label>
+        <button
+          type="button"
+          className="btn btn--primary"
+          onClick={() => void onFetchXUrl()}
+          disabled={fetchingX}
+        >
+          {fetchingX ? 'Fetching…' : 'Fetch từ X'}
+        </button>
+        {lastFetchNote && (
+          <span className="admin-count" style={{ alignSelf: 'center' }}>
+            {lastFetchNote}
+          </span>
+        )}
       </div>
 
       <div className="admin-feed-toolbar glass">

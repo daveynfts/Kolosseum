@@ -7,7 +7,7 @@
  *   FEED_ADMIN_TOKEN  (required for PUT/DELETE)
  */
 import type { VercelRequest, VercelResponse } from '@vercel/node'
-import { Redis } from '@upstash/redis'
+import { env, envPresence, pickRedisCreds, redisClient } from '../lib/server/redis'
 
 const FEED_KEY = 'vn-kol-map:feed:v1'
 
@@ -18,40 +18,6 @@ type FeedBody = {
   mode?: string
   postCount?: number
   [k: string]: unknown
-}
-
-/** Trim + strip accidental wrapping quotes from Vercel UI paste. */
-function env(name: string): string {
-  const v = process.env[name]
-  if (!v) return ''
-  return v.trim().replace(/^["']|["']$/g, '')
-}
-
-function pickRedisCreds(): { url: string; token: string } {
-  const url =
-    env('UPSTASH_REDIS_REST_URL') ||
-    env('KV_REST_API_URL') ||
-    env('UPSTASH_REDIS_URL') ||
-    ''
-  const token =
-    env('UPSTASH_REDIS_REST_TOKEN') ||
-    env('KV_REST_API_TOKEN') ||
-    env('UPSTASH_REDIS_TOKEN') ||
-    ''
-  return { url, token }
-}
-
-function envPresence() {
-  // Booleans only — never leak secret values
-  return {
-    UPSTASH_REDIS_REST_URL: !!env('UPSTASH_REDIS_REST_URL'),
-    UPSTASH_REDIS_REST_TOKEN: !!env('UPSTASH_REDIS_REST_TOKEN'),
-    KV_REST_API_URL: !!env('KV_REST_API_URL'),
-    KV_REST_API_TOKEN: !!env('KV_REST_API_TOKEN'),
-    KV_REST_API_READ_ONLY_TOKEN: !!env('KV_REST_API_READ_ONLY_TOKEN'),
-    FEED_ADMIN_TOKEN: !!env('FEED_ADMIN_TOKEN'),
-    VERCEL_ENV: process.env.VERCEL_ENV || null,
-  }
 }
 
 function cors(res: VercelResponse) {
@@ -70,37 +36,30 @@ function bearer(req: VercelRequest): string {
   return ''
 }
 
-function redisClient(): Redis | null {
-  const { url, token } = pickRedisCreds()
-  if (!url || !token) return null
-  // Upstash REST URL should be https://....upstash.io
-  if (!url.includes('upstash') && !url.startsWith('http')) return null
-  return new Redis({ url, token })
-}
-
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   cors(res)
   if (req.method === 'OPTIONS') {
     return res.status(204).end()
   }
 
-  // Debug helper: /api/feed?debug=1  (no secrets)
   if (req.method === 'GET' && (req.query.debug === '1' || req.query.debug === 'true')) {
     const { url, token } = pickRedisCreds()
     return res.status(200).json({
       ok: true,
       redisReady: !!(url && token),
-      urlHost: url ? (() => {
-        try {
-          return new URL(url).host
-        } catch {
-          return 'invalid_url'
-        }
-      })() : null,
+      urlHost: url
+        ? (() => {
+            try {
+              return new URL(url).host
+            } catch {
+              return 'invalid_url'
+            }
+          })()
+        : null,
       env: envPresence(),
       hint: !url || !token
         ? 'URL or TOKEN empty in this deployment. Check Production env + Redeploy.'
-        : 'Creds visible to function. GET without debug should work or return empty feed.',
+        : 'Creds visible to function.',
     })
   }
 
@@ -109,7 +68,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(503).json({
       error: 'redis_not_configured',
       message:
-        'Server cannot see Redis REST URL+TOKEN. On Vercel: set KV_REST_API_URL + KV_REST_API_TOKEN (or UPSTASH_*) for Production, then Redeploy. Debug: /api/feed?debug=1',
+        'Server cannot see Redis REST URL+TOKEN. Debug: /api/feed?debug=1',
       env: envPresence(),
     })
   }
@@ -140,12 +99,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         return res.status(401).json({
           error: 'unauthorized',
           message:
-            'Token mismatch. Use FEED_ADMIN_TOKEN from Vercel env (not Redis/Upstash token). Paste exact value, no extra spaces/quotes.',
-          // Length only — helps debug without leaking secrets
+            'Token mismatch. Use FEED_ADMIN_TOKEN from Vercel env (not Redis token).',
           hint: {
             receivedLen: got.length,
             expectedLen: secret.length,
-            hasBearer: !!(req.headers.authorization || '').toLowerCase().startsWith('bearer '),
+            hasBearer: !!(req.headers.authorization || '')
+              .toLowerCase()
+              .startsWith('bearer '),
           },
         })
       }

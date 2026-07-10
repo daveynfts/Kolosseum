@@ -595,6 +595,20 @@
   border-color: rgba(125, 211, 252, 0.45);
 }
 
+.admin-feed-fetch-row {
+  align-items: flex-end;
+}
+
+.admin-feed-xurl {
+  flex: 1 1 280px;
+  min-width: 220px;
+}
+
+.admin-feed-xurl input {
+  min-width: 100%;
+  width: 100%;
+}
+
 .admin-side-list-head {
   display: flex;
   align-items: center;

@@ -311,6 +311,73 @@ export function sortPostsLatest(posts: FeedPost[]): FeedPost[] {
   return [...posts].sort((a, b) => b.createdAt.localeCompare(a.createdAt))
 }
 
+export type XStatusFetchResult =
+  | {
+      ok: true
+      post: FeedPost & {
+        mediaOriginal?: string[]
+        mediaCached?: string[]
+        fetchedAt?: string
+        avatarRemote?: string
+      }
+      cache?: { redis: boolean; imagesCached: number; imagesTotal: number }
+    }
+  | { ok: false; error: string; status?: number }
+
+/** Fetch X status snapshot via /api/x-status (server caches images to Redis). */
+export async function fetchXStatusFromUrl(
+  xUrl: string,
+  tokenOverride?: string,
+): Promise<XStatusFetchResult> {
+  const token = (tokenOverride ?? getAdminToken()).trim()
+  const q = encodeURIComponent(xUrl.trim())
+  try {
+    const res = await fetch(`/api/x-status?url=${q}`, {
+      headers: {
+        Accept: 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+    })
+    const body = (await res.json().catch(() => ({}))) as {
+      error?: string
+      message?: string
+      post?: FeedPost & {
+        mediaOriginal?: string[]
+        mediaCached?: string[]
+        fetchedAt?: string
+        avatarRemote?: string
+      }
+      cache?: { redis: boolean; imagesCached: number; imagesTotal: number }
+    }
+    if (!res.ok || !body.post) {
+      return {
+        ok: false,
+        status: res.status,
+        error:
+          body.message ||
+          body.error ||
+          `Fetch failed (${res.status})`,
+      }
+    }
+    return {
+      ok: true,
+      post: {
+        ...normalizePost(body.post),
+        mediaOriginal: body.post.mediaOriginal,
+        mediaCached: body.post.mediaCached,
+        fetchedAt: body.post.fetchedAt,
+        avatarRemote: body.post.avatarRemote,
+      },
+      cache: body.cache,
+    }
+  } catch (e) {
+    return {
+      ok: false,
+      error: e instanceof Error ? e.message : 'Network error',
+    }
+  }
+}
+
 function emitFeedEvent(detail: Tier1Feed | null) {
   try {
     window.dispatchEvent(new CustomEvent(FEED_EVENT, { detail }))

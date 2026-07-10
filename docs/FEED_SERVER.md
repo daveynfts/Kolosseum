@@ -27,6 +27,15 @@ Shared Tier 1 Feed for all visitors via `GET/PUT /api/feed`.
 | `GET /api/feed` | no | Read shared JSON |
 | `PUT /api/feed` | `Authorization: Bearer <FEED_ADMIN_TOKEN>` | Write |
 | `DELETE /api/feed` | Bearer | Clear server feed |
+| `GET /api/x-status?url=` | Bearer if `FEED_ADMIN_TOKEN` set | Fetch X post snapshot + cache images |
+| `GET /api/media?id=` | no | Serve cached image from Redis |
+
+### Paste X URL (Admin)
+
+1. Dán `https://x.com/user/status/...`
+2. **Fetch từ X** → text, eng, media (snapshot)
+3. Ảnh được lưu Redis → URL `/api/media?id=...` (còn hiện nếu tweet xóa / X lỗi)
+4. **Save to server** để mọi user thấy
 
 ## Load priority (client)
 

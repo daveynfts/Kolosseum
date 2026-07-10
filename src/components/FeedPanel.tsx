@@ -3,6 +3,7 @@ import type { Tier1Feed, FeedPost } from '../types/feed'
 import { AvatarImg } from './AvatarImg'
 import { NICHE_COLORS } from '../types'
 import type { Kol } from '../types'
+import { FEED_EVENT, loadFeed } from '../lib/feedStore'
 
 type SortMode = 'latest' | 'hot'
 
@@ -35,9 +36,8 @@ export function FeedPanel({ open, onClose, kols, onSelectKol }: Props) {
     if (!silent) setLoading(true)
     setError(null)
     try {
-      const res = await fetch(`/feed/tier1-feed.json?t=${Date.now()}`)
-      if (!res.ok) throw new Error(`HTTP ${res.status}`)
-      const data = (await res.json()) as Tier1Feed
+      // Prefer Admin localStorage override; else seed /feed/tier1-feed.json
+      const data = await loadFeed()
       setFeed(data)
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Load failed')
@@ -51,8 +51,23 @@ export function FeedPanel({ open, onClose, kols, onSelectKol }: Props) {
   }, [open, load])
 
   useEffect(() => {
+    const refresh = () => void load(true)
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === 'vn-kol-map-feed-v1' || e.key === null) refresh()
+    }
+    window.addEventListener(FEED_EVENT, refresh)
+    window.addEventListener('storage', onStorage)
+    window.addEventListener('focus', refresh)
+    return () => {
+      window.removeEventListener(FEED_EVENT, refresh)
+      window.removeEventListener('storage', onStorage)
+      window.removeEventListener('focus', refresh)
+    }
+  }, [load])
+
+  useEffect(() => {
     if (!open) return
-    const id = window.setInterval(() => void load(true), 45_000)
+    const id = window.setInterval(() => void load(true), 60_000)
     return () => window.clearInterval(id)
   }, [open, load])
 
@@ -136,10 +151,17 @@ export function FeedPanel({ open, onClose, kols, onSelectKol }: Props) {
           <div className="feed-title-row">
             <span className="live-dot" aria-hidden />
             <h2>Tier 1 Feed</h2>
-            <span className="feed-badge">DEMO</span>
+            <span className="feed-badge">
+              {feed?.mode === 'admin' || (feed?.source || '').startsWith('admin')
+                ? 'ADMIN'
+                : 'DEMO'}
+            </span>
           </div>
           <p className="feed-sub">
-            Tổng hợp X · {feed?.kolCount ?? '—'} KOL · cập nhật{' '}
+            {feed?.mode === 'admin' || (feed?.source || '').startsWith('admin')
+              ? 'Admin curated'
+              : 'Tổng hợp X'}{' '}
+            · {feed?.kolCount ?? '—'} KOL · cập nhật{' '}
             {feed?.generatedAt ? formatTime(feed.generatedAt) : '…'}
           </p>
         </div>

@@ -5,8 +5,11 @@ import App from './App.tsx'
 import { AdminDashboard } from './pages/AdminDashboard.tsx'
 
 function getRoute(): 'map' | 'admin' {
-  const h = window.location.hash.replace(/^#\/?/, '')
-  return h.startsWith('admin') ? 'admin' : 'map'
+  const h = window.location.hash.replace(/^#\/?/, '').toLowerCase()
+  // #/admin, #/admin/feed, #/admin/legend …
+  return h === 'admin' || h.startsWith('admin/') || h.startsWith('admin?')
+    ? 'admin'
+    : 'map'
 }
 
 function Root() {

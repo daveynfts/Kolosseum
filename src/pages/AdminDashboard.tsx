@@ -15,9 +15,19 @@ import {
 } from '../lib/kolStore'
 import { FIELD_META, SOURCE_LABELS, type FieldSource } from '../lib/fieldMeta'
 import { AvatarImg } from '../components/AvatarImg'
+import { AdminFeedEditor } from './AdminFeedEditor'
 import './AdminDashboard.css'
 
-type Tab = 'list' | 'edit' | 'legend'
+type Tab = 'list' | 'edit' | 'feed' | 'legend'
+
+function tabFromHash(): Tab {
+  const h = window.location.hash.replace(/^#\/?/, '').toLowerCase()
+  // #/admin/feed or #/admin?tab=feed
+  if (h.includes('feed')) return 'feed'
+  if (h.includes('legend')) return 'legend'
+  if (h.includes('edit')) return 'edit'
+  return 'list'
+}
 
 export function AdminDashboard() {
   const [kols, setKols] = useState<Kol[]>(() => loadKols())
@@ -27,9 +37,31 @@ export function AdminDashboard() {
   const [showHidden, setShowHidden] = useState(true)
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [draft, setDraft] = useState<Kol | null>(null)
-  const [tab, setTab] = useState<Tab>('list')
+  const [tab, setTab] = useState<Tab>(() => tabFromHash())
   const [toast, setToast] = useState<string | null>(null)
   const [dirty, setDirty] = useState(false)
+  const [feedAddSignal, setFeedAddSignal] = useState(0)
+
+  useEffect(() => {
+    const onHash = () => setTab(tabFromHash())
+    window.addEventListener('hashchange', onHash)
+    return () => window.removeEventListener('hashchange', onHash)
+  }, [])
+
+  const goTab = (t: Tab) => {
+    setTab(t)
+    const path =
+      t === 'feed'
+        ? '#/admin/feed'
+        : t === 'legend'
+          ? '#/admin/legend'
+          : t === 'edit'
+            ? '#/admin/edit'
+            : '#/admin'
+    if (window.location.hash !== path) {
+      window.location.hash = path
+    }
+  }
 
   const meta = getStoreMeta()
 
@@ -188,11 +220,24 @@ export function AdminDashboard() {
           <a className="btn" href="#/">
             ← Map
           </a>
-          <button type="button" className="btn" onClick={onAdd}>
-            + Add KOL
+          {tab === 'feed' ? (
+            <button
+              type="button"
+              className="btn btn--primary"
+              onClick={() => setFeedAddSignal((n) => n + 1)}
+            >
+              + Add post
+            </button>
+          ) : (
+            <button type="button" className="btn" onClick={onAdd}>
+              + Add KOL
+            </button>
+          )}
+          <button type="button" className="btn btn--primary" onClick={() => goTab('feed')}>
+            Tier 1 Feed
           </button>
           <button type="button" className="btn" onClick={onExport}>
-            Export JSON
+            Export KOLs
           </button>
           <label className="btn btn--file">
             Import
@@ -251,17 +296,31 @@ export function AdminDashboard() {
       </div>
 
       <div className="admin-tabs">
-        {(['list', 'edit', 'legend'] as Tab[]).map((t) => (
+        {(['list', 'edit', 'feed', 'legend'] as Tab[]).map((t) => (
           <button
             key={t}
             type="button"
-            className={`admin-tab ${tab === t ? 'is-active' : ''}`}
-            onClick={() => setTab(t)}
+            className={`admin-tab ${tab === t ? 'is-active' : ''} ${t === 'feed' ? 'admin-tab--feed' : ''}`}
+            onClick={() => goTab(t)}
           >
-            {t === 'list' ? 'KOL list' : t === 'edit' ? 'Editor' : 'AI field legend'}
+            {t === 'list'
+              ? 'KOL list'
+              : t === 'edit'
+                ? 'Editor'
+                : t === 'feed'
+                  ? '★ Tier 1 Feed'
+                  : 'AI field legend'}
           </button>
         ))}
       </div>
+
+      {tab === 'feed' && (
+        <AdminFeedEditor
+          kols={kols}
+          onToast={flash}
+          addSignal={feedAddSignal}
+        />
+      )}
 
       {tab === 'legend' && <FieldLegend />}
 

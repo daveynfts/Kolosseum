@@ -1,5 +1,22 @@
 {
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
-  "framework": "vite"
+  "framework": "vite",
+  "rewrites": [
+    {
+      "source": "/r2/:path*",
+      "destination": "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/:path*"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/r2/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    }
+  ]
 }

@@ -31,7 +31,10 @@ export function KolBubble(props: Props) {
 
 function AvatarWithTexture(props: Props) {
   const url = xAvatarTextureUrl(props.kol.handle)
-  const texture = useLoader(THREE.TextureLoader, url)
+  // R2 CDN is cross-origin — required for WebGL texture upload
+  const texture = useLoader(THREE.TextureLoader, url, (loader) => {
+    loader.setCrossOrigin('anonymous')
+  })
   texture.colorSpace = THREE.SRGBColorSpace
   // Lite/2.5D: no mipmap thrash when billboard distance changes (stops shimmer)
   if (props.lite) {

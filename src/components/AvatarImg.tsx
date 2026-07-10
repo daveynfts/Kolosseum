@@ -9,7 +9,7 @@ interface Props {
   color?: string
 }
 
-/** DOM avatar from local cache (downloaded from X). Falls back to initials. */
+/** DOM avatar from R2 CDN. Falls back to initials. */
 export function AvatarImg({
   handle,
   name,
@@ -44,6 +44,8 @@ export function AvatarImg({
       width={size}
       height={size}
       loading="lazy"
+      decoding="async"
+      crossOrigin="anonymous"
       referrerPolicy="no-referrer"
       onError={() => setFailed(true)}
       style={{ width: size, height: size }}

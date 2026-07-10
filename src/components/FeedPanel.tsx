@@ -4,7 +4,7 @@ import { AvatarImg } from './AvatarImg'
 import { NICHE_COLORS } from '../types'
 import type { Kol } from '../types'
 import { FEED_EVENT, loadFeed } from '../lib/feedStore'
-import { withBase } from '../lib/base'
+import { resolveMediaUrl } from '../lib/avatar'
 
 type SortMode = 'latest' | 'hot'
 
@@ -474,7 +474,7 @@ function FeedCard({
           className="feed-media"
         >
           <img
-            src={withBase(post.media[0])}
+            src={resolveMediaUrl(post.media[0])}
             alt=""
             loading="lazy"
             referrerPolicy="no-referrer"

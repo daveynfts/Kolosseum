@@ -4,62 +4,135 @@ import { Stars } from '@react-three/drei'
 import * as THREE from 'three'
 
 /**
- * Visible deep-space backdrop: multi-layer stars + soft nebulae.
- * fog=false on key layers so the cosmos always reads.
+ * Realistic deep-space 3D backdrop:
+ * - Spherical star field (shells)
+ * - Volumetric nebula dust as 3D point clouds (no flat circles/planes)
+ * - Slow galactic rotation
  */
 export function CosmicBackground({ lite = false }: { lite?: boolean }) {
   return (
     <group renderOrder={-20}>
-      <DeepSpaceStars lite={lite} />
-      <NebulaClouds lite={lite} />
+      <StarShell
+        count={lite ? 2200 : 3500}
+        rMin={40}
+        rMax={95}
+        size={lite ? 0.28 : 0.34}
+        opacity={0.85}
+        speed={0.008}
+      />
+      <StarShell
+        count={lite ? 900 : 1400}
+        rMin={55}
+        rMax={110}
+        size={lite ? 0.5 : 0.62}
+        opacity={0.55}
+        speed={-0.004}
+        bright
+      />
+      <VolumetricDust
+        count={lite ? 900 : 1400}
+        center={[-22, 4, -30]}
+        radius={14}
+        colorA="#4c1d95"
+        colorB="#6366f1"
+        size={0.55}
+        opacity={lite ? 0.22 : 0.28}
+      />
+      <VolumetricDust
+        count={lite ? 700 : 1100}
+        center={[20, -6, -34]}
+        radius={12}
+        colorA="#0e7490"
+        colorB="#22d3ee"
+        size={0.5}
+        opacity={lite ? 0.18 : 0.24}
+      />
+      <VolumetricDust
+        count={lite ? 500 : 800}
+        center={[4, 14, -40]}
+        radius={16}
+        colorA="#701a3a"
+        colorB="#a78bfa"
+        size={0.65}
+        opacity={lite ? 0.12 : 0.16}
+      />
+      {/* Distant milky-way band as elongated 3D particle cloud */}
+      <GalacticBand lite={lite} />
       <Stars
-        radius={120}
-        depth={60}
-        count={lite ? 2500 : 4000}
-        factor={lite ? 3.8 : 4.5}
-        saturation={0.15}
+        radius={130}
+        depth={70}
+        count={lite ? 2000 : 3200}
+        factor={lite ? 2.8 : 3.4}
+        saturation={0}
         fade
-        speed={lite ? 0.2 : 0.35}
+        speed={lite ? 0.12 : 0.18}
       />
     </group>
   )
 }
 
-function DeepSpaceStars({ lite }: { lite: boolean }) {
+function seeded(i: number, salt = 0) {
+  const x = Math.sin(i * 127.1 + salt * 311.7) * 43758.5453
+  return x - Math.floor(x)
+}
+
+function StarShell({
+  count,
+  rMin,
+  rMax,
+  size,
+  opacity,
+  speed,
+  bright = false,
+}: {
+  count: number
+  rMin: number
+  rMax: number
+  size: number
+  opacity: number
+  speed: number
+  bright?: boolean
+}) {
   const ref = useRef<THREE.Points>(null)
   const { positions, colors } = useMemo(() => {
-    const n = lite ? 1800 : 2800
-    const pos = new Float32Array(n * 3)
-    const col = new Float32Array(n * 3)
-    const palette = [
-      new THREE.Color('#e0f2fe'),
-      new THREE.Color('#a5b4fc'),
-      new THREE.Color('#c4b5fd'),
-      new THREE.Color('#fbcfe8'),
-      new THREE.Color('#ffffff'),
-      new THREE.Color('#67e8f9'),
-    ]
-    for (let i = 0; i < n; i++) {
-      // Spherical shell around scene
-      const r = 35 + Math.random() * 70
-      const theta = Math.random() * Math.PI * 2
-      const phi = Math.acos(2 * Math.random() - 1)
+    const pos = new Float32Array(count * 3)
+    const col = new Float32Array(count * 3)
+    const palette = bright
+      ? [
+          new THREE.Color('#ffffff'),
+          new THREE.Color('#e0f2fe'),
+          new THREE.Color('#fef3c7'),
+          new THREE.Color('#ddd6fe'),
+        ]
+      : [
+          new THREE.Color('#f8fafc'),
+          new THREE.Color('#cbd5e1'),
+          new THREE.Color('#a5b4fc'),
+          new THREE.Color('#bae6fd'),
+          new THREE.Color('#e9d5ff'),
+        ]
+    for (let i = 0; i < count; i++) {
+      const u = seeded(i, 1)
+      const v = seeded(i, 2)
+      const w = seeded(i, 3)
+      const r = rMin + u * (rMax - rMin)
+      const theta = v * Math.PI * 2
+      const phi = Math.acos(2 * w - 1)
       pos[i * 3] = r * Math.sin(phi) * Math.cos(theta)
-      pos[i * 3 + 1] = r * Math.cos(phi) * 0.85
+      pos[i * 3 + 1] = r * Math.cos(phi) * 0.88
       pos[i * 3 + 2] = r * Math.sin(phi) * Math.sin(theta)
       const c = palette[i % palette.length]
-      const b = 0.55 + Math.random() * 0.45
+      const b = bright ? 0.7 + seeded(i, 4) * 0.3 : 0.45 + seeded(i, 4) * 0.55
       col[i * 3] = c.r * b
       col[i * 3 + 1] = c.g * b
       col[i * 3 + 2] = c.b * b
     }
     return { positions: pos, colors: col }
-  }, [lite])
+  }, [count, rMin, rMax, bright])
 
   useFrame((_, dt) => {
     if (!ref.current) return
-    ref.current.rotation.y += dt * 0.012
-    ref.current.rotation.x += dt * 0.003
+    ref.current.rotation.y += dt * speed
   })
 
   return (
@@ -68,23 +141,23 @@ function DeepSpaceStars({ lite }: { lite: boolean }) {
         <bufferAttribute
           attach="attributes-position"
           args={[positions, 3]}
-          count={positions.length / 3}
+          count={count}
           array={positions}
           itemSize={3}
         />
         <bufferAttribute
           attach="attributes-color"
           args={[colors, 3]}
-          count={colors.length / 3}
+          count={count}
           array={colors}
           itemSize={3}
         />
       </bufferGeometry>
       <pointsMaterial
-        size={lite ? 0.35 : 0.42}
+        size={size}
         vertexColors
         transparent
-        opacity={0.9}
+        opacity={opacity}
         sizeAttenuation
         depthWrite={false}
         fog={false}
@@ -95,87 +168,157 @@ function DeepSpaceStars({ lite }: { lite: boolean }) {
   )
 }
 
-function NebulaClouds({ lite }: { lite: boolean }) {
-  const group = useRef<THREE.Group>(null)
+/** 3D Gaussian dust cloud — volumetric feel, no flat discs */
+function VolumetricDust({
+  count,
+  center,
+  radius,
+  colorA,
+  colorB,
+  size,
+  opacity,
+}: {
+  count: number
+  center: [number, number, number]
+  radius: number
+  colorA: string
+  colorB: string
+  size: number
+  opacity: number
+}) {
+  const ref = useRef<THREE.Points>(null)
+  const { positions, colors } = useMemo(() => {
+    const pos = new Float32Array(count * 3)
+    const col = new Float32Array(count * 3)
+    const ca = new THREE.Color(colorA)
+    const cb = new THREE.Color(colorB)
+    for (let i = 0; i < count; i++) {
+      // Box-Muller-ish → denser core
+      const u1 = Math.max(1e-6, seeded(i, 10))
+      const u2 = seeded(i, 11)
+      const u3 = seeded(i, 12)
+      const g1 = Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2)
+      const g2 = Math.sqrt(-2 * Math.log(u1)) * Math.sin(2 * Math.PI * u2)
+      const g3 = Math.sqrt(-2 * Math.log(Math.max(1e-6, u3))) * Math.cos(2 * Math.PI * seeded(i, 13))
+      const fall = 0.35 + seeded(i, 14) * 0.65
+      pos[i * 3] = center[0] + g1 * radius * 0.55 * fall
+      pos[i * 3 + 1] = center[1] + g2 * radius * 0.4 * fall
+      pos[i * 3 + 2] = center[2] + g3 * radius * 0.55 * fall
+      const t = seeded(i, 15)
+      const c = ca.clone().lerp(cb, t)
+      const b = 0.35 + seeded(i, 16) * 0.65
+      col[i * 3] = c.r * b
+      col[i * 3 + 1] = c.g * b
+      col[i * 3 + 2] = c.b * b
+    }
+    return { positions: pos, colors: col }
+  }, [count, center, radius, colorA, colorB])
 
-  useFrame((state) => {
-    if (!group.current) return
-    const t = state.clock.elapsedTime
-    group.current.rotation.y = t * 0.018
-    group.current.rotation.z = Math.sin(t * 0.04) * 0.04
+  useFrame((_, dt) => {
+    if (!ref.current) return
+    ref.current.rotation.y += dt * 0.015
+    ref.current.rotation.x += dt * 0.004
   })
 
-  const clouds = useMemo(
-    () => [
-      {
-        pos: [-18, 6, -28] as [number, number, number],
-        scale: [28, 18, 1] as [number, number, number],
-        color: '#4c1d95',
-        opacity: lite ? 0.22 : 0.28,
-      },
-      {
-        pos: [16, -4, -32] as [number, number, number],
-        scale: [24, 16, 1] as [number, number, number],
-        color: '#0e7490',
-        opacity: lite ? 0.2 : 0.26,
-      },
-      {
-        pos: [2, 12, -36] as [number, number, number],
-        scale: [32, 20, 1] as [number, number, number],
-        color: '#831843',
-        opacity: lite ? 0.14 : 0.18,
-      },
-      {
-        pos: [-8, -10, -24] as [number, number, number],
-        scale: [20, 14, 1] as [number, number, number],
-        color: '#1e3a5f',
-        opacity: lite ? 0.18 : 0.22,
-      },
-      {
-        pos: [10, 8, -20] as [number, number, number],
-        scale: [14, 10, 1] as [number, number, number],
-        color: '#312e81',
-        opacity: lite ? 0.16 : 0.2,
-      },
-    ],
-    [lite],
+  return (
+    <points ref={ref} frustumCulled={false}>
+      <bufferGeometry>
+        <bufferAttribute
+          attach="attributes-position"
+          args={[positions, 3]}
+          count={count}
+          array={positions}
+          itemSize={3}
+        />
+        <bufferAttribute
+          attach="attributes-color"
+          args={[colors, 3]}
+          count={count}
+          array={colors}
+          itemSize={3}
+        />
+      </bufferGeometry>
+      <pointsMaterial
+        size={size}
+        vertexColors
+        transparent
+        opacity={opacity}
+        sizeAttenuation
+        depthWrite={false}
+        fog={false}
+        blending={THREE.AdditiveBlending}
+        toneMapped={false}
+      />
+    </points>
   )
+}
+
+/** Thin elongated dust band through the sphere — milky-way feel in 3D */
+function GalacticBand({ lite }: { lite: boolean }) {
+  const ref = useRef<THREE.Points>(null)
+  const count = lite ? 1600 : 2400
+  const { positions, colors } = useMemo(() => {
+    const pos = new Float32Array(count * 3)
+    const col = new Float32Array(count * 3)
+    const c1 = new THREE.Color('#818cf8')
+    const c2 = new THREE.Color('#e0e7ff')
+    for (let i = 0; i < count; i++) {
+      const a = seeded(i, 20) * Math.PI * 2
+      // torus-like band radius
+      const R = 48 + (seeded(i, 21) - 0.5) * 18
+      const tube = (seeded(i, 22) - 0.5) * 6
+      const y = (seeded(i, 23) - 0.5) * 4.5
+      // tilt band
+      const x0 = Math.cos(a) * R + Math.cos(a) * tube * 0.3
+      const z0 = Math.sin(a) * R + Math.sin(a) * tube * 0.3
+      const tilt = 0.42
+      pos[i * 3] = x0
+      pos[i * 3 + 1] = y * Math.cos(tilt) - z0 * Math.sin(tilt) * 0.25
+      pos[i * 3 + 2] = z0 * Math.cos(tilt) + y * Math.sin(tilt) * 0.15
+      const t = seeded(i, 24)
+      const c = c1.clone().lerp(c2, t)
+      const b = 0.25 + seeded(i, 25) * 0.55
+      col[i * 3] = c.r * b
+      col[i * 3 + 1] = c.g * b
+      col[i * 3 + 2] = c.b * b
+    }
+    return { positions: pos, colors: col }
+  }, [count])
+
+  useFrame((_, dt) => {
+    if (!ref.current) return
+    ref.current.rotation.y += dt * 0.006
+  })
 
   return (
-    <group ref={group}>
-      {clouds.map((c, i) => (
-        <mesh key={i} position={c.pos} scale={c.scale} renderOrder={-15}>
-          <circleGeometry args={[1, 48]} />
-          <meshBasicMaterial
-            color={c.color}
-            transparent
-            opacity={c.opacity}
-            depthWrite={false}
-            fog={false}
-            blending={THREE.AdditiveBlending}
-            side={THREE.DoubleSide}
-            toneMapped={false}
-          />
-        </mesh>
-      ))}
-      {/* Bright galactic band */}
-      <mesh
-        position={[0, -2, -40]}
-        rotation={[0, 0, 0.35]}
-        scale={[50, 8, 1]}
-        renderOrder={-16}
-      >
-        <planeGeometry args={[1, 1]} />
-        <meshBasicMaterial
-          color="#6366f1"
-          transparent
-          opacity={lite ? 0.08 : 0.12}
-          depthWrite={false}
-          fog={false}
-          blending={THREE.AdditiveBlending}
-          toneMapped={false}
+    <points ref={ref} frustumCulled={false}>
+      <bufferGeometry>
+        <bufferAttribute
+          attach="attributes-position"
+          args={[positions, 3]}
+          count={count}
+          array={positions}
+          itemSize={3}
         />
-      </mesh>
-    </group>
+        <bufferAttribute
+          attach="attributes-color"
+          args={[colors, 3]}
+          count={count}
+          array={colors}
+          itemSize={3}
+        />
+      </bufferGeometry>
+      <pointsMaterial
+        size={lite ? 0.4 : 0.48}
+        vertexColors
+        transparent
+        opacity={lite ? 0.28 : 0.34}
+        sizeAttenuation
+        depthWrite={false}
+        fog={false}
+        blending={THREE.AdditiveBlending}
+        toneMapped={false}
+      />
+    </points>
   )
 }

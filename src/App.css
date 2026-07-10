@@ -16,24 +16,13 @@
   height: 100%;
   min-height: 100%;
   pointer-events: auto;
-  /* CSS space — always visible under transparent canvas */
+  /* Soft deep-space wash only — no hard circular blobs */
   background:
-    radial-gradient(ellipse 90% 70% at 20% 30%, rgba(76, 29, 149, 0.45), transparent 55%),
-    radial-gradient(ellipse 80% 60% at 85% 20%, rgba(14, 116, 144, 0.35), transparent 50%),
-    radial-gradient(ellipse 70% 50% at 60% 80%, rgba(131, 24, 67, 0.28), transparent 55%),
-    radial-gradient(ellipse 100% 80% at 50% 50%, rgba(30, 27, 75, 0.5), transparent 70%),
-    radial-gradient(1.2px 1.2px at 12% 22%, rgba(255, 255, 255, 0.9), transparent),
-    radial-gradient(1px 1px at 28% 68%, rgba(165, 243, 252, 0.85), transparent),
-    radial-gradient(1.4px 1.4px at 44% 18%, rgba(255, 255, 255, 0.75), transparent),
-    radial-gradient(1px 1px at 62% 42%, rgba(196, 181, 253, 0.9), transparent),
-    radial-gradient(1.2px 1.2px at 78% 72%, rgba(255, 255, 255, 0.7), transparent),
-    radial-gradient(1px 1px at 88% 28%, rgba(251, 207, 232, 0.8), transparent),
-    radial-gradient(1px 1px at 8% 82%, rgba(255, 255, 255, 0.65), transparent),
-    radial-gradient(1.3px 1.3px at 52% 88%, rgba(125, 211, 252, 0.85), transparent),
-    radial-gradient(1px 1px at 35% 40%, rgba(255, 255, 255, 0.55), transparent),
-    radial-gradient(1px 1px at 70% 55%, rgba(255, 255, 255, 0.6), transparent),
-    linear-gradient(165deg, #030712 0%, #0c0a1a 40%, #050814 70%, #020617 100%);
-  background-color: #050814;
+    radial-gradient(ellipse 120% 90% at 50% 40%, #0b1224 0%, transparent 55%),
+    radial-gradient(ellipse 80% 60% at 15% 70%, rgba(49, 46, 129, 0.35), transparent 50%),
+    radial-gradient(ellipse 70% 50% at 90% 25%, rgba(15, 70, 90, 0.28), transparent 48%),
+    linear-gradient(180deg, #020617 0%, #030712 45%, #020617 100%);
+  background-color: #030712;
 }
 
 .canvas-wrap canvas {

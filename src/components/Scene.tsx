@@ -1,18 +1,13 @@
 import { useEffect, useMemo, useRef } from 'react'
 import { Canvas, useThree } from '@react-three/fiber'
-import { OrbitControls, Stars } from '@react-three/drei'
+import { OrbitControls } from '@react-three/drei'
 import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib'
 import type { Kol, Niche } from '../types'
 import { kolMatchesNiche } from '../types'
 import type { ViewMode } from '../lib/layout'
 import { KolBubble } from './KolBubble'
 import { positionForKol, positionForKol25d } from '../lib/layout'
-import {
-  AmbientOrbs,
-  FloatingDust,
-  FloorRings,
-  SceneSparkles,
-} from './SceneEffects'
+import { FloatingDust } from './SceneEffects'
 import { CosmicBackground } from './CosmicBackground'
 
 interface Props {
@@ -74,7 +69,7 @@ function ViewCamera({ viewMode }: { viewMode: ViewMode }) {
       camera.position.set(0, 4, 24)
     }
     camera.near = 0.1
-    camera.far = 250
+    camera.far = 280
     camera.lookAt(0, 0, 0)
     camera.updateProjectionMatrix()
     if (controls) {
@@ -84,31 +79,6 @@ function ViewCamera({ viewMode }: { viewMode: ViewMode }) {
   }, [viewMode, camera, controls])
 
   return null
-}
-
-function StageFloor() {
-  return (
-    <group position={[0, -11.5, 0]}>
-      <mesh rotation={[-Math.PI / 2, 0, 0]}>
-        <circleGeometry args={[18, 48]} />
-        <meshBasicMaterial
-          color="#0b1220"
-          transparent
-          opacity={0.35}
-          depthWrite={false}
-        />
-      </mesh>
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.02, 0]}>
-        <ringGeometry args={[12, 12.35, 64]} />
-        <meshBasicMaterial
-          color="#475569"
-          transparent
-          opacity={0.25}
-          depthWrite={false}
-        />
-      </mesh>
-    </group>
-  )
 }
 
 function SceneContent({
@@ -124,60 +94,23 @@ function SceneContent({
 
   return (
     <>
-      {/* Deep space clear color */}
-      <color attach="background" args={['#050814']} />
-      <fog attach="fog" args={['#050814', lite ? 55 : 60, lite ? 110 : 130]} />
+      <color attach="background" args={['#030712']} />
+      <fog attach="fog" args={['#030712', lite ? 50 : 55, lite ? 120 : 140]} />
 
       <ViewCamera viewMode={viewMode} />
 
-      <ambientLight intensity={lite ? 0.7 : 0.5} />
-      <hemisphereLight args={['#c7d2fe', '#0f172a', lite ? 0.55 : 0.65]} />
+      <ambientLight intensity={lite ? 0.55 : 0.4} />
+      <hemisphereLight args={['#94a3b8', '#020617', 0.45]} />
       <pointLight
-        position={[12, 14, 18]}
-        intensity={lite ? 0.9 : 1.05}
-        color="#e0e7ff"
+        position={[14, 10, 16]}
+        intensity={lite ? 0.55 : 0.65}
+        color="#e2e8f0"
       />
-      <pointLight position={[-12, -4, 10]} intensity={0.5} color="#67e8f9" />
-      <pointLight
-        position={[0, 8, -10]}
-        intensity={lite ? 0.4 : 0.5}
-        color="#a78bfa"
-      />
+      <pointLight position={[-10, -2, 8]} intensity={0.28} color="#67e8f9" />
 
-      {/* Cosmic space — always on, both modes */}
+      {/* 3D cosmos only — no flat discs / rings / orbs */}
       <CosmicBackground lite={lite} />
-
-      {lite && <StageFloor />}
-
-      {!lite && (
-        <>
-          <pointLight position={[0, -8, 10]} intensity={0.4} color="#f9a8d4" />
-          <spotLight
-            position={[0, 18, 8]}
-            angle={0.55}
-            penumbra={0.6}
-            intensity={0.5}
-            color="#ffffff"
-          />
-          <SceneSparkles />
-          <FloatingDust />
-          <AmbientOrbs />
-          <FloorRings />
-        </>
-      )}
-
-      {/* Extra near-field stars for 2.5D readability */}
-      {lite && (
-        <Stars
-          radius={80}
-          depth={35}
-          count={1200}
-          factor={2.8}
-          saturation={0.1}
-          fade
-          speed={0.2}
-        />
-      )}
+      {!lite && <FloatingDust />}
 
       <Bubbles
         kols={kols}
@@ -208,7 +141,7 @@ function SceneContent({
 export function Scene(props: Props) {
   return (
     <Canvas
-      camera={{ position: [0, 4, 24], fov: 44, near: 0.1, far: 250 }}
+      camera={{ position: [0, 4, 24], fov: 44, near: 0.1, far: 280 }}
       dpr={[1, 1.75]}
       style={{
         position: 'absolute',

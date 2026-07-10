@@ -13,7 +13,7 @@ import {
   FloorRings,
   SceneSparkles,
 } from './SceneEffects'
-import { VietnamConstellation } from './VietnamConstellation'
+import { CosmicBackground } from './CosmicBackground'
 
 interface Props {
   kols: Kol[]
@@ -31,7 +31,6 @@ function Bubbles({
   onSelect,
   viewMode,
 }: Omit<Props, 'autoRotate'>) {
-  // 2d mode = 2.5D: same spatial cloud, lighter materials
   const lite = viewMode === '2d'
   const positions = useMemo(() => {
     const map = new Map<string, [number, number, number]>()
@@ -64,20 +63,18 @@ function Bubbles({
   )
 }
 
-/** Same framing as 3D cloud so 2.5D feels spatial, not flat. */
 function ViewCamera({ viewMode }: { viewMode: ViewMode }) {
   const { camera } = useThree()
   const controls = useThree((s) => s.controls) as OrbitControlsImpl | null
 
   useEffect(() => {
-    // Both modes use the 3D cloud camera — 2.5D only differs in materials/FX
     if (viewMode === '2d') {
       camera.position.set(0, 5.5, 26)
     } else {
       camera.position.set(0, 4, 24)
     }
     camera.near = 0.1
-    camera.far = 200
+    camera.far = 250
     camera.lookAt(0, 0, 0)
     camera.updateProjectionMatrix()
     if (controls) {
@@ -89,7 +86,6 @@ function ViewCamera({ viewMode }: { viewMode: ViewMode }) {
   return null
 }
 
-/** Soft ground plane for 2.5D depth cue (cheap). */
 function StageFloor() {
   return (
     <group position={[0, -11.5, 0]}>
@@ -98,7 +94,7 @@ function StageFloor() {
         <meshBasicMaterial
           color="#0b1220"
           transparent
-          opacity={0.55}
+          opacity={0.35}
           depthWrite={false}
         />
       </mesh>
@@ -107,16 +103,7 @@ function StageFloor() {
         <meshBasicMaterial
           color="#475569"
           transparent
-          opacity={0.35}
-          depthWrite={false}
-        />
-      </mesh>
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.03, 0]}>
-        <ringGeometry args={[16.5, 16.85, 64]} />
-        <meshBasicMaterial
-          color="#334155"
-          transparent
-          opacity={0.22}
+          opacity={0.25}
           depthWrite={false}
         />
       </mesh>
@@ -137,62 +124,59 @@ function SceneContent({
 
   return (
     <>
-      <color attach="background" args={['#03040a']} />
-      {/* Fog starts farther so backdrop constellation remains readable */}
-      <fog attach="fog" args={['#03040a', lite ? 48 : 52, lite ? 90 : 100]} />
+      {/* Deep space clear color */}
+      <color attach="background" args={['#050814']} />
+      <fog attach="fog" args={['#050814', lite ? 55 : 60, lite ? 110 : 130]} />
 
       <ViewCamera viewMode={viewMode} />
 
-      <ambientLight intensity={lite ? 0.75 : 0.55} />
-      <hemisphereLight args={['#e2e8f0', '#0f172a', lite ? 0.5 : 0.6]} />
-      <pointLight position={[12, 14, 18]} intensity={lite ? 0.95 : 1.1} color="#e0e7ff" />
-      <pointLight position={[-12, -4, 10]} intensity={0.55} color="#67e8f9" />
-      <pointLight position={[0, 8, -10]} intensity={lite ? 0.35 : 0.4} color="#a78bfa" />
+      <ambientLight intensity={lite ? 0.7 : 0.5} />
+      <hemisphereLight args={['#c7d2fe', '#0f172a', lite ? 0.55 : 0.65]} />
+      <pointLight
+        position={[12, 14, 18]}
+        intensity={lite ? 0.9 : 1.05}
+        color="#e0e7ff"
+      />
+      <pointLight position={[-12, -4, 10]} intensity={0.5} color="#67e8f9" />
+      <pointLight
+        position={[0, 8, -10]}
+        intensity={lite ? 0.4 : 0.5}
+        color="#a78bfa"
+      />
 
-      {/* Cosmic Vietnam constellation — far behind KOLs, both modes */}
-      <VietnamConstellation lite={lite} />
+      {/* Cosmic space — always on, both modes */}
+      <CosmicBackground lite={lite} />
 
-      {/* 2.5D: light stage + depth, no heavy VFX */}
-      {lite && (
-        <>
-          <Stars
-            radius={90}
-            depth={40}
-            count={900}
-            factor={2.2}
-            saturation={0}
-            fade
-            speed={0.25}
-          />
-          <StageFloor />
-        </>
-      )}
+      {lite && <StageFloor />}
 
-      {/* Full 3D: liquid atmosphere */}
       {!lite && (
         <>
-          <pointLight position={[0, -8, 10]} intensity={0.45} color="#f9a8d4" />
+          <pointLight position={[0, -8, 10]} intensity={0.4} color="#f9a8d4" />
           <spotLight
             position={[0, 18, 8]}
             angle={0.55}
             penumbra={0.6}
-            intensity={0.55}
+            intensity={0.5}
             color="#ffffff"
-          />
-          <Stars
-            radius={90}
-            depth={50}
-            count={1800}
-            factor={3.2}
-            saturation={0}
-            fade
-            speed={0.4}
           />
           <SceneSparkles />
           <FloatingDust />
           <AmbientOrbs />
           <FloorRings />
         </>
+      )}
+
+      {/* Extra near-field stars for 2.5D readability */}
+      {lite && (
+        <Stars
+          radius={80}
+          depth={35}
+          count={1200}
+          factor={2.8}
+          saturation={0.1}
+          fade
+          speed={0.2}
+        />
       )}
 
       <Bubbles
@@ -224,7 +208,7 @@ function SceneContent({
 export function Scene(props: Props) {
   return (
     <Canvas
-      camera={{ position: [0, 4, 24], fov: 44, near: 0.1, far: 200 }}
+      camera={{ position: [0, 4, 24], fov: 44, near: 0.1, far: 250 }}
       dpr={[1, 1.75]}
       style={{
         position: 'absolute',
@@ -232,16 +216,16 @@ export function Scene(props: Props) {
         width: '100%',
         height: '100%',
         display: 'block',
-        background: '#03040a',
+        background: 'transparent',
       }}
       gl={{
         antialias: true,
-        alpha: false,
+        alpha: true,
         powerPreference: 'high-performance',
         failIfMajorPerformanceCaveat: false,
       }}
       onCreated={({ gl }) => {
-        gl.setClearColor('#03040a', 1)
+        gl.setClearColor(0x000000, 0)
         gl.domElement.style.display = 'block'
       }}
       onPointerMissed={() => props.onSelect(null)}

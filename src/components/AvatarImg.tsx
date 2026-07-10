@@ -1,5 +1,9 @@
-import { useEffect, useState } from 'react'
-import { initials, xAvatarUrl } from '../lib/avatar'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import {
+  initials,
+  xAvatarTextureUrl,
+  xAvatarUrl,
+} from '../lib/avatar'
 
 interface Props {
   handle: string
@@ -11,7 +15,9 @@ interface Props {
 
 /**
  * DOM avatar from R2 CDN.
- * Loading: soft skeleton (no letter). Error: neutral initials only as last resort.
+ * - Prefer direct public R2 URL (no crossOrigin — R2 public bucket has no CORS yet)
+ * - On failure, retry same-origin /r2/* proxy rewrite
+ * - Loading: soft skeleton; permanent error: neutral initials
  */
 export function AvatarImg({
   handle,
@@ -20,13 +26,28 @@ export function AvatarImg({
   size = 40,
   color = '#64748b',
 }: Props) {
+  const sources = useMemo(
+    () => [xAvatarUrl(handle), xAvatarTextureUrl(handle)],
+    [handle],
+  )
+  const [srcIndex, setSrcIndex] = useState(0)
   const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading')
-  const src = xAvatarUrl(handle)
+  const imgRef = useRef<HTMLImageElement | null>(null)
+  const src = sources[srcIndex] ?? sources[0]
 
-  // Reset when handle changes
   useEffect(() => {
+    setSrcIndex(0)
     setStatus('loading')
-  }, [handle, src])
+  }, [handle])
+
+  // Cached images may already be complete before onLoad attaches
+  useEffect(() => {
+    const el = imgRef.current
+    if (!el) return
+    if (el.complete && el.naturalWidth > 0) {
+      setStatus('ready')
+    }
+  }, [src, srcIndex])
 
   if (status === 'error') {
     return (
@@ -49,6 +70,7 @@ export function AvatarImg({
     <span
       className={`avatar-wrap ${className}`}
       style={{ width: size, height: size }}
+      title={`@${handle}`}
     >
       {status === 'loading' && (
         <span
@@ -58,6 +80,8 @@ export function AvatarImg({
         />
       )}
       <img
+        key={src}
+        ref={imgRef}
         className="avatar-img"
         src={src}
         alt={`@${handle}`}
@@ -65,15 +89,22 @@ export function AvatarImg({
         height={size}
         loading="lazy"
         decoding="async"
-        crossOrigin="anonymous"
         referrerPolicy="no-referrer"
         onLoad={() => setStatus('ready')}
-        onError={() => setStatus('error')}
+        onError={() => {
+          if (srcIndex + 1 < sources.length) {
+            setSrcIndex((i) => i + 1)
+            setStatus('loading')
+            return
+          }
+          setStatus('error')
+        }}
         style={{
           width: size,
           height: size,
           opacity: status === 'ready' ? 1 : 0,
           position: status === 'ready' ? 'relative' : 'absolute',
+          inset: status === 'ready' ? undefined : 0,
         }}
       />
     </span>

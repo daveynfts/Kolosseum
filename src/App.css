@@ -906,16 +906,33 @@ button.view-toggle-btn.is-active {
   font-weight: 600;
 }
 
-.rank-avatar {
+.rank-avatar .avatar-img,
+.rank-avatar .avatar-skeleton,
+.rank-avatar.avatar-fallback {
   border-width: 1.5px !important;
 }
 
-.detail-avatar {
+.detail-avatar .avatar-img,
+.detail-avatar .avatar-skeleton,
+.detail-avatar.avatar-fallback {
   border-width: 2px !important;
   border-color: rgba(255, 255, 255, 0.28) !important;
   box-shadow:
     0 0 0 1px rgba(255, 255, 255, 0.08),
     0 8px 24px rgba(0, 0, 0, 0.35);
+}
+
+.voice-chip__av .avatar-img,
+.voice-chip__av .avatar-skeleton,
+.voice-chip__av.avatar-fallback {
+  border-width: 1px !important;
+}
+
+.bubble-label__avatar .avatar-img,
+.bubble-label__avatar .avatar-skeleton,
+.bubble-label__avatar.avatar-fallback {
+  border-width: 2px !important;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.12);
 }
 
 .rank-i {

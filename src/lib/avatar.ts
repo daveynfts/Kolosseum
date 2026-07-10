@@ -1,8 +1,8 @@
-﻿/**
+/**
  * KOL avatars on Cloudflare R2 (prefix radar/avatars).
  *
- * - DOM <img>: direct R2 public URL (Cloudflare edge, fastest)
- * - WebGL textures: same-origin /r2/* rewrite → R2 (avoids CORS on TextureLoader)
+ * - DOM <img>: direct R2 public URL (no crossOrigin unless CORS is configured)
+ * - WebGL textures: same-origin /r2/* rewrite → R2 (TextureLoader CORS)
  *
  * Override CDN: VITE_R2_PUBLIC_URL
  */
@@ -21,19 +21,24 @@ export function r2PublicBase(): string {
   return String(fromEnv).replace(/\/$/, '')
 }
 
-function avatarObjectKey(handle: string): string {
+/**
+ * Object key relative to bucket (no leading slash).
+ * Filenames match upload from public/avatars/{handle}.jpg exactly.
+ */
+export function avatarObjectKey(handle: string): string {
   const clean = handle.replace(/^@/, '').trim()
-  return `${RADAR_PREFIX}/avatars/${encodeURIComponent(clean)}.jpg`
+  const safe = clean.replace(/[?#%\\]/g, '')
+  return `${RADAR_PREFIX}/avatars/${safe}.jpg`
 }
 
-/** Direct R2 URL — best for <img>, CSS, link previews. */
+/** Direct R2 URL — best for <img> display. */
 export function xAvatarUrl(handle: string): string {
   return `${r2PublicBase()}/${avatarObjectKey(handle)}`
 }
 
 /**
  * Same-origin path proxied to R2 (vercel.json rewrite).
- * Required for THREE.TextureLoader without bucket CORS.
+ * WebGL TextureLoader + DOM fallback.
  */
 export function xAvatarTextureUrl(handle: string): string {
   return `/r2/${avatarObjectKey(handle)}`
@@ -50,11 +55,10 @@ export function resolveMediaUrl(path: string): string {
   const m = p.match(/^\/avatars\/([^/?#]+)$/i)
   if (m) {
     let name = decodeURIComponent(m[1])
-    if (!/\.(jpe?g|png|webp|gif)$/i.test(name)) name = `${name}.jpg`
-    const dot = name.lastIndexOf('.')
-    const base = dot > 0 ? name.slice(0, dot) : name
-    const ext = dot > 0 ? name.slice(dot) : '.jpg'
-    return `${r2PublicBase()}/${RADAR_PREFIX}/avatars/${encodeURIComponent(base)}${ext}`
+    if (name.toLowerCase().endsWith('.jpg') || name.toLowerCase().endsWith('.jpeg')) {
+      name = name.replace(/\.(jpe?g)$/i, '')
+    }
+    return xAvatarUrl(name)
   }
 
   if (p.startsWith('/radar/')) {

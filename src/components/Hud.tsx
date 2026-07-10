@@ -1,0 +1,524 @@
+import { useMemo, type CSSProperties } from 'react'
+import type { Kol, Niche, StatusLabel } from '../types'
+import { NICHE_COLORS, STATUS_COLORS, STATUS_LABELS } from '../types'
+import type { ViewMode } from '../lib/layout'
+import { AvatarImg } from './AvatarImg'
+
+const NICHES: Array<Niche | 'All'> = [
+  'All',
+  'Trading',
+  'Research',
+  'Airdrop',
+  'News',
+  'OTC',
+  'DeFi',
+  'GameFi',
+  'NFT',
+  'Meme',
+  'Multi',
+]
+
+const STATUSES: Array<StatusLabel | 'All'> = [
+  'All',
+  'hot',
+  'active',
+  'stable',
+  'quiet',
+  'dormant',
+]
+
+interface Props {
+  kols: Kol[]
+  allKols: Kol[]
+  selected: Kol | null
+  filterNiche: Niche | 'All'
+  filterTier: 1 | 2 | 3 | 'All'
+  filterStatus: StatusLabel | 'All'
+  shortlistIds: string[]
+  autoRotate: boolean
+  viewMode: ViewMode
+  feedOpen: boolean
+  compareOpen: boolean
+  onFilter: (n: Niche | 'All') => void
+  onFilterTier: (t: 1 | 2 | 3 | 'All') => void
+  onFilterStatus: (s: StatusLabel | 'All') => void
+  onSelect: (kol: Kol | null) => void
+  onToggleRotate: () => void
+  onViewMode: (mode: ViewMode) => void
+  onToggleFeed: () => void
+  onToggleCompare: () => void
+  onToggleShortlist: (kol: Kol) => void
+}
+
+export function Hud({
+  kols,
+  allKols: _allKols,
+  selected,
+  filterNiche,
+  filterTier,
+  filterStatus,
+  shortlistIds,
+  autoRotate,
+  viewMode,
+  feedOpen,
+  compareOpen,
+  onFilter,
+  onFilterTier,
+  onFilterStatus,
+  onSelect,
+  onToggleRotate,
+  onViewMode,
+  onToggleFeed,
+  onToggleCompare,
+  onToggleShortlist,
+}: Props) {
+  const hotCount = kols.filter((k) => k.statusLabel === 'hot').length
+  const top = useMemo(
+    () =>
+      [...kols]
+        .sort(
+          (a, b) =>
+            b.score - a.score ||
+            b.followers - a.followers ||
+            a.handle.localeCompare(b.handle),
+        )
+        .slice(0, 10),
+    [kols],
+  )
+  const inShortlist = selected ? shortlistIds.includes(selected.id) : false
+
+  return (
+    <>
+      <header className="hud-bar glass">
+        <div className="hud-bar__brand">
+          <div className="brand-mark brand-mark--sm" />
+          <h1>VN KOL Map</h1>
+        </div>
+
+        {/* Always visible — not after filter chips */}
+        <div
+          className="view-toggle view-toggle--bar"
+          role="group"
+          aria-label="View mode"
+        >
+          <button
+            type="button"
+            className={viewMode === '2d' ? 'is-active' : ''}
+            onClick={() => onViewMode('2d')}
+            title="2.5D — cloud 3D, render nhẹ"
+            aria-pressed={viewMode === '2d'}
+          >
+            2.5D
+          </button>
+          <button
+            type="button"
+            className={viewMode === '3d' ? 'is-active' : ''}
+            onClick={() => onViewMode('3d')}
+            title="3D full — liquid glass"
+            aria-pressed={viewMode === '3d'}
+          >
+            3D
+          </button>
+        </div>
+
+        <div className="hud-bar__divider" aria-hidden />
+
+        <div className="hud-bar__filters">
+          <div className="filter-seg filter-seg--inline" title="Tier">
+            {(['All', 1, 2, 3] as const).map((t) => (
+              <button
+                key={String(t)}
+                type="button"
+                className={`seg-btn ${filterTier === t ? 'is-active' : ''}`}
+                onClick={() => onFilterTier(t)}
+              >
+                {t === 'All' ? 'All' : `T${t}`}
+              </button>
+            ))}
+          </div>
+
+          <div className="filter-chips filter-chips--inline" title="Status">
+            {STATUSES.map((s) => (
+              <button
+                key={s}
+                type="button"
+                className={`chip chip--status chip--sm ${filterStatus === s ? 'chip--active' : ''}`}
+                style={
+                  s !== 'All'
+                    ? ({
+                        ['--chip-color' as string]: STATUS_COLORS[s],
+                      } as CSSProperties)
+                    : undefined
+                }
+                onClick={() => onFilterStatus(s)}
+              >
+                {s !== 'All' && <i className="chip-dot" />}
+                {s === 'All' ? 'All' : STATUS_LABELS[s]}
+              </button>
+            ))}
+          </div>
+
+          <div className="filter-chips filter-chips--inline" title="Niche">
+            {NICHES.map((n) => (
+              <button
+                key={n}
+                type="button"
+                className={`chip chip--sm ${filterNiche === n ? 'chip--active' : ''}`}
+                style={
+                  n !== 'All'
+                    ? ({
+                        ['--chip-color' as string]: NICHE_COLORS[n],
+                      } as CSSProperties)
+                    : undefined
+                }
+                onClick={() => onFilter(n)}
+              >
+                {n !== 'All' && <i className="chip-dot" />}
+                {n === 'All' ? 'All' : n}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="hud-bar__actions">
+          {hotCount > 0 && (
+            <span className="pill pill--hot pill--sm">{hotCount} hot</span>
+          )}
+          <button
+            type="button"
+            className={`pill pill--btn pill--sm ${feedOpen ? 'pill--live' : ''}`}
+            onClick={onToggleFeed}
+          >
+            <span className="live-dot live-dot--sm" />
+            Feed
+          </button>
+          <button
+            type="button"
+            className={`pill pill--btn pill--sm ${compareOpen ? 'pill--active' : ''}`}
+            onClick={onToggleCompare}
+          >
+            ★ {shortlistIds.length}
+          </button>
+        </div>
+      </header>
+
+      <aside className="hud-left">
+        <div className="panel glass panel--rank">
+          <div className="panel-head">
+            <div>
+              <div className="panel-title">Top Score</div>
+              <div className="panel-sub">
+                {kols.length} visible · sorted by composite
+              </div>
+            </div>
+            <span className="panel-badge">{top.length}</span>
+          </div>
+          {top.length === 0 ? (
+            <div className="rank-empty">No KOLs match filters</div>
+          ) : (
+            <ul className="rank-list" onWheel={(e) => e.stopPropagation()}>
+              {top.map((k, i) => {
+                const starred = shortlistIds.includes(k.id)
+                const active = selected?.id === k.id
+                const rankClass =
+                  i === 0 ? 'is-gold' : i === 1 ? 'is-silver' : i === 2 ? 'is-bronze' : ''
+                return (
+                  <li key={k.id} className={`rank-item ${active ? 'is-selected' : ''}`}>
+                    <div className="rank-row">
+                      <button
+                        type="button"
+                        className="rank-main-btn"
+                        onClick={() => onSelect(k)}
+                      >
+                        <span className={`rank-i ${rankClass}`}>{i + 1}</span>
+                        <AvatarImg
+                          handle={k.handle}
+                          name={k.displayName}
+                          size={34}
+                          color={NICHE_COLORS[k.niche]}
+                          className="rank-avatar"
+                        />
+                        <span className="rank-main">
+                          <strong title={k.displayName}>
+                            {k.displayName}
+                          </strong>
+                          <small>
+                            @{k.handle} · T{k.tier}
+                            {k.isTop30 ? ' · 7d' : ''}
+                          </small>
+                          <span className="rank-meta-row">
+                            <span
+                              className="rank-status"
+                              style={{
+                                color:
+                                  STATUS_COLORS[
+                                    (k.statusLabel ?? 'stable') as StatusLabel
+                                  ],
+                              }}
+                            >
+                              {k.statusLabel ?? '—'}
+                            </span>
+                            <span>{fmt(k.followers)}</span>
+                            {k.activity7dPosts != null && (
+                              <span>
+                                {k.activity7dPosts}p/7d
+                                {k.activity7dSource === 'sampled' ? '*' : '≈'}
+                              </span>
+                            )}
+                          </span>
+                          <span className="rank-bar">
+                            <i
+                              style={{
+                                width: `${Math.min(100, k.score)}%`,
+                                background: `linear-gradient(90deg, ${NICHE_COLORS[k.niche]}, rgba(255,255,255,0.55))`,
+                              }}
+                            />
+                          </span>
+                        </span>
+                        <span className="rank-score-wrap">
+                          <span
+                            className="rank-score"
+                            style={{ color: NICHE_COLORS[k.niche] }}
+                          >
+                            {k.score.toFixed(0)}
+                          </span>
+                          <span className="rank-score-label">pts</span>
+                        </span>
+                      </button>
+                      <button
+                        type="button"
+                        className={`star-btn ${starred ? 'is-on' : ''}`}
+                        title={starred ? 'Remove shortlist' : 'Add shortlist'}
+                        onClick={() => onToggleShortlist(k)}
+                      >
+                        {starred ? '★' : '☆'}
+                      </button>
+                    </div>
+                  </li>
+                )
+              })}
+            </ul>
+          )}
+        </div>
+
+        <div className="panel glass panel--legend">
+          <div className="panel-title">Legend</div>
+          <div className="legend-row">
+            <span className="legend-bubble legend-bubble--lg" />
+            <span>Size ≈ followers + score</span>
+          </div>
+          <div className="legend-row">
+            <span className="legend-bubble legend-bubble--hot" />
+            <span>Hot = status / 7d pace</span>
+          </div>
+          <div className="legend-row">
+            <span className="legend-bubble legend-bubble--color" />
+            <span>Filters: tier · status · niche</span>
+          </div>
+          <p className="legend-note">
+            Top Score always re-sorts the current filter set. Shortlist max 5 ·
+            export from Compare.
+          </p>
+        </div>
+      </aside>
+
+      <div className="hud-bottom">
+        <button type="button" className="btn" onClick={onToggleRotate}>
+          {autoRotate ? '⏸ Pause rotate' : '▶ Auto rotate'}
+        </button>
+        <button type="button" className="btn" onClick={onToggleCompare}>
+          {compareOpen ? 'Hide compare' : 'Open shortlist'}
+        </button>
+        <span className="hint">Drag orbit · scroll zoom · click bubble</span>
+      </div>
+
+      {selected && (
+        <aside className="hud-detail glass">
+          <button
+            type="button"
+            className="detail-close"
+            onClick={() => onSelect(null)}
+            aria-label="Close"
+          >
+            ×
+          </button>
+          <div
+            className="detail-accent"
+            style={{ background: NICHE_COLORS[selected.niche] }}
+          />
+          <div className="detail-head">
+            <AvatarImg
+              handle={selected.handle}
+              name={selected.displayName}
+              size={52}
+              color={NICHE_COLORS[selected.niche]}
+              className="detail-avatar"
+            />
+            <div>
+              <h2>{selected.displayName}</h2>
+              <a
+                className="handle"
+                href={`https://x.com/${selected.handle}`}
+                target="_blank"
+                rel="noreferrer"
+              >
+                @{selected.handle}
+              </a>
+            </div>
+          </div>
+
+          <div className="detail-actions">
+            <button
+              type="button"
+              className={`btn ${inShortlist ? 'btn--starred' : ''}`}
+              onClick={() => onToggleShortlist(selected)}
+            >
+              {inShortlist ? '★ In shortlist' : '☆ Add to shortlist'}
+            </button>
+          </div>
+
+          <p className="detail-bio-label">Hoạt động &amp; assessment (AI)</p>
+          <p className="detail-bio detail-bio--assess">{selected.bio}</p>
+          <div className="detail-tags">
+            <span className="tag tag--tier">Tier {selected.tier ?? '—'}</span>
+            {selected.isTop30 && (
+              <span className="tag" style={{ color: '#a5b4fc' }}>
+                Top 30 · 7d
+              </span>
+            )}
+            {selected.statusLabel && (
+              <span
+                className="tag"
+                style={{
+                  color: STATUS_COLORS[selected.statusLabel],
+                  borderColor: `${STATUS_COLORS[selected.statusLabel]}66`,
+                }}
+              >
+                {STATUS_LABELS[selected.statusLabel]}
+              </span>
+            )}
+            {selected.verified && (
+              <span className="tag" style={{ color: '#7dd3fc' }}>
+                Verified
+              </span>
+            )}
+            <span
+              className="tag"
+              style={{
+                color: NICHE_COLORS[selected.niche],
+                borderColor: `${NICHE_COLORS[selected.niche]}55`,
+              }}
+            >
+              {selected.niche}
+            </span>
+            <span
+              className={`tag ${selected.deltaPct >= 0 ? 'tag--up' : 'tag--down'}`}
+            >
+              {selected.deltaPct >= 0 ? '▲' : '▼'}{' '}
+              {Math.abs(selected.deltaPct).toFixed(1)}% vs sheet
+            </span>
+          </div>
+
+          <div className="stat-grid">
+            <Stat label="Followers (X)" value={fmt(selected.followers)} />
+            <Stat label="Score" value={selected.score.toFixed(1)} />
+            <Stat
+              label="7d posts"
+              value={
+                selected.activity7dPosts != null
+                  ? `${selected.activity7dPosts}${selected.activity7dSource === 'sampled' ? '*' : '≈'}`
+                  : '—'
+              }
+            />
+            <Stat
+              label="7d likes"
+              value={
+                selected.activity7dLikes != null
+                  ? fmt(selected.activity7dLikes)
+                  : '—'
+              }
+            />
+            <Stat
+              label="7d score"
+              value={
+                selected.activity7dScore != null
+                  ? selected.activity7dScore.toFixed(0)
+                  : '—'
+              }
+            />
+            <Stat
+              label="Posts/day (life)"
+              value={
+                selected.tweetsPerDay != null
+                  ? selected.tweetsPerDay.toFixed(1)
+                  : '—'
+              }
+            />
+          </div>
+
+          <div className="meters">
+            <Meter
+              label="Base (audience)"
+              value={selected.baseScore}
+              color={NICHE_COLORS[selected.niche]}
+            />
+            <Meter
+              label="Hot (pace / 7d blend)"
+              value={selected.hotScore}
+              color="#f472b6"
+            />
+            {selected.activity7dScore != null && (
+              <Meter
+                label={`7d activity (${selected.activity7dSource ?? '—'})`}
+                value={selected.activity7dScore}
+                color="#a78bfa"
+              />
+            )}
+            <Meter label="Composite" value={selected.score} color="#e2e8f0" />
+          </div>
+          <p className="detail-source">
+            * sampled = X search (may be capped). ≈ estimated lifetime pace × 7.
+          </p>
+        </aside>
+      )}
+    </>
+  )
+}
+
+function Stat({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="stat">
+      <span>{label}</span>
+      <strong>{value}</strong>
+    </div>
+  )
+}
+
+function Meter({
+  label,
+  value,
+  color,
+}: {
+  label: string
+  value: number
+  color: string
+}) {
+  return (
+    <div className="meter">
+      <div className="meter-head">
+        <span>{label}</span>
+        <span>{value.toFixed(1)}</span>
+      </div>
+      <div className="meter-track">
+        <div
+          className="meter-fill"
+          style={{ width: `${Math.min(100, value)}%`, background: color }}
+        />
+      </div>
+    </div>
+  )
+}
+
+function fmt(n: number) {
+  return new Intl.NumberFormat('en', { notation: 'compact' }).format(n)
+}

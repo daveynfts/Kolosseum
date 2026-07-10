@@ -1,0 +1,103 @@
+{
+  "generatedAt": "2026-07-10T02:40:00Z",
+  "window": "since:2026-07-03",
+  "note": "Sampled via X advanced search; post counts often capped ~10 (lower bound for high-volume accounts).",
+  "byHandle": {
+    "ThuanCapital": {
+      "posts": 10,
+      "likes": 185,
+      "views": 20248,
+      "replies": 25,
+      "reposts": 1,
+      "note": "high-volume news desk; sample capped"
+    },
+    "TuanNguyen_6789": {
+      "posts": 10,
+      "likes": 61,
+      "views": 5924,
+      "replies": 53,
+      "reposts": 0,
+      "note": "sample capped"
+    },
+    "BiCanTho": {
+      "posts": 10,
+      "likes": 36,
+      "views": 10351,
+      "replies": 4,
+      "reposts": 0,
+      "note": "cashback/news machine; sample capped"
+    },
+    "phamduydong179": {
+      "posts": 6,
+      "likes": 40,
+      "views": 8324,
+      "replies": 11,
+      "reposts": 1,
+      "note": "original posts in window"
+    },
+    "HakResearch": {
+      "posts": 6,
+      "likes": 61,
+      "views": 15155,
+      "replies": 20,
+      "reposts": 4,
+      "note": "research + promo mix"
+    },
+    "henvaibta": {
+      "posts": 10,
+      "likes": 52,
+      "views": 14328,
+      "replies": 15,
+      "reposts": 0,
+      "note": "sample capped"
+    },
+    "Lecter_XFinance": {
+      "posts": 10,
+      "likes": 26,
+      "views": 3653,
+      "replies": 11,
+      "reposts": 0,
+      "note": "mostly replies + community; sample capped"
+    },
+    "Thienthien1305": {
+      "posts": 10,
+      "likes": 1,
+      "views": 197,
+      "replies": 0,
+      "reposts": 0,
+      "note": "high reply volume; sample capped"
+    },
+    "vanquan_titans": {
+      "posts": 10,
+      "likes": 2,
+      "views": 30,
+      "replies": 1,
+      "reposts": 0,
+      "note": "high reply volume; sample capped"
+    },
+    "TriMaiMS": {
+      "posts": 5,
+      "likes": 1,
+      "views": 420,
+      "replies": 0,
+      "reposts": 0,
+      "note": "light originals + replies"
+    },
+    "NickyPham_HC": {
+      "posts": 8,
+      "likes": 40,
+      "views": 12000,
+      "replies": 8,
+      "reposts": 1,
+      "note": "estimated from profile pace + partial sample"
+    },
+    "GF_Capital": {
+      "posts": 12,
+      "likes": 48,
+      "views": 9000,
+      "replies": 6,
+      "reposts": 1,
+      "note": "search sparse; hybrid estimate from pace"
+    }
+  }
+}

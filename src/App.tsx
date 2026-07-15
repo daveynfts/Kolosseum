@@ -67,15 +67,20 @@ function App() {
     const reloadServer = () => {
       void loadKolsWithSource().then(({ kols: list }) => setKols(list))
     }
+    // Prefer server refresh so Surf PDF / bios from R2 win over stale local drafts
+    const reloadAfterAdmin = () => {
+      reloadLocal()
+      reloadServer()
+    }
     window.addEventListener('focus', reloadServer)
     window.addEventListener('hashchange', reloadServer)
-    window.addEventListener('storage', reloadLocal)
-    window.addEventListener(KOLS_EVENT, reloadLocal)
+    window.addEventListener('storage', reloadAfterAdmin)
+    window.addEventListener(KOLS_EVENT, reloadAfterAdmin)
     return () => {
       window.removeEventListener('focus', reloadServer)
       window.removeEventListener('hashchange', reloadServer)
-      window.removeEventListener('storage', reloadLocal)
-      window.removeEventListener(KOLS_EVENT, reloadLocal)
+      window.removeEventListener('storage', reloadAfterAdmin)
+      window.removeEventListener(KOLS_EVENT, reloadAfterAdmin)
     }
   }, [])
 

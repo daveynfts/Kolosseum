@@ -922,8 +922,8 @@ export const RECENT_FOLLOWERS_BY_HANDLE: Record<string, RecentFollower[]> = {
 }
 
 /**
- * Prefer admin localStorage override when present (see recentFollowersStore).
- * Falls back to compiled seed map.
+ * Prefer admin localStorage override **per handle** when present.
+ * Other handles still fall back to compiled seed (do not blank the whole map).
  */
 export function getRecentFollowers(handle: string): RecentFollower[] {
   const key = handle.replace(/^@/, '').trim().toLowerCase()
@@ -931,14 +931,10 @@ export function getRecentFollowers(handle: string): RecentFollower[] {
     const raw = localStorage.getItem('vn-kol-map-recent-followers-v1')
     if (raw) {
       const map = JSON.parse(raw) as Record<string, RecentFollower[]>
-      if (map && typeof map === 'object' && Array.isArray(map[key])) {
-        return map[key]
-      }
-      // Override exists but this handle empty → intentionally no list
-      if (map && typeof map === 'object' && key in map) return map[key] ?? []
-      // If override map exists, only show keys in override (admin full replace)
-      if (map && typeof map === 'object' && Object.keys(map).length > 0) {
-        return map[key] ?? []
+      if (map && typeof map === 'object' && key in map) {
+        // Explicit override for this KOL (including intentional empty list)
+        const list = map[key]
+        return Array.isArray(list) ? list : []
       }
     }
   } catch {

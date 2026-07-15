@@ -31,6 +31,8 @@ interface Props {
 }
 
 export function KolBubble(props: Props) {
+  // Remount texture loader when avatar override / handle changes
+  const texKey = `${props.kol.handle}|${props.kol.avatarUrl || ''}`
   return (
     <TextureErrorBoundary
       fallback={<AvatarNode {...props} map={null} loadState="error" />}
@@ -38,7 +40,7 @@ export function KolBubble(props: Props) {
       <Suspense
         fallback={<AvatarNode {...props} map={null} loadState="loading" />}
       >
-        <AvatarWithTexture {...props} />
+        <AvatarWithTexture key={texKey} {...props} />
       </Suspense>
     </TextureErrorBoundary>
   )

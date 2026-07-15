@@ -19,15 +19,47 @@ export function SurfAnalysisMock({ kol }: Props) {
   const [message, setMessage] = useState<string | null>(null)
   const timerRef = useRef<number | null>(null)
   const tickRef = useRef<number | null>(null)
+  const runIdRef = useRef(0)
+  const reportTabRef = useRef<Window | null>(null)
   const pdfUrl = resolveSurfReportPdfUrl(kol)
 
+  const clearTimers = () => {
+    if (timerRef.current) {
+      window.clearTimeout(timerRef.current)
+      timerRef.current = null
+    }
+    if (tickRef.current) {
+      window.clearInterval(tickRef.current)
+      tickRef.current = null
+    }
+  }
+
   useEffect(() => {
+    // Cancel in-flight analysis when switching KOL
+    runIdRef.current += 1
+    clearTimers()
+    if (reportTabRef.current && !reportTabRef.current.closed) {
+      try {
+        reportTabRef.current.close()
+      } catch {
+        /* ignore */
+      }
+    }
+    reportTabRef.current = null
     setPhase('idle')
     setProgress(0)
     setMessage(null)
     return () => {
-      if (timerRef.current) window.clearTimeout(timerRef.current)
-      if (tickRef.current) window.clearInterval(tickRef.current)
+      runIdRef.current += 1
+      clearTimers()
+      if (reportTabRef.current && !reportTabRef.current.closed) {
+        try {
+          reportTabRef.current.close()
+        } catch {
+          /* ignore */
+        }
+      }
+      reportTabRef.current = null
     }
   }, [kol.id])
 
@@ -41,15 +73,19 @@ export function SurfAnalysisMock({ kol }: Props) {
       return
     }
 
+    const runId = ++runIdRef.current
+    const targetUrl = pdfUrl
+
     // Open tab immediately under the click gesture (avoids popup block after 3s)
     const reportTab = window.open('about:blank', '_blank')
+    reportTabRef.current = reportTab
     if (reportTab) {
       try {
         reportTab.document.title = 'Surf AI — đang phân tích…'
         reportTab.document.body.innerHTML =
           '<p style="font-family:system-ui,sans-serif;padding:24px;color:#334155">Surf AI đang phân tích… báo cáo sẽ mở sau vài giây.</p>'
       } catch {
-        /* cross-origin / restricted — ok */
+        /* restricted — ok */
       }
     }
 
@@ -61,29 +97,35 @@ export function SurfAnalysisMock({ kol }: Props) {
 
     const started = Date.now()
     const DURATION = 3000
-    if (tickRef.current) window.clearInterval(tickRef.current)
+    clearTimers()
     tickRef.current = window.setInterval(() => {
+      if (runId !== runIdRef.current) return
       const p = Math.min(100, ((Date.now() - started) / DURATION) * 100)
       setProgress(p)
     }, 50)
 
-    if (timerRef.current) window.clearTimeout(timerRef.current)
     timerRef.current = window.setTimeout(() => {
-      if (tickRef.current) window.clearInterval(tickRef.current)
+      if (runId !== runIdRef.current) return
+      clearTimers()
       setProgress(100)
       setPhase('done')
 
-      if (reportTab && !reportTab.closed) {
+      const tab = reportTabRef.current
+      if (tab && !tab.closed) {
         try {
-          reportTab.location.href = pdfUrl
+          tab.location.href = targetUrl
           setMessage('Phân tích xong — đã mở báo cáo PDF.')
         } catch {
-          reportTab.close()
+          try {
+            tab.close()
+          } catch {
+            /* ignore */
+          }
+          reportTabRef.current = null
           setMessage('Phân tích xong — bấm link bên dưới để mở PDF.')
         }
       } else {
-        // Popup blocked or closed — still try open + always show link
-        const w = window.open(pdfUrl, '_blank', 'noopener,noreferrer')
+        const w = window.open(targetUrl, '_blank', 'noopener,noreferrer')
         setMessage(
           w
             ? 'Phân tích xong — đã mở báo cáo PDF.'
@@ -178,7 +220,9 @@ export function SurfAnalysisMock({ kol }: Props) {
 
       <ul className="surf-analysis__steps">
         <li className={progress > 5 ? 'is-on' : ''}>Profile & followers</li>
-        <li className={progress > 35 ? 'is-on' : ''}>Smart followers (Surf AI)</li>
+        <li className={progress > 35 ? 'is-on' : ''}>
+          Smart followers (Surf AI)
+        </li>
         <li className={progress > 65 ? 'is-on' : ''}>Engagement window</li>
         <li className={progress >= 100 ? 'is-on' : ''}>Export PDF → R2</li>
       </ul>

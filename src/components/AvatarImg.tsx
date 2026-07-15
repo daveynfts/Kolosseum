@@ -3,6 +3,7 @@ import {
   initials,
   normalizeAvatarUrl,
   resolveMediaUrl,
+  toTextureSafeUrl,
   xAvatarTextureUrl,
   xAvatarUrl,
 } from '../lib/avatar'
@@ -37,13 +38,9 @@ export function AvatarImg({
     const list: string[] = []
     if (override) {
       list.push(resolveMediaUrl(override))
-      // If override is absolute R2, also try same-origin proxy form
-      if (/^https?:\/\//i.test(override)) {
-        const asProxy = override.includes('/radar/avatars/')
-          ? `/r2/radar/avatars/${clean}.jpg`
-          : null
-        if (asProxy) list.push(asProxy)
-      }
+      // Same-origin /r2 proxy when path is on our R2 (avoids public-bucket 403)
+      const proxy = toTextureSafeUrl(override, clean)
+      if (proxy && proxy !== resolveMediaUrl(override)) list.push(proxy)
     }
     list.push(
       // Deployed static first (always same-origin, works when R2 public 403)

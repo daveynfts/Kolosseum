@@ -48,6 +48,7 @@ function parseArgs(argv) {
     fromJson: null,
     followers: null,
     displayName: null,
+    pdf: null,
   }
   for (let i = 2; i < argv.length; i++) {
     const a = argv[i]
@@ -57,6 +58,7 @@ function parseArgs(argv) {
     else if (a === '--from-json') out.fromJson = argv[++i]
     else if (a === '--followers') out.followers = Number(argv[++i])
     else if (a === '--display-name') out.displayName = argv[++i]
+    else if (a === '--pdf') out.pdf = argv[++i]
     else if (a === '--help' || a === '-h') out.help = true
   }
   return out
@@ -88,7 +90,7 @@ async function main() {
     'https://radar.daveynfts.com'
   ).replace(/\/$/, '')
 
-  /** @type {Record<string, { bio?: string, followers?: number, displayName?: string }>} */
+  /** @type {Record<string, { bio?: string, followers?: number, displayName?: string, surfReportPdfUrl?: string }>} */
   const patches = {}
 
   if (args.fromJson) {
@@ -101,6 +103,7 @@ async function main() {
           bio: v.bio,
           followers: v.followers,
           displayName: v.displayName,
+          surfReportPdfUrl: v.surfReportPdfUrl || v.pdf,
         }
     }
   } else if (args.handle) {
@@ -109,14 +112,19 @@ async function main() {
     if (args.bioFile) {
       bio = fs.readFileSync(path.resolve(args.bioFile), 'utf8')
     }
-    if (bio == null) {
-      console.error('Need --bio or --bio-file')
+    // Allow PDF-only / field-only patches without bio
+    if (bio == null && !args.pdf && !args.displayName && !Number.isFinite(args.followers)) {
+      console.error('Need --bio / --bio-file and/or --pdf / --followers / --display-name')
       process.exit(1)
     }
     patches[key] = {
-      bio: unescapeBio(bio).replace(/\r\n/g, '\n').trim(),
+      bio:
+        bio != null
+          ? unescapeBio(bio).replace(/\r\n/g, '\n').trim()
+          : undefined,
       followers: Number.isFinite(args.followers) ? args.followers : undefined,
       displayName: args.displayName || undefined,
+      surfReportPdfUrl: args.pdf || undefined,
     }
   } else {
     console.error('Need --handle … or --from-json …  (see --help)')
@@ -150,14 +158,17 @@ async function main() {
     if (p.bio != null) k.bio = p.bio
     if (p.followers != null) k.followers = p.followers
     if (p.displayName != null) k.displayName = p.displayName
+    if (p.surfReportPdfUrl != null) {
+      k.surfReportPdfUrl = String(p.surfReportPdfUrl).trim() || undefined
+    }
     n++
     console.log(
       'patched',
       k.handle,
-      'bioLen',
-      (k.bio || '').length,
+      p.bio != null ? `bioLen ${(k.bio || '').length}` : '',
       p.followers != null ? `followers=${p.followers}` : '',
       p.displayName != null ? `name=${p.displayName}` : '',
+      p.surfReportPdfUrl != null ? `pdf=${k.surfReportPdfUrl}` : '',
     )
   }
   if (n === 0) {

@@ -2202,18 +2202,38 @@ button.view-toggle-btn.is-active {
 }
 
 /* â€”â€”â€” Tier 1 Feed panel â€”â€”â€” */
+/* Header action pills (Feed / Shortlist) — match chip--sm scale */
+.hud-bar__actions .pill--sm,
+.hud-bar__actions .pill--btn {
+  padding: 2px 7px;
+  font-size: 0.6rem;
+  font-weight: 600;
+  min-height: 22px;
+  line-height: 1.2;
+  gap: 4px;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+.hud-bar__actions .live-dot--sm {
+  width: 5px;
+  height: 5px;
+  box-shadow: 0 0 6px #f87171;
+}
+
 .pill-star {
   color: #fbbf24;
-  font-size: 0.78rem;
+  font-size: 0.62rem;
   line-height: 1;
 }
 
 .pill-count {
-  min-width: 1.1rem;
-  height: 1.1rem;
-  padding: 0 5px;
+  min-width: 0.95rem;
+  height: 0.95rem;
+  padding: 0 4px;
   border-radius: 999px;
-  font-size: 0.62rem;
+  font-size: 0.55rem;
   font-weight: 700;
   display: inline-grid;
   place-items: center;
@@ -2229,16 +2249,16 @@ button.view-toggle-btn.is-active {
 
 .pill--btn {
   cursor: pointer;
-  font: inherit;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
+  font-family: inherit;
 }
 
 .pill--live {
   border-color: rgba(248, 113, 113, 0.55);
   color: #fecaca;
-  box-shadow: 0 0 16px rgba(248, 113, 113, 0.2);
+  box-shadow: 0 0 10px rgba(248, 113, 113, 0.15);
 }
 
 .live-dot {

@@ -1,13 +1,18 @@
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react'
-import type { Kol, Niche, StatusLabel } from '../types'
+import type { Kol, KolRank, Niche, StatusLabel } from '../types'
 import {
+  applyKolRank,
   formatRank,
   getKolNiches,
+  getKolRank,
   NICHE_COLORS,
   primaryNiche,
   formatStatus,
+  RANK_LABELS,
+  RANK_ORDER,
   STATUS_EMOJI,
   STATUS_LABELS,
+  tierForRank,
 } from '../types'
 import { RankBadge } from '../components/RankBadge'
 import {
@@ -48,7 +53,7 @@ function tabFromHash(): Tab {
 export function AdminDashboard() {
   const [kols, setKols] = useState<Kol[]>(() => loadKols())
   const [query, setQuery] = useState('')
-  const [filterTier, setFilterTier] = useState<'All' | 1 | 2 | 3>('All')
+  const [filterRank, setFilterRank] = useState<KolRank | 'All'>('All')
   const [filterStatus, setFilterStatus] = useState<StatusLabel | 'All'>('All')
   const [showHidden, setShowHidden] = useState(true)
   const [selectedId, setSelectedId] = useState<string | null>(null)
@@ -121,7 +126,7 @@ export function AdminDashboard() {
     return kols
       .filter((k) => {
         if (!showHidden && k.hidden) return false
-        if (filterTier !== 'All' && k.tier !== filterTier) return false
+        if (filterRank !== 'All' && getKolRank(k) !== filterRank) return false
         if (filterStatus !== 'All' && k.statusLabel !== filterStatus) return false
         const q = query.trim().toLowerCase()
         if (!q) return true
@@ -133,7 +138,7 @@ export function AdminDashboard() {
         )
       })
       .sort((a, b) => b.score - a.score)
-  }, [kols, query, filterTier, filterStatus, showHidden])
+  }, [kols, query, filterRank, filterStatus, showHidden])
 
   const flash = (msg: string) => {
     setToast(msg)
@@ -514,19 +519,21 @@ export function AdminDashboard() {
               placeholder="Search handle, name, bio…"
             />
             <select
-              value={String(filterTier)}
+              value={filterRank}
               onChange={(e) =>
-                setFilterTier(
+                setFilterRank(
                   e.target.value === 'All'
                     ? 'All'
-                    : (Number(e.target.value) as 1 | 2 | 3),
+                    : (e.target.value as KolRank),
                 )
               }
             >
               <option value="All">All ranks</option>
-              <option value="1">Challenger / Master</option>
-              <option value="2">Diamond / Platinum</option>
-              <option value="3">Gold</option>
+              {RANK_ORDER.map((r) => (
+                <option key={r} value={r}>
+                  {RANK_LABELS[r]}
+                </option>
+              ))}
             </select>
             <select
               value={filterStatus}
@@ -595,10 +602,11 @@ export function AdminDashboard() {
                         tier={k.tier}
                         score={k.score}
                         isTop30={k.isTop30}
+                        rank={k.rank}
                         size="sm"
                       />
                       <span className="muted" style={{ marginLeft: 6 }}>
-                        B{k.tier ?? 3}
+                        {formatRank(k)}
                       </span>
                     </td>
                     <td>
@@ -716,24 +724,31 @@ export function AdminDashboard() {
                       />
                     </Field>
                     <Field
-                      label="Rank band → display rank (band + score)"
+                      label="Rank (5 bậc — giống map)"
                       source="human"
                     >
                       <select
-                        value={draft.tier ?? 2}
+                        value={getKolRank(draft)}
                         onChange={(e) => {
-                          const tier = Number(e.target.value) as 1 | 2 | 3
+                          const rank = e.target.value as KolRank
                           if (!draft) return
-                          const nextDraft = { ...draft, tier }
+                          const nextDraft = applyKolRank(draft, rank)
                           setDraft(nextDraft)
                           setDirty(true)
                           // Publish immediately so map/R2 stay in sync
                           onSaveDraft(nextDraft)
                         }}
                       >
-                        <option value={1}>1 · Challenger / Master</option>
-                        <option value={2}>2 · Diamond / Platinum</option>
-                        <option value={3}>3 · Gold</option>
+                        {RANK_ORDER.map((r) => (
+                          <option key={r} value={r}>
+                            {RANK_LABELS[r]}
+                            {r === 'challenger' || r === 'master'
+                              ? ' · band 1'
+                              : r === 'diamond' || r === 'platinum'
+                                ? ' · band 2'
+                                : ' · band 3'}
+                          </option>
+                        ))}
                       </select>
                       <div
                         className="muted"
@@ -747,6 +762,7 @@ export function AdminDashboard() {
                       >
                         Preview:
                         <RankBadge
+                          rank={getKolRank(draft)}
                           tier={draft.tier}
                           score={draft.score}
                           isTop30={draft.isTop30}
@@ -754,7 +770,8 @@ export function AdminDashboard() {
                         />
                         <span>{formatRank(draft)}</span>
                         <span style={{ opacity: 0.85 }}>
-                          · Đổi band → auto Save R2 (cần token)
+                          · band T{draft.tier ?? tierForRank(getKolRank(draft))} ·
+                          auto Save R2
                         </span>
                       </div>
                     </Field>

@@ -313,6 +313,7 @@ function AvatarNode({
                     tier={kol.tier}
                     score={kol.score}
                     isTop30={kol.isTop30}
+                    rank={kol.rank}
                     size="sm"
                   />
                   <span

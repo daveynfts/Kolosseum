@@ -20,7 +20,16 @@ export interface Kol {
   niche: Niche
   /** Multi-label niches for diverse KOLs. Filter matches any. */
   niches?: Niche[]
+  /**
+   * Legacy band 1|2|3 (Challenger/Master · Dia/Plat · Gold).
+   * Prefer explicit `rank` when set; otherwise derived from tier + score.
+   */
   tier?: number
+  /**
+   * Display rank on map (5 ladder steps). When set, overrides tier+score derivation.
+   * Admin sets this; synced with `tier` band for legacy filters.
+   */
+  rank?: KolRank
   typeRaw?: string
   /** Quality-weighted proxy (not official X Smart Followers) */
   smartFollowers: number
@@ -117,7 +126,7 @@ export function formatStatus(status: StatusLabel | string | undefined | null): s
 
 /**
  * League-inspired rank ladder (simpler than LoL).
- * Stored data still uses tier 1|2|3; rank is display layer from tier + score.
+ * Prefer explicit Kol.rank; else derive from tier band + score.
  */
 export type KolRank =
   | 'challenger'
@@ -195,15 +204,27 @@ export function tierForRank(rank: KolRank): 1 | 2 | 3 {
   return 3
 }
 
+function isKolRank(v: unknown): v is KolRank {
+  return (
+    v === 'challenger' ||
+    v === 'master' ||
+    v === 'diamond' ||
+    v === 'platinum' ||
+    v === 'gold'
+  )
+}
+
 /**
- * Derive display rank from tier + composite score.
+ * Display rank: explicit Kol.rank wins; else tier band + score.
  * Challenger / Master ≈ T1, Diamond / Plat ≈ T2, Gold ≈ T3.
  */
 export function getKolRank(k: {
   tier?: number
   score?: number
   isTop30?: boolean
+  rank?: KolRank | string
 }): KolRank {
+  if (isKolRank(k.rank)) return k.rank
   const tier = k.tier ?? 3
   const score = k.score ?? 50
   // Band T1 → Challenger / Master
@@ -220,10 +241,23 @@ export function getKolRank(k: {
   return 'gold'
 }
 
+/** Apply a display rank: sets rank + matching tier band (for legacy). */
+export function applyKolRank<T extends { tier?: number; rank?: KolRank }>(
+  k: T,
+  rank: KolRank,
+): T {
+  return {
+    ...k,
+    rank,
+    tier: tierForRank(rank),
+  }
+}
+
 export function formatRank(k: {
   tier?: number
   score?: number
   isTop30?: boolean
+  rank?: KolRank | string
 }): string {
   return RANK_LABELS[getKolRank(k)]
 }

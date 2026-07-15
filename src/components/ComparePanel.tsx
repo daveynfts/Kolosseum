@@ -138,6 +138,7 @@ export function ComparePanel({
                       tier={k.tier}
                       score={k.score}
                       isTop30={k.isTop30}
+                      rank={k.rank}
                       size="sm"
                     />
                     <span className="tag tag--status-emoji" title={STATUS_LABELS[st]}>

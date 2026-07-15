@@ -32,10 +32,17 @@ export const FIELD_META: FieldMeta[] = [
     group: 'identity',
   },
   {
-    key: 'tier',
-    label: 'Rank band',
+    key: 'rank',
+    label: 'Rank (5 bậc)',
     source: 'human',
-    note: '1=Challenger/Master · 2=Diamond/Platinum · 3=Gold (display rank = band + score)',
+    note: 'Challenger · Master · Diamond · Platinum · Gold — map + admin. Optional override; else derive from tier+score',
+    group: 'identity',
+  },
+  {
+    key: 'tier',
+    label: 'Rank band (legacy)',
+    source: 'human',
+    note: '1=Chall/Master · 2=Dia/Plat · 3=Gold — synced when admin sets rank',
     group: 'identity',
   },
   {

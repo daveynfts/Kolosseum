@@ -298,6 +298,7 @@ export function Hud({
                             tier={k.tier}
                             score={k.score}
                             isTop30={k.isTop30}
+                            rank={k.rank}
                             size="pip"
                             className="rank-pip--list"
                           />
@@ -530,6 +531,7 @@ export function Hud({
                   tier={selected.tier}
                   score={selected.score}
                   isTop30={selected.isTop30}
+                  rank={selected.rank}
                   size="sm"
                   className="tag--rank"
                 />

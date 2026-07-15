@@ -29,7 +29,7 @@ export function RankBadge({
   className = '',
   rank: rankProp,
 }: Props) {
-  const rank = rankProp ?? getKolRank({ tier, score, isTop30 })
+  const rank = getKolRank({ tier, score, isTop30, rank: rankProp })
   const color = RANK_COLORS[rank]
   const label = size === 'short' ? RANK_SHORT[rank] : RANK_LABELS[rank]
 

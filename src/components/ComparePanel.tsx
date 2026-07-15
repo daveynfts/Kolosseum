@@ -1,5 +1,7 @@
+import { useMemo, useState } from 'react'
 import type { Kol } from '../types'
 import {
+  formatRank,
   getKolNiches,
   NICHE_COLORS,
   primaryNiche,
@@ -19,6 +21,8 @@ interface Props {
   onSelect: (kol: Kol) => void
 }
 
+const SHORTLIST_MAX = 5
+
 export function ComparePanel({
   open,
   shortlist,
@@ -27,6 +31,20 @@ export function ComparePanel({
   onClear,
   onSelect,
 }: Props) {
+  const [compact, setCompact] = useState(false)
+  const [expandedBio, setExpandedBio] = useState<Record<string, boolean>>({})
+
+  const totals = useMemo(() => {
+    if (!shortlist.length) {
+      return { followers: 0, avgScore: 0, hot: 0 }
+    }
+    const followers = shortlist.reduce((s, k) => s + (k.followers || 0), 0)
+    const avgScore =
+      shortlist.reduce((s, k) => s + (k.score || 0), 0) / shortlist.length
+    const hot = shortlist.filter((k) => k.statusLabel === 'hot').length
+    return { followers, avgScore, hot }
+  }, [shortlist])
+
   if (!open) return null
 
   const exportJson = () => {
@@ -56,7 +74,7 @@ export function ComparePanel({
     const text = shortlist
       .map(
         (k, i) =>
-          `${i + 1}. @${k.handle} (${k.displayName}) · T${k.tier} · ${k.statusLabel ?? '—'} · ${fmt(k.followers)} foll · score ${k.score.toFixed(0)}${k.activity7dPosts != null ? ` · 7d posts ${k.activity7dPosts}` : ''}`,
+          `${i + 1}. @${k.handle} (${k.displayName}) · ${formatRank(k)} · ${k.statusLabel ?? '—'} · ${fmt(k.followers)} foll · score ${k.score.toFixed(0)}${k.activity7dPosts != null ? ` · 7d posts ${k.activity7dPosts}` : ''}`,
       )
       .join('\n')
     try {
@@ -67,148 +85,260 @@ export function ComparePanel({
   }
 
   return (
-    <aside className="compare-panel glass">
-      <header className="compare-head">
-        <div>
-          <h2>Shortlist / Compare</h2>
-          <p>
-            {shortlist.length}/5 selected · click ☆ on detail or rank to add
+    <aside
+      className={`compare-panel glass ${compact ? 'compare-panel--compact' : ''}`}
+    >
+      <header className="feed-head compare-head">
+        <div className="feed-head-main">
+          <div className="feed-title-row">
+            <span className="live-dot live-dot--star" aria-hidden>
+              ★
+            </span>
+            <h2>Shortlist</h2>
+            <span className="feed-badge compare-badge">
+              {shortlist.length}/{SHORTLIST_MAX}
+            </span>
+          </div>
+          <p className="feed-sub">
+            So sánh tối đa {SHORTLIST_MAX} KOL · ☆ trên detail / Top Score
           </p>
         </div>
-        <button type="button" className="icon-btn" onClick={onClose} title="Close">
-          ×
-        </button>
+        <div className="feed-actions">
+          <button
+            type="button"
+            className="icon-btn"
+            title={compact ? 'Mở rộng' : 'Thu gọn'}
+            onClick={() => setCompact((v) => !v)}
+          >
+            {compact ? '▣' : '▬'}
+          </button>
+          <button type="button" className="icon-btn" title="Đóng" onClick={onClose}>
+            ×
+          </button>
+        </div>
       </header>
 
-      {shortlist.length === 0 ? (
-        <div className="compare-empty">
-          <p>Chưa có KOL trong shortlist</p>
-          <span>Mở detail panel và bấm “Add to shortlist”, hoặc ☆ trên top list.</span>
-        </div>
-      ) : (
+      {!compact && shortlist.length > 0 && (
         <>
-          <div className="compare-actions">
-            <button type="button" className="btn" onClick={exportCsv}>
-              Export CSV
-            </button>
-            <button type="button" className="btn" onClick={exportJson}>
-              Export JSON
-            </button>
-            <button type="button" className="btn" onClick={() => void copyText()}>
-              Copy list
-            </button>
-            <button type="button" className="btn btn--danger" onClick={onClear}>
-              Clear
-            </button>
+          <div className="feed-stats-bar">
+            <div className="feed-stat">
+              <em>{shortlist.length}</em>
+              <span>selected</span>
+            </div>
+            <div className="feed-stat">
+              <em>{fmt(totals.followers)}</em>
+              <span>followers</span>
+            </div>
+            <div className="feed-stat">
+              <em>{totals.avgScore.toFixed(0)}</em>
+              <span>avg pts</span>
+            </div>
+            <div className="feed-stat">
+              <em>{totals.hot || '—'}</em>
+              <span>hot</span>
+            </div>
           </div>
 
-          <div className="compare-grid">
-            {shortlist.map((k) => {
-              const st = (k.statusLabel ?? 'stable') as StatusLabel
-              return (
-                <div key={k.id} className="compare-card">
-                  <div className="compare-card-top">
-                    <button
-                      type="button"
-                      className="compare-author"
-                      onClick={() => onSelect(k)}
+          <div className="feed-toolbar compare-toolbar">
+            <div className="compare-actions-row">
+              <button type="button" className="btn btn--sm" onClick={exportCsv}>
+                CSV
+              </button>
+              <button type="button" className="btn btn--sm" onClick={exportJson}>
+                JSON
+              </button>
+              <button
+                type="button"
+                className="btn btn--sm"
+                onClick={() => void copyText()}
+              >
+                Copy
+              </button>
+              <button
+                type="button"
+                className="btn btn--sm btn--danger"
+                onClick={onClear}
+              >
+                Clear
+              </button>
+            </div>
+          </div>
+        </>
+      )}
+
+      <div className="feed-list compare-list">
+        {shortlist.length === 0 ? (
+          <div className="feed-empty">
+            <div className="feed-empty__icon">★</div>
+            <p>Chưa có KOL trong shortlist</p>
+            <span>
+              Mở detail → “Add to shortlist”, hoặc ☆ trên Top Score (tối đa{' '}
+              {SHORTLIST_MAX}).
+            </span>
+          </div>
+        ) : (
+          shortlist.map((k, i) => {
+            const st = (k.statusLabel ?? 'stable') as StatusLabel
+            const color = NICHE_COLORS[primaryNiche(k)]
+            const niches = getKolNiches(k)
+            const bio = k.bio || ''
+            const long = bio.length > 180
+            const openBio = !!expandedBio[k.id]
+            const displayBio =
+              !openBio && long ? bio.slice(0, 160).trimEnd() + '…' : bio
+
+            return (
+              <article
+                key={k.id}
+                className="feed-card compare-card"
+                style={{ animationDelay: `${Math.min(i, 8) * 35}ms` }}
+              >
+                <div
+                  className="feed-card__accent"
+                  style={{ background: color }}
+                  aria-hidden
+                />
+
+                <div className="feed-card-top">
+                  <button
+                    type="button"
+                    className="feed-author"
+                    onClick={() => onSelect(k)}
+                  >
+                    <div
+                      className="feed-av-wrap"
+                      style={{ boxShadow: `0 0 0 2px ${color}55` }}
                     >
                       <AvatarImg
                         handle={k.handle}
                         name={k.displayName}
-                        size={40}
-                        color={NICHE_COLORS[primaryNiche(k)]}
+                        size={42}
+                        color={color}
                       />
-                      <div>
+                    </div>
+                    <div className="feed-author-meta">
+                      <div className="feed-author-name">
                         <strong>{k.displayName}</strong>
-                        <span>@{k.handle}</span>
+                        {st === 'hot' && <span className="hot-pill">HOT</span>}
+                        <span
+                          className="niche-pill"
+                          style={{ color, borderColor: `${color}55` }}
+                        >
+                          {niches[0] ?? primaryNiche(k)}
+                        </span>
                       </div>
+                      <span className="feed-author-sub">
+                        @{k.handle}
+                        <span className="feed-dot">·</span>
+                        #{i + 1} shortlist
+                      </span>
+                    </div>
+                  </button>
+                  <div className="feed-card-actions">
+                    <button
+                      type="button"
+                      className="icon-btn icon-btn--sm"
+                      title="Focus trên map"
+                      onClick={() => onSelect(k)}
+                    >
+                      ◎
                     </button>
                     <button
                       type="button"
                       className="icon-btn icon-btn--sm"
-                      title="Remove"
+                      title="Gỡ shortlist"
                       onClick={() => onRemove(k.id)}
                     >
                       ×
                     </button>
                   </div>
-                  <div className="compare-tags">
-                    <RankBadge
-                      tier={k.tier}
-                      score={k.score}
-                      isTop30={k.isTop30}
-                      rank={k.rank}
-                      size="sm"
-                    />
-                    <span className="tag tag--status-emoji" title={STATUS_LABELS[st]}>
-                      {formatStatus(st)}
-                    </span>
+                </div>
+
+                <div className="compare-tags">
+                  <RankBadge
+                    tier={k.tier}
+                    score={k.score}
+                    isTop30={k.isTop30}
+                    rank={k.rank}
+                    size="sm"
+                  />
+                  <span className="tag tag--status-emoji" title={STATUS_LABELS[st]}>
+                    {formatStatus(st)}
+                  </span>
+                  {niches.length > 1 && (
                     <span
                       className="tag"
                       style={{
-                        color: NICHE_COLORS[primaryNiche(k)],
-                        borderColor: `${NICHE_COLORS[primaryNiche(k)]}55`,
+                        color,
+                        borderColor: `${color}55`,
                       }}
                     >
-                      {getKolNiches(k).join(' · ')}
+                      {niches.join(' · ')}
                     </span>
-                    {k.isTop30 && <span className="tag tag--muted">Top30</span>}
-                  </div>
-                  <div className="compare-stats">
-                    <Row label="Followers" value={fmt(k.followers)} />
-                    <Row label="Score" value={k.score.toFixed(1)} />
-                    <Row label="Hot" value={k.hotScore.toFixed(1)} />
-                    <Row
-                      label="7d posts"
-                      value={
-                        k.activity7dPosts != null
-                          ? `${k.activity7dPosts}${k.activity7dSource === 'sampled' ? '*' : '≈'}`
-                          : '—'
-                      }
-                    />
-                    <Row
-                      label="7d likes"
-                      value={
-                        k.activity7dLikes != null ? fmt(k.activity7dLikes) : '—'
-                      }
-                    />
-                    <Row
-                      label="7d score"
-                      value={
-                        k.activity7dScore != null
-                          ? k.activity7dScore.toFixed(0)
-                          : '—'
-                      }
-                    />
-                    <Row
-                      label="Posts/day"
-                      value={
-                        k.tweetsPerDay != null ? k.tweetsPerDay.toFixed(1) : '—'
-                      }
-                    />
-                  </div>
-                  <p className="compare-bio">{k.bio}</p>
+                  )}
+                  {k.isTop30 && <span className="tag tag--muted">Top30</span>}
                 </div>
-              )
-            })}
-          </div>
-          <p className="compare-note">
-            * sampled = X search sample (có thể capped). ≈ = estimated from lifetime
-            pace × 7.
-          </p>
-        </>
+
+                <div className="feed-metrics compare-metrics">
+                  <span title="Followers">
+                    <i>◎</i> {fmt(k.followers)}
+                  </span>
+                  <span title="Score">
+                    <i>◆</i> {k.score.toFixed(0)}
+                  </span>
+                  <span title="Hot">
+                    <i>↑</i> {k.hotScore.toFixed(0)}
+                  </span>
+                  <span title="7d posts">
+                    <i>7d</i>{' '}
+                    {k.activity7dPosts != null
+                      ? `${k.activity7dPosts}${k.activity7dSource === 'sampled' ? '*' : '≈'}`
+                      : '—'}
+                  </span>
+                </div>
+
+                {bio && (
+                  <>
+                    <p className="feed-text compare-bio-text">{displayBio}</p>
+                    {long && (
+                      <button
+                        type="button"
+                        className="feed-more"
+                        onClick={() =>
+                          setExpandedBio((prev) => ({
+                            ...prev,
+                            [k.id]: !prev[k.id],
+                          }))
+                        }
+                      >
+                        {openBio ? 'Thu gọn' : 'Xem thêm'}
+                      </button>
+                    )}
+                  </>
+                )}
+              </article>
+            )
+          })
+        )}
+      </div>
+
+      {!compact && (
+        <footer className="feed-foot">
+          <span className="feed-foot__left">
+            {shortlist.length > 0 ? (
+              <>
+                <strong>{shortlist.length}</strong> / {SHORTLIST_MAX} slots
+              </>
+            ) : (
+              'Empty shortlist'
+            )}
+          </span>
+          <span className="feed-foot__right">
+            * sampled · ≈ estimated pace×7
+          </span>
+        </footer>
       )}
     </aside>
-  )
-}
-
-function Row({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="compare-row">
-      <span>{label}</span>
-      <strong>{value}</strong>
-    </div>
   )
 }
 
@@ -216,6 +346,7 @@ function exportRow(k: Kol) {
   return {
     handle: k.handle,
     name: k.displayName,
+    rank: formatRank(k),
     tier: k.tier ?? '',
     niche: primaryNiche(k),
     niches: getKolNiches(k).join('|'),

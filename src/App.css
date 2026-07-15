@@ -517,172 +517,122 @@ button.view-toggle-btn.is-active {
   color: #fecaca;
 }
 
-/* Compare / shortlist */
+/* Compare / shortlist — shell aligned with Feed panel */
 .compare-panel {
   position: absolute;
-  z-index: 6;
-  left: 24px;
-  right: 24px;
-  bottom: 56px;
-  max-height: min(42vh, 380px);
+  z-index: 5;
+  top: 72px;
+  /* Dock left of Feed when both open; otherwise mirror Feed on the right */
+  right: 16px;
+  bottom: 72px;
+  width: min(400px, calc(100vw - 360px));
+  max-width: 400px;
+  min-width: 280px;
+  height: auto;
+  max-height: none;
   display: flex;
   flex-direction: column;
   border-radius: var(--radius-lg);
   overflow: hidden;
   pointer-events: auto;
-  animation: slideIn 0.22s ease;
+  animation: slideIn 0.24s ease;
+}
+
+/* When Feed is also open, Shortlist sits to its left */
+.app:has(.feed-panel) .compare-panel {
+  right: min(432px, calc(100vw - 360px + 32px));
+}
+
+.compare-panel--compact {
+  bottom: auto;
+  height: auto;
+}
+
+.compare-panel--compact .compare-list,
+.compare-panel--compact .feed-foot {
+  display: none;
 }
 
 .compare-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  padding: 12px 14px;
-  border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+  background: linear-gradient(
+    180deg,
+    rgba(251, 191, 36, 0.08),
+    transparent 70%
+  );
 }
 
-.compare-head h2 {
-  margin: 0;
-  font-size: 1rem;
+.compare-badge {
+  border-color: rgba(251, 191, 36, 0.45);
+  color: #fde68a;
+  background: rgba(251, 191, 36, 0.1);
 }
 
-.compare-head p {
-  margin: 4px 0 0;
-  font-size: 0.72rem;
-  color: #94a3b8;
+.live-dot--star {
+  width: auto;
+  height: auto;
+  min-width: 14px;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+  animation: none;
+  font-size: 0.85rem;
+  line-height: 1;
+  color: #fbbf24;
 }
 
-.compare-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  padding: 10px 14px;
+.compare-toolbar {
   border-bottom: 1px solid rgba(148, 163, 184, 0.08);
 }
 
-.compare-grid {
+.compare-actions-row {
   display: flex;
-  gap: 10px;
-  padding: 12px 14px;
-  overflow-x: auto;
+  flex-wrap: wrap;
+  gap: 6px;
+  width: 100%;
+}
+
+.btn--sm {
+  padding: 5px 10px !important;
+  font-size: 0.68rem !important;
+  border-radius: 999px !important;
+}
+
+.compare-list {
   flex: 1;
   min-height: 0;
 }
 
 .compare-card {
-  flex: 0 0 min(260px, 80vw);
-  background: linear-gradient(
-      165deg,
-      rgba(255, 255, 255, 0.08),
-      rgba(255, 255, 255, 0.02)
-    ),
-    rgba(255, 255, 255, 0.03);
-  border: 1px solid var(--glass-border-soft);
-  border-radius: var(--radius-md);
-  padding: 12px;
-  overflow: auto;
-  max-height: 240px;
-}
-
-.compare-card-top {
-  display: flex;
-  justify-content: space-between;
-  gap: 8px;
-  margin-bottom: 8px;
-}
-
-.compare-author {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  background: none;
-  border: none;
-  color: inherit;
-  padding: 0;
-  cursor: pointer;
-  text-align: left;
-  min-width: 0;
-}
-
-.compare-author strong {
-  display: block;
-  font-size: 0.85rem;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 140px;
-}
-
-.compare-author span {
-  font-size: 0.72rem;
-  color: #94a3b8;
+  /* uses feed-card base; no fixed horizontal strip */
+  max-height: none;
+  overflow: visible;
 }
 
 .compare-tags {
   display: flex;
   flex-wrap: wrap;
   gap: 4px;
-  margin-bottom: 8px;
+  margin: 0 0 8px;
 }
 
-.compare-stats {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  margin-bottom: 8px;
+.compare-metrics {
+  margin-bottom: 6px;
 }
 
-.compare-row {
-  display: flex;
-  justify-content: space-between;
-  font-size: 0.72rem;
-  color: #94a3b8;
-}
-
-.compare-row strong {
-  color: #e2e8f0;
-  font-variant-numeric: tabular-nums;
-}
-
-.compare-bio {
-  margin: 0;
-  font-size: 0.68rem;
-  line-height: 1.45;
-  color: #94a3b8;
-  white-space: pre-line;
-  max-height: 9.5em;
-  overflow-y: auto;
-  padding-right: 2px;
-}
-
-.compare-empty {
-  padding: 28px 16px;
-  text-align: center;
-  color: #94a3b8;
-}
-
-.compare-empty p {
-  margin: 0 0 6px;
-  color: #e2e8f0;
-  font-weight: 600;
-}
-
-.compare-empty span {
-  font-size: 0.75rem;
-}
-
-.compare-note {
-  margin: 0;
-  padding: 8px 14px 10px;
-  font-size: 0.65rem;
-  color: #64748b;
-  border-top: 1px solid rgba(148, 163, 184, 0.08);
+.compare-bio-text {
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 
 @media (min-width: 1100px) {
-  .app:has(.compare-panel) .hud-detail {
-    bottom: calc(56px + min(42vh, 380px) + 12px);
-    max-height: none;
+  .app:has(.compare-panel):not(:has(.feed-panel)) .hud-detail {
+    right: min(436px, calc(100vw - 360px + 16px));
+  }
+
+  .app:has(.compare-panel):has(.feed-panel) .hud-detail {
+    /* both side panels open — hide detail crush on desktop */
+    right: min(852px, calc(100vw - 200px));
+    max-width: min(320px, 28vw);
   }
 }
 
@@ -2252,6 +2202,31 @@ button.view-toggle-btn.is-active {
 }
 
 /* â€”â€”â€” Tier 1 Feed panel â€”â€”â€” */
+.pill-star {
+  color: #fbbf24;
+  font-size: 0.78rem;
+  line-height: 1;
+}
+
+.pill-count {
+  min-width: 1.1rem;
+  height: 1.1rem;
+  padding: 0 5px;
+  border-radius: 999px;
+  font-size: 0.62rem;
+  font-weight: 700;
+  display: inline-grid;
+  place-items: center;
+  background: rgba(251, 191, 36, 0.2);
+  border: 1px solid rgba(251, 191, 36, 0.35);
+  color: #fde68a;
+}
+
+.pill--star.is-active,
+.pill--star.pill--live {
+  border-color: rgba(251, 191, 36, 0.45);
+}
+
 .pill--btn {
   cursor: pointer;
   font: inherit;
@@ -3020,7 +2995,8 @@ button.view-toggle-btn.is-active {
     max-width: 4.2rem;
   }
 
-  .feed-panel {
+  .feed-panel,
+  .compare-panel {
     top: auto;
     bottom: 0;
     right: 0;
@@ -3034,6 +3010,16 @@ button.view-toggle-btn.is-active {
     border-left: none;
     border-right: none;
     border-bottom: none;
+  }
+
+  /* Both open on mobile: stack shortlist slightly higher */
+  .app:has(.feed-panel) .compare-panel {
+    right: 0;
+    bottom: min(58vh, 520px);
+    height: min(42vh, 360px);
+    max-height: 42vh;
+    border-radius: 18px 18px 0 0;
+    z-index: 6;
   }
 
   .feed-list {

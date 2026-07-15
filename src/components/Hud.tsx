@@ -243,16 +243,26 @@ export function Hud({
             type="button"
             className={`pill pill--btn pill--sm ${feedOpen ? 'pill--live' : ''}`}
             onClick={onToggleFeed}
+            title="X Feed"
+            aria-pressed={feedOpen}
           >
             <span className="live-dot live-dot--sm" />
             Feed
           </button>
           <button
             type="button"
-            className={`pill pill--btn pill--sm ${compareOpen ? 'pill--active' : ''}`}
+            className={`pill pill--btn pill--sm ${compareOpen ? 'pill--live pill--star' : ''}`}
             onClick={onToggleCompare}
+            title="Shortlist / Compare"
+            aria-pressed={compareOpen}
           >
-            ★ {shortlistIds.length}
+            <span className="pill-star" aria-hidden>
+              ★
+            </span>
+            Shortlist
+            {shortlistIds.length > 0 && (
+              <span className="pill-count">{shortlistIds.length}</span>
+            )}
           </button>
         </div>
       </header>
@@ -440,7 +450,7 @@ export function Hud({
           {autoRotate ? '⏸ Pause rotate' : '▶ Auto rotate'}
         </button>
         <button type="button" className="btn" onClick={onToggleCompare}>
-          {compareOpen ? 'Hide compare' : 'Open shortlist'}
+          {compareOpen ? 'Hide shortlist' : 'Open shortlist'}
         </button>
         <span className="hint">Drag orbit · scroll zoom · click bubble</span>
       </div>

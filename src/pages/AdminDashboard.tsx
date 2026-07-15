@@ -410,7 +410,7 @@ export function AdminDashboard() {
           <strong>Surf AI mock · PDF R2</strong>
           <span>
             Link PDF công khai trên R2 dùng khi user bấm logo Surf trong tab
-            “Phân tích chi tiết”. Có thể ghi đè theo từng KOL ở Editor.
+            “Phân tích sâu”. Có thể ghi đè theo từng KOL ở Editor.
           </span>
         </div>
         <label className="admin-surf-config__field">
@@ -867,7 +867,7 @@ export function AdminDashboard() {
                     />
                   </Field>
                   <p className="admin-hint" style={{ marginTop: 8 }}>
-                    Map tab “Phân tích chi tiết” → bấm logo Surf → đợi 3s → mở
+                    Map tab “Phân tích sâu” → bấm logo Surf → đợi 3s → mở
                     PDF này (hoặc default global).
                   </p>
                 </section>

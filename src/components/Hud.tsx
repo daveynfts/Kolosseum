@@ -507,7 +507,7 @@ export function Hud({
               className={`detail-tab ${detailTab === 'analysis' ? 'is-active' : ''}`}
               onClick={() => setDetailTab('analysis')}
             >
-              Phân tích chi tiết
+              Phân tích sâu
             </button>
             {getRecentFollowers(selected.handle).length > 0 && (
               <button

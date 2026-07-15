@@ -90,18 +90,26 @@ export function Hud({
   onToggleShortlist,
 }: Props) {
   const hotCount = kols.filter((k) => k.statusLabel === 'hot').length
-  const top = useMemo(
-    () =>
-      [...kols]
-        .sort(
-          (a, b) =>
-            b.score - a.score ||
-            b.followers - a.followers ||
-            a.handle.localeCompare(b.handle),
-        )
-        .slice(0, 10),
-    [kols],
-  )
+  const [topQuery, setTopQuery] = useState('')
+  const top = useMemo(() => {
+    const q = topQuery.trim().toLowerCase()
+    const sorted = [...kols].sort(
+      (a, b) =>
+        b.score - a.score ||
+        b.followers - a.followers ||
+        a.handle.localeCompare(b.handle),
+    )
+    if (!q) return sorted.slice(0, 10)
+    return sorted
+      .filter(
+        (k) =>
+          k.displayName.toLowerCase().includes(q) ||
+          k.handle.toLowerCase().includes(q) ||
+          getKolNiches(k).some((n) => n.toLowerCase().includes(q)) ||
+          formatRank(k).toLowerCase().includes(q),
+      )
+      .slice(0, 30)
+  }, [kols, topQuery])
   const inShortlist = selected ? shortlistIds.includes(selected.id) : false
   const [detailTab, setDetailTab] = useState<
     'overview' | 'analysis' | 'follows'
@@ -273,13 +281,42 @@ export function Hud({
             <div>
               <div className="panel-title">Top Score</div>
               <div className="panel-sub">
-                {kols.length} visible · sorted by composite
+                {topQuery.trim()
+                  ? `${top.length} match · max 30`
+                  : `${kols.length} visible · top 10`}
               </div>
             </div>
             <span className="panel-badge">{top.length}</span>
           </div>
+          <label className="rank-search">
+            <span className="rank-search__icon" aria-hidden>
+              ⌕
+            </span>
+            <input
+              type="search"
+              value={topQuery}
+              onChange={(e) => setTopQuery(e.target.value)}
+              placeholder="Tìm tên, @handle, niche…"
+              aria-label="Search Top Score"
+              onKeyDown={(e) => e.stopPropagation()}
+            />
+            {topQuery && (
+              <button
+                type="button"
+                className="rank-search__clear"
+                title="Xóa"
+                onClick={() => setTopQuery('')}
+              >
+                ×
+              </button>
+            )}
+          </label>
           {top.length === 0 ? (
-            <div className="rank-empty">No KOLs match filters</div>
+            <div className="rank-empty">
+              {topQuery.trim()
+                ? 'Không có KOL khớp tìm kiếm'
+                : 'No KOLs match filters'}
+            </div>
           ) : (
             <ul className="rank-list" onWheel={(e) => e.stopPropagation()}>
               {top.map((k, i) => {

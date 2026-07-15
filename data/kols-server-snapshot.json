@@ -1,6 +1,6 @@
 {
   "version": 4,
-  "updatedAt": "2026-07-15T10:38:32.029Z",
+  "updatedAt": "2026-07-15T10:42:04.919Z",
   "source": "admin server · push_kol_bio",
   "note": "admin server · bio push (phamduydong179)",
   "count": 107,
@@ -1014,7 +1014,8 @@
       "activity7dReplies": 11,
       "activity7dReposts": 1,
       "activity7dScore": 77.6,
-      "activity7dSource": "sampled"
+      "activity7dSource": "sampled",
+      "surfReportPdfUrl": "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/RadarKOLsReport/SurfAI_KOL_Evaluation_Report_phamduydong179.pdf"
     },
     {
       "id": "sheet-vader_xfinance",

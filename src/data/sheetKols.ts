@@ -995,6 +995,7 @@ export const SHEET_KOLS: Kol[] = [
     "xFollowing": 313,
     "dataSource": "x-live",
     "isTop30": true,
+    "surfReportPdfUrl": "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/RadarKOLsReport/SurfAI_KOL_Evaluation_Report_phamduydong179.pdf",
     "activity7dPosts": 6,
     "activity7dLikes": 40,
     "activity7dViews": 8324,

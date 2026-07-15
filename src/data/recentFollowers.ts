@@ -334,6 +334,86 @@ export const RECENT_FOLLOWERS_BY_HANDLE: Record<string, RecentFollower[]> = {
       followedAt: '2025-07-08T00:00:00.000Z',
     },
   ],
+  lecter_xfinance: [
+    {
+      handle: '0xsexybanana',
+      displayName: '郡主Christine (✱,✱)',
+      followedAgo: '8 days ago',
+      followedAt: '2026-07-07T00:00:00.000Z',
+    },
+    {
+      handle: 'renaissxyz',
+      displayName: 'Renaiss.xyz',
+      followedAgo: '2 months ago',
+      followedAt: '2026-05-15T00:00:00.000Z',
+    },
+    {
+      handle: 'plus_ultra_715',
+      displayName: 'Winchman@Renaiss',
+      followedAgo: '2 months ago',
+      followedAt: '2026-05-14T00:00:00.000Z',
+    },
+    {
+      handle: 'mej50749',
+      displayName: 'MEJ毛毛姐',
+      followedAgo: '2 months ago',
+      followedAt: '2026-05-12T00:00:00.000Z',
+    },
+    {
+      handle: 'wolfyxbt',
+      displayName: '杀破狼 WolfyXBT',
+      followedAgo: '3 months ago',
+      followedAt: '2026-04-15T00:00:00.000Z',
+    },
+    {
+      handle: 'cindycreation',
+      displayName: 'Cindy胖迪',
+      followedAgo: '5 months ago',
+      followedAt: '2026-02-15T00:00:00.000Z',
+    },
+    {
+      handle: 'iamyourchaos',
+      displayName: '小捕手 Chaos',
+      followedAgo: '5 months ago',
+      followedAt: '2026-02-12T00:00:00.000Z',
+    },
+    {
+      handle: 'blendino',
+      displayName: 'Dino',
+      followedAgo: '6 months ago',
+      followedAt: '2026-01-15T00:00:00.000Z',
+    },
+    {
+      handle: 'miaferrariii',
+      displayName: 'Mia',
+      followedAgo: '9 months ago',
+      followedAt: '2025-10-10T00:00:00.000Z',
+    },
+    {
+      handle: 'randhindi',
+      displayName: 'Rand',
+      followedAgo: '10 months ago',
+      followedAt: '2025-09-15T00:00:00.000Z',
+    },
+    {
+      handle: 'definitivefi',
+      displayName: 'DEFINITIVE',
+      followedAgo: 'a year ago',
+      followedAt: '2025-07-14T00:00:00.000Z',
+    },
+    {
+      handle: 'liyinjyun',
+      displayName: '羊咩咩.m｜MemeMax⚡️',
+      followedAgo: 'a year ago',
+      followedAt: '2025-07-12T00:00:00.000Z',
+    },
+    {
+      handle: 'lootrealms',
+      displayName: 'Realms.World ☁️',
+      followedAgo: 'a year ago',
+      followedAt: '2025-07-10T00:00:00.000Z',
+    },
+  ],
 }
 
 /**

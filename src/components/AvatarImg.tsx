@@ -26,10 +26,17 @@ export function AvatarImg({
   size = 40,
   color = '#64748b',
 }: Props) {
-  const sources = useMemo(
-    () => [xAvatarUrl(handle), xAvatarTextureUrl(handle)],
-    [handle],
-  )
+  const sources = useMemo(() => {
+    const clean = handle.replace(/^@/, '').trim()
+    return [
+      xAvatarUrl(clean),
+      xAvatarTextureUrl(clean),
+      // Vite/public deploy fallback (when R2 object missing)
+      `/avatars/${encodeURIComponent(clean)}.jpg`,
+      `https://unavatar.io/x/${encodeURIComponent(clean)}`,
+      `https://unavatar.io/twitter/${encodeURIComponent(clean)}`,
+    ]
+  }, [handle])
   const [srcIndex, setSrcIndex] = useState(0)
   const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading')
   const imgRef = useRef<HTMLImageElement | null>(null)

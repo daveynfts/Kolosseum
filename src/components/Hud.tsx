@@ -1,16 +1,23 @@
 import { useEffect, useMemo, useState, type CSSProperties } from 'react'
 import type { Kol, Niche, StatusLabel } from '../types'
 import {
+  formatRank,
   formatStatus,
   getKolNiches,
   NICHE_COLORS,
   primaryNiche,
+  RANK_COLORS,
+  RANK_LABELS,
+  RANK_ORDER,
   STATUS_EMOJI,
   STATUS_LABELS,
 } from '../types'
 import type { ViewMode } from '../lib/layout'
 import { AvatarImg } from './AvatarImg'
+import { RankBadge } from './RankBadge'
 import { SurfAnalysisMock } from './SurfAnalysisMock'
+import { RecentFollowersPanel } from './RecentFollowersPanel'
+import { getRecentFollowers } from '../data/recentFollowers'
 
 const NICHES: Array<Niche | 'All'> = [
   'All',
@@ -94,9 +101,9 @@ export function Hud({
     [kols],
   )
   const inShortlist = selected ? shortlistIds.includes(selected.id) : false
-  const [detailTab, setDetailTab] = useState<'overview' | 'analysis'>(
-    'overview',
-  )
+  const [detailTab, setDetailTab] = useState<
+    'overview' | 'analysis' | 'follows'
+  >('overview')
 
   useEffect(() => {
     setDetailTab('overview')
@@ -139,24 +146,34 @@ export function Hud({
         <div className="hud-bar__divider" aria-hidden />
 
         <div className="hud-bar__filters">
-          <div className="filter-seg filter-seg--inline" title="Tier">
-            {(['All', 1, 2, 3] as const).map((t) => (
-              <button
-                key={String(t)}
-                type="button"
-                className={`seg-btn ${filterTier === t ? 'is-active' : ''}`}
-                onClick={() => onFilterTier(t)}
-                title={
-                  t === 'All'
-                    ? 'Show all tiers'
-                    : filterTier === t
-                      ? 'Click again to clear'
-                      : `Filter Tier ${t}`
-                }
-              >
-                {t === 'All' ? 'All' : `T${t}`}
-              </button>
-            ))}
+          <div className="filter-seg filter-seg--inline" title="Rank">
+            {(['All', 1, 2, 3] as const).map((t) => {
+              const label =
+                t === 'All'
+                  ? 'All'
+                  : t === 1
+                    ? 'Chall·Master'
+                    : t === 2
+                      ? 'Dia·Plat'
+                      : 'Gold'
+              return (
+                <button
+                  key={String(t)}
+                  type="button"
+                  className={`seg-btn ${filterTier === t ? 'is-active' : ''}`}
+                  onClick={() => onFilterTier(t)}
+                  title={
+                    t === 'All'
+                      ? 'Show all ranks'
+                      : filterTier === t
+                        ? 'Click again to clear'
+                        : `Filter ${label}`
+                  }
+                >
+                  {label}
+                </button>
+              )
+            })}
           </div>
 
           <div className="filter-chips filter-chips--inline" title="Status">
@@ -277,7 +294,7 @@ export function Hud({
                             {k.displayName}
                           </strong>
                           <small>
-                            @{k.handle} · T{k.tier}
+                            @{k.handle} · {formatRank(k)}
                             {k.isTop30 ? ' · 7d' : ''}
                             {getKolNiches(k).length > 1
                               ? ` · ${getKolNiches(k).join('+')}`
@@ -355,9 +372,17 @@ export function Hud({
               </div>
             ))}
           </div>
+          <div className="legend-rank-grid" aria-label="Rank ladder">
+            {RANK_ORDER.map((r) => (
+              <div key={r} className="legend-rank-item">
+                <RankBadge rank={r} size="pip" />
+                <span style={{ color: RANK_COLORS[r] }}>{RANK_LABELS[r]}</span>
+              </div>
+            ))}
+          </div>
           <div className="legend-row">
             <span className="legend-bubble legend-bubble--color" />
-            <span>Ring color = niche · gold pip = Tier 1</span>
+            <span>Ring = niche · badge = rank (LoL-style)</span>
           </div>
           <p className="legend-note">
             Top Score always re-sorts the current filter set. Shortlist max 5 ·
@@ -440,6 +465,17 @@ export function Hud({
             >
               Phân tích chi tiết
             </button>
+            {getRecentFollowers(selected.handle).length > 0 && (
+              <button
+                type="button"
+                role="tab"
+                aria-selected={detailTab === 'follows'}
+                className={`detail-tab ${detailTab === 'follows' ? 'is-active' : ''}`}
+                onClick={() => setDetailTab('follows')}
+              >
+                Recent follows
+              </button>
+            )}
           </div>
 
           {detailTab === 'overview' && (
@@ -447,9 +483,12 @@ export function Hud({
               <p className="detail-bio-label">Hoạt động &amp; assessment (AI)</p>
               <p className="detail-bio detail-bio--assess">{selected.bio}</p>
               <div className="detail-tags">
-                <span className="tag tag--tier">
-                  Tier {selected.tier ?? '—'}
-                </span>
+                <RankBadge
+                  tier={selected.tier}
+                  score={selected.score}
+                  size="sm"
+                  className="tag--rank"
+                />
                 {selected.isTop30 && (
                   <span className="tag" style={{ color: '#a5b4fc' }}>
                     Top 30 · 7d
@@ -566,6 +605,10 @@ export function Hud({
                 {selected.bio}
               </p>
             </div>
+          )}
+
+          {detailTab === 'follows' && (
+            <RecentFollowersPanel kolHandle={selected.handle} />
           )}
         </aside>
       )}

@@ -691,6 +691,102 @@ button.view-toggle-btn.is-active {
   border-color: rgba(251, 191, 36, 0.4);
 }
 
+/* ——— LoL-inspired rank badges ——— */
+.rank-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px 2px 5px;
+  border-radius: 999px;
+  font-size: 0.65rem;
+  font-weight: 650;
+  letter-spacing: 0.02em;
+  color: var(--rank, #e2e8f0);
+  background: color-mix(in srgb, var(--rank, #94a3b8) 14%, rgba(8, 12, 24, 0.75));
+  border: 1px solid color-mix(in srgb, var(--rank, #94a3b8) 45%, transparent);
+  box-shadow: 0 0 12px color-mix(in srgb, var(--rank, #94a3b8) 12%, transparent);
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.rank-badge--sm {
+  font-size: 0.62rem;
+  padding: 2px 7px 2px 4px;
+}
+
+.rank-badge__label {
+  color: inherit;
+}
+
+.rank-mark {
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
+  color: inherit;
+}
+
+.rank-pip {
+  display: grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  color: var(--rank, #e2e8f0);
+  background: rgba(8, 12, 24, 0.78);
+  border: 1px solid color-mix(in srgb, var(--rank, #94a3b8) 55%, transparent);
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.35),
+    0 0 10px color-mix(in srgb, var(--rank, #94a3b8) 25%, transparent);
+}
+
+.rank-pip .rank-mark {
+  width: 11px;
+  height: 11px;
+}
+
+.rank-pip--map {
+  transform: scale(0.95);
+}
+
+.rank-badge--challenger {
+  color: #f5efe6;
+}
+.rank-badge--master {
+  color: #e9d5ff;
+}
+.rank-badge--diamond {
+  color: #bae6fd;
+}
+.rank-badge--platinum {
+  color: #ccfbf1;
+}
+.rank-badge--gold {
+  color: #fef3c7;
+}
+
+.bubble-label__pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 4px;
+  align-items: center;
+}
+
+.legend-rank-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px 10px;
+  margin: 8px 0 10px;
+}
+
+.legend-rank-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.72rem;
+  color: #cbd5e1;
+}
+
 .chip {
   display: inline-flex;
   align-items: center;
@@ -1640,6 +1736,129 @@ button.view-toggle-btn.is-active {
 .surf-analysis__steps li.is-on::before {
   background: #22d3ee;
   box-shadow: 0 0 8px rgba(34, 211, 238, 0.55);
+}
+
+/* ——— Recent followers tab ——— */
+.recent-follows {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-height: 0;
+}
+
+.recent-follows__head {
+  padding: 0 2px;
+}
+
+.recent-follows__title {
+  margin: 0;
+  font-size: 0.88rem;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+  color: #f1f5f9;
+}
+
+.recent-follows__count {
+  margin-left: 6px;
+  font-weight: 600;
+  color: #94a3b8;
+  font-size: 0.8rem;
+}
+
+.recent-follows__sub {
+  margin: 4px 0 0;
+  font-size: 0.68rem;
+  color: #64748b;
+}
+
+.recent-follows__empty {
+  margin: 12px 0;
+  font-size: 0.78rem;
+  color: #94a3b8;
+}
+
+.recent-follows__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: min(52vh, 420px);
+  overflow-y: auto;
+  padding-right: 2px;
+}
+
+.recent-follows__item {
+  margin: 0;
+}
+
+.recent-follows__link {
+  display: grid;
+  grid-template-columns: 40px 1fr auto;
+  gap: 10px;
+  align-items: center;
+  padding: 8px 10px;
+  border-radius: 12px;
+  text-decoration: none;
+  color: inherit;
+  border: 1px solid transparent;
+  background: rgba(15, 23, 42, 0.35);
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.recent-follows__link:hover {
+  background: rgba(34, 211, 238, 0.08);
+  border-color: rgba(34, 211, 238, 0.22);
+}
+
+.x-profile-avatar,
+.recent-follows__avatar {
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: #0f172a;
+  display: block;
+}
+
+.x-profile-avatar--fallback {
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+  color: #e2e8f0;
+  background: radial-gradient(circle at 30% 30%, #334155, #0f172a 75%);
+}
+
+.recent-follows__meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.recent-follows__name {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #f1f5f9;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.recent-follows__handle {
+  font-size: 0.68rem;
+  color: #38bdf8;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.recent-follows__ago {
+  font-size: 0.65rem;
+  color: #64748b;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .detail-tags {

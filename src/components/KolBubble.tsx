@@ -16,6 +16,7 @@ import { radiusForScore } from '../lib/layout'
 import { xAvatarTextureUrl } from '../lib/avatar'
 import { AvatarImg } from './AvatarImg'
 import { RankBadge } from './RankBadge'
+import { RankRingDecor } from './RankRingDecor'
 import { TextureErrorBoundary } from './TextureErrorBoundary'
 
 interface Props {
@@ -257,24 +258,20 @@ function AvatarNode({
             )}
           </mesh>
 
-          {/* Outer rank border — primary map cue (not niche, not icon) */}
-          <mesh position={[0, 0, 0.012]} renderOrder={2}>
-            <ringGeometry
-              args={[baseR * 0.96, baseR * ringOuter, segs]}
-            />
-            <meshBasicMaterial
-              color={hasFace ? rankRing : '#334155'}
-              transparent
-              opacity={rankRingOpacity}
-              depthWrite={false}
-              depthTest
-              side={THREE.FrontSide}
-              toneMapped={false}
-            />
-          </mesh>
+          {/* Rank border + patterns (double ring / dashes / pips by tier) */}
+          <RankRingDecor
+            baseR={baseR}
+            rank={rank}
+            color={hasFace ? rankRing : '#334155'}
+            opacity={rankRingOpacity}
+            segs={segs}
+            dimmed={dimmed}
+            z={0.012}
+            frontSide
+          />
 
           {/* Inner hairline — keeps avatar edge crisp */}
-          <mesh position={[0, 0, 0.014]} renderOrder={3}>
+          <mesh position={[0, 0, 0.016]} renderOrder={5}>
             <ringGeometry args={[baseR * 0.97, baseR * 1.005, segs]} />
             <meshBasicMaterial
               color="#ffffff"
@@ -477,20 +474,17 @@ function AvatarNode({
               />
             </mesh>
 
-            {/* Outer rank border — map-readable */}
-            <mesh position={[0, 0, -0.012]}>
-              <ringGeometry
-                args={[baseR * 0.98, baseR * ringOuter, 72]}
-              />
-              <meshBasicMaterial
-                color={rankRing}
-                transparent
-                opacity={rankRingOpacity}
-                side={THREE.DoubleSide}
-                depthWrite={false}
-                toneMapped={false}
-              />
-            </mesh>
+            {/* Rank border + patterns (same cues as 2.5D) */}
+            <RankRingDecor
+              baseR={baseR}
+              rank={rank}
+              color={rankRing}
+              opacity={rankRingOpacity}
+              segs={72}
+              dimmed={dimmed}
+              z={-0.012}
+              frontSide={false}
+            />
 
             <mesh position={[0, 0, -0.006]}>
               <ringGeometry args={[baseR * 0.985, baseR * 1.02, 72]} />

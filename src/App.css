@@ -893,18 +893,97 @@ button.view-toggle-btn.is-active {
   color: #cbd5e1;
 }
 
-/* Mini ring swatch — matches map bubble border cue */
+/* Mini ring swatch — pattern mirrors map bubble border */
 .legend-rank-ring {
-  width: 14px;
-  height: 14px;
+  position: relative;
+  width: 16px;
+  height: 16px;
   border-radius: 50%;
   border: 2.5px solid #94a3b8;
   background: radial-gradient(
     circle at 40% 35%,
-    rgba(255, 255, 255, 0.12),
-    rgba(8, 12, 24, 0.85)
+    rgba(255, 255, 255, 0.1),
+    rgba(8, 12, 24, 0.88)
   );
   flex-shrink: 0;
+  box-sizing: border-box;
+}
+
+.legend-rank-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+  line-height: 1.2;
+}
+
+.legend-rank-hint {
+  font-size: 0.58rem;
+  color: #64748b;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
+
+/* Challenger: double ring + 5 outer pips */
+.legend-rank-ring--challenger {
+  border-width: 2px;
+  box-shadow:
+    0 0 0 2.5px rgba(8, 12, 24, 0.9),
+    0 0 0 4px currentColor,
+    0 0 8px color-mix(in srgb, currentColor 40%, transparent);
+}
+.legend-rank-ring--challenger::before,
+.legend-rank-ring--challenger::after {
+  content: '';
+  position: absolute;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: currentColor;
+  left: 50%;
+  top: -5px;
+  transform: translateX(-50%);
+  box-shadow:
+    -7px 5px 0 currentColor,
+    7px 5px 0 currentColor,
+    -4px 11px 0 currentColor,
+    4px 11px 0 currentColor;
+}
+
+/* Master: outer dashed feel via box-shadow ticks */
+.legend-rank-ring--master {
+  border-width: 2.5px;
+  border-style: solid;
+  outline: 1.5px dashed currentColor;
+  outline-offset: 2px;
+}
+
+/* Diamond: 4 cardinal ticks */
+.legend-rank-ring--diamond {
+  border-width: 2.5px;
+}
+.legend-rank-ring--diamond::before {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 50% 0, currentColor 1.4px, transparent 1.6px),
+    radial-gradient(circle at 100% 50%, currentColor 1.4px, transparent 1.6px),
+    radial-gradient(circle at 50% 100%, currentColor 1.4px, transparent 1.6px),
+    radial-gradient(circle at 0 50%, currentColor 1.4px, transparent 1.6px);
+}
+
+/* Platinum: sparse dashes */
+.legend-rank-ring--platinum {
+  border-width: 2px;
+  border-style: dashed;
+}
+
+/* Gold: plain thin */
+.legend-rank-ring--gold {
+  border-width: 2px;
+  opacity: 0.95;
 }
 
 .chip {

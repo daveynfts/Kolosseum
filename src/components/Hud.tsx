@@ -379,21 +379,34 @@ export function Hud({
             <span>Size ≈ followers + score</span>
           </div>
           <p className="legend-note legend-note--rank" style={{ marginTop: 6 }}>
-            <strong>Viền bubble = rank</strong> — nhìn map tổng thể để phân biệt
-            ladder.
+            <strong>Viền + họa tiết = rank</strong> — tier cao trang trí dày hơn.
           </p>
-          <div className="legend-rank-grid" aria-label="Rank ring colors">
+          <div className="legend-rank-grid" aria-label="Rank ring patterns">
             {RANK_ORDER.map((r) => (
               <div key={r} className="legend-rank-item">
                 <span
-                  className="legend-rank-ring"
+                  className={`legend-rank-ring legend-rank-ring--${r}`}
                   style={{
                     borderColor: RANK_COLORS[r],
-                    boxShadow: `0 0 8px ${RANK_COLORS[r]}55`,
+                    color: RANK_COLORS[r],
+                    boxShadow: `0 0 8px ${RANK_COLORS[r]}44`,
                   }}
                   aria-hidden
                 />
-                <span style={{ color: RANK_COLORS[r] }}>{RANK_LABELS[r]}</span>
+                <span className="legend-rank-meta">
+                  <span style={{ color: RANK_COLORS[r] }}>{RANK_LABELS[r]}</span>
+                  <small className="legend-rank-hint">
+                    {r === 'challenger'
+                      ? 'double + 5 pips'
+                      : r === 'master'
+                        ? 'solid + 4 dashes'
+                        : r === 'diamond'
+                          ? 'solid + 4 ticks'
+                          : r === 'platinum'
+                            ? 'solid + sparse dashes'
+                            : 'single thin ring'}
+                  </small>
+                </span>
               </div>
             ))}
           </div>

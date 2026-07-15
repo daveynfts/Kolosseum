@@ -378,6 +378,25 @@ export function Hud({
             <span className="legend-bubble legend-bubble--lg" />
             <span>Size ≈ followers + score</span>
           </div>
+          <p className="legend-note legend-note--rank" style={{ marginTop: 6 }}>
+            <strong>Viền bubble = rank</strong> — nhìn map tổng thể để phân biệt
+            ladder.
+          </p>
+          <div className="legend-rank-grid" aria-label="Rank ring colors">
+            {RANK_ORDER.map((r) => (
+              <div key={r} className="legend-rank-item">
+                <span
+                  className="legend-rank-ring"
+                  style={{
+                    borderColor: RANK_COLORS[r],
+                    boxShadow: `0 0 8px ${RANK_COLORS[r]}55`,
+                  }}
+                  aria-hidden
+                />
+                <span style={{ color: RANK_COLORS[r] }}>{RANK_LABELS[r]}</span>
+              </div>
+            ))}
+          </div>
           <div className="legend-status-grid" aria-label="Status emoji">
             {(
               [
@@ -394,21 +413,9 @@ export function Hud({
               </div>
             ))}
           </div>
-          <div className="legend-rank-grid" aria-label="Rank ladder">
-            {RANK_ORDER.map((r) => (
-              <div key={r} className="legend-rank-item">
-                <RankBadge rank={r} size="pip" />
-                <span style={{ color: RANK_COLORS[r] }}>{RANK_LABELS[r]}</span>
-              </div>
-            ))}
-          </div>
           <p className="legend-note legend-note--rank">
-            Rank ladder (LoL-inspired): band + score → display rank.
-            <br />
             Band 1 → Challenger / Master · Band 2 → Diamond / Plat · Band 3 →
-            Gold.
-            <br />
-            Ring = niche · Shortlist max 5.
+            Gold. Shortlist max 5.
           </p>
         </div>
       </aside>

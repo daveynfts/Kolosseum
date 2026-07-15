@@ -4,8 +4,11 @@ import { Billboard, Float, Html, Sparkles } from '@react-three/drei'
 import * as THREE from 'three'
 import type { Kol, StatusLabel } from '../types'
 import {
+  getKolRank,
   NICHE_COLORS,
   primaryNiche,
+  RANK_RING_COLORS,
+  RANK_RING_WIDTH,
   STATUS_EMOJI,
   STATUS_LABELS,
 } from '../types'
@@ -88,6 +91,9 @@ function AvatarNode({
   }
 
   const color = NICHE_COLORS[primaryNiche(kol)]
+  const rank = getKolRank(kol)
+  const rankRing = RANK_RING_COLORS[rank]
+  const ringOuter = RANK_RING_WIDTH[rank]
   const baseR = radiusForScore(kol.score) * (lite ? 1.08 : 1)
   const status = (kol.statusLabel ?? 'stable') as StatusLabel
   const statusEmoji = STATUS_EMOJI[status] ?? '🟢'
@@ -102,6 +108,16 @@ function AvatarNode({
   // Neutral placeholder while texture loads / on error — no letter flash
   const placeholderColor = loadState === 'loading' ? '#1e293b' : '#0f172a'
   const faceColor = hasFace ? color : placeholderColor
+  // Rank border visibility on full map (stronger when focused)
+  const rankRingOpacity = dimmed
+    ? 0.14
+    : isFocus
+      ? 1
+      : rank === 'challenger'
+        ? 0.95
+        : rank === 'master'
+          ? 0.9
+          : 0.82
 
   useFrame((state) => {
     // 2.5D: skip all per-frame motion on avatars (stable, no flicker)
@@ -166,7 +182,6 @@ function AvatarNode({
   })
 
   const faceOpacity = dimmed ? 0.2 : 1
-  const ringOpacity = dimmed ? 0.18 : isFocus ? 1 : 0.92
 
   const pickHandlers = {
     onClick: (e: { stopPropagation: () => void }) => {
@@ -188,23 +203,25 @@ function AvatarNode({
   if (lite) {
     return (
       <group position={position} scale={liteScale}>
-        {/* Soft halo behind face — single layer, no z-fight with disc */}
+        {/* Soft halo behind face — tinted by rank for map-level scan */}
         <Billboard follow lockZ={false}>
-          <mesh position={[0, 0, -0.02]} renderOrder={0}>
-            <circleGeometry args={[baseR * 1.18, segs]} />
+          <mesh position={[0, 0, -0.03]} renderOrder={0}>
+            <circleGeometry args={[baseR * (ringOuter + 0.12), segs]} />
             <meshBasicMaterial
-              color={hasFace ? color : placeholderColor}
+              color={hasFace ? rankRing : placeholderColor}
               transparent
               opacity={
                 dimmed
-                  ? 0.08
+                  ? 0.06
                   : hasFace
                     ? isHot
-                      ? 0.38
-                      : 0.28
+                      ? 0.32
+                      : rank === 'challenger'
+                        ? 0.28
+                        : 0.2
                     : loadState === 'loading'
-                      ? 0.35
-                      : 0.22
+                      ? 0.3
+                      : 0.18
               }
               depthWrite={false}
               depthTest
@@ -240,21 +257,15 @@ function AvatarNode({
             )}
           </mesh>
 
-          {/* Thin niche ring in front of face */}
-          <mesh position={[0, 0, 0.01]} renderOrder={2}>
-            <ringGeometry args={[baseR * 0.98, baseR * 1.08, segs]} />
+          {/* Outer rank border — primary map cue (not niche, not icon) */}
+          <mesh position={[0, 0, 0.012]} renderOrder={2}>
+            <ringGeometry
+              args={[baseR * 0.96, baseR * ringOuter, segs]}
+            />
             <meshBasicMaterial
-              color={hasFace ? color : '#334155'}
+              color={hasFace ? rankRing : '#334155'}
               transparent
-              opacity={
-                dimmed
-                  ? 0.12
-                  : hasFace
-                    ? isFocus
-                      ? 0.95
-                      : 0.75
-                    : 0.35
-              }
+              opacity={rankRingOpacity}
               depthWrite={false}
               depthTest
               side={THREE.FrontSide}
@@ -262,23 +273,19 @@ function AvatarNode({
             />
           </mesh>
 
-          {/* Rank pip — subtle LoL-style mark (all ranks, not only T1 gold) */}
-          {!dimmed && hasFace && (
-            <Html
-              center
-              position={[baseR * 0.72, -baseR * 0.72, 0.03]}
-              style={{ pointerEvents: 'none' }}
-              zIndexRange={[25, 0]}
-            >
-              <RankBadge
-                tier={kol.tier}
-                score={kol.score}
-                isTop30={kol.isTop30}
-                size="pip"
-                className="rank-pip--map"
-              />
-            </Html>
-          )}
+          {/* Inner hairline — keeps avatar edge crisp */}
+          <mesh position={[0, 0, 0.014]} renderOrder={3}>
+            <ringGeometry args={[baseR * 0.97, baseR * 1.005, segs]} />
+            <meshBasicMaterial
+              color="#ffffff"
+              transparent
+              opacity={dimmed ? 0.08 : isFocus ? 0.55 : 0.28}
+              depthWrite={false}
+              depthTest
+              side={THREE.FrontSide}
+              toneMapped={false}
+            />
+          </mesh>
         </Billboard>
 
         {/* Pill + status emoji only on hover / select */}
@@ -332,16 +339,16 @@ function AvatarNode({
       <mesh ref={shellRef}>
         <sphereGeometry args={[baseR * 1.28, 48, 48]} />
         <meshPhysicalMaterial
-          color={color}
+          color={rankRing}
           transparent
-          opacity={0.14}
+          opacity={0.12}
           roughness={0.08}
           metalness={0.05}
           transmission={0.55}
           thickness={0.6}
           ior={1.4}
-          emissive={color}
-          emissiveIntensity={0.15}
+          emissive={rankRing}
+          emissiveIntensity={rank === 'challenger' ? 0.22 : 0.12}
           depthWrite={false}
           clearcoat={1}
           clearcoatRoughness={0.12}
@@ -363,12 +370,15 @@ function AvatarNode({
       </mesh>
 
       <mesh ref={rimRef} rotation={[Math.PI / 2.15, 0, 0]}>
-        <torusGeometry args={[baseR * 1.22, 0.012, 12, 64]} />
+        <torusGeometry
+          args={[baseR * 1.2, rank === 'challenger' ? 0.02 : 0.014, 12, 64]}
+        />
         <meshBasicMaterial
-          color="#ffffff"
+          color={rankRing}
           transparent
-          opacity={dimmed ? 0.08 : isFocus ? 0.55 : 0.28}
+          opacity={dimmed ? 0.1 : isFocus ? 0.75 : 0.45}
           depthWrite={false}
+          toneMapped={false}
         />
       </mesh>
 
@@ -376,10 +386,10 @@ function AvatarNode({
         <mesh scale={baseR * 1.32}>
           <icosahedronGeometry args={[1, 1]} />
           <meshBasicMaterial
-            color={color}
+            color={rankRing}
             wireframe
             transparent
-            opacity={isFocus ? 0.2 : 0.07}
+            opacity={isFocus ? 0.18 : 0.06}
             depthWrite={false}
           />
         </mesh>
@@ -388,9 +398,9 @@ function AvatarNode({
       <mesh ref={glowRef}>
         <sphereGeometry args={[baseR * 1.18, 24, 24]} />
         <meshBasicMaterial
-          color={color}
+          color={rankRing}
           transparent
-          opacity={dimmed ? 0.03 : isHot ? 0.16 : 0.09}
+          opacity={dimmed ? 0.03 : isHot ? 0.18 : 0.1}
           depthWrite={false}
         />
       </mesh>
@@ -411,7 +421,7 @@ function AvatarNode({
               >
                 <sphereGeometry args={[baseR * (i % 2 === 0 ? 0.08 : 0.055), 12, 12]} />
                 <meshBasicMaterial
-                  color={i % 2 === 0 ? '#ffffff' : color}
+                  color={i % 2 === 0 ? '#ffffff' : rankRing}
                   transparent
                   opacity={0.9}
                   toneMapped={false}
@@ -429,7 +439,7 @@ function AvatarNode({
           size={isFocus ? 3.2 : 2.2}
           speed={0.55}
           opacity={0.7}
-          color={color}
+          color={rankRing}
         />
       )}
 
@@ -444,9 +454,9 @@ function AvatarNode({
             <mesh position={[0, 0, -0.05]}>
               <circleGeometry args={[baseR * 1.16, segs]} />
               <meshPhysicalMaterial
-                color={color}
+                color={rankRing}
                 transparent
-                opacity={dimmed ? 0.12 : 0.35}
+                opacity={dimmed ? 0.1 : 0.28}
                 roughness={0.15}
                 metalness={0.1}
                 transmission={0.35}
@@ -457,33 +467,37 @@ function AvatarNode({
             </mesh>
 
             <mesh position={[0, 0, -0.03]}>
-              <circleGeometry args={[baseR * 1.28, segs]} />
+              <circleGeometry args={[baseR * (ringOuter + 0.08), segs]} />
               <meshBasicMaterial
-                color={color}
+                color={rankRing}
                 transparent
-                opacity={dimmed ? 0.05 : isHot ? 0.28 : 0.16}
+                opacity={dimmed ? 0.05 : isHot ? 0.26 : 0.14}
                 depthWrite={false}
                 side={THREE.DoubleSide}
               />
             </mesh>
 
+            {/* Outer rank border — map-readable */}
             <mesh position={[0, 0, -0.012]}>
-              <ringGeometry args={[baseR * 1.03, baseR * 1.18, 72]} />
+              <ringGeometry
+                args={[baseR * 0.98, baseR * ringOuter, 72]}
+              />
               <meshBasicMaterial
-                color={color}
+                color={rankRing}
                 transparent
-                opacity={ringOpacity}
+                opacity={rankRingOpacity}
                 side={THREE.DoubleSide}
                 depthWrite={false}
+                toneMapped={false}
               />
             </mesh>
 
             <mesh position={[0, 0, -0.006]}>
-              <ringGeometry args={[baseR * 0.985, baseR * 1.035, 72]} />
+              <ringGeometry args={[baseR * 0.985, baseR * 1.02, 72]} />
               <meshBasicMaterial
                 color="#ffffff"
                 transparent
-                opacity={dimmed ? 0.12 : 0.92}
+                opacity={dimmed ? 0.1 : 0.55}
                 side={THREE.DoubleSide}
                 depthWrite={false}
               />
@@ -521,34 +535,21 @@ function AvatarNode({
               </mesh>
             )}
 
+            {/* Hot: thin outer halo still rank-colored */}
             {isHot && !dimmed && hasFace && (
               <mesh position={[0, 0, 0.02]}>
-                <ringGeometry args={[baseR * 1.2, baseR * 1.3, 72]} />
+                <ringGeometry
+                  args={[baseR * ringOuter, baseR * (ringOuter + 0.1), 72]}
+                />
                 <meshBasicMaterial
-                  color={color}
+                  color={rankRing}
                   transparent
-                  opacity={0.65}
+                  opacity={0.55}
                   side={THREE.DoubleSide}
                   depthWrite={false}
+                  toneMapped={false}
                 />
               </mesh>
-            )}
-
-            {!dimmed && hasFace && (
-              <Html
-                center
-                position={[baseR * 0.75, -baseR * 0.75, 0.05]}
-                style={{ pointerEvents: 'none' }}
-                zIndexRange={[40, 0]}
-              >
-                <RankBadge
-                  tier={kol.tier}
-                  score={kol.score}
-                  isTop30={kol.isTop30}
-                  size="pip"
-                  className="rank-pip--map"
-                />
-              </Html>
             )}
           </group>
         </Billboard>

@@ -151,13 +151,34 @@ export const RANK_SHORT: Record<KolRank, string> = {
   gold: 'Gold',
 }
 
-/** Soft LoL-inspired palette (muted for dark UI) */
+/** Soft LoL-inspired palette (badges / labels) */
 export const RANK_COLORS: Record<KolRank, string> = {
   challenger: '#f0e6d2',
   master: '#c084fc',
   diamond: '#38bdf8',
   platinum: '#5eead4',
   gold: '#fbbf24',
+}
+
+/**
+ * Map ring colors — slightly more saturated so ranks read at a glance
+ * on the full map (outer bubble border).
+ */
+export const RANK_RING_COLORS: Record<KolRank, string> = {
+  challenger: '#f5e6c8',
+  master: '#d8b4fe',
+  diamond: '#7dd3fc',
+  platinum: '#5eead4',
+  gold: '#fbbf24',
+}
+
+/** Outer ring thickness multiplier by rank (higher = thicker border) */
+export const RANK_RING_WIDTH: Record<KolRank, number> = {
+  challenger: 1.22,
+  master: 1.16,
+  diamond: 1.14,
+  platinum: 1.12,
+  gold: 1.1,
 }
 
 /** Map filter tier → ranks that belong to that tier bucket */

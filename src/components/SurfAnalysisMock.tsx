@@ -9,18 +9,19 @@ interface Props {
 }
 
 /**
- * Mockup: Surf AI analysis button.
- * Runs ~3s then opens PDF from R2 (admin-configured URL).
- * Opens a tab on click (user gesture) so popup blockers don't kill the PDF.
+ * Mockup: Surf AI analysis.
+ * Full progress animation (~3s) in-panel first, then open PDF.
+ * Does NOT open a tab on click (that felt like “file opens immediately”).
  */
 export function SurfAnalysisMock({ kol }: Props) {
   const [phase, setPhase] = useState<Phase>('idle')
   const [progress, setProgress] = useState(0)
   const [message, setMessage] = useState<string | null>(null)
+  const [popupBlocked, setPopupBlocked] = useState(false)
   const timerRef = useRef<number | null>(null)
   const tickRef = useRef<number | null>(null)
+  const openTimerRef = useRef<number | null>(null)
   const runIdRef = useRef(0)
-  const reportTabRef = useRef<Window | null>(null)
   const pdfUrl = resolveSurfReportPdfUrl(kol)
 
   const clearTimers = () => {
@@ -32,43 +33,46 @@ export function SurfAnalysisMock({ kol }: Props) {
       window.clearInterval(tickRef.current)
       tickRef.current = null
     }
+    if (openTimerRef.current) {
+      window.clearTimeout(openTimerRef.current)
+      openTimerRef.current = null
+    }
   }
 
   useEffect(() => {
-    // Cancel in-flight analysis when switching KOL
     runIdRef.current += 1
     clearTimers()
-    if (reportTabRef.current && !reportTabRef.current.closed) {
-      try {
-        reportTabRef.current.close()
-      } catch {
-        /* ignore */
-      }
-    }
-    reportTabRef.current = null
     setPhase('idle')
     setProgress(0)
     setMessage(null)
+    setPopupBlocked(false)
     return () => {
       runIdRef.current += 1
       clearTimers()
-      if (reportTabRef.current && !reportTabRef.current.closed) {
-        try {
-          reportTabRef.current.close()
-        } catch {
-          /* ignore */
-        }
-      }
-      reportTabRef.current = null
     }
   }, [kol.id])
+
+  const openPdf = (url: string) => {
+    const w = window.open(url, '_blank', 'noopener,noreferrer')
+    if (!w) {
+      setPopupBlocked(true)
+      setMessage(
+        'Phân tích xong — trình duyệt chặn popup. Bấm “Mở PDF báo cáo” bên dưới.',
+      )
+      return false
+    }
+    setPopupBlocked(false)
+    setMessage('Phân tích xong — đã mở báo cáo PDF.')
+    return true
+  }
 
   const runAnalysis = () => {
     if (phase === 'running') return
     if (!pdfUrl) {
       setPhase('error')
+      setPopupBlocked(false)
       setMessage(
-        'Chưa cấu hình link PDF R2. Vào Admin → Edit KOL → “PDF R2 URL” (hoặc Default PDF global) → Save (token) để publish server.',
+        'Chưa cấu hình link PDF R2. Vào Admin → Edit KOL → “PDF R2 URL” → Save (token).',
       )
       return
     }
@@ -76,64 +80,47 @@ export function SurfAnalysisMock({ kol }: Props) {
     const runId = ++runIdRef.current
     const targetUrl = pdfUrl
 
-    // Open tab immediately under the click gesture (avoids popup block after 3s)
-    const reportTab = window.open('about:blank', '_blank')
-    reportTabRef.current = reportTab
-    if (reportTab) {
-      try {
-        reportTab.document.title = 'Surf AI — đang phân tích…'
-        reportTab.document.body.innerHTML =
-          '<p style="font-family:system-ui,sans-serif;padding:24px;color:#334155">Surf AI đang phân tích… báo cáo sẽ mở sau vài giây.</p>'
-      } catch {
-        /* restricted — ok */
-      }
-    }
-
     setPhase('running')
     setProgress(0)
+    setPopupBlocked(false)
     setMessage(
       'Surf AI đang phân tích smart followers, engagement & mindshare…',
     )
 
     const started = Date.now()
-    const DURATION = 3000
+    const DURATION = 3200
     clearTimers()
+
+    // Smooth progress 0 → 100 over DURATION (mock pipeline)
     tickRef.current = window.setInterval(() => {
       if (runId !== runIdRef.current) return
-      const p = Math.min(100, ((Date.now() - started) / DURATION) * 100)
-      setProgress(p)
-    }, 50)
+      const elapsed = Date.now() - started
+      // Ease-out so last steps linger a bit
+      const t = Math.min(1, elapsed / DURATION)
+      const eased = 1 - (1 - t) * (1 - t)
+      setProgress(Math.min(99, eased * 100))
+    }, 40)
 
     timerRef.current = window.setTimeout(() => {
       if (runId !== runIdRef.current) return
-      clearTimers()
+      if (tickRef.current) {
+        window.clearInterval(tickRef.current)
+        tickRef.current = null
+      }
+      // Finish bar + light final step before opening file
       setProgress(100)
       setPhase('done')
+      setMessage('Phân tích xong — đang mở báo cáo…')
 
-      const tab = reportTabRef.current
-      if (tab && !tab.closed) {
-        try {
-          tab.location.href = targetUrl
-          setMessage('Phân tích xong — đã mở báo cáo PDF.')
-        } catch {
-          try {
-            tab.close()
-          } catch {
-            /* ignore */
-          }
-          reportTabRef.current = null
-          setMessage('Phân tích xong — bấm link bên dưới để mở PDF.')
-        }
-      } else {
-        const w = window.open(targetUrl, '_blank', 'noopener,noreferrer')
-        setMessage(
-          w
-            ? 'Phân tích xong — đã mở báo cáo PDF.'
-            : 'Phân tích xong — trình duyệt chặn popup. Bấm “Mở PDF báo cáo” bên dưới.',
-        )
-      }
+      openTimerRef.current = window.setTimeout(() => {
+        if (runId !== runIdRef.current) return
+        openPdf(targetUrl)
+      }, 450)
     }, DURATION)
   }
+
+  const showPdfLink =
+    !!pdfUrl && (phase === 'done' || phase === 'error' || popupBlocked)
 
   return (
     <div className="surf-analysis glass">
@@ -165,7 +152,7 @@ export function SurfAnalysisMock({ kol }: Props) {
         disabled={phase === 'running'}
         title={
           pdfUrl
-            ? 'Chạy phân tích Surf AI và mở PDF'
+            ? 'Chạy phân tích Surf AI (mock) rồi mở PDF'
             : 'Chưa có link PDF — cấu hình trong Admin'
         }
         aria-label="Chạy phân tích Surf AI"
@@ -207,7 +194,7 @@ export function SurfAnalysisMock({ kol }: Props) {
         </p>
       )}
 
-      {pdfUrl && (
+      {showPdfLink && pdfUrl && (
         <a
           className="surf-pdf-link"
           href={pdfUrl}
@@ -219,12 +206,12 @@ export function SurfAnalysisMock({ kol }: Props) {
       )}
 
       <ul className="surf-analysis__steps">
-        <li className={progress > 5 ? 'is-on' : ''}>Profile & followers</li>
+        <li className={progress > 8 ? 'is-on' : ''}>Profile & followers</li>
         <li className={progress > 35 ? 'is-on' : ''}>
           Smart followers (Surf AI)
         </li>
         <li className={progress > 65 ? 'is-on' : ''}>Engagement window</li>
-        <li className={progress >= 100 ? 'is-on' : ''}>Export PDF → R2</li>
+        <li className={progress >= 100 ? 'is-on' : ''}>Hoàn tất phân tích</li>
       </ul>
     </div>
   )

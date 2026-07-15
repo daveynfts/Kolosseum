@@ -674,7 +674,7 @@ export function AdminDashboard() {
                       type="button"
                       className="btn btn--primary"
                       disabled={savingServer}
-                      onClick={onSaveDraft}
+                      onClick={() => onSaveDraft()}
                       title="Lưu KOL này + đẩy list lên server (R2)"
                     >
                       {savingServer ? 'Saving…' : 'Save'}

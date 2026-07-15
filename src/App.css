@@ -1708,8 +1708,9 @@ button.view-toggle-btn.is-active {
   color: #cbd5e1;
   font-size: 0.78rem;
   line-height: 1.55;
-  white-space: pre-line;
-  max-height: min(42vh, 280px);
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: min(48vh, 360px);
   overflow-y: auto;
   padding: 10px 10px 10px 12px;
   margin: 0 0 12px;

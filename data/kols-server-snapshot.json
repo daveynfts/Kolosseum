@@ -1,8 +1,8 @@
 {
-  "version": 3,
-  "updatedAt": "2026-07-15T04:14:01.430Z",
-  "source": "admin server · ThuanCapital bio refresh",
-  "note": "Update ThuanCapital overview assessment (công tâm)",
+  "version": 4,
+  "updatedAt": "2026-07-15T05:25:39.485Z",
+  "source": "admin server · editorial bios",
+  "note": "Push editorial bios from seed (Emily, Thuan, …)",
   "count": 106,
   "kols": [
     {
@@ -40,7 +40,8 @@
       "activity7dSource": "sampled",
       "niches": [
         "News"
-      ]
+      ],
+      "surfReportPdfUrl": "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/RadarKOLsReport/ThuanCapital_KOL_Evaluation_Report.pdf"
     },
     {
       "id": "sheet-emilyyvuong",
@@ -74,7 +75,12 @@
       "activity7dReplies": 52,
       "activity7dReposts": 35,
       "activity7dScore": 100,
-      "activity7dSource": "estimated"
+      "activity7dSource": "estimated",
+      "niches": [
+        "News",
+        "Trading"
+      ],
+      "surfReportPdfUrl": "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/RadarKOLsReport/BaoCao_PhanTich_KOL_EmilyVuong_SurfAI_2026-07.pdf"
     },
     {
       "id": "sheet-thekhuongeth",

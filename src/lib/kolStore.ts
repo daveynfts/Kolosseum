@@ -3,8 +3,9 @@ import type { Kol, Niche, StatusLabel } from '../types'
 import { withBase } from './base'
 import { getAdminToken } from './feedStore'
 
-const STORAGE_KEY = 'vn-kol-map-admin-v3'
-const STORAGE_VERSION = 3
+/** Bump key to drop stale localStorage bios when seed assessments refresh */
+const STORAGE_KEY = 'vn-kol-map-admin-v4'
+const STORAGE_VERSION = 4
 export const KOLS_EVENT = 'vn-kol-kols-updated'
 /** Global default Surf mock PDF (R2 public URL) */
 const SURF_DEFAULT_PDF_KEY = 'vn-kol-surf-default-pdf-v1'
@@ -37,10 +38,34 @@ function cloneSeed(): Kol[] {
   return JSON.parse(JSON.stringify(SHEET_KOLS)) as Kol[]
 }
 
+/** Seed bio is an editorial rewrite we want on the map overview. */
+function isEditorialSeedBio(bio: string | undefined): boolean {
+  if (!bio) return false
+  return (
+    bio.includes('TL;DR') ||
+    bio.includes('Đánh giá công tâm') ||
+    bio.includes('KOL Signal Score') ||
+    bio.includes('SurfAI')
+  )
+}
+
+/** Live/R2 bio still looks like auto radar template (stale). */
+function isStaleRadarTemplateBio(bio: string | undefined): boolean {
+  if (!bio) return true
+  return (
+    bio.includes('positioning «') ||
+    bio.includes('positioning sheet') ||
+    bio.includes('Tier 2, positioning') ||
+    bio.includes('Tier 1, positioning') ||
+    bio.includes('Định vị dùng KOL trên Radar') ||
+    bio.includes('Composite score ~')
+  )
+}
+
 /**
- * When seed sheet carries a newer editorial assessment (TL;DR / công tâm),
- * prefer that bio over stale R2/localStorage copies so map overview stays
- * in sync after code deploys without requiring admin Save-to-server.
+ * Prefer seed editorial assessments over stale R2/localStorage copies.
+ * Triggers when seed is editorial, or when live bio is still the old
+ * radar template while seed was rewritten.
  */
 export function mergeSeedAssessments(kols: Kol[]): Kol[] {
   const seedBy = new Map(
@@ -48,16 +73,30 @@ export function mergeSeedAssessments(kols: Kol[]): Kol[] {
   )
   let changed = false
   const next = kols.map((k) => {
-    const s = seedBy.get(k.handle.toLowerCase())
+    const s = seedBy.get((k.handle || '').toLowerCase())
     if (!s?.bio) return k
-    const isEditorial =
-      s.bio.includes('TL;DR') ||
-      s.bio.includes('Đánh giá công tâm') ||
-      s.bio.includes('Đánh giá công tâm KOL')
-    if (!isEditorial) return k
-    if (k.bio === s.bio && (s.followers == null || k.followers === s.followers)) {
+
+    const seedEditorial = isEditorialSeedBio(s.bio)
+    const liveStale = isStaleRadarTemplateBio(k.bio)
+    // Always take seed when it's editorial; also when live is clearly old template
+    // and seed differs (even without TL;DR marker).
+    const shouldPreferSeed =
+      (seedEditorial && k.bio !== s.bio) ||
+      (liveStale && s.bio !== k.bio && s.bio.length > 80)
+
+    if (!shouldPreferSeed) {
+      // Still sync followers from seed when editorial seed has a newer count
+      if (
+        seedEditorial &&
+        s.followers != null &&
+        k.followers !== s.followers
+      ) {
+        changed = true
+        return { ...k, followers: s.followers }
+      }
       return k
     }
+
     changed = true
     return {
       ...k,
@@ -76,7 +115,23 @@ function emitKolsEvent(kols: Kol[]) {
   }
 }
 
+function purgeLegacyKolCaches() {
+  try {
+    // Drop pre-v4 caches that pinned stale R2 bios (Emily/Thuan templates).
+    for (const k of [
+      'vn-kol-map-admin-v1',
+      'vn-kol-map-admin-v2',
+      'vn-kol-map-admin-v3',
+    ]) {
+      localStorage.removeItem(k)
+    }
+  } catch {
+    /* ignore */
+  }
+}
+
 export function loadKolsLocal(): Kol[] {
+  purgeLegacyKolCaches()
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
     if (!raw) return mergeSeedAssessments(cloneSeed())

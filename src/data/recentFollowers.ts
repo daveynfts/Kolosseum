@@ -222,6 +222,68 @@ export const RECENT_FOLLOWERS_BY_HANDLE: Record<string, RecentFollower[]> = {
       followedAt: '2025-07-05T00:00:00.000Z',
     },
   ],
+  tcvncommunity: [
+    {
+      handle: 'jasonmdesimone',
+      displayName: 'Jason Desimone ⚔️',
+      followedAgo: 'a month ago',
+      followedAt: '2026-06-15T00:00:00.000Z',
+    },
+    {
+      handle: '0xyukirabbit',
+      displayName: 'Yuki Rabbit',
+      followedAgo: '2 months ago',
+      followedAt: '2026-05-15T00:00:00.000Z',
+    },
+    {
+      handle: '0x_chok',
+      displayName: 'Chok加密楚克',
+      followedAgo: '3 months ago',
+      followedAt: '2026-04-15T00:00:00.000Z',
+    },
+    {
+      handle: 'zama',
+      displayName: 'Zama',
+      followedAgo: '7 months ago',
+      followedAt: '2025-12-15T00:00:00.000Z',
+    },
+    {
+      handle: 'junztsang',
+      displayName: 'Junz Tsang',
+      followedAgo: '7 months ago',
+      followedAt: '2025-12-10T00:00:00.000Z',
+    },
+    {
+      handle: 'gabrysia_eth',
+      displayName: 'Gabi',
+      followedAgo: 'a year ago',
+      followedAt: '2025-07-14T00:00:00.000Z',
+    },
+    {
+      handle: 'blockjengirl',
+      displayName: 'Jen Jen Aura Queen',
+      followedAgo: 'a year ago',
+      followedAt: '2025-07-12T00:00:00.000Z',
+    },
+    {
+      handle: 'x_may_crypto',
+      displayName: 'May',
+      followedAgo: 'a year ago',
+      followedAt: '2025-07-10T00:00:00.000Z',
+    },
+    {
+      handle: 'zhoukelvinzzzz',
+      displayName: 'Vincentzzh｜Techflame & ScalingX',
+      followedAgo: 'a year ago',
+      followedAt: '2025-07-08T00:00:00.000Z',
+    },
+    {
+      handle: 'phyrexni',
+      displayName: 'Phyrex',
+      followedAgo: 'a year ago',
+      followedAt: '2025-07-05T00:00:00.000Z',
+    },
+  ],
 }
 
 export function getRecentFollowers(handle: string): RecentFollower[] {

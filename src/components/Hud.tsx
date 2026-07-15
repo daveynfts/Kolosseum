@@ -10,7 +10,7 @@ import {
   RANK_COLORS,
   RANK_LABELS,
   RANK_ORDER,
-  RANK_SHORT,
+
   STATUS_EMOJI,
   STATUS_LABELS,
 } from '../types'
@@ -183,7 +183,7 @@ export function Hud({
                 }
               >
                 <RankBadge rank={r} size="pip" className="rank-pip--filter" />
-                <span className="seg-btn__rank-label">{RANK_SHORT[r]}</span>
+                <span className="seg-btn__rank-label">{RANK_LABELS[r]}</span>
               </button>
             ))}
           </div>

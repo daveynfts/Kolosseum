@@ -750,10 +750,11 @@ button.view-toggle-btn.is-active {
 }
 
 .filter-seg--ranks {
-  gap: 2px;
-  max-width: min(56vw, 460px);
+  gap: 3px;
+  max-width: min(72vw, 640px);
   overflow-x: auto;
   scrollbar-width: none;
+  flex-wrap: wrap;
 }
 
 .filter-seg--ranks::-webkit-scrollbar {
@@ -763,8 +764,10 @@ button.view-toggle-btn.is-active {
 .seg-btn--rank {
   display: inline-flex;
   align-items: center;
-  gap: 3px;
-  padding: 2px 6px 2px 4px !important;
+  gap: 4px;
+  padding: 3px 8px 3px 5px !important;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .seg-btn--rank.is-active {
@@ -776,9 +779,10 @@ button.view-toggle-btn.is-active {
 }
 
 .seg-btn__rank-label {
-  font-size: 0.58rem;
+  font-size: 0.68rem;
   font-weight: 650;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
 }
 
 .rank-pip--filter {

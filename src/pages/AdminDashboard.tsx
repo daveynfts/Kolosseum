@@ -141,22 +141,31 @@ export function AdminDashboard() {
   }
 
   const persistServer = useCallback(
-    async (next: Kol[], note?: string) => {
+    async (next: Kol[], note?: string): Promise<boolean> => {
       setSavingServer(true)
       try {
         const token = tokenInput.trim() || getAdminToken()
-        if (token) setAdminToken(token)
+        if (!token) {
+          flash(
+            'Chưa có token — dán FEED_ADMIN_TOKEN ở ô Token (cùng token Feed) → Save token → Save lại. Website public chỉ đọc R2, không dùng draft local.',
+          )
+          return false
+        }
+        setAdminToken(token)
         setSurfDefaultPdfUrl(surfDefaultPdf)
-        setKols(next)
         const result = await saveKolsToServer(next, note, token)
         if (!result.ok) {
           setKolSource('local')
-          flash(`Lưu server thất bại: ${result.error}`)
-          return
+          flash(`Publish R2 thất bại: ${result.error}`)
+          return false
         }
+        setKols(next)
         setDirty(false)
         setKolSource('server')
-        flash(`Đã lưu server (${result.count} KOLs) — mọi người sẽ thấy sau refresh`)
+        flash(
+          `Đã publish R2 (${result.count} KOLs) — mở map / hard-refresh để thấy tier & rank mới`,
+        )
+        return true
       } finally {
         setSavingServer(false)
       }
@@ -164,22 +173,27 @@ export function AdminDashboard() {
     [tokenInput, surfDefaultPdf],
   )
 
-  const onSaveDraft = () => {
-    if (!draft) return
-    const niches = getKolNiches(draft)
-    const fixed = recalculateScores({
-      ...draft,
-      handle: draft.handle.replace(/^@/, '').trim(),
+  const buildFixedDraft = (src: Kol): Kol => {
+    const niches = getKolNiches(src)
+    return recalculateScores({
+      ...src,
+      handle: src.handle.replace(/^@/, '').trim(),
       niches,
       niche: niches[0] ?? 'Multi',
-      dataSource: draft.dataSource === 'x-live' ? 'x-live+admin' : 'admin',
+      dataSource: src.dataSource === 'x-live' ? 'x-live+admin' : 'admin',
     })
+  }
+
+  const onSaveDraft = (override?: Kol) => {
+    const src = override ?? draft
+    if (!src) return
+    const fixed = buildFixedDraft(src)
     const next = kols.some((k) => k.id === fixed.id)
       ? kols.map((k) => (k.id === fixed.id ? fixed : k))
       : [...kols, fixed]
-    void persistServer(next, 'admin edit')
-    setSelectedId(fixed.id)
     setDraft(fixed)
+    setSelectedId(fixed.id)
+    void persistServer(next, `admin edit @${fixed.handle} tier=${fixed.tier}`)
   }
 
   const toggleDraftNiche = (n: Niche) => {
@@ -349,11 +363,13 @@ export function AdminDashboard() {
       </header>
 
       <div className="admin-ai-banner glass">
-        <strong>Đồng bộ server</strong>
+        <strong>Đồng bộ server (R2)</strong>
         <span>
-          Mọi thay đổi lưu lên R2 (mọi người thấy). Dán <code>FEED_ADMIN_TOKEN</code>{' '}
-          (cùng token Feed) → Save. Source: <strong>{kolSource}</strong>
+          Map public <em>chỉ</em> đọc <code>/api/kols</code> (R2). Đổi tier/bio
+          xong phải <strong>Save</strong> (cần token). Source:{' '}
+          <strong>{kolSource}</strong>
           {meta.updatedAt ? ` · ${meta.updatedAt.slice(0, 19)}` : ''}.
+          {dirty ? ' · ⚠️ có thay đổi chưa publish' : ''}
         </span>
         <label className="admin-token-row">
           Token
@@ -361,7 +377,7 @@ export function AdminDashboard() {
             type="password"
             value={tokenInput}
             onChange={(e) => setTokenInput(e.target.value)}
-            placeholder="FEED_ADMIN_TOKEN"
+            placeholder="FEED_ADMIN_TOKEN (bắt buộc để website thấy)"
             autoComplete="off"
           />
         </label>
@@ -370,7 +386,11 @@ export function AdminDashboard() {
           className="btn"
           onClick={() => {
             setAdminToken(tokenInput)
-            flash(tokenInput.trim() ? 'Đã lưu token' : 'Đã xóa token')
+            flash(
+              tokenInput.trim()
+                ? 'Đã lưu token — giờ sửa KOL rồi bấm Save'
+                : 'Đã xóa token',
+            )
           }}
         >
           Save token
@@ -701,9 +721,15 @@ export function AdminDashboard() {
                     >
                       <select
                         value={draft.tier ?? 2}
-                        onChange={(e) =>
-                          patchDraft('tier', Number(e.target.value) as 1 | 2 | 3)
-                        }
+                        onChange={(e) => {
+                          const tier = Number(e.target.value) as 1 | 2 | 3
+                          if (!draft) return
+                          const nextDraft = { ...draft, tier }
+                          setDraft(nextDraft)
+                          setDirty(true)
+                          // Publish immediately so map/R2 stay in sync
+                          onSaveDraft(nextDraft)
+                        }}
                       >
                         <option value={1}>1 · Challenger / Master</option>
                         <option value={2}>2 · Diamond / Platinum</option>
@@ -716,6 +742,7 @@ export function AdminDashboard() {
                           display: 'flex',
                           alignItems: 'center',
                           gap: 8,
+                          flexWrap: 'wrap',
                         }}
                       >
                         Preview:
@@ -726,6 +753,9 @@ export function AdminDashboard() {
                           size="sm"
                         />
                         <span>{formatRank(draft)}</span>
+                        <span style={{ opacity: 0.85 }}>
+                          · Đổi band → auto Save R2 (cần token)
+                        </span>
                       </div>
                     </Field>
                     <Field
@@ -1036,9 +1066,10 @@ export function AdminDashboard() {
                 </section>
 
                 <p className="admin-hint">
-                  <strong>Save</strong> ghi R2 <code>kols/v1.json</code> — mọi
-                  visitor load từ <code>/api/kols</code>. Cần token{' '}
-                  <code>FEED_ADMIN_TOKEN</code>. KOL Hidden ẩn trên map public.
+                  <strong>Save</strong> = publish R2 <code>kols/v1.json</code>.
+                  Map/website <em>không</em> đọc draft admin — chỉ đọc R2.
+                  Cần token ở banner trên. Rank band đổi xong sẽ auto-save nếu
+                  đã có token. Hidden = ẩn trên map public.
                 </p>
               </>
             )}

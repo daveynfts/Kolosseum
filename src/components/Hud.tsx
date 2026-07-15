@@ -424,14 +424,6 @@ export function Hud({
 
         <div className="panel glass panel--legend">
           <div className="panel-title">Legend</div>
-          <div className="legend-row">
-            <span className="legend-bubble legend-bubble--lg" />
-            <span>Size ≈ followers + score</span>
-          </div>
-          <p className="legend-note legend-note--rank" style={{ marginTop: 6 }}>
-            <strong>Khung rank kiểu LMHT 2017</strong> — viền kim loại + gem;
-            sheen quay nhẹ, tier cao có giáp / cánh.
-          </p>
           <div className="legend-rank-grid" aria-label="Rank ring patterns">
             {RANK_ORDER.map((r) => (
               <div key={r} className="legend-rank-item">
@@ -446,17 +438,6 @@ export function Hud({
                 />
                 <span className="legend-rank-meta">
                   <span style={{ color: RANK_COLORS[r] }}>{RANK_LABELS[r]}</span>
-                  <small className="legend-rank-hint">
-                    {r === 'challenger'
-                      ? 'vàng + giáp bên + gem'
-                      : r === 'master'
-                        ? 'indigo + cánh + gem'
-                        : r === 'diamond'
-                          ? 'xanh + 3 gem + nét đứt'
-                          : r === 'platinum'
-                            ? 'teal + gem trên/dưới'
-                            : 'vàng + cờ đỏ + gem'}
-                  </small>
                 </span>
               </div>
             ))}

@@ -458,10 +458,6 @@ export function Hud({
               </div>
             ))}
           </div>
-          <p className="legend-note legend-note--rank">
-            Band 1 → Challenger / Master · Band 2 → Diamond / Plat · Band 3 →
-            Gold. Shortlist max 5.
-          </p>
         </div>
       </aside>
 
@@ -472,7 +468,6 @@ export function Hud({
         <button type="button" className="btn" onClick={onToggleCompare}>
           {compareOpen ? 'Hide shortlist' : 'Open shortlist'}
         </button>
-        <span className="hint">Drag orbit · scroll zoom · click bubble</span>
       </div>
 
       {selected && (

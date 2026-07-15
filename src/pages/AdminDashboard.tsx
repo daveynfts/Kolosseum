@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react'
 import type { Kol, Niche, StatusLabel } from '../types'
 import {
+  formatRank,
   getKolNiches,
   NICHE_COLORS,
   primaryNiche,
@@ -8,6 +9,7 @@ import {
   STATUS_EMOJI,
   STATUS_LABELS,
 } from '../types'
+import { RankBadge } from '../components/RankBadge'
 import {
   ADMIN_NICHES,
   ADMIN_STATUSES,
@@ -523,7 +525,7 @@ export function AdminDashboard() {
                 <tr>
                   <th></th>
                   <th>KOL</th>
-                  <th>Tier</th>
+                  <th>Rank</th>
                   <th>Status <SrcBadge source="ai" /></th>
                   <th>Followers <SrcBadge source="x" /></th>
                   <th>Score <SrcBadge source="ai" /></th>
@@ -556,15 +558,15 @@ export function AdminDashboard() {
                       </div>
                     </td>
                     <td>
-                      {k.tier === 1
-                        ? (k.score ?? 0) >= 96
-                          ? 'Challenger'
-                          : 'Master'
-                        : k.tier === 2
-                          ? (k.score ?? 0) >= 92
-                            ? 'Diamond'
-                            : 'Platinum'
-                          : 'Gold'}
+                      <RankBadge
+                        tier={k.tier}
+                        score={k.score}
+                        isTop30={k.isTop30}
+                        size="sm"
+                      />
+                      <span className="muted" style={{ marginLeft: 6 }}>
+                        B{k.tier ?? 3}
+                      </span>
                     </td>
                     <td>
                       <span className="status-emoji-label">
@@ -681,7 +683,7 @@ export function AdminDashboard() {
                       />
                     </Field>
                     <Field
-                      label="Rank band (Chall/Master · Dia/Plat · Gold)"
+                      label="Rank band → display rank (band + score)"
                       source="human"
                     >
                       <select
@@ -694,6 +696,24 @@ export function AdminDashboard() {
                         <option value={2}>2 · Diamond / Platinum</option>
                         <option value={3}>3 · Gold</option>
                       </select>
+                      <div
+                        className="muted"
+                        style={{
+                          marginTop: 6,
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 8,
+                        }}
+                      >
+                        Preview:
+                        <RankBadge
+                          tier={draft.tier}
+                          score={draft.score}
+                          isTop30={draft.isTop30}
+                          size="sm"
+                        />
+                        <span>{formatRank(draft)}</span>
+                      </div>
                     </Field>
                     <Field
                       label="Niches (multi — chọn nhiều hạng mục content)"

@@ -134,7 +134,12 @@ export function ComparePanel({
                     </button>
                   </div>
                   <div className="compare-tags">
-                    <RankBadge tier={k.tier} score={k.score} size="sm" />
+                    <RankBadge
+                      tier={k.tier}
+                      score={k.score}
+                      isTop30={k.isTop30}
+                      size="sm"
+                    />
                     <span className="tag tag--status-emoji" title={STATUS_LABELS[st]}>
                       {formatStatus(st)}
                     </span>

@@ -9,6 +9,7 @@ import {
 interface Props {
   tier?: number
   score?: number
+  isTop30?: boolean
   /** sm | short | md | pip (icon only) */
   size?: 'sm' | 'short' | 'md' | 'pip'
   className?: string
@@ -18,15 +19,17 @@ interface Props {
 
 /**
  * Subtle LoL-inspired rank badge for map / panels.
+ * Geometric marks only — not official League assets.
  */
 export function RankBadge({
   tier,
   score,
+  isTop30,
   size = 'sm',
   className = '',
   rank: rankProp,
 }: Props) {
-  const rank = rankProp ?? getKolRank({ tier, score })
+  const rank = rankProp ?? getKolRank({ tier, score, isTop30 })
   const color = RANK_COLORS[rank]
   const label = size === 'short' ? RANK_SHORT[rank] : RANK_LABELS[rank]
 

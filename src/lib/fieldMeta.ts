@@ -33,9 +33,9 @@ export const FIELD_META: FieldMeta[] = [
   },
   {
     key: 'tier',
-    label: 'Tier',
+    label: 'Rank band',
     source: 'human',
-    note: 'Sheet / admin (1–3)',
+    note: '1=Challenger/Master · 2=Diamond/Platinum · 3=Gold (display rank = band + score)',
     group: 'identity',
   },
   {

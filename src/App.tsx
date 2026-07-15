@@ -11,8 +11,8 @@ import {
   visibleKols as onlyVisible,
 } from './lib/kolStore'
 import type { ViewMode } from './lib/layout'
-import type { Kol, Niche, StatusLabel } from './types'
-import { kolMatchesNiche } from './types'
+import type { Kol, KolRank, Niche, StatusLabel } from './types'
+import { getKolRank, kolMatchesNiche } from './types'
 import './App.css'
 
 const SHORTLIST_MAX = 5
@@ -32,7 +32,7 @@ function App() {
   const [kols, setKols] = useState<Kol[]>(() => loadKols())
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [filterNiche, setFilterNiche] = useState<Niche | 'All'>('All')
-  const [filterTier, setFilterTier] = useState<1 | 2 | 3 | 'All'>('All')
+  const [filterRank, setFilterRank] = useState<KolRank | 'All'>('All')
   const [filterStatus, setFilterStatus] = useState<StatusLabel | 'All'>('All')
   const [autoRotate, setAutoRotate] = useState(true)
   const [viewMode, setViewMode] = useState<ViewMode>(() => readViewMode())
@@ -83,12 +83,12 @@ function App() {
 
   const visibleKols = useMemo(() => {
     return publicKols.filter((k) => {
-      if (filterTier !== 'All' && k.tier !== filterTier) return false
+      if (filterRank !== 'All' && getKolRank(k) !== filterRank) return false
       if (!kolMatchesNiche(k, filterNiche)) return false
       if (filterStatus !== 'All' && k.statusLabel !== filterStatus) return false
       return true
     })
-  }, [publicKols, filterTier, filterNiche, filterStatus])
+  }, [publicKols, filterRank, filterNiche, filterStatus])
 
   const selected = useMemo(
     () => publicKols.find((k) => k.id === selectedId) ?? null,
@@ -139,7 +139,7 @@ function App() {
         allKols={publicKols}
         selected={selected}
         filterNiche={filterNiche}
-        filterTier={filterTier}
+        filterRank={filterRank}
         filterStatus={filterStatus}
         shortlistIds={shortlistIds}
         autoRotate={autoRotate}
@@ -149,8 +149,8 @@ function App() {
         onFilter={(n) =>
           setFilterNiche((prev) => (n !== 'All' && prev === n ? 'All' : n))
         }
-        onFilterTier={(t) =>
-          setFilterTier((prev) => (t !== 'All' && prev === t ? 'All' : t))
+        onFilterRank={(r) =>
+          setFilterRank((prev) => (r !== 'All' && prev === r ? 'All' : r))
         }
         onFilterStatus={(s) =>
           setFilterStatus((prev) => (s !== 'All' && prev === s ? 'All' : s))
@@ -168,7 +168,6 @@ function App() {
         kols={publicKols}
         onSelectKol={(k) => {
           if (k) {
-            setFilterTier(1)
             setSelectedId(k.id)
           }
         }}

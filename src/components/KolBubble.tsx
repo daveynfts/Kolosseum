@@ -273,6 +273,7 @@ function AvatarNode({
               <RankBadge
                 tier={kol.tier}
                 score={kol.score}
+                isTop30={kol.isTop30}
                 size="pip"
                 className="rank-pip--map"
               />
@@ -303,7 +304,12 @@ function AvatarNode({
                   @{kol.handle} · {formatNum(kol.followers)}
                 </span>
                 <div className="bubble-label__pills">
-                  <RankBadge tier={kol.tier} score={kol.score} size="sm" />
+                  <RankBadge
+                    tier={kol.tier}
+                    score={kol.score}
+                    isTop30={kol.isTop30}
+                    size="sm"
+                  />
                   <span
                     className="bubble-label__status-pill"
                     title={statusTitle}
@@ -538,6 +544,7 @@ function AvatarNode({
                 <RankBadge
                   tier={kol.tier}
                   score={kol.score}
+                  isTop30={kol.isTop30}
                   size="pip"
                   className="rank-pip--map"
                 />
@@ -570,7 +577,12 @@ function AvatarNode({
                 @{kol.handle} · {formatNum(kol.followers)}
               </span>
               <div className="bubble-label__pills">
-                <RankBadge tier={kol.tier} score={kol.score} size="sm" />
+                <RankBadge
+                  tier={kol.tier}
+                  score={kol.score}
+                  isTop30={kol.isTop30}
+                  size="sm"
+                />
                 <span className="bubble-label__status-pill" title={statusTitle}>
                   <span aria-hidden>{statusEmoji}</span>
                   {statusTitle}

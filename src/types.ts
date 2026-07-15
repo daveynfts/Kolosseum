@@ -181,21 +181,30 @@ export function tierForRank(rank: KolRank): 1 | 2 | 3 {
 export function getKolRank(k: {
   tier?: number
   score?: number
+  isTop30?: boolean
 }): KolRank {
   const tier = k.tier ?? 3
   const score = k.score ?? 50
+  // Band T1 → Challenger / Master
   if (tier <= 1) {
-    return score >= 96 ? 'challenger' : 'master'
+    if (score >= 96 || (k.isTop30 && score >= 94.5)) return 'challenger'
+    return 'master'
   }
+  // Band T2 → Diamond / Platinum
   if (tier === 2) {
-    return score >= 92 ? 'diamond' : 'platinum'
+    if (score >= 92) return 'diamond'
+    return 'platinum'
   }
+  // Band T3 → Gold (giữ ladder gọn, không Iron/Bronze)
   return 'gold'
 }
 
-export function formatRank(k: { tier?: number; score?: number }): string {
-  const r = getKolRank(k)
-  return RANK_LABELS[r]
+export function formatRank(k: {
+  tier?: number
+  score?: number
+  isTop30?: boolean
+}): string {
+  return RANK_LABELS[getKolRank(k)]
 }
 
 const NICHE_SET = new Set<string>([

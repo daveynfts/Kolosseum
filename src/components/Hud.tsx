@@ -1,14 +1,16 @@
 import { useEffect, useMemo, useState, type CSSProperties } from 'react'
-import type { Kol, Niche, StatusLabel } from '../types'
+import type { Kol, KolRank, Niche, StatusLabel } from '../types'
 import {
   formatRank,
   formatStatus,
   getKolNiches,
+  getKolRank,
   NICHE_COLORS,
   primaryNiche,
   RANK_COLORS,
   RANK_LABELS,
   RANK_ORDER,
+  RANK_SHORT,
   STATUS_EMOJI,
   STATUS_LABELS,
 } from '../types'
@@ -47,7 +49,7 @@ interface Props {
   allKols: Kol[]
   selected: Kol | null
   filterNiche: Niche | 'All'
-  filterTier: 1 | 2 | 3 | 'All'
+  filterRank: KolRank | 'All'
   filterStatus: StatusLabel | 'All'
   shortlistIds: string[]
   autoRotate: boolean
@@ -55,7 +57,7 @@ interface Props {
   feedOpen: boolean
   compareOpen: boolean
   onFilter: (n: Niche | 'All') => void
-  onFilterTier: (t: 1 | 2 | 3 | 'All') => void
+  onFilterRank: (r: KolRank | 'All') => void
   onFilterStatus: (s: StatusLabel | 'All') => void
   onSelect: (kol: Kol | null) => void
   onToggleRotate: () => void
@@ -70,7 +72,7 @@ export function Hud({
   allKols: _allKols,
   selected,
   filterNiche,
-  filterTier,
+  filterRank,
   filterStatus,
   shortlistIds,
   autoRotate,
@@ -78,7 +80,7 @@ export function Hud({
   feedOpen,
   compareOpen,
   onFilter,
-  onFilterTier,
+  onFilterRank,
   onFilterStatus,
   onSelect,
   onToggleRotate,
@@ -146,34 +148,36 @@ export function Hud({
         <div className="hud-bar__divider" aria-hidden />
 
         <div className="hud-bar__filters">
-          <div className="filter-seg filter-seg--inline" title="Rank">
-            {(['All', 1, 2, 3] as const).map((t) => {
-              const label =
-                t === 'All'
-                  ? 'All'
-                  : t === 1
-                    ? 'Chall·Master'
-                    : t === 2
-                      ? 'Dia·Plat'
-                      : 'Gold'
-              return (
-                <button
-                  key={String(t)}
-                  type="button"
-                  className={`seg-btn ${filterTier === t ? 'is-active' : ''}`}
-                  onClick={() => onFilterTier(t)}
-                  title={
-                    t === 'All'
-                      ? 'Show all ranks'
-                      : filterTier === t
-                        ? 'Click again to clear'
-                        : `Filter ${label}`
-                  }
-                >
-                  {label}
-                </button>
-              )
-            })}
+          <div className="filter-seg filter-seg--inline filter-seg--ranks" title="Rank">
+            <button
+              type="button"
+              className={`seg-btn ${filterRank === 'All' ? 'is-active' : ''}`}
+              onClick={() => onFilterRank('All')}
+              title="Show all ranks"
+            >
+              All
+            </button>
+            {RANK_ORDER.map((r) => (
+              <button
+                key={r}
+                type="button"
+                className={`seg-btn seg-btn--rank ${filterRank === r ? 'is-active' : ''}`}
+                style={
+                  {
+                    ['--rank' as string]: RANK_COLORS[r],
+                  } as CSSProperties
+                }
+                onClick={() => onFilterRank(r)}
+                title={
+                  filterRank === r
+                    ? 'Click again to clear'
+                    : `Filter ${RANK_LABELS[r]}`
+                }
+              >
+                <RankBadge rank={r} size="pip" className="rank-pip--filter" />
+                <span className="seg-btn__rank-label">{RANK_SHORT[r]}</span>
+              </button>
+            ))}
           </div>
 
           <div className="filter-chips filter-chips--inline" title="Status">
@@ -282,19 +286,37 @@ export function Hud({
                         onClick={() => onSelect(k)}
                       >
                         <span className={`rank-i ${rankClass}`}>{i + 1}</span>
-                        <AvatarImg
-                          handle={k.handle}
-                          name={k.displayName}
-                          size={34}
-                          color={NICHE_COLORS[primaryNiche(k)]}
-                          className="rank-avatar"
-                        />
+                        <span className="rank-avatar-wrap">
+                          <AvatarImg
+                            handle={k.handle}
+                            name={k.displayName}
+                            size={34}
+                            color={NICHE_COLORS[primaryNiche(k)]}
+                            className="rank-avatar"
+                          />
+                          <RankBadge
+                            tier={k.tier}
+                            score={k.score}
+                            isTop30={k.isTop30}
+                            size="pip"
+                            className="rank-pip--list"
+                          />
+                        </span>
                         <span className="rank-main">
                           <strong title={k.displayName}>
                             {k.displayName}
                           </strong>
                           <small>
-                            @{k.handle} · {formatRank(k)}
+                            @{k.handle}
+                            <span
+                              className="rank-inline"
+                              style={{
+                                color: RANK_COLORS[getKolRank(k)],
+                              }}
+                            >
+                              {' '}
+                              · {formatRank(k)}
+                            </span>
                             {k.isTop30 ? ' · 7d' : ''}
                             {getKolNiches(k).length > 1
                               ? ` · ${getKolNiches(k).join('+')}`
@@ -380,13 +402,13 @@ export function Hud({
               </div>
             ))}
           </div>
-          <div className="legend-row">
-            <span className="legend-bubble legend-bubble--color" />
-            <span>Ring = niche · badge = rank (LoL-style)</span>
-          </div>
-          <p className="legend-note">
-            Top Score always re-sorts the current filter set. Shortlist max 5 ·
-            export from Compare.
+          <p className="legend-note legend-note--rank">
+            Rank ladder (LoL-inspired): band + score → display rank.
+            <br />
+            Band 1 → Challenger / Master · Band 2 → Diamond / Plat · Band 3 →
+            Gold.
+            <br />
+            Ring = niche · Shortlist max 5.
           </p>
         </div>
       </aside>
@@ -486,6 +508,7 @@ export function Hud({
                 <RankBadge
                   tier={selected.tier}
                   score={selected.score}
+                  isTop30={selected.isTop30}
                   size="sm"
                   className="tag--rank"
                 />

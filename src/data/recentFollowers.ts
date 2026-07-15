@@ -284,6 +284,56 @@ export const RECENT_FOLLOWERS_BY_HANDLE: Record<string, RecentFollower[]> = {
       followedAt: '2025-07-05T00:00:00.000Z',
     },
   ],
+  leninugreal: [
+    {
+      handle: 'wilsonye2025',
+      displayName: 'Wilson Ye',
+      followedAgo: 'a month ago',
+      followedAt: '2026-06-15T00:00:00.000Z',
+    },
+    {
+      handle: 'evans666666',
+      displayName: 'Evans.eth ｜买美股上币安',
+      followedAgo: '4 months ago',
+      followedAt: '2026-03-15T00:00:00.000Z',
+    },
+    {
+      handle: 'leadlagreport',
+      displayName: 'Michael A. Gayed, CFA',
+      followedAgo: '7 months ago',
+      followedAt: '2025-12-15T00:00:00.000Z',
+    },
+    {
+      handle: 'chinapumpwxc',
+      displayName: '中国密码鲸公司 WHALE CHINESE',
+      followedAgo: '8 months ago',
+      followedAt: '2025-11-12T00:00:00.000Z',
+    },
+    {
+      handle: 'madcapslaugh',
+      displayName: 'Jonathan Caras',
+      followedAgo: '8 months ago',
+      followedAt: '2025-11-10T00:00:00.000Z',
+    },
+    {
+      handle: 'defiapp',
+      displayName: 'Defi App',
+      followedAgo: '8 months ago',
+      followedAt: '2025-11-05T00:00:00.000Z',
+    },
+    {
+      handle: 'sukie234',
+      displayName: 'sukie',
+      followedAgo: 'a year ago',
+      followedAt: '2025-07-12T00:00:00.000Z',
+    },
+    {
+      handle: 'afangyuan',
+      displayName: '方源',
+      followedAgo: 'a year ago',
+      followedAt: '2025-07-08T00:00:00.000Z',
+    },
+  ],
 }
 
 export function getRecentFollowers(handle: string): RecentFollower[] {

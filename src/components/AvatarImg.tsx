@@ -29,10 +29,12 @@ export function AvatarImg({
   const sources = useMemo(() => {
     const clean = handle.replace(/^@/, '').trim()
     return [
+      // Deployed static first (always same-origin, works when R2 public 403)
+      `/avatars/${encodeURIComponent(clean)}.jpg`,
+      // R2 CDN + same-origin proxy rewrite
       xAvatarUrl(clean),
       xAvatarTextureUrl(clean),
-      // Vite/public deploy fallback (when R2 object missing)
-      `/avatars/${encodeURIComponent(clean)}.jpg`,
+      // Live X proxy fallbacks
       `https://unavatar.io/x/${encodeURIComponent(clean)}`,
       `https://unavatar.io/twitter/${encodeURIComponent(clean)}`,
     ]

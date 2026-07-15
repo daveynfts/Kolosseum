@@ -44,8 +44,10 @@ export function KolBubble(props: Props) {
 }
 
 function AvatarWithTexture(props: Props) {
-  const url = xAvatarTextureUrl(props.kol.handle)
-  // R2 CDN is cross-origin — required for WebGL texture upload
+  // Prefer same-origin /avatars (Vite public + Vercel static) — reliable when
+  // R2 public bucket returns 403; TextureLoader needs CORS-friendly URL.
+  const clean = props.kol.handle.replace(/^@/, '').trim()
+  const url = `/avatars/${encodeURIComponent(clean)}.jpg`
   const texture = useLoader(THREE.TextureLoader, url, (loader) => {
     loader.setCrossOrigin('anonymous')
   })

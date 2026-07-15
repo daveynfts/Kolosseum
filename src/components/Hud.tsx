@@ -648,12 +648,6 @@ export function Hud({
           {detailTab === 'analysis' && (
             <div className="detail-analysis-tab">
               <SurfAnalysisMock kol={selected} />
-              <p className="detail-bio-label" style={{ marginTop: 14 }}>
-                Assessment ngắn (map)
-              </p>
-              <p className="detail-bio detail-bio--assess detail-bio--compact">
-                {selected.bio}
-              </p>
             </div>
           )}
 

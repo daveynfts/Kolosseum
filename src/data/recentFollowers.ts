@@ -847,6 +847,45 @@ export const RECENT_FOLLOWERS_BY_HANDLE: Record<string, RecentFollower[]> = {
       followedAt: '2025-07-08T00:00:00.000Z',
     },
   ],
+  /** Trấn Thành (@tranthanhbk) — curated smart/recent followers snapshot */
+  tranthanhbk: [
+    {
+      handle: '0xsexybanana',
+      displayName: '郡主Christine (✱,✱)',
+      followedAgo: '11 days ago',
+      followedAt: '2026-07-04T00:00:00.000Z',
+    },
+    {
+      handle: 'tortugo',
+      displayName: 'Tortugo.HL',
+      followedAgo: '3 months ago',
+      followedAt: '2026-04-15T00:00:00.000Z',
+    },
+    {
+      handle: 'evans666666',
+      displayName: 'Evans.eth ｜买美股上币安',
+      followedAgo: '4 months ago',
+      followedAt: '2026-03-15T00:00:00.000Z',
+    },
+    {
+      handle: 'codyboston19',
+      displayName: 'Cheetahgang.ETH',
+      followedAgo: '5 months ago',
+      followedAt: '2026-02-15T00:00:00.000Z',
+    },
+    {
+      handle: '0xdamien',
+      displayName: 'Damien (dm for Cracked Devs)',
+      followedAgo: '6 months ago',
+      followedAt: '2026-01-15T00:00:00.000Z',
+    },
+    {
+      handle: 'onesource_io',
+      displayName: 'OneSource',
+      followedAgo: '10 months ago',
+      followedAt: '2025-09-15T00:00:00.000Z',
+    },
+  ],
 }
 
 /**

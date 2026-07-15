@@ -37,6 +37,37 @@ function cloneSeed(): Kol[] {
   return JSON.parse(JSON.stringify(SHEET_KOLS)) as Kol[]
 }
 
+/**
+ * When seed sheet carries a newer editorial assessment (TL;DR / công tâm),
+ * prefer that bio over stale R2/localStorage copies so map overview stays
+ * in sync after code deploys without requiring admin Save-to-server.
+ */
+export function mergeSeedAssessments(kols: Kol[]): Kol[] {
+  const seedBy = new Map(
+    SHEET_KOLS.map((k) => [k.handle.toLowerCase(), k] as const),
+  )
+  let changed = false
+  const next = kols.map((k) => {
+    const s = seedBy.get(k.handle.toLowerCase())
+    if (!s?.bio) return k
+    const isEditorial =
+      s.bio.includes('TL;DR') ||
+      s.bio.includes('Đánh giá công tâm') ||
+      s.bio.includes('Đánh giá công tâm KOL')
+    if (!isEditorial) return k
+    if (k.bio === s.bio && (s.followers == null || k.followers === s.followers)) {
+      return k
+    }
+    changed = true
+    return {
+      ...k,
+      bio: s.bio,
+      followers: s.followers ?? k.followers,
+    }
+  })
+  return changed ? next : kols
+}
+
 function emitKolsEvent(kols: Kol[]) {
   try {
     window.dispatchEvent(new CustomEvent(KOLS_EVENT, { detail: { kols } }))
@@ -48,14 +79,14 @@ function emitKolsEvent(kols: Kol[]) {
 export function loadKolsLocal(): Kol[] {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
-    if (!raw) return cloneSeed()
+    if (!raw) return mergeSeedAssessments(cloneSeed())
     const data = JSON.parse(raw) as KolStorePayload
     if (!data?.kols || !Array.isArray(data.kols) || data.kols.length === 0) {
-      return cloneSeed()
+      return mergeSeedAssessments(cloneSeed())
     }
-    return data.kols
+    return mergeSeedAssessments(data.kols)
   } catch {
-    return cloneSeed()
+    return mergeSeedAssessments(cloneSeed())
   }
 }
 
@@ -176,6 +207,7 @@ export async function fetchServerKols(): Promise<KolStorePayload | null> {
 export async function loadKolsWithSource(): Promise<LoadKolsResult> {
   const server = await fetchServerKols()
   if (server) {
+    const kols = mergeSeedAssessments(server.kols)
     try {
       if (server.surfDefaultPdfUrl) {
         setSurfDefaultPdfUrl(server.surfDefaultPdfUrl)
@@ -184,9 +216,10 @@ export async function loadKolsWithSource(): Promise<LoadKolsResult> {
         STORAGE_KEY,
         JSON.stringify({
           ...server,
+          kols,
           version: server.version ?? STORAGE_VERSION,
           updatedAt: server.updatedAt || new Date().toISOString(),
-          count: server.kols.length,
+          count: kols.length,
           surfDefaultPdfUrl:
             server.surfDefaultPdfUrl || getSurfDefaultPdfUrl() || undefined,
         }),
@@ -195,7 +228,7 @@ export async function loadKolsWithSource(): Promise<LoadKolsResult> {
       /* ignore */
     }
     return {
-      kols: server.kols,
+      kols,
       source: 'server',
       updatedAt: server.updatedAt ?? null,
       surfDefaultPdfUrl:
@@ -209,8 +242,9 @@ export async function loadKolsWithSource(): Promise<LoadKolsResult> {
       const data = JSON.parse(raw) as KolStorePayload
       if (data?.kols?.length) {
         if (data.surfDefaultPdfUrl) setSurfDefaultPdfUrl(data.surfDefaultPdfUrl)
+        const kols = mergeSeedAssessments(data.kols)
         return {
-          kols: data.kols,
+          kols,
           source: 'local',
           updatedAt: data.updatedAt ?? null,
           surfDefaultPdfUrl:
@@ -223,7 +257,7 @@ export async function loadKolsWithSource(): Promise<LoadKolsResult> {
   }
 
   return {
-    kols: cloneSeed(),
+    kols: mergeSeedAssessments(cloneSeed()),
     source: 'seed',
     updatedAt: null,
     surfDefaultPdfUrl: getSurfDefaultPdfUrl() || undefined,

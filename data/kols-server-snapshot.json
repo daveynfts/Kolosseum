@@ -1,8 +1,8 @@
 {
   "version": 3,
-  "updatedAt": "2026-07-10T07:43:01.583Z",
-  "source": "admin server · top2-10 bio refresh (radar product style)",
-  "note": "Rewrite top 2-10 bios like ThuanCapital; no sheet references",
+  "updatedAt": "2026-07-15T04:14:01.430Z",
+  "source": "admin server · ThuanCapital bio refresh",
+  "note": "Update ThuanCapital overview assessment (công tâm)",
   "count": 106,
   "kols": [
     {
@@ -176,7 +176,11 @@
       "activity7dReplies": 55,
       "activity7dReposts": 36,
       "activity7dScore": 100,
-      "activity7dSource": "estimated"
+      "activity7dSource": "estimated",
+      "surfReportPdfUrl": "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/BaoCao_KOL_LeninUGReal_Premium_20260710.pdf",
+      "niches": [
+        "Multi"
+      ]
     },
     {
       "id": "sheet-immrape",
@@ -2681,7 +2685,7 @@
       "reposts24h": 5,
       "baseScore": 74.2,
       "hotScore": 69.9,
-      "score": 72.4,
+      "score": 72.3,
       "deltaPct": 0,
       "bio": "Yiwi (@YiwiJR) — Tier 2, positioning sheet «ALL» → map niche Multi. Account verified trên X. Self-bio X: Regional Lead Viet Nam @Injective | Moderator @SurfAI | Regional Ambassdor @Renaissxyz\n\nFollowers live ~8.0K (~phẳng so sheet, +0.0%) — base audience giữ được. Follow graph cân bằng (~9.74%); following ~776. Mix text + media.\n\nPace lifetime ~1.6 post/ngày (vừa phải); tổng ~6.6K posts · account ~11.0 năm. Không spam; campaign cần lead time và content quality cao hơn tần suất.\n\nTrạng thái STABLE: base audience ổn, không bùng nổ short-term; hợp brand awareness / thought leadership hơn raid. Composite score map ~72.4/100 (blend base size + hot/activity).\n\nĐịnh vị dùng KOL (niche/small): Multi-topic: linh hoạt campaign nhưng cần brief rõ pillar nội dung tránh loãng positioning. Verified giúp trust signal. Hiện tại: mid-funnel / community — test 1–2 post đo eng trước scale.",
       "statusLabel": "stable",
@@ -2690,8 +2694,12 @@
       "tweetsTotal": 6642,
       "tweetsPerDay": 1.649,
       "xFollowing": 776,
-      "dataSource": "x-live",
-      "isTop30": false
+      "dataSource": "x-live+admin",
+      "isTop30": false,
+      "surfReportPdfUrl": "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/Yiwi.pdf",
+      "niches": [
+        "Multi"
+      ]
     },
     {
       "id": "sheet-miangst01",

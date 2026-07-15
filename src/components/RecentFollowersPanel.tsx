@@ -25,9 +25,7 @@ export function RecentFollowersPanel({ kolHandle }: Props) {
           Recent Followers
           <span className="recent-follows__count">({list.length})</span>
         </h3>
-        <p className="recent-follows__sub">
-          Tài khoản gần đây follow @{kolHandle.replace(/^@/, '')}
-        </p>
+        <p className="recent-follows__sub">Smart Followers gần đây</p>
       </div>
 
       <ul className="recent-follows__list">

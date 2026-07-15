@@ -13,7 +13,7 @@ import {
   STATUS_LABELS,
 } from '../types'
 import { radiusForScore } from '../lib/layout'
-import { xAvatarTextureUrl } from '../lib/avatar'
+
 import { AvatarImg } from './AvatarImg'
 import { RankBadge } from './RankBadge'
 import { RankRingDecor } from './RankRingDecor'

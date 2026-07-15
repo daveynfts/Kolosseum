@@ -995,7 +995,7 @@ export const SHEET_KOLS: Kol[] = [
     "xFollowing": 313,
     "dataSource": "x-live",
     "isTop30": true,
-    "surfReportPdfUrl": "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/RadarKOLsReport/SurfAI_KOL_Evaluation_Report_phamduydong179.pdf",
+    "surfReportPdfUrl": "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/RadarKOLsReport/SurfAI_BaoCao_PhanTich_KOL_bachkhoabnb_20260715.pdf",
     "activity7dPosts": 6,
     "activity7dLikes": 40,
     "activity7dViews": 8324,
@@ -2941,7 +2941,8 @@ export const SHEET_KOLS: Kol[] = [
     "tweetsPerDay": 0.851,
     "xFollowing": 859,
     "dataSource": "x-live",
-    "isTop30": false
+    "isTop30": false,
+    "surfReportPdfUrl": "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/RadarKOLsReport/BaoCao_DanhGia_KOL_mintt_34_SurfAI.pdf"
   },
   {
     "id": "sheet-cointvventures",

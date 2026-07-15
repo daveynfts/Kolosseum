@@ -1012,7 +1012,7 @@ export function AdminDashboard() {
                     Surf AI report (mock) <SrcBadge source="ai" />
                   </h3>
                   <Field
-                    label="PDF R2 URL (override KOL — để trống = dùng default global)"
+                    label="PDF R2 URL (public — bắt buộc để map mở Surf)"
                     source="ai"
                   >
                     <input
@@ -1024,13 +1024,32 @@ export function AdminDashboard() {
                           e.target.value.trim() || undefined,
                         )
                       }
-                      placeholder="https://pub-xxxx.r2.dev/radar/reports/@handle.pdf"
+                      placeholder="https://pub-xxxx.r2.dev/RadarKOLsReport/….pdf"
+                      spellCheck={false}
+                      autoComplete="off"
                     />
                   </Field>
-                  <p className="admin-hint" style={{ marginTop: 8 }}>
-                    Map tab “Phân tích sâu” → bấm logo Surf → đợi 3s → mở
-                    PDF này (hoặc default global).
-                  </p>
+                  <div
+                    className="admin-avatar-field__actions"
+                    style={{ marginTop: 8 }}
+                  >
+                    {draft.surfReportPdfUrl ? (
+                      <a
+                        className="btn btn--sm"
+                        href={draft.surfReportPdfUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        Test open PDF
+                      </a>
+                    ) : null}
+                    <span className="admin-hint" style={{ margin: 0 }}>
+                      Upload PDF lên R2 (prefix{' '}
+                      <code>RadarKOLsReport/</code>) rồi dán URL public ở đây →{' '}
+                      <strong>Save</strong> (có token). Chỉ upload file mà không
+                      Save field này thì web chính vẫn “Chưa gắn PDF”.
+                    </span>
+                  </div>
                 </section>
 
                 <section className="admin-section">

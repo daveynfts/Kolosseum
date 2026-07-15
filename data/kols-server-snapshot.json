@@ -1,8 +1,8 @@
 {
   "version": 4,
-  "updatedAt": "2026-07-15T05:25:39.485Z",
-  "source": "admin server · editorial bios",
-  "note": "Push editorial bios from seed (Emily, Thuan, …)",
+  "updatedAt": "2026-07-15T07:15:27.724Z",
+  "source": "admin server · push_kol_bio",
+  "note": "admin server · bio push (lensmoso)",
   "count": 106,
   "kols": [
     {
@@ -51,7 +51,7 @@
       "tier": 2,
       "typeRaw": "Trading, News",
       "smartFollowers": 2947,
-      "followers": 182312,
+      "followers": 163729,
       "posts24h": 4,
       "likes24h": 224,
       "replies24h": 26,
@@ -60,7 +60,7 @@
       "hotScore": 95.9,
       "score": 97,
       "deltaPct": 192.4,
-      "bio": "Emily Vuong (@emilyyvuong) — Đánh giá công tâm KOL · niche News/Trading · Band T2 · SurfAI Jul/2026.\n\nTL;DR\n• High-quality macro voice VN: vĩ mô (Fed, CPI, địa chính trị) + ETF/dòng tiền + cấu trúc thị trường — giáo dục, data-driven, NFA rõ; không shill coin.\n• SurfAI KOL Signal Score: 82/100 — “High Quality Macro Voice” (depth + timely + data mạnh; tương tác 2 chiều còn yếu).\n• Phù hợp theo dõi làm nguồn macro context / KOL watchlist; không phải call group hay news spam.\n\nChân dung\n• ~182.3K followers · Blue Verified · self-bio: “For informational purposes only — NFA”.\n• Tiếng Việt chuyên nghiệp, data-heavy, chart/biểu đồ, giọng phân tích khách quan.\n• Nhóm Analyst/Educator (không shiller, không pure aggregator) — giá trị dài hạn cao cho trader “serious”.\n\nĐiểm mạnh\n• Data-driven: CPI MoM, ETF flows, P/E, so sánh lịch sử, chart kèm bài.\n• Kết nối TradFi macro → implication crypto (Fed, Hormuz, risk assets) rõ và timely.\n• Uy tín: NFA, ít drama, không shill low-cap; trình bày dễ skim.\n• Peak gần đây: ~54 likes / ~5.9K views (contrarian BTC/Gold, geopolitics).\n\nĐiểm yếu / rủi ro\n• Engagement 2 chiều thấp (replies ~2–8); eng rate ước ~0.014% — audience passive.\n• Ít CTA (poll/câu hỏi); phụ thuộc chart — mobile dễ overload nếu thiếu TL;DR.\n• Chủ đề nặng vĩ mô/geopolitics (50%+); ít on-chain / alt rotation → reach hẹp hơn.\n• Concentration risk content; flywheel cộng đồng yếu; áp lực duy trì depth + tần suất.\n\nMẫu nội dung (12–14/07/2026)\n• ~35% vĩ mô · ~25% crypto/ETF · ~15% địa chính trị.\n• Ví dụ: CPI 6 “tốt bất ngờ” nhưng cảnh báo tháng 7; KOSPI/chip concentration; BTC/Gold -1.81 SD (contrarian); Hormuz + Fed RMP “QE trá hình” quy mô nhỏ.\n\nRadar SurfAI (gợi ý)\n• Tin cậy/NFA & cân bằng ~9.5/10 · Macro–crypto ~9.3/10 · Tương tác cộng đồng ~6.8/10 (điểm thấp nhất).\n• Dùng như: macro signal context, narrative detection, trust/depth leaderboard — không chỉ ranking eng.\n\nCách dùng\n• Đọc để lấy context vĩ mô–crypto trước khi trade; tự verify số liệu & cập nhật sự kiện.\n• Không dùng làm tín hiệu entry/exit độc lập.\n• Kết luận: KOL “blue-chip” quality trong hệ sinh thái VN — theo dõi sát; cải thiện engagement là cơ hội chính.",
+      "bio": "Emily Vuong (@emilyyvuong)  \n\nĐánh giá công tâm KOL · niche News/Trading · Band T2 · SurfAI Jul/2026.\n\nTL;DR\n• High-quality macro voice VN: vĩ mô (Fed, CPI, địa chính trị) + ETF/dòng tiền + cấu trúc thị trường + giáo dục, data-driven, NFA rõ; không shill coin.\n• SurfAI KOL Signal Score: 82/100 — “High Quality Macro Voice” (depth + timely + data mạnh; tương tác 2 chiều còn yếu).\n• Phù hợp theo dõi làm nguồn macro context / KOL watchlist; không phải call group hay news spam.\n\nChân dung\n• ~182.3K followers · Blue Verified · self-bio: “For informational purposes only — NFA”.\n• Tiếng Việt chuyên nghiệp, data-heavy, chart/biểu đồ, giọng phân tích khách quan.\n• Nhóm Analyst/Educator (không shiller, không pure aggregator) — giá trị dài hạn cao cho trader “serious”.\n\nĐiểm mạnh\n• Data-driven: CPI MoM, ETF flows, P/E, so sánh lịch sử, chart kèm bài.\n• Kết nối TradFi macro → implication crypto (Fed, Hormuz, risk assets) rõ và timely.\n• Uy tín: NFA, ít drama, không shill low-cap; trình bày dễ skim.\n• Peak gần đây: ~54 likes / ~5.9K views (contrarian BTC/Gold, geopolitics).\n\nĐiểm yếu / rủi ro\n• Engagement 2 chiều thấp (replies ~2–8); eng rate ước ~0.014% — audience passive.\n• Ít CTA (poll/câu hỏi); phụ thuộc chart — mobile dễ overload nếu thiếu TL;DR.\n• Chủ đề nặng vĩ mô/geopolitics (50%+); ít on-chain / alt rotation → reach hẹp hơn.\n• Concentration risk content; flywheel cộng đồng yếu; áp lực duy trì depth + tần suất.\n\nMẫu nội dung (12–14/07/2026)\n• ~35% vĩ mô · ~25% crypto/ETF · ~15% địa chính trị.\n• Ví dụ: CPI 6 “tốt bất ngờ” nhưng cảnh báo tháng 7; KOSPI/chip concentration; BTC/Gold -1.81 SD (contrarian); Hormuz + Fed RMP “QE trá hình” quy mô nhỏ.\n\nRadar SurfAI (gợi ý)\n• Tin cậy/NFA & cân bằng ~9.5/10 · Macro–crypto ~9.3/10 · Tương tác cộng đồng ~6.8/10 (điểm thấp nhất).\n• Dùng như: macro signal context, narrative detection, trust/depth leaderboard — không chỉ ranking eng.\n\nCách dùng\n• Đọc để lấy context vĩ mô–crypto trước khi trade; tự verify số liệu & cập nhật sự kiện.\n• Không dùng làm tín hiệu entry/exit độc lập.\n• Kết luận: KOL “blue-chip” quality trong hệ sinh thái VN — theo dõi sát; cải thiện engagement là cơ hội chính.",
       "statusLabel": "active",
       "activityLevel": 78,
       "verified": true,
@@ -87,7 +87,7 @@
       "handle": "thekhuongeth",
       "displayName": "Thế Khương",
       "niche": "Meme",
-      "tier": 1,
+      "tier": 3,
       "typeRaw": "Meme",
       "smartFollowers": 2672,
       "followers": 162967,
@@ -114,7 +114,10 @@
       "activity7dReplies": 64,
       "activity7dReposts": 43,
       "activity7dScore": 100,
-      "activity7dSource": "estimated"
+      "activity7dSource": "estimated",
+      "niches": [
+        "Meme"
+      ]
     },
     {
       "id": "sheet-tcvncommunity",
@@ -1149,7 +1152,7 @@
       "tier": 2,
       "typeRaw": "ALL",
       "smartFollowers": 349,
-      "followers": 26109,
+      "followers": 27352,
       "posts24h": 28,
       "likes24h": 816,
       "replies24h": 97,
@@ -1158,7 +1161,7 @@
       "hotScore": 98,
       "score": 89.6,
       "deltaPct": 0,
-      "bio": "Lens  (@LensMoso) — Tier 2, positioning sheet «ALL» → map niche Multi. Account verified trên X. Self-bio X: Ambassador @injective @zerion Contributor @axisrobotics ✉️DM for Work: https://t.me/lensmoso Bài đăng quan điểm cá nhân, không xem là lời khuyên đầu tư\n\nFollowers live ~26.1K (~phẳng so sheet, +0.0%) — base audience giữ được. Network-heavy (following/followers ~35.66%, following ~9.3K) — có thể reply/network nhiều hơn pure broadcast. Thiên text/thread hơn visual.\n\nPace lifetime ~28.0 post/ngày (cực dày (content/news machine — gần realtime desk)); tổng ~35.6K posts · account ~3.5 năm. Volume cao: tốt cho coverage, nhưng từng post dễ bị loãng; brief cần CTA rõ.\n\nTrạng thái HOT: nhịp gần đây mạnh — ưu tiên khi cần bật narrative trong 24–72h. Composite score map ~89.6/100 (blend base size + hot/activity).\n\nĐịnh vị dùng KOL (mid): Multi-topic: linh hoạt campaign nhưng cần brief rõ pillar nội dung tránh loãng positioning. Verified giúp trust signal. Hiện tại: primary cho push ngắn hạn nếu budget/brief khớp niche.",
+      "bio": "Lens (@LensMoso) — Đánh giá công tâm KOL · niche Multi / INJ–DeFi · Band T2 · SurfAI 15/07/2026.\n\nTL;DR\n• Mid-Tier Niche Leader: Ambassador @injective @zerion · contributor @axisrobotics · ~27.4K followers (+33% YTD).\n• SurfAI KOL Signal: 74/100 — vững ở niche INJ & DeFi VN; tiềm năng Top-Tier nếu tăng depth + engagement.\n• Community Score ~85/100 (rất tích cực) · Niche Authority ~82/100 · Engagement Rate ~1.2% (trung bình).\n\nChân dung\n• Bio X: Ambassador Injective & Zerion | Contributor Axis Robotics | quan điểm cá nhân, NFA.\n• Cầu nối narrative Injective (CLOB on-chain, sub-second finality, phí thấp) ↔ retail trader Việt.\n• Nội dung: INJ catalysts, macro (CPI/BTC), meme & kỷ luật trading, sentiment cộng đồng.\n\nĐiểm SurfAI (breakdown)\n• Community / sentiment ~85 · Niche authority ~82 · Content quality ~65 · Engagement quality ~58 · Tổng 74/100.\n• Vượt benchmark niche ở authority & loyalty; còn cách biệt ở engagement rate & content depth.\n\nĐiểm mạnh\n• Uy tín ambassador chính thức Injective & Zerion (perp DEX / portfolio narrative).\n• Giọng gần gũi, tích cực — community loyalty cao với retail VN.\n• Đúng narrative hot: INJ catalysts, macro impact, risk management / meme lessons.\n\nĐiểm yếu / rủi ro\n• Post chủ yếu comment ngắn; ít thread phân tích sâu → content quality & engagement thấp.\n• Một số post gần đây eng rất thấp (views/likes đơn vị) — thiếu CTA / media / viral format.\n• Tăng trưởng followers chậm lại (~+2%/tháng gần đây) nếu không collab/viral.\n\nCách dùng (Radar / campaign)\n• Primary/co-lead cho brief INJ ecosystem, DeFi tools (Zerion), retail education VN.\n• Không kỳ vọng thought-leader data-heavy nếu chỉ dựa short posts.\n• Kết luận: asset quý cho Injective VN; 50K+ followers trong 6–9 tháng khả thi nếu thêm thread data-driven, Spaces/video, CTA 2 chiều.",
       "statusLabel": "hot",
       "activityLevel": 92,
       "verified": true,
@@ -1442,26 +1445,26 @@
       "handle": "Lecter_XFinance",
       "displayName": "Lecter",
       "niche": "Multi",
-      "tier": 2,
+      "tier": 1,
       "typeRaw": "ALL",
       "smartFollowers": 523,
-      "followers": 42900,
+      "followers": 39064,
       "posts24h": 18,
       "likes24h": 352,
       "replies24h": 42,
       "reposts24h": 28,
       "baseScore": 86.7,
       "hotScore": 86.8,
-      "score": 86.8,
+      "score": 86.7,
       "deltaPct": 0,
-      "bio": "Lecter (@Lecter_XFinance) — Đánh giá công tâm KOL · niche Multi / Arc builders · Band T2 · SurfAI 15/07/2026.\n\nTL;DR\n• KOL crypto VN ~42.9K followers; builder @arcvnbuilders · @Vitael_xyz — voice thực tế trong cộng đồng Arc (Circle L1).\n• SurfAI Score: 82/100 — “Tín hiệu Mạnh”; Community Building 95/100 (điểm cao nhất).\n• Engagement rate ~7.5% (↑) — cao so với KOL cùng quy mô; niche Arc-focused rõ.\n\nChân dung\n• Bio X: Contact tele @Lecter_Xfinance | Building arcvnbuilders | Vitael | owner community links.\n• >50% nội dung xoay quanh Arc Ecosystem & builders (testnet/mainnet, builder calls, events).\n• Tương tác chân thực: reply, hỗ trợ onboarding, kết nối builder VN với team Arc.\n\nĐiểm SurfAI (trụ cột)\n• Community Building ~95/100 · Social Engagement ~88/100 · Content Quality ~78/100 · Market Influence ~72/100 · Tổng 82/100.\n\nĐiểm mạnh\n• Authentic community builder — không chỉ “khoe”, có offer kết nối / chia sẻ dự án anh em.\n• Niche positioning mạnh: Arc / Circle L1 (stablecoin finance; mainnet dự kiến Hè 2026).\n• Engagement & views tăng khi nội dung Arc-focused (8 tuần gần nhất) — product-market fit nội dung tốt.\n\nĐiểm yếu / dư địa\n• Nội dung chủ yếu ngắn (comment/reply); thiếu thread phân tích dài, on-chain, so sánh L1.\n• Ít video / Space / visual infographic; cross-promo ecosystem còn hạn chế.\n• Content Quality 78 — cơ hội lớn nếu thêm depth + SurfAI signals.\n\nCách dùng (Radar / campaign)\n• Primary cho brief builder community, Arc/Circle narrative, onboarding VN builders.\n• Không kỳ vọng thought-leader macro dài hơi nếu chỉ dựa reply ngắn.\n• Kết luận: nền tảng cộng đồng vững + niche rõ; scale 2–3x followers/influence trong 6–9 tháng là khả thi nếu tăng chiều sâu content trước/around Arc mainnet.",
+      "bio": "Lecter (@Lecter_XFinance) \n\nĐánh giá công tâm KOL · niche Multi / Arc builders\n\nPhân tích bởi SurfAI và Grok 4.5 vào 15/07/2026.\n\nTL;DR\n• KOL crypto VN ~42.9K followers; builder @arcvnbuilders · @Vitael_xyz — voice thực tế trong cộng đồng Arc (Circle L1).\n• SurfAI Score: 82/100 — “Tín hiệu Mạnh”; Community Building 95/100 (điểm cao nhất).\n• Engagement rate ~7.5% (↑) — cao so với KOL cùng quy mô; niche Arc-focused rõ.\n\nChân dung\n• Bio X: Contact tele @Lecter_Xfinance | Building arcvnbuilders | Vitael | owner community links.\n• >50% nội dung xoay quanh Arc Ecosystem & builders (testnet/mainnet, builder calls, events).\n• Tương tác chân thực: reply, hỗ trợ onboarding, kết nối builder VN với team Arc.\n\nĐiểm SurfAI (trụ cột)\n• Community Building ~95/100 · Social Engagement ~88/100 · Content Quality ~78/100 · Market Influence ~72/100 · Tổng 82/100.\n\nĐiểm mạnh\n• Authentic community builder — không chỉ “khoe”, có offer kết nối / chia sẻ dự án anh em.\n• Niche positioning mạnh: Arc / Circle L1 (stablecoin finance; mainnet dự kiến Hè 2026).\n• Engagement & views tăng khi nội dung Arc-focused (8 tuần gần nhất) — product-market fit nội dung tốt.\n\nĐiểm yếu / dư địa\n• Nội dung chủ yếu ngắn (comment/reply); thiếu thread phân tích dài, on-chain, so sánh L1.\n• Ít video / Space / visual infographic; cross-promo ecosystem còn hạn chế.\n• Content Quality 78 — cơ hội lớn nếu thêm depth + SurfAI signals.\n\nCách dùng (Radar / campaign)\n• Primary cho brief builder community, Arc/Circle narrative, onboarding VN builders.\n• Không kỳ vọng thought-leader macro dài hơi nếu chỉ dựa reply ngắn.\n• Kết luận: nền tảng cộng đồng vững + niche rõ; scale 2–3x followers/influence trong 6–9 tháng là khả thi nếu tăng chiều sâu content trước/around Arc mainnet.",
       "statusLabel": "active",
       "activityLevel": 77.7,
       "verified": true,
       "tweetsTotal": 30045,
       "tweetsPerDay": 17.611,
       "xFollowing": 2107,
-      "dataSource": "x-live",
+      "dataSource": "admin",
       "isTop30": true,
       "activity7dPosts": 10,
       "activity7dLikes": 26,
@@ -1469,7 +1472,11 @@
       "activity7dReplies": 11,
       "activity7dReposts": 0,
       "activity7dScore": 77.7,
-      "activity7dSource": "sampled"
+      "activity7dSource": "sampled",
+      "surfReportPdfUrl": "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/RadarKOLsReport/SurfAI_KOL_Report_Lecter_XFinance_20260715.pdf",
+      "niches": [
+        "Multi"
+      ]
     },
     {
       "id": "sheet-huyle_hc",

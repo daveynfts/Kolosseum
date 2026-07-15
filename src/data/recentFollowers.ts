@@ -118,6 +118,110 @@ export const RECENT_FOLLOWERS_BY_HANDLE: Record<string, RecentFollower[]> = {
       followedAt: '2025-07-10T00:00:00.000Z',
     },
   ],
+  thekhuongeth: [
+    {
+      handle: 'crypto_cat888',
+      displayName: 'LazyCat|猫姐',
+      followedAgo: 'a month ago',
+      followedAt: '2026-06-15T00:00:00.000Z',
+    },
+    {
+      handle: 'eth_cedric',
+      displayName: 'Cedric',
+      followedAgo: 'a month ago',
+      followedAt: '2026-06-14T00:00:00.000Z',
+    },
+    {
+      handle: 'aa_afeng',
+      displayName: '阿峰_Afeng',
+      followedAgo: '3 months ago',
+      followedAt: '2026-04-15T00:00:00.000Z',
+    },
+    {
+      handle: 'xiaonezha_lab',
+      displayName: '小哪吒lab',
+      followedAgo: '7 months ago',
+      followedAt: '2025-12-15T00:00:00.000Z',
+    },
+    {
+      handle: 'madcapslaugh',
+      displayName: 'Jonathan Caras',
+      followedAgo: '8 months ago',
+      followedAt: '2025-11-10T00:00:00.000Z',
+    },
+    {
+      handle: 'bleuonbase',
+      displayName: 'agusti',
+      followedAgo: '8 months ago',
+      followedAt: '2025-11-08T00:00:00.000Z',
+    },
+    {
+      handle: 'defiapp',
+      displayName: 'Defi App',
+      followedAgo: '8 months ago',
+      followedAt: '2025-11-05T00:00:00.000Z',
+    },
+    {
+      handle: 'huijiu68',
+      displayName: '小灰韭',
+      followedAgo: 'a year ago',
+      followedAt: '2025-07-14T00:00:00.000Z',
+    },
+    {
+      handle: '0xfelix',
+      displayName: 'FelixBNB',
+      followedAgo: 'a year ago',
+      followedAt: '2025-07-13T00:00:00.000Z',
+    },
+    {
+      handle: 'chinapumpwxc',
+      displayName: '中国密码鲸公司 WHALE CHINESE',
+      followedAgo: 'a year ago',
+      followedAt: '2025-07-12T00:00:00.000Z',
+    },
+    {
+      handle: 'the_wooo',
+      displayName: 'memory',
+      followedAgo: 'a year ago',
+      followedAt: '2025-07-11T00:00:00.000Z',
+    },
+    {
+      handle: '0xamazingchar',
+      displayName: 'Chacha',
+      followedAgo: 'a year ago',
+      followedAt: '2025-07-10T00:00:00.000Z',
+    },
+    {
+      handle: 'zhuilong888',
+      displayName: 'Writer',
+      followedAgo: 'a year ago',
+      followedAt: '2025-07-09T00:00:00.000Z',
+    },
+    {
+      handle: 'cryptocharming',
+      displayName: 'CryptoCharming',
+      followedAgo: 'a year ago',
+      followedAt: '2025-07-08T00:00:00.000Z',
+    },
+    {
+      handle: 'superl9',
+      displayName: 'Wick李 BNB',
+      followedAgo: 'a year ago',
+      followedAt: '2025-07-07T00:00:00.000Z',
+    },
+    {
+      handle: 'blockdao_1',
+      displayName: 'blockdao',
+      followedAgo: 'a year ago',
+      followedAt: '2025-07-06T00:00:00.000Z',
+    },
+    {
+      handle: 'liping007',
+      displayName: '李平平无奇',
+      followedAgo: 'a year ago',
+      followedAt: '2025-07-05T00:00:00.000Z',
+    },
+  ],
 }
 
 export function getRecentFollowers(handle: string): RecentFollower[] {

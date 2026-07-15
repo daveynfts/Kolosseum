@@ -186,10 +186,6 @@ export function ComparePanel({
                         k.tweetsPerDay != null ? k.tweetsPerDay.toFixed(1) : '—'
                       }
                     />
-                    <Row
-                      label="Δ vs sheet"
-                      value={`${k.deltaPct >= 0 ? '+' : ''}${k.deltaPct.toFixed(1)}%`}
-                    />
                   </div>
                   <p className="compare-bio">{k.bio}</p>
                 </div>

@@ -563,12 +563,6 @@ export function Hud({
                     {n}
                   </span>
                 ))}
-                <span
-                  className={`tag ${selected.deltaPct >= 0 ? 'tag--up' : 'tag--down'}`}
-                >
-                  {selected.deltaPct >= 0 ? '▲' : '▼'}{' '}
-                  {Math.abs(selected.deltaPct).toFixed(1)}% vs sheet
-                </span>
               </div>
 
               <div className="stat-grid">

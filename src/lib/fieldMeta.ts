@@ -109,13 +109,6 @@ export const FIELD_META: FieldMeta[] = [
     group: 'metrics',
   },
   {
-    key: 'deltaPct',
-    label: 'Δ vs sheet %',
-    source: 'derived',
-    note: '(live followers − sheet) / sheet',
-    group: 'metrics',
-  },
-  {
     key: 'posts24h',
     label: 'Posts 24h (legacy)',
     source: 'ai',

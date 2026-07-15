@@ -939,16 +939,6 @@ export function AdminDashboard() {
                         }
                       />
                     </Field>
-                    <Field label="Δ vs sheet %" source="derived">
-                      <input
-                        type="number"
-                        step="0.1"
-                        value={draft.deltaPct}
-                        onChange={(e) =>
-                          patchDraft('deltaPct', Number(e.target.value) || 0)
-                        }
-                      />
-                    </Field>
                   </div>
                 </section>
 

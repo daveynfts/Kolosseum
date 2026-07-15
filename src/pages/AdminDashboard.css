@@ -154,6 +154,50 @@
   margin-bottom: 10px;
 }
 
+.admin-search-wrap {
+  flex: 1;
+  min-width: 180px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--glass-border-soft);
+  background: rgba(0, 0, 0, 0.25);
+  padding: 0 8px 0 10px;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.admin-search-wrap:focus-within {
+  border-color: rgba(125, 211, 252, 0.45);
+  box-shadow: 0 0 0 1px rgba(125, 211, 252, 0.12);
+}
+
+.admin-search-wrap__icon {
+  flex-shrink: 0;
+  font-size: 0.9rem;
+  line-height: 1;
+  color: #64748b;
+  opacity: 0.9;
+}
+
+.admin-search-wrap .admin-search {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: transparent;
+  color: var(--text-primary);
+  padding: 9px 4px;
+  font-size: 0.84rem;
+  outline: none;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.admin-search-wrap .admin-search::placeholder {
+  color: #64748b;
+}
+
+/* Standalone search (feed / followers sidebars that still use bare input) */
 .admin-search {
   flex: 1;
   min-width: 180px;
@@ -168,6 +212,59 @@
 
 .admin-search:focus {
   border-color: rgba(125, 211, 252, 0.45);
+}
+
+.admin-search-wrap__clear {
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  border: none;
+  border-radius: 6px;
+  background: rgba(148, 163, 184, 0.12);
+  color: #94a3b8;
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  padding: 0;
+}
+
+.admin-search-wrap__clear:hover {
+  color: #e2e8f0;
+  background: rgba(148, 163, 184, 0.22);
+}
+
+.admin-empty--filter {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 48px 20px;
+  text-align: center;
+  color: #94a3b8;
+  font-size: 0.9rem;
+}
+
+.admin-empty--side {
+  padding: 20px 12px;
+  text-align: center;
+  color: #64748b;
+  font-size: 0.8rem;
+}
+
+.admin-empty__reset {
+  border: 1px solid rgba(125, 211, 252, 0.35);
+  border-radius: 8px;
+  background: rgba(125, 211, 252, 0.1);
+  color: #7dd3fc;
+  padding: 7px 14px;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.admin-empty__reset:hover {
+  background: rgba(125, 211, 252, 0.18);
 }
 
 .admin-toolbar select {
@@ -393,6 +490,13 @@
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
+.admin-editor-head__id {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
 .admin-editor-head h2 {
   margin: 0;
   font-size: 1.15rem;
@@ -402,6 +506,38 @@
   margin: 4px 0 0;
   color: var(--text-secondary);
   font-size: 0.84rem;
+}
+
+.admin-avatar-field {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+}
+
+.admin-avatar-field__controls {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.admin-avatar-field__controls input {
+  width: 100%;
+}
+
+.admin-avatar-field__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+
+.admin-avatar-field__actions .btn,
+.admin-avatar-field__actions a.btn {
+  text-decoration: none;
+  font-size: 0.75rem;
+  padding: 5px 10px;
 }
 
 .dirty {

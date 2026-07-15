@@ -3,6 +3,7 @@
  *
  * - DOM <img>: direct R2 public URL (no crossOrigin unless CORS is configured)
  * - WebGL textures: same-origin /r2/* rewrite → R2 (TextureLoader CORS)
+ * - Optional per-KOL `avatarUrl` override (admin-edited R2 link)
  *
  * Override CDN: VITE_R2_PUBLIC_URL
  */
@@ -45,6 +46,83 @@ export function xAvatarTextureUrl(handle: string): string {
 }
 
 /**
+ * Normalize admin/manual avatar field: trim; empty → undefined.
+ * Accepts full https URL, /r2/…, /radar/…, /avatars/….
+ */
+export function normalizeAvatarUrl(raw: string | undefined | null): string | undefined {
+  const t = (raw || '').trim()
+  return t || undefined
+}
+
+/**
+ * Prefer per-KOL override, else default public R2 path for handle.
+ */
+export function resolveKolAvatarUrl(kol: {
+  handle: string
+  avatarUrl?: string
+}): string {
+  const override = normalizeAvatarUrl(kol.avatarUrl)
+  if (override) return resolveMediaUrl(override)
+  return xAvatarUrl(kol.handle)
+}
+
+/**
+ * URL safe for WebGL TextureLoader (prefer same-origin /r2 when possible).
+ */
+export function resolveKolAvatarTextureUrl(kol: {
+  handle: string
+  avatarUrl?: string
+}): string {
+  const override = normalizeAvatarUrl(kol.avatarUrl)
+  if (override) return toTextureSafeUrl(override, kol.handle)
+  return xAvatarTextureUrl(kol.handle)
+}
+
+/**
+ * Rewrite known R2 / radar paths to same-origin /r2/* for TextureLoader CORS.
+ * Absolute third-party URLs left as-is (need CORS on that host).
+ */
+export function toTextureSafeUrl(pathOrUrl: string, fallbackHandle?: string): string {
+  const raw = (pathOrUrl || '').trim()
+  if (!raw) {
+    return fallbackHandle ? xAvatarTextureUrl(fallbackHandle) : ''
+  }
+
+  // Already same-origin proxy
+  if (raw.startsWith('/r2/')) return raw
+
+  // /radar/avatars/foo.jpg → /r2/radar/avatars/foo.jpg
+  if (raw.startsWith('/radar/')) return `/r2${raw}`
+
+  // /avatars/handle.jpg → /r2/radar/avatars/handle.jpg
+  const localAv = raw.match(/^\/avatars\/([^/?#]+)$/i)
+  if (localAv) {
+    let name = decodeURIComponent(localAv[1]).replace(/\.(jpe?g|png|webp)$/i, '')
+    return xAvatarTextureUrl(name)
+  }
+
+  if (/^https?:\/\//i.test(raw)) {
+    try {
+      const u = new URL(raw)
+      const base = r2PublicBase()
+      // Our public R2 or custom CDN base → same-origin rewrite
+      if (base && raw.startsWith(base + '/')) {
+        const key = raw.slice(base.length + 1)
+        return `/r2/${key}`
+      }
+      // Any …/radar/avatars/… path on R2-like host
+      const m = u.pathname.match(/\/(radar\/avatars\/[^/?#]+)$/i)
+      if (m) return `/r2/${m[1]}`
+    } catch {
+      /* keep absolute */
+    }
+    return raw
+  }
+
+  return resolveMediaUrl(raw)
+}
+
+/**
  * Resolve a media path: absolute URLs kept; /avatars/* → R2 CDN.
  */
 export function resolveMediaUrl(path: string): string {
@@ -63,6 +141,10 @@ export function resolveMediaUrl(path: string): string {
 
   if (p.startsWith('/radar/')) {
     return `${r2PublicBase()}${p}`
+  }
+
+  if (p.startsWith('/r2/')) {
+    return `${r2PublicBase()}${p.slice(3)}`
   }
 
   return p

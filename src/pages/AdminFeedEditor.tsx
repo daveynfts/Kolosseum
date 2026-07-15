@@ -22,6 +22,7 @@ import {
 } from '../lib/feedStore'
 import { AvatarImg } from '../components/AvatarImg'
 import { NICHE_COLORS } from '../types'
+import { adminQueryTokens, matchesAdminTokens } from '../lib/adminSearch'
 
 interface Props {
   kols: Kol[]
@@ -88,15 +89,13 @@ export function AdminFeedEditor({ kols, onToast, addSignal = 0 }: Props) {
 
   const filtered = useMemo(() => {
     if (!feed) return []
-    const q = query.trim().toLowerCase()
+    const tokens = adminQueryTokens(query)
     let list = sortPostsLatest(feed.posts)
-    if (q) {
-      list = list.filter(
-        (p) =>
-          p.handle.toLowerCase().includes(q) ||
-          p.displayName.toLowerCase().includes(q) ||
-          p.text.toLowerCase().includes(q),
-      )
+    if (tokens.length > 0) {
+      list = list.filter((p) => {
+        const hay = [p.handle, p.displayName, p.text, p.url || ''].join(' ')
+        return matchesAdminTokens(hay, tokens)
+      })
     }
     return list
   }, [feed, query])
@@ -567,12 +566,30 @@ export function AdminFeedEditor({ kols, onToast, addSignal = 0 }: Props) {
               </button>
             </div>
             <div className="admin-toolbar">
-              <input
-                className="admin-search"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="Filter posts…"
-              />
+              <label className="admin-search-wrap">
+                <span className="admin-search-wrap__icon" aria-hidden>
+                  ⌕
+                </span>
+                <input
+                  type="text"
+                  className="admin-search"
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder="Tìm @handle, nội dung…"
+                  aria-label="Filter posts"
+                  autoComplete="off"
+                />
+                {query && (
+                  <button
+                    type="button"
+                    className="admin-search-wrap__clear"
+                    title="Xóa tìm kiếm"
+                    onClick={() => setQuery('')}
+                  >
+                    ×
+                  </button>
+                )}
+              </label>
             </div>
             <div className="admin-side-list">
               {filtered.map((p) => (
@@ -605,10 +622,20 @@ export function AdminFeedEditor({ kols, onToast, addSignal = 0 }: Props) {
               ))}
               {filtered.length === 0 && (
                 <div className="admin-empty">
-                  <p>Chưa có post</p>
-                  <button type="button" className="btn btn--primary" onClick={onAdd}>
-                    + Add post
-                  </button>
+                  <p>
+                    {query.trim()
+                      ? `Không có post khớp “${query.trim()}”`
+                      : 'Chưa có post'}
+                  </p>
+                  {!query.trim() && (
+                    <button
+                      type="button"
+                      className="btn btn--primary"
+                      onClick={onAdd}
+                    >
+                      + Add post
+                    </button>
+                  )}
                 </div>
               )}
             </div>

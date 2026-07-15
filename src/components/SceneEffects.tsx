@@ -2,10 +2,12 @@ import { useMemo, useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { Float, Sparkles } from '@react-three/drei'
 import * as THREE from 'three'
+import { getStarTexture } from '../lib/starTexture'
 
-/** Floating dust + connection-feel ambient particles */
+/** Floating dust + connection-feel ambient particles (soft circles) */
 export function FloatingDust() {
   const ref = useRef<THREE.Points>(null)
+  const map = useMemo(() => getStarTexture('soft'), [])
   const { positions, colors } = useMemo(() => {
     const n = 420
     const pos = new Float32Array(n * 3)
@@ -25,9 +27,10 @@ export function FloatingDust() {
       pos[i * 3 + 1] = r * Math.cos(phi) * 0.7
       pos[i * 3 + 2] = r * Math.sin(phi) * Math.sin(theta)
       const c = palette[i % palette.length]
-      col[i * 3] = c.r
-      col[i * 3 + 1] = c.g
-      col[i * 3 + 2] = c.b
+      const b = 0.55 + Math.random() * 0.45
+      col[i * 3] = c.r * b
+      col[i * 3 + 1] = c.g * b
+      col[i * 3 + 2] = c.b * b
     }
     return { positions: pos, colors: col }
   }, [])
@@ -57,13 +60,16 @@ export function FloatingDust() {
         />
       </bufferGeometry>
       <pointsMaterial
-        size={0.06}
+        map={map}
+        size={0.14}
         vertexColors
         transparent
-        opacity={0.55}
+        opacity={0.5}
         sizeAttenuation
         depthWrite={false}
         blending={THREE.AdditiveBlending}
+        toneMapped={false}
+        alphaTest={0.01}
       />
     </points>
   )

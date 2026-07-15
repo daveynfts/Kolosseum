@@ -33,6 +33,8 @@ import {
 } from '../lib/kolStore'
 import { getAdminToken, setAdminToken } from '../lib/feedStore'
 import { FIELD_META, SOURCE_LABELS, type FieldSource } from '../lib/fieldMeta'
+import { kolMatchesAdminQuery } from '../lib/adminSearch'
+import { normalizeAvatarUrl, xAvatarUrl } from '../lib/avatar'
 import { AvatarImg } from '../components/AvatarImg'
 import { AdminFeedEditor } from './AdminFeedEditor'
 import { AdminRecentFollowersEditor } from './AdminRecentFollowersEditor'
@@ -128,14 +130,7 @@ export function AdminDashboard() {
         if (!showHidden && k.hidden) return false
         if (filterRank !== 'All' && getKolRank(k) !== filterRank) return false
         if (filterStatus !== 'All' && k.statusLabel !== filterStatus) return false
-        const q = query.trim().toLowerCase()
-        if (!q) return true
-        return (
-          k.handle.toLowerCase().includes(q) ||
-          k.displayName.toLowerCase().includes(q) ||
-          (k.bio || '').toLowerCase().includes(q) ||
-          (k.niche || '').toLowerCase().includes(q)
-        )
+        return kolMatchesAdminQuery(k, query)
       })
       .sort((a, b) => b.score - a.score)
   }, [kols, query, filterRank, filterStatus, showHidden])
@@ -512,12 +507,30 @@ export function AdminDashboard() {
       {tab === 'list' && (
         <div className="admin-list-wrap glass">
           <div className="admin-toolbar">
-            <input
-              className="admin-search"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search handle, name, bio…"
-            />
+            <label className="admin-search-wrap">
+              <span className="admin-search-wrap__icon" aria-hidden>
+                ⌕
+              </span>
+              <input
+                type="text"
+                className="admin-search"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Tìm @handle, tên, niche, rank, bio…"
+                aria-label="Search KOL list"
+                autoComplete="off"
+              />
+              {query && (
+                <button
+                  type="button"
+                  className="admin-search-wrap__clear"
+                  title="Xóa tìm kiếm"
+                  onClick={() => setQuery('')}
+                >
+                  ×
+                </button>
+              )}
+            </label>
             <select
               value={filterRank}
               onChange={(e) =>
@@ -556,76 +569,112 @@ export function AdminDashboard() {
               />
               Show hidden
             </label>
-            <span className="admin-count">{filtered.length} rows</span>
+            <span className="admin-count">
+              {filtered.length}
+              {query.trim() || filterRank !== 'All' || filterStatus !== 'All'
+                ? ` / ${kols.length}`
+                : ''}{' '}
+              rows
+            </span>
           </div>
 
           <div className="admin-table-scroll">
-            <table className="admin-table">
-              <thead>
-                <tr>
-                  <th></th>
-                  <th>KOL</th>
-                  <th>Rank</th>
-                  <th>Status <SrcBadge source="ai" /></th>
-                  <th>Followers <SrcBadge source="x" /></th>
-                  <th>Score <SrcBadge source="ai" /></th>
-                  <th>7d posts</th>
-                  <th>Hidden</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filtered.map((k) => (
-                  <tr
-                    key={k.id}
-                    className={selectedId === k.id ? 'is-selected' : ''}
-                    onClick={() => setSelectedId(k.id)}
+            {filtered.length === 0 ? (
+              <div className="admin-empty admin-empty--filter">
+                {query.trim()
+                  ? `Không có KOL khớp “${query.trim()}”`
+                  : 'Không có KOL khớp bộ lọc'}
+                {(query.trim() ||
+                  filterRank !== 'All' ||
+                  filterStatus !== 'All') && (
+                  <button
+                    type="button"
+                    className="admin-empty__reset"
+                    onClick={() => {
+                      setQuery('')
+                      setFilterRank('All')
+                      setFilterStatus('All')
+                    }}
                   >
-                    <td>
-                      <AvatarImg
-                        handle={k.handle}
-                        name={k.displayName}
-                        size={32}
-                        color={NICHE_COLORS[primaryNiche(k)]}
-                      />
-                    </td>
-                    <td>
-                      <strong>{k.displayName}</strong>
-                      <div className="muted">
-                        @{k.handle}
-                        {getKolNiches(k).length > 1
-                          ? ` · ${getKolNiches(k).join(', ')}`
-                          : ` · ${primaryNiche(k)}`}
-                      </div>
-                    </td>
-                    <td>
-                      <RankBadge
-                        tier={k.tier}
-                        score={k.score}
-                        isTop30={k.isTop30}
-                        rank={k.rank}
-                        size="sm"
-                      />
-                      <span className="muted" style={{ marginLeft: 6 }}>
-                        {formatRank(k)}
-                      </span>
-                    </td>
-                    <td>
-                      <span className="status-emoji-label">
-                        {formatStatus(k.statusLabel)}
-                      </span>
-                    </td>
-                    <td>{fmt(k.followers)}</td>
-                    <td>{k.score.toFixed(1)}</td>
-                    <td>
-                      {k.activity7dPosts != null
-                        ? `${k.activity7dPosts}${k.activity7dSource === 'sampled' ? '*' : '≈'}`
-                        : '—'}
-                    </td>
-                    <td>{k.hidden ? 'yes' : ''}</td>
+                    Xóa bộ lọc
+                  </button>
+                )}
+              </div>
+            ) : (
+              <table className="admin-table">
+                <thead>
+                  <tr>
+                    <th></th>
+                    <th>KOL</th>
+                    <th>Rank</th>
+                    <th>
+                      Status <SrcBadge source="ai" />
+                    </th>
+                    <th>
+                      Followers <SrcBadge source="x" />
+                    </th>
+                    <th>
+                      Score <SrcBadge source="ai" />
+                    </th>
+                    <th>7d posts</th>
+                    <th>Hidden</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {filtered.map((k) => (
+                    <tr
+                      key={k.id}
+                      className={selectedId === k.id ? 'is-selected' : ''}
+                      onClick={() => setSelectedId(k.id)}
+                    >
+                      <td>
+                        <AvatarImg
+                          handle={k.handle}
+                          name={k.displayName}
+                          size={32}
+                          color={NICHE_COLORS[primaryNiche(k)]}
+                          avatarUrl={k.avatarUrl}
+                        />
+                      </td>
+                      <td>
+                        <strong>{k.displayName}</strong>
+                        <div className="muted">
+                          @{k.handle}
+                          {getKolNiches(k).length > 1
+                            ? ` · ${getKolNiches(k).join(', ')}`
+                            : ` · ${primaryNiche(k)}`}
+                        </div>
+                      </td>
+                      <td>
+                        <RankBadge
+                          tier={k.tier}
+                          score={k.score}
+                          isTop30={k.isTop30}
+                          rank={k.rank}
+                          size="sm"
+                        />
+                        <span className="muted" style={{ marginLeft: 6 }}>
+                          {formatRank(k)}
+                        </span>
+                      </td>
+                      <td>
+                        <span className="status-emoji-label">
+                          {formatStatus(k.statusLabel)}
+                        </span>
+                      </td>
+                      <td>{fmt(k.followers)}</td>
+                      <td>{k.score.toFixed(1)}</td>
+                      <td>
+                        {k.activity7dPosts != null
+                          ? `${k.activity7dPosts}${k.activity7dSource === 'sampled' ? '*' : '≈'}`
+                          : '—'}
+                      </td>
+                      <td>{k.hidden ? 'yes' : ''}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
           </div>
         </div>
       )}
@@ -634,33 +683,60 @@ export function AdminDashboard() {
         <div className="admin-edit-layout">
           <div className="admin-edit-side glass">
             <div className="admin-toolbar">
-              <input
-                className="admin-search"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="Filter list…"
-              />
+              <label className="admin-search-wrap">
+                <span className="admin-search-wrap__icon" aria-hidden>
+                  ⌕
+                </span>
+                <input
+                  type="text"
+                  className="admin-search"
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder="Tìm @handle, tên, niche…"
+                  aria-label="Filter edit list"
+                  autoComplete="off"
+                />
+                {query && (
+                  <button
+                    type="button"
+                    className="admin-search-wrap__clear"
+                    title="Xóa tìm kiếm"
+                    onClick={() => setQuery('')}
+                  >
+                    ×
+                  </button>
+                )}
+              </label>
             </div>
             <div className="admin-side-list">
-              {filtered.map((k) => (
-                <button
-                  key={k.id}
-                  type="button"
-                  className={`admin-side-item ${selectedId === k.id ? 'is-active' : ''}`}
-                  onClick={() => setSelectedId(k.id)}
-                >
-                  <AvatarImg
-                    handle={k.handle}
-                    name={k.displayName}
-                    size={28}
-                    color={NICHE_COLORS[k.niche]}
-                  />
-                  <span>
-                    <strong>{k.displayName}</strong>
-                    <small>@{k.handle}</small>
-                  </span>
-                </button>
-              ))}
+              {filtered.length === 0 ? (
+                <div className="admin-empty admin-empty--side">
+                  {query.trim()
+                    ? 'Không khớp tìm kiếm'
+                    : 'Không có KOL'}
+                </div>
+              ) : (
+                filtered.map((k) => (
+                  <button
+                    key={k.id}
+                    type="button"
+                    className={`admin-side-item ${selectedId === k.id ? 'is-active' : ''}`}
+                    onClick={() => setSelectedId(k.id)}
+                  >
+                    <AvatarImg
+                      handle={k.handle}
+                      name={k.displayName}
+                      size={28}
+                      color={NICHE_COLORS[primaryNiche(k)]}
+                      avatarUrl={k.avatarUrl}
+                    />
+                    <span>
+                      <strong>{k.displayName}</strong>
+                      <small>@{k.handle}</small>
+                    </span>
+                  </button>
+                ))
+              )}
             </div>
           </div>
 
@@ -670,12 +746,21 @@ export function AdminDashboard() {
             ) : (
               <>
                 <div className="admin-editor-head">
-                  <div>
-                    <h2>
-                      @{draft.handle}
-                      {dirty && <span className="dirty"> · unsaved</span>}
-                    </h2>
-                    <p>{draft.displayName}</p>
+                  <div className="admin-editor-head__id">
+                    <AvatarImg
+                      handle={draft.handle}
+                      name={draft.displayName}
+                      size={48}
+                      color={NICHE_COLORS[primaryNiche(draft)]}
+                      avatarUrl={draft.avatarUrl}
+                    />
+                    <div>
+                      <h2>
+                        @{draft.handle}
+                        {dirty && <span className="dirty"> · unsaved</span>}
+                      </h2>
+                      <p>{draft.displayName}</p>
+                    </div>
                   </div>
                   <div className="admin-editor-actions">
                     <button
@@ -722,6 +807,82 @@ export function AdminDashboard() {
                         value={draft.handle}
                         onChange={(e) => patchDraft('handle', e.target.value)}
                       />
+                    </Field>
+                    <Field
+                      label="Avatar R2 URL (override — để trống = /avatars/{handle}.jpg)"
+                      source="human"
+                    >
+                      <div className="admin-avatar-field">
+                        <AvatarImg
+                          handle={draft.handle}
+                          name={draft.displayName}
+                          size={56}
+                          color={NICHE_COLORS[primaryNiche(draft)]}
+                          avatarUrl={draft.avatarUrl}
+                        />
+                        <div className="admin-avatar-field__controls">
+                          <input
+                            type="url"
+                            value={draft.avatarUrl || ''}
+                            onChange={(e) =>
+                              patchDraft(
+                                'avatarUrl',
+                                normalizeAvatarUrl(e.target.value),
+                              )
+                            }
+                            placeholder={xAvatarUrl(draft.handle)}
+                            spellCheck={false}
+                            autoComplete="off"
+                          />
+                          <div className="admin-avatar-field__actions">
+                            <button
+                              type="button"
+                              className="btn btn--sm"
+                              title="Điền URL R2 mặc định theo handle hiện tại"
+                              onClick={() =>
+                                patchDraft(
+                                  'avatarUrl',
+                                  xAvatarUrl(draft.handle),
+                                )
+                              }
+                            >
+                              Điền R2 mặc định
+                            </button>
+                            {draft.avatarUrl && (
+                              <button
+                                type="button"
+                                className="btn btn--sm"
+                                onClick={() =>
+                                  patchDraft('avatarUrl', undefined)
+                                }
+                              >
+                                Xóa override
+                              </button>
+                            )}
+                            {draft.avatarUrl && (
+                              <a
+                                className="btn btn--sm"
+                                href={draft.avatarUrl}
+                                target="_blank"
+                                rel="noreferrer"
+                              >
+                                Mở link
+                              </a>
+                            )}
+                          </div>
+                          <span className="admin-hint">
+                            Dán public URL R2 (vd.{' '}
+                            <code>
+                              …/radar/avatars/
+                              {draft.handle.replace(/^@/, '')}.jpg
+                            </code>
+                            ). Save → map/list dùng ảnh này ngay. File phải đã
+                            upload lên R2 (script{' '}
+                            <code>upload_avatar.mjs</code> hoặc PUT{' '}
+                            <code>/api/avatar</code>).
+                          </span>
+                        </div>
+                      </div>
                     </Field>
                     <Field
                       label="Rank (5 bậc — giống map)"

@@ -754,6 +754,99 @@ export const RECENT_FOLLOWERS_BY_HANDLE: Record<string, RecentFollower[]> = {
       followedAt: '2025-06-26T00:00:00.000Z',
     },
   ],
+  /** Trí Mai (@TriMaiMS) — curated smart/recent followers snapshot */
+  trimaims: [
+    {
+      handle: 'wilsonye2025',
+      displayName: 'Wilson Ye',
+      followedAgo: 'a month ago',
+      followedAt: '2026-06-15T00:00:00.000Z',
+    },
+    {
+      handle: 'nftunit01',
+      displayName: 'NFT特攻队(,)',
+      followedAgo: '3 months ago',
+      followedAt: '2026-04-15T00:00:00.000Z',
+    },
+    {
+      handle: 'allodev',
+      displayName: 'Allo',
+      followedAgo: '7 months ago',
+      followedAt: '2025-12-15T00:00:00.000Z',
+    },
+    {
+      handle: 'miaferrariii',
+      displayName: 'Mia',
+      followedAgo: '8 months ago',
+      followedAt: '2025-11-15T00:00:00.000Z',
+    },
+    {
+      handle: 'kybernetwork',
+      displayName: 'Kyber Network',
+      followedAgo: '9 months ago',
+      followedAt: '2025-10-15T00:00:00.000Z',
+    },
+    {
+      handle: 'gcsbtc',
+      displayName: 'Crypto攻城狮',
+      followedAgo: '9 months ago',
+      followedAt: '2025-10-12T00:00:00.000Z',
+    },
+    {
+      handle: 'bitgrateful',
+      displayName: 'Lawyered',
+      followedAgo: '9 months ago',
+      followedAt: '2025-10-10T00:00:00.000Z',
+    },
+    {
+      handle: 'syk233',
+      displayName: 'syk233 MemeMax ⚡️|TermMax',
+      followedAgo: '10 months ago',
+      followedAt: '2025-09-15T00:00:00.000Z',
+    },
+    {
+      handle: 'liaoblove520',
+      displayName: '龙猫·liaoblove',
+      followedAgo: 'a year ago',
+      followedAt: '2025-07-14T00:00:00.000Z',
+    },
+    {
+      handle: 'definitivefi',
+      displayName: 'DEFINITIVE',
+      followedAgo: 'a year ago',
+      followedAt: '2025-07-13T00:00:00.000Z',
+    },
+    {
+      handle: 'wallstreet_wsc',
+      displayName: '华尔街之狼',
+      followedAgo: 'a year ago',
+      followedAt: '2025-07-12T00:00:00.000Z',
+    },
+    {
+      handle: 'btcdefidadi',
+      displayName: 'Vincent',
+      followedAgo: 'a year ago',
+      followedAt: '2025-07-11T00:00:00.000Z',
+    },
+    {
+      handle: 'gala_nft2',
+      displayName: 'gala⚡',
+      followedAgo: 'a year ago',
+      followedAt: '2025-07-10T00:00:00.000Z',
+    },
+    {
+      handle: 'cryptoamandal',
+      displayName: '阿曼达要吃肉Amanda.eth',
+      followedAgo: 'a year ago',
+      followedAt: '2025-07-09T00:00:00.000Z',
+    },
+    {
+      handle: 'hashnewshk',
+      displayName: '哈世链闻',
+      followedAgo: 'a year ago',
+      followedAt: '2025-07-08T00:00:00.000Z',
+    },
+  ],
 }
 
 /**

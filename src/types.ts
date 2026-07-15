@@ -73,6 +73,11 @@ export interface Kol {
    * Opened after “phân tích AI” mock finishes (~3s).
    */
   surfReportPdfUrl?: string
+  /**
+   * Optional public avatar URL (thường R2: …/radar/avatars/{handle}.jpg).
+   * Khi set, UI ưu tiên URL này thay vì /avatars/{handle}.jpg mặc định.
+   */
+  avatarUrl?: string
 }
 
 export const NICHE_COLORS: Record<Niche, string> = {

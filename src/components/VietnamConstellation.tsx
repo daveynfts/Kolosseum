@@ -1,6 +1,7 @@
 import { useMemo, useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
+import { getStarTexture } from '../lib/starTexture'
 
 /**
  * Simplified Vietnam mainland outline (lon, lat).
@@ -145,6 +146,8 @@ export function VietnamConstellation({ lite = false }: Props) {
   const groupRef = useRef<THREE.Group>(null)
   const matRef = useRef<THREE.PointsMaterial>(null)
   const matOutlineRef = useRef<THREE.PointsMaterial>(null)
+  const softMap = useMemo(() => getStarTexture('soft'), [])
+  const spikeMap = useMemo(() => getStarTexture('spike'), [])
 
   const { positions, colors, count, outlineCount } = useMemo(
     () => buildStarField(lite ? 520 : 720, lite ? 220 : 360),
@@ -219,7 +222,8 @@ export function VietnamConstellation({ lite = false }: Props) {
         </bufferGeometry>
         <pointsMaterial
           ref={matRef}
-          size={lite ? 0.22 : 0.26}
+          map={softMap}
+          size={lite ? 0.42 : 0.52}
           vertexColors
           transparent
           opacity={lite ? 0.5 : 0.6}
@@ -229,10 +233,11 @@ export function VietnamConstellation({ lite = false }: Props) {
           fog={false}
           blending={THREE.AdditiveBlending}
           toneMapped={false}
+          alphaTest={0.01}
         />
       </points>
 
-      {/* Outline constellation — larger, brighter */}
+      {/* Outline constellation — larger, brighter soft spikes */}
       <points frustumCulled={false} renderOrder={-3}>
         <bufferGeometry>
           <bufferAttribute
@@ -245,7 +250,8 @@ export function VietnamConstellation({ lite = false }: Props) {
         </bufferGeometry>
         <pointsMaterial
           ref={matOutlineRef}
-          size={lite ? 0.32 : 0.38}
+          map={spikeMap}
+          size={lite ? 0.62 : 0.78}
           color="#a5f3fc"
           transparent
           opacity={lite ? 0.7 : 0.85}
@@ -255,6 +261,7 @@ export function VietnamConstellation({ lite = false }: Props) {
           fog={false}
           blending={THREE.AdditiveBlending}
           toneMapped={false}
+          alphaTest={0.01}
         />
       </points>
     </group>

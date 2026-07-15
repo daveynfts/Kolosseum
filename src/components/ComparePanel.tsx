@@ -214,6 +214,7 @@ export function ComparePanel({
                         name={k.displayName}
                         size={42}
                         color={color}
+                        avatarUrl={k.avatarUrl}
                       />
                     </div>
                     <div className="feed-author-meta">

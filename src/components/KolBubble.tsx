@@ -13,6 +13,7 @@ import {
   STATUS_LABELS,
 } from '../types'
 import { radiusForScore } from '../lib/layout'
+import { resolveKolAvatarTextureUrl } from '../lib/avatar'
 
 import { AvatarImg } from './AvatarImg'
 import { RankBadge } from './RankBadge'
@@ -44,10 +45,13 @@ export function KolBubble(props: Props) {
 }
 
 function AvatarWithTexture(props: Props) {
-  // Prefer same-origin /avatars (Vite public + Vercel static) — reliable when
-  // R2 public bucket returns 403; TextureLoader needs CORS-friendly URL.
+  // Prefer per-KOL avatarUrl (R2 override); else same-origin /avatars.
+  // TextureLoader needs CORS-friendly URL → resolveKolAvatarTextureUrl rewrites R2 → /r2/*.
   const clean = props.kol.handle.replace(/^@/, '').trim()
-  const url = `/avatars/${encodeURIComponent(clean)}.jpg`
+  const override = (props.kol.avatarUrl || '').trim()
+  const url = override
+    ? resolveKolAvatarTextureUrl(props.kol)
+    : `/avatars/${encodeURIComponent(clean)}.jpg`
   const texture = useLoader(THREE.TextureLoader, url, (loader) => {
     loader.setCrossOrigin('anonymous')
   })
@@ -303,6 +307,7 @@ function AvatarNode({
                 name={kol.displayName}
                 size={36}
                 color={color}
+                avatarUrl={kol.avatarUrl}
                 className="bubble-label__avatar"
               />
               <div className="bubble-label__text">
@@ -569,6 +574,7 @@ function AvatarNode({
               name={kol.displayName}
               size={40}
               color={color}
+              avatarUrl={kol.avatarUrl}
               className="bubble-label__avatar"
             />
             <div className="bubble-label__text">

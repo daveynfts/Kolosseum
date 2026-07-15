@@ -17,6 +17,7 @@ import {
 import { AvatarImg } from '../components/AvatarImg'
 import { XProfileAvatar } from '../components/XProfileAvatar'
 import { NICHE_COLORS, primaryNiche } from '../types'
+import { handleNameMatches } from '../lib/adminSearch'
 
 interface Props {
   kols: Kol[]
@@ -55,14 +56,10 @@ export function AdminRecentFollowersEditor({ kols, onToast }: Props) {
   }, [kols, map])
 
   const filteredHandles = useMemo(() => {
-    const q = query.trim().toLowerCase()
-    if (!q) return kolHandles
+    if (!query.trim()) return kolHandles
     return kolHandles.filter((h) => {
       const kol = kols.find((k) => k.handle.toLowerCase() === h.toLowerCase())
-      return (
-        h.toLowerCase().includes(q) ||
-        (kol?.displayName || '').toLowerCase().includes(q)
-      )
+      return handleNameMatches(h, kol?.displayName, query)
     })
   }, [kolHandles, kols, query])
 
@@ -253,14 +250,40 @@ export function AdminRecentFollowersEditor({ kols, onToast }: Props) {
           <div className="admin-side-list-head">
             <strong>KOL ({filteredHandles.length})</strong>
           </div>
-          <input
-            className="admin-search"
-            style={{ margin: '8px 10px', width: 'calc(100% - 20px)' }}
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search KOL…"
-          />
+          <div className="admin-toolbar" style={{ margin: '0 10px 4px' }}>
+            <label className="admin-search-wrap">
+              <span className="admin-search-wrap__icon" aria-hidden>
+                ⌕
+              </span>
+              <input
+                type="text"
+                className="admin-search"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Tìm @handle, tên…"
+                aria-label="Search KOL"
+                autoComplete="off"
+              />
+              {query && (
+                <button
+                  type="button"
+                  className="admin-search-wrap__clear"
+                  title="Xóa tìm kiếm"
+                  onClick={() => setQuery('')}
+                >
+                  ×
+                </button>
+              )}
+            </label>
+          </div>
           <ul className="admin-side-list">
+            {filteredHandles.length === 0 && (
+              <li className="admin-empty admin-empty--side">
+                {query.trim()
+                  ? `Không khớp “${query.trim()}”`
+                  : 'Chưa có KOL'}
+              </li>
+            )}
             {filteredHandles.map((h) => {
               const count = getRecentFollowersFor(h, map).length
               const active = h.toLowerCase() === selectedKol.toLowerCase()

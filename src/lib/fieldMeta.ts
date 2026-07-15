@@ -32,6 +32,13 @@ export const FIELD_META: FieldMeta[] = [
     group: 'identity',
   },
   {
+    key: 'avatarUrl',
+    label: 'Avatar R2 URL',
+    source: 'human',
+    note: 'Public URL R2 (radar/avatars/{handle}.jpg). Override khi cần đổi avatar; trống = path mặc định theo handle',
+    group: 'identity',
+  },
+  {
     key: 'rank',
     label: 'Rank (5 bậc)',
     source: 'human',

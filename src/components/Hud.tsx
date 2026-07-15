@@ -340,6 +340,7 @@ export function Hud({
                             name={k.displayName}
                             size={34}
                             color={NICHE_COLORS[primaryNiche(k)]}
+                            avatarUrl={k.avatarUrl}
                             className="rank-avatar"
                           />
                           <RankBadge
@@ -513,6 +514,7 @@ export function Hud({
               name={selected.displayName}
               size={52}
               color={NICHE_COLORS[primaryNiche(selected)]}
+              avatarUrl={selected.avatarUrl}
               className="detail-avatar"
             />
             <div>

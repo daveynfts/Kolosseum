@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import {
   initials,
+  normalizeAvatarUrl,
+  resolveMediaUrl,
   xAvatarTextureUrl,
   xAvatarUrl,
 } from '../lib/avatar'
@@ -11,12 +13,14 @@ interface Props {
   className?: string
   size?: number
   color?: string
+  /** Optional override (R2 public URL or path). Preferred when set. */
+  avatarUrl?: string
 }
 
 /**
- * DOM avatar from R2 CDN.
- * - Prefer direct public R2 URL (no crossOrigin — R2 public bucket has no CORS yet)
- * - On failure, retry same-origin /r2/* proxy rewrite
+ * DOM avatar from R2 CDN / override URL.
+ * - Prefer per-KOL avatarUrl when set
+ * - Else: static /avatars → R2 public → /r2 proxy → unavatar
  * - Loading: soft skeleton; permanent error: neutral initials
  */
 export function AvatarImg({
@@ -25,10 +29,23 @@ export function AvatarImg({
   className = '',
   size = 40,
   color = '#64748b',
+  avatarUrl,
 }: Props) {
   const sources = useMemo(() => {
     const clean = handle.replace(/^@/, '').trim()
-    return [
+    const override = normalizeAvatarUrl(avatarUrl)
+    const list: string[] = []
+    if (override) {
+      list.push(resolveMediaUrl(override))
+      // If override is absolute R2, also try same-origin proxy form
+      if (/^https?:\/\//i.test(override)) {
+        const asProxy = override.includes('/radar/avatars/')
+          ? `/r2/radar/avatars/${clean}.jpg`
+          : null
+        if (asProxy) list.push(asProxy)
+      }
+    }
+    list.push(
       // Deployed static first (always same-origin, works when R2 public 403)
       `/avatars/${encodeURIComponent(clean)}.jpg`,
       // R2 CDN + same-origin proxy rewrite
@@ -37,8 +54,10 @@ export function AvatarImg({
       // Live X proxy fallbacks
       `https://unavatar.io/x/${encodeURIComponent(clean)}`,
       `https://unavatar.io/twitter/${encodeURIComponent(clean)}`,
-    ]
-  }, [handle])
+    )
+    // de-dupe while preserving order
+    return [...new Set(list)]
+  }, [handle, avatarUrl])
   const [srcIndex, setSrcIndex] = useState(0)
   const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading')
   const imgRef = useRef<HTMLImageElement | null>(null)
@@ -47,7 +66,7 @@ export function AvatarImg({
   useEffect(() => {
     setSrcIndex(0)
     setStatus('loading')
-  }, [handle])
+  }, [handle, avatarUrl])
 
   // Cached images may already be complete before onLoad attaches
   useEffect(() => {

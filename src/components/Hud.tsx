@@ -293,11 +293,12 @@ export function Hud({
               ⌕
             </span>
             <input
-              type="search"
+              type="text"
               value={topQuery}
               onChange={(e) => setTopQuery(e.target.value)}
               placeholder="Tìm tên, @handle, niche…"
               aria-label="Search Top Score"
+              autoComplete="off"
               onKeyDown={(e) => e.stopPropagation()}
             />
             {topQuery && (

@@ -1,6 +1,10 @@
 import { useEffect, useState } from 'react'
-import { getRecentFollowers } from '../data/recentFollowers'
+import {
+  getRecentFollowers,
+  type RecentFollower,
+} from '../data/recentFollowers'
 import { RECENT_FOLLOWERS_EVENT } from '../lib/recentFollowersStore'
+import { formatRelativeAgo } from '../lib/relativeTime'
 import { XProfileAvatar } from './XProfileAvatar'
 
 interface Props {
@@ -9,6 +13,8 @@ interface Props {
 
 export function RecentFollowersPanel({ kolHandle }: Props) {
   const [list, setList] = useState(() => getRecentFollowers(kolHandle))
+  /** Tick so relative labels recompute as time passes */
+  const [now, setNow] = useState(() => Date.now())
 
   useEffect(() => {
     const refresh = () => setList(getRecentFollowers(kolHandle))
@@ -20,6 +26,12 @@ export function RecentFollowersPanel({ kolHandle }: Props) {
       window.removeEventListener('storage', refresh)
     }
   }, [kolHandle])
+
+  useEffect(() => {
+    // Recompute “X days ago” every minute while panel is mounted
+    const id = window.setInterval(() => setNow(Date.now()), 60_000)
+    return () => window.clearInterval(id)
+  }, [])
 
   if (list.length === 0) {
     return (
@@ -45,6 +57,7 @@ export function RecentFollowersPanel({ kolHandle }: Props) {
         {list.map((f) => {
           const handle = f.handle.replace(/^@/, '')
           const xUrl = `https://x.com/${handle}`
+          const ago = formatFollowerAgo(f, now)
           return (
             <li key={handle} className="recent-follows__item">
               <a
@@ -64,7 +77,17 @@ export function RecentFollowersPanel({ kolHandle }: Props) {
                   <span className="recent-follows__name">{f.displayName}</span>
                   <span className="recent-follows__handle">@{handle}</span>
                 </span>
-                <span className="recent-follows__ago">{f.followedAgo}</span>
+                <time
+                  className="recent-follows__ago"
+                  dateTime={f.followedAt || undefined}
+                  title={
+                    f.followedAt
+                      ? new Date(f.followedAt).toLocaleString()
+                      : f.followedAgo
+                  }
+                >
+                  {ago}
+                </time>
               </a>
             </li>
           )
@@ -72,4 +95,8 @@ export function RecentFollowersPanel({ kolHandle }: Props) {
       </ul>
     </div>
   )
+}
+
+function formatFollowerAgo(f: RecentFollower, nowMs: number): string {
+  return formatRelativeAgo(f.followedAt, f.followedAgo || '', nowMs)
 }

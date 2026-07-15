@@ -2,7 +2,9 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import type { FeedPost, Tier1Feed } from '../types/feed'
 import type { Kol } from '../types'
 import {
+  archiveOldPosts,
   clearFeedStore,
+  countArchivablePosts,
   createEmptyPost,
   exportFeedJson,
   fetchSeedFeed,
@@ -99,14 +101,26 @@ export function AdminFeedEditor({ kols, onToast, addSignal = 0 }: Props) {
     return list
   }, [feed, query])
 
-  const tier1Handles = useMemo(
+  /** T1 + T2 handles for feed authorship */
+  const feedHandles = useMemo(
     () =>
       kols
-        .filter((k) => k.tier === 1 && !k.hidden)
-        .sort((a, b) => b.score - a.score)
+        .filter((k) => !k.hidden && (k.tier === 1 || k.tier === 2))
+        .sort(
+          (a, b) =>
+            (a.tier ?? 3) - (b.tier ?? 3) ||
+            b.score - a.score ||
+            a.handle.localeCompare(b.handle),
+        )
         .map((k) => k.handle),
     [kols],
   )
+
+  const archivableCount = useMemo(
+    () => (feed ? countArchivablePosts(feed) : 0),
+    [feed],
+  )
+  const archivedCount = feed?.archivedCount ?? feed?.archivedPosts?.length ?? 0
 
   const buildFeedWithDraft = (): Tier1Feed | null => {
     if (!feed || !draft) return null
@@ -272,7 +286,7 @@ export function AdminFeedEditor({ kols, onToast, addSignal = 0 }: Props) {
   const onAdd = useCallback(() => {
     setFeed((prev) => {
       const base = prev ?? emptyFeed()
-      const handle = tier1Handles[0] || 'new_handle'
+      const handle = feedHandles[0] || 'new_handle'
       const kol = kols.find((k) => k.handle.toLowerCase() === handle.toLowerCase())
       const p = createEmptyPost(handle)
       if (kol) {
@@ -286,7 +300,30 @@ export function AdminFeedEditor({ kols, onToast, addSignal = 0 }: Props) {
       onToast('Đã tạo post — điền nội dung rồi bấm Save post')
       return { ...base, posts: [p, ...base.posts] }
     })
-  }, [kols, onToast, tier1Handles])
+  }, [kols, onToast, feedHandles])
+
+  const onArchiveOld = () => {
+    if (!feed) return
+    const n = countArchivablePosts(feed)
+    if (n === 0) {
+      onToast('Không có post nào cũ hơn 7 ngày trong feed live')
+      return
+    }
+    if (
+      !confirm(
+        `Archive ${n} post cũ hơn 1 tuần? Chúng sẽ ra khỏi X Feed live (vẫn giữ trong archivedPosts).`,
+      )
+    ) {
+      return
+    }
+    const { feed: next, moved } = archiveOldPosts(feed)
+    persistLocal(next, `archive ${moved} posts >7d`)
+    if (draft && !next.posts.some((p) => p.id === draft.id)) {
+      setSelectedId(null)
+      setDraft(null)
+    }
+    onToast(`Đã archive ${moved} post · archive total ${next.archivedCount ?? 0}`)
+  }
 
   // Parent header "+ Add post" signal
   useEffect(() => {
@@ -408,14 +445,15 @@ export function AdminFeedEditor({ kols, onToast, addSignal = 0 }: Props) {
   return (
     <div className="admin-feed">
       <div className="admin-ai-banner glass" style={{ marginBottom: 12 }}>
-        <strong>Tier 1 Feed</strong>
+        <strong>X Feed (Tier 1 + Tier 2)</strong>
         <span>
           Nguồn load:{' '}
           <strong>{sourceLabel}</strong>
-          {feed ? ` · ${feed.postCount} posts · ${feed.kolCount} voices` : ''}.
-          Ưu tiên: <em>Cloudflare R2</em> → local → seed. Cấu hình R2 env trên
-          Vercel + token, rồi <strong>Save to server</strong> / <strong>Fetch từ
-          X</strong> (ảnh cache R2). Xem <code>docs/FEED_SERVER.md</code>.
+          {feed
+            ? ` · ${feed.postCount} live · ${archivedCount} archived · ${feed.kolCount} voices`
+            : ''}
+          . Ưu tiên: <em>Cloudflare R2</em> → local → seed. Post &gt; 7 ngày →
+          bấm <strong>Archive &gt;7d</strong>. Save to server để user thấy.
         </span>
       </div>
 
@@ -466,6 +504,15 @@ export function AdminFeedEditor({ kols, onToast, addSignal = 0 }: Props) {
         </button>
         <button type="button" className="btn btn--primary" onClick={onAdd}>
           + Add post
+        </button>
+        <button
+          type="button"
+          className="btn"
+          onClick={onArchiveOld}
+          disabled={!feed || archivableCount === 0}
+          title="Chuyển post cũ hơn 7 ngày sang archivedPosts"
+        >
+          Archive &gt;7d{archivableCount > 0 ? ` (${archivableCount})` : ''}
         </button>
         <button
           type="button"
@@ -611,12 +658,12 @@ export function AdminFeedEditor({ kols, onToast, addSignal = 0 }: Props) {
                         Handle (đổi handle → auto URL / avatar / name)
                       </span>
                       <input
-                        list="tier1-handles"
+                        list="feed-kol-handles"
                         value={draft.handle}
                         onChange={(e) => onHandleChange(e.target.value)}
                       />
-                      <datalist id="tier1-handles">
-                        {tier1Handles.map((h) => (
+                      <datalist id="feed-kol-handles">
+                        {feedHandles.map((h) => (
                           <option key={h} value={h} />
                         ))}
                       </datalist>

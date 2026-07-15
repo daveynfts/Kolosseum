@@ -1,4 +1,6 @@
+import { useEffect, useState } from 'react'
 import { getRecentFollowers } from '../data/recentFollowers'
+import { RECENT_FOLLOWERS_EVENT } from '../lib/recentFollowersStore'
 import { XProfileAvatar } from './XProfileAvatar'
 
 interface Props {
@@ -6,7 +8,18 @@ interface Props {
 }
 
 export function RecentFollowersPanel({ kolHandle }: Props) {
-  const list = getRecentFollowers(kolHandle)
+  const [list, setList] = useState(() => getRecentFollowers(kolHandle))
+
+  useEffect(() => {
+    const refresh = () => setList(getRecentFollowers(kolHandle))
+    refresh()
+    window.addEventListener(RECENT_FOLLOWERS_EVENT, refresh)
+    window.addEventListener('storage', refresh)
+    return () => {
+      window.removeEventListener(RECENT_FOLLOWERS_EVENT, refresh)
+      window.removeEventListener('storage', refresh)
+    }
+  }, [kolHandle])
 
   if (list.length === 0) {
     return (

@@ -151,7 +151,7 @@ export function FeedPanel({ open, onClose, kols, onSelectKol }: Props) {
         <div className="feed-head-main">
           <div className="feed-title-row">
             <span className="live-dot" aria-hidden />
-            <h2>Tier 1 Feed</h2>
+            <h2>X Feed</h2>
             <span className="feed-badge">
               {feed?.mode === 'admin' || (feed?.source || '').startsWith('admin')
                 ? 'ADMIN'

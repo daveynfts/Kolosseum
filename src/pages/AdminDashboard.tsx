@@ -30,13 +30,15 @@ import { getAdminToken, setAdminToken } from '../lib/feedStore'
 import { FIELD_META, SOURCE_LABELS, type FieldSource } from '../lib/fieldMeta'
 import { AvatarImg } from '../components/AvatarImg'
 import { AdminFeedEditor } from './AdminFeedEditor'
+import { AdminRecentFollowersEditor } from './AdminRecentFollowersEditor'
 import './AdminDashboard.css'
 
-type Tab = 'list' | 'edit' | 'feed' | 'legend'
+type Tab = 'list' | 'edit' | 'feed' | 'follows' | 'legend'
 
 function tabFromHash(): Tab {
   const h = window.location.hash.replace(/^#\/?/, '').toLowerCase()
   // #/admin/feed or #/admin?tab=feed
+  if (h.includes('follows') || h.includes('followers')) return 'follows'
   if (h.includes('feed')) return 'feed'
   if (h.includes('legend')) return 'legend'
   if (h.includes('edit')) return 'edit'
@@ -89,11 +91,13 @@ export function AdminDashboard() {
     const path =
       t === 'feed'
         ? '#/admin/feed'
-        : t === 'legend'
-          ? '#/admin/legend'
-          : t === 'edit'
-            ? '#/admin/edit'
-            : '#/admin'
+        : t === 'follows'
+          ? '#/admin/follows'
+          : t === 'legend'
+            ? '#/admin/legend'
+            : t === 'edit'
+              ? '#/admin/edit'
+              : '#/admin'
     if (window.location.hash !== path) {
       window.location.hash = path
     }
@@ -306,7 +310,10 @@ export function AdminDashboard() {
             </button>
           )}
           <button type="button" className="btn btn--primary" onClick={() => goTab('feed')}>
-            Tier 1 Feed
+            X Feed
+          </button>
+          <button type="button" className="btn" onClick={() => goTab('follows')}>
+            Smart Followers
           </button>
           {tab !== 'feed' && (
             <button
@@ -443,11 +450,11 @@ export function AdminDashboard() {
       </div>
 
       <div className="admin-tabs">
-        {(['list', 'edit', 'feed', 'legend'] as Tab[]).map((t) => (
+        {(['list', 'edit', 'feed', 'follows', 'legend'] as Tab[]).map((t) => (
           <button
             key={t}
             type="button"
-            className={`admin-tab ${tab === t ? 'is-active' : ''} ${t === 'feed' ? 'admin-tab--feed' : ''}`}
+            className={`admin-tab ${tab === t ? 'is-active' : ''} ${t === 'feed' || t === 'follows' ? 'admin-tab--feed' : ''}`}
             onClick={() => goTab(t)}
           >
             {t === 'list'
@@ -455,8 +462,10 @@ export function AdminDashboard() {
               : t === 'edit'
                 ? 'Editor'
                 : t === 'feed'
-                  ? '★ Tier 1 Feed'
-                  : 'AI field legend'}
+                  ? '★ X Feed'
+                  : t === 'follows'
+                    ? 'Smart Followers'
+                    : 'AI field legend'}
           </button>
         ))}
       </div>
@@ -467,6 +476,10 @@ export function AdminDashboard() {
           onToast={flash}
           addSignal={feedAddSignal}
         />
+      )}
+
+      {tab === 'follows' && (
+        <AdminRecentFollowersEditor kols={kols} onToast={flash} />
       )}
 
       {tab === 'legend' && <FieldLegend />}

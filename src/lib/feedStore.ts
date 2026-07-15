@@ -249,8 +249,11 @@ export function createEmptyPost(handle = 'handle'): FeedPost {
   }
 }
 
+export const FEED_ARCHIVE_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000
+
 export function normalizeFeed(feed: Tier1Feed): Tier1Feed {
   const posts = (feed.posts || []).map(normalizePost)
+  const archivedPosts = (feed.archivedPosts || []).map(normalizePost)
   const handles = Array.from(
     new Set(posts.map((p) => p.handle).filter(Boolean)),
   )
@@ -263,7 +266,58 @@ export function normalizeFeed(feed: Tier1Feed): Tier1Feed {
     handles,
     postCount: posts.length,
     posts,
+    archivedPosts,
+    archivedCount: archivedPosts.length,
   }
+}
+
+/**
+ * Move posts older than `maxAgeMs` (default 7 days) from posts → archivedPosts.
+ * Keeps archive de-duplicated by id.
+ */
+export function archiveOldPosts(
+  feed: Tier1Feed,
+  maxAgeMs: number = FEED_ARCHIVE_MAX_AGE_MS,
+  nowMs: number = Date.now(),
+): { feed: Tier1Feed; moved: number } {
+  const cutoff = nowMs - maxAgeMs
+  const keep: FeedPost[] = []
+  const toArchive: FeedPost[] = []
+  for (const p of feed.posts || []) {
+    const t = Date.parse(p.createdAt)
+    if (!Number.isFinite(t) || t >= cutoff) keep.push(p)
+    else toArchive.push(p)
+  }
+  if (toArchive.length === 0) {
+    return { feed: normalizeFeed(feed), moved: 0 }
+  }
+  const byId = new Map<string, FeedPost>()
+  for (const p of feed.archivedPosts || []) byId.set(p.id, p)
+  for (const p of toArchive) byId.set(p.id, p)
+  const archivedPosts = [...byId.values()].sort((a, b) =>
+    b.createdAt.localeCompare(a.createdAt),
+  )
+  return {
+    feed: normalizeFeed({
+      ...feed,
+      posts: keep,
+      archivedPosts,
+    }),
+    moved: toArchive.length,
+  }
+}
+
+/** Count posts that would be archived (older than maxAge). */
+export function countArchivablePosts(
+  feed: Tier1Feed,
+  maxAgeMs: number = FEED_ARCHIVE_MAX_AGE_MS,
+  nowMs: number = Date.now(),
+): number {
+  const cutoff = nowMs - maxAgeMs
+  return (feed.posts || []).filter((p) => {
+    const t = Date.parse(p.createdAt)
+    return Number.isFinite(t) && t < cutoff
+  }).length
 }
 
 export function normalizePost(p: Partial<FeedPost> & { id?: string }): FeedPost {

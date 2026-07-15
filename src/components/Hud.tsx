@@ -379,8 +379,8 @@ export function Hud({
             <span>Size ≈ followers + score</span>
           </div>
           <p className="legend-note legend-note--rank" style={{ marginTop: 6 }}>
-            <strong>Khung rank kiểu LMHT 2017</strong> — multi-ring + gem crest;
-            tier cao có giáp / cánh hai bên.
+            <strong>Khung rank kiểu LMHT 2017</strong> — viền kim loại + gem;
+            sheen quay nhẹ, tier cao có giáp / cánh.
           </p>
           <div className="legend-rank-grid" aria-label="Rank ring patterns">
             {RANK_ORDER.map((r) => (

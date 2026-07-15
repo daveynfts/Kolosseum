@@ -258,7 +258,7 @@ function AvatarNode({
             )}
           </mesh>
 
-          {/* Rank border + patterns (double ring / dashes / pips by tier) */}
+          {/* Rank border + metallic hextech frame */}
           <RankRingDecor
             baseR={baseR}
             rank={rank}
@@ -268,6 +268,7 @@ function AvatarNode({
             dimmed={dimmed}
             z={0.012}
             frontSide
+            animate={!dimmed}
           />
 
           {/* Inner hairline — keeps avatar edge crisp */}
@@ -474,7 +475,7 @@ function AvatarNode({
               />
             </mesh>
 
-            {/* Rank border + patterns (same cues as 2.5D) */}
+            {/* Rank border + metallic hextech frame */}
             <RankRingDecor
               baseR={baseR}
               rank={rank}
@@ -484,6 +485,7 @@ function AvatarNode({
               dimmed={dimmed}
               z={-0.012}
               frontSide={false}
+              animate={!dimmed}
             />
 
             <mesh position={[0, 0, -0.006]}>

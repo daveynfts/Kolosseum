@@ -488,10 +488,10 @@ export function AdminDashboard() {
                 )
               }
             >
-              <option value="All">All tiers</option>
-              <option value="1">Tier 1</option>
-              <option value="2">Tier 2</option>
-              <option value="3">Tier 3</option>
+              <option value="All">All ranks</option>
+              <option value="1">Challenger / Master</option>
+              <option value="2">Diamond / Platinum</option>
+              <option value="3">Gold</option>
             </select>
             <select
               value={filterStatus}
@@ -555,7 +555,17 @@ export function AdminDashboard() {
                           : ` · ${primaryNiche(k)}`}
                       </div>
                     </td>
-                    <td>T{k.tier}</td>
+                    <td>
+                      {k.tier === 1
+                        ? (k.score ?? 0) >= 96
+                          ? 'Challenger'
+                          : 'Master'
+                        : k.tier === 2
+                          ? (k.score ?? 0) >= 92
+                            ? 'Diamond'
+                            : 'Platinum'
+                          : 'Gold'}
+                    </td>
                     <td>
                       <span className="status-emoji-label">
                         {formatStatus(k.statusLabel)}
@@ -670,16 +680,19 @@ export function AdminDashboard() {
                         onChange={(e) => patchDraft('handle', e.target.value)}
                       />
                     </Field>
-                    <Field label="Tier" source="human">
+                    <Field
+                      label="Rank band (Chall/Master · Dia/Plat · Gold)"
+                      source="human"
+                    >
                       <select
                         value={draft.tier ?? 2}
                         onChange={(e) =>
                           patchDraft('tier', Number(e.target.value) as 1 | 2 | 3)
                         }
                       >
-                        <option value={1}>1</option>
-                        <option value={2}>2</option>
-                        <option value={3}>3</option>
+                        <option value={1}>1 · Challenger / Master</option>
+                        <option value={2}>2 · Diamond / Platinum</option>
+                        <option value={3}>3 · Gold</option>
                       </select>
                     </Field>
                     <Field

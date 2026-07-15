@@ -8,6 +8,7 @@ import {
 } from '../types'
 import type { StatusLabel } from '../types'
 import { AvatarImg } from './AvatarImg'
+import { RankBadge } from './RankBadge'
 
 interface Props {
   open: boolean
@@ -133,7 +134,7 @@ export function ComparePanel({
                     </button>
                   </div>
                   <div className="compare-tags">
-                    <span className="tag tag--tier">T{k.tier}</span>
+                    <RankBadge tier={k.tier} score={k.score} size="sm" />
                     <span className="tag tag--status-emoji" title={STATUS_LABELS[st]}>
                       {formatStatus(st)}
                     </span>

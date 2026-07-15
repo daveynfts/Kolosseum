@@ -12,6 +12,7 @@ import {
 import { radiusForScore } from '../lib/layout'
 import { xAvatarTextureUrl } from '../lib/avatar'
 import { AvatarImg } from './AvatarImg'
+import { RankBadge } from './RankBadge'
 import { TextureErrorBoundary } from './TextureErrorBoundary'
 
 interface Props {
@@ -261,11 +262,21 @@ function AvatarNode({
             />
           </mesh>
 
-          {kol.tier === 1 && !dimmed && hasFace && (
-            <mesh position={[baseR * 0.7, baseR * 0.7, 0.02]} renderOrder={3}>
-              <circleGeometry args={[baseR * 0.15, 16]} />
-              <meshBasicMaterial color="#fbbf24" depthWrite toneMapped={false} />
-            </mesh>
+          {/* Rank pip — subtle LoL-style mark (all ranks, not only T1 gold) */}
+          {!dimmed && hasFace && (
+            <Html
+              center
+              position={[baseR * 0.72, -baseR * 0.72, 0.03]}
+              style={{ pointerEvents: 'none' }}
+              zIndexRange={[25, 0]}
+            >
+              <RankBadge
+                tier={kol.tier}
+                score={kol.score}
+                size="pip"
+                className="rank-pip--map"
+              />
+            </Html>
           )}
         </Billboard>
 
@@ -289,12 +300,18 @@ function AvatarNode({
               <div className="bubble-label__text">
                 <span className="bubble-label__name">{kol.displayName}</span>
                 <span className="bubble-label__meta">
-                  @{kol.handle} · T{kol.tier ?? '—'} · {formatNum(kol.followers)}
+                  @{kol.handle} · {formatNum(kol.followers)}
                 </span>
-                <span className="bubble-label__status-pill" title={statusTitle}>
-                  <span aria-hidden>{statusEmoji}</span>
-                  {statusTitle}
-                </span>
+                <div className="bubble-label__pills">
+                  <RankBadge tier={kol.tier} score={kol.score} size="sm" />
+                  <span
+                    className="bubble-label__status-pill"
+                    title={statusTitle}
+                  >
+                    <span aria-hidden>{statusEmoji}</span>
+                    {statusTitle}
+                  </span>
+                </div>
               </div>
             </div>
           </Html>
@@ -511,11 +528,20 @@ function AvatarNode({
               </mesh>
             )}
 
-            {kol.tier === 1 && !dimmed && hasFace && (
-              <mesh position={[baseR * 0.72, baseR * 0.72, 0.04]}>
-                <circleGeometry args={[baseR * 0.17, 24]} />
-                <meshBasicMaterial color="#fbbf24" toneMapped={false} />
-              </mesh>
+            {!dimmed && hasFace && (
+              <Html
+                center
+                position={[baseR * 0.75, -baseR * 0.75, 0.05]}
+                style={{ pointerEvents: 'none' }}
+                zIndexRange={[40, 0]}
+              >
+                <RankBadge
+                  tier={kol.tier}
+                  score={kol.score}
+                  size="pip"
+                  className="rank-pip--map"
+                />
+              </Html>
             )}
           </group>
         </Billboard>
@@ -541,12 +567,15 @@ function AvatarNode({
             <div className="bubble-label__text">
               <span className="bubble-label__name">{kol.displayName}</span>
               <span className="bubble-label__meta">
-                @{kol.handle} · T{kol.tier ?? '—'} · {formatNum(kol.followers)}
+                @{kol.handle} · {formatNum(kol.followers)}
               </span>
-              <span className="bubble-label__status-pill" title={statusTitle}>
-                <span aria-hidden>{statusEmoji}</span>
-                {statusTitle}
-              </span>
+              <div className="bubble-label__pills">
+                <RankBadge tier={kol.tier} score={kol.score} size="sm" />
+                <span className="bubble-label__status-pill" title={statusTitle}>
+                  <span aria-hidden>{statusEmoji}</span>
+                  {statusTitle}
+                </span>
+              </div>
             </div>
           </div>
         </Html>

@@ -115,6 +115,89 @@ export function formatStatus(status: StatusLabel | string | undefined | null): s
   return String(status)
 }
 
+/**
+ * League-inspired rank ladder (simpler than LoL).
+ * Stored data still uses tier 1|2|3; rank is display layer from tier + score.
+ */
+export type KolRank =
+  | 'challenger'
+  | 'master'
+  | 'diamond'
+  | 'platinum'
+  | 'gold'
+
+export const RANK_ORDER: KolRank[] = [
+  'challenger',
+  'master',
+  'diamond',
+  'platinum',
+  'gold',
+]
+
+export const RANK_LABELS: Record<KolRank, string> = {
+  challenger: 'Challenger',
+  master: 'Master',
+  diamond: 'Diamond',
+  platinum: 'Platinum',
+  gold: 'Gold',
+}
+
+/** Compact filter labels */
+export const RANK_SHORT: Record<KolRank, string> = {
+  challenger: 'Chall',
+  master: 'Master',
+  diamond: 'Dia',
+  platinum: 'Plat',
+  gold: 'Gold',
+}
+
+/** Soft LoL-inspired palette (muted for dark UI) */
+export const RANK_COLORS: Record<KolRank, string> = {
+  challenger: '#f0e6d2',
+  master: '#c084fc',
+  diamond: '#38bdf8',
+  platinum: '#5eead4',
+  gold: '#fbbf24',
+}
+
+/** Map filter tier → ranks that belong to that tier bucket */
+export function ranksForTier(tier: 1 | 2 | 3): KolRank[] {
+  if (tier === 1) return ['challenger', 'master']
+  if (tier === 2) return ['diamond', 'platinum']
+  return ['gold']
+}
+
+/** Primary tier bucket for a rank (admin/filter still use 1–3) */
+export function tierForRank(rank: KolRank): 1 | 2 | 3 {
+  if (rank === 'challenger' || rank === 'master') return 1
+  if (rank === 'diamond' || rank === 'platinum') return 2
+  return 3
+}
+
+/**
+ * Derive display rank from tier + composite score.
+ * Challenger / Master ≈ T1, Diamond / Plat ≈ T2, Gold ≈ T3.
+ */
+export function getKolRank(k: {
+  tier?: number
+  score?: number
+}): KolRank {
+  const tier = k.tier ?? 3
+  const score = k.score ?? 50
+  if (tier <= 1) {
+    return score >= 96 ? 'challenger' : 'master'
+  }
+  if (tier === 2) {
+    return score >= 92 ? 'diamond' : 'platinum'
+  }
+  return 'gold'
+}
+
+export function formatRank(k: { tier?: number; score?: number }): string {
+  const r = getKolRank(k)
+  return RANK_LABELS[r]
+}
+
 const NICHE_SET = new Set<string>([
   'Trading',
   'Research',

@@ -2012,7 +2012,8 @@ export const SHEET_KOLS: Kol[] = [
     "tweetsPerDay": 7.917,
     "xFollowing": 440,
     "dataSource": "x-live",
-    "isTop30": false
+    "isTop30": false,
+    "surfReportPdfUrl": "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/RadarKOLsReport/SurfAI_KOL_Evaluation_Steven_Research_15072026.pdf"
   },
   {
     "id": "sheet-hai12xventures",

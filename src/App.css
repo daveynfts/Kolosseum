@@ -1819,6 +1819,10 @@ button.view-toggle-btn.is-active {
 }
 
 .surf-analysis__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
   margin-bottom: 12px;
 }
 
@@ -1826,6 +1830,29 @@ button.view-toggle-btn.is-active {
   display: flex;
   align-items: center;
   gap: 8px;
+  min-width: 0;
+}
+
+.surf-analysis__ready,
+.surf-analysis__missing {
+  flex-shrink: 0;
+  font-size: 0.62rem;
+  font-weight: 650;
+  letter-spacing: 0.02em;
+  padding: 3px 8px;
+  border-radius: 999px;
+}
+
+.surf-analysis__ready {
+  color: #67e8f9;
+  background: rgba(34, 211, 238, 0.12);
+  border: 1px solid rgba(34, 211, 238, 0.28);
+}
+
+.surf-analysis__missing {
+  color: #fbbf24;
+  background: rgba(251, 191, 36, 0.1);
+  border: 1px solid rgba(251, 191, 36, 0.25);
 }
 
 .surf-analysis__brand-logo {

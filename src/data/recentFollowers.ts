@@ -92,6 +92,32 @@ export const RECENT_FOLLOWERS_BY_HANDLE: Record<string, RecentFollower[]> = {
       followedAt: '2025-07-01T00:00:00.000Z',
     },
   ],
+  emilyyvuong: [
+    {
+      handle: 'madcapslaugh',
+      displayName: 'Jonathan Caras',
+      followedAgo: '8 months ago',
+      followedAt: '2025-11-10T00:00:00.000Z',
+    },
+    {
+      handle: 'miaferrariii',
+      displayName: 'Mia',
+      followedAgo: '9 months ago',
+      followedAt: '2025-10-10T00:00:00.000Z',
+    },
+    {
+      handle: 'loi_luu',
+      displayName: 'Loi Luu',
+      followedAgo: '9 months ago',
+      followedAt: '2025-10-08T00:00:00.000Z',
+    },
+    {
+      handle: 'cryptoamandal',
+      displayName: '阿曼达要吃肉Amanda.eth',
+      followedAgo: 'a year ago',
+      followedAt: '2025-07-10T00:00:00.000Z',
+    },
+  ],
 }
 
 export function getRecentFollowers(handle: string): RecentFollower[] {

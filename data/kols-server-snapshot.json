@@ -1,10 +1,42 @@
 {
   "version": 4,
-  "updatedAt": "2026-07-15T07:15:27.724Z",
-  "source": "admin server · push_kol_bio",
-  "note": "admin server · bio push (lensmoso)",
-  "count": 106,
+  "updatedAt": "2026-07-15T07:31:14.321Z",
+  "source": "admin server · add_kol_r2",
+  "note": "admin server · add/upsert @mingli0x",
+  "count": 107,
   "kols": [
+    {
+      "id": "admin-mingli0x",
+      "handle": "mingli0x",
+      "displayName": "MinG.AI",
+      "niche": "Multi",
+      "niches": [
+        "Multi"
+      ],
+      "tier": 2,
+      "rank": "platinum",
+      "typeRaw": "AI / Animation",
+      "smartFollowers": 80,
+      "followers": 4192,
+      "posts24h": 6,
+      "likes24h": 20,
+      "replies24h": 2,
+      "reposts24h": 1,
+      "baseScore": 58,
+      "hotScore": 55,
+      "score": 56.6,
+      "deltaPct": 0,
+      "bio": "MinG.AI (@mingli0x) — AI Filmmaker / high-end 3D AI animation.\n\n• Rank: Platinum (band 2)\n• Verified X · ~4.2K followers · following ~1.1K · ~6.9K posts\n• Self-bio: AI Filmmaker; CPP @itsPolloAI @renoiseai @thankyouai_hq; collab DM / Telegram\n• Portfolio: behance.net/minhle4job\n• Positioning: AI creative / filmmaking content — collab & work inquiries open\n• Status: ACTIVE · dataSource: x-live+admin (15/07/2026)",
+      "statusLabel": "active",
+      "activityLevel": 55,
+      "verified": true,
+      "tweetsTotal": 6896,
+      "tweetsPerDay": 5.5,
+      "xFollowing": 1061,
+      "dataSource": "x-live+admin",
+      "isTop30": false,
+      "hidden": false
+    },
     {
       "id": "sheet-thuancapital",
       "handle": "ThuanCapital",
@@ -1147,9 +1179,9 @@
     {
       "id": "sheet-lensmoso",
       "handle": "LensMoso",
-      "displayName": "Lens ",
+      "displayName": "Lens",
       "niche": "Multi",
-      "tier": 2,
+      "tier": 1,
       "typeRaw": "ALL",
       "smartFollowers": 349,
       "followers": 27352,
@@ -1159,7 +1191,7 @@
       "reposts24h": 65,
       "baseScore": 83.5,
       "hotScore": 98,
-      "score": 89.6,
+      "score": 90,
       "deltaPct": 0,
       "bio": "Lens (@LensMoso) — Đánh giá công tâm KOL · niche Multi / INJ–DeFi · Band T2 · SurfAI 15/07/2026.\n\nTL;DR\n• Mid-Tier Niche Leader: Ambassador @injective @zerion · contributor @axisrobotics · ~27.4K followers (+33% YTD).\n• SurfAI KOL Signal: 74/100 — vững ở niche INJ & DeFi VN; tiềm năng Top-Tier nếu tăng depth + engagement.\n• Community Score ~85/100 (rất tích cực) · Niche Authority ~82/100 · Engagement Rate ~1.2% (trung bình).\n\nChân dung\n• Bio X: Ambassador Injective & Zerion | Contributor Axis Robotics | quan điểm cá nhân, NFA.\n• Cầu nối narrative Injective (CLOB on-chain, sub-second finality, phí thấp) ↔ retail trader Việt.\n• Nội dung: INJ catalysts, macro (CPI/BTC), meme & kỷ luật trading, sentiment cộng đồng.\n\nĐiểm SurfAI (breakdown)\n• Community / sentiment ~85 · Niche authority ~82 · Content quality ~65 · Engagement quality ~58 · Tổng 74/100.\n• Vượt benchmark niche ở authority & loyalty; còn cách biệt ở engagement rate & content depth.\n\nĐiểm mạnh\n• Uy tín ambassador chính thức Injective & Zerion (perp DEX / portfolio narrative).\n• Giọng gần gũi, tích cực — community loyalty cao với retail VN.\n• Đúng narrative hot: INJ catalysts, macro impact, risk management / meme lessons.\n\nĐiểm yếu / rủi ro\n• Post chủ yếu comment ngắn; ít thread phân tích sâu → content quality & engagement thấp.\n• Một số post gần đây eng rất thấp (views/likes đơn vị) — thiếu CTA / media / viral format.\n• Tăng trưởng followers chậm lại (~+2%/tháng gần đây) nếu không collab/viral.\n\nCách dùng (Radar / campaign)\n• Primary/co-lead cho brief INJ ecosystem, DeFi tools (Zerion), retail education VN.\n• Không kỳ vọng thought-leader data-heavy nếu chỉ dựa short posts.\n• Kết luận: asset quý cho Injective VN; 50K+ followers trong 6–9 tháng khả thi nếu thêm thread data-driven, Spaces/video, CTA 2 chiều.",
       "statusLabel": "hot",
@@ -1168,8 +1200,13 @@
       "tweetsTotal": 35611,
       "tweetsPerDay": 27.996,
       "xFollowing": 9310,
-      "dataSource": "x-live",
-      "isTop30": false
+      "dataSource": "admin",
+      "isTop30": false,
+      "surfReportPdfUrl": "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/RadarKOLsReport/BaoCao_PhanTich_KOL_LensMoso_SurfAI.pdf",
+      "niches": [
+        "Multi"
+      ],
+      "rank": "master"
     },
     {
       "id": "sheet-hc_capital",

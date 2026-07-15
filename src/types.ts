@@ -151,34 +151,34 @@ export const RANK_SHORT: Record<KolRank, string> = {
   gold: 'Gold',
 }
 
-/** Soft LoL-inspired palette (badges / labels) */
+/** Soft LoL-inspired palette (badges / labels) — aligned to 2017 frames */
 export const RANK_COLORS: Record<KolRank, string> = {
-  challenger: '#f0e6d2',
-  master: '#c084fc',
-  diamond: '#38bdf8',
-  platinum: '#5eead4',
-  gold: '#fbbf24',
-}
-
-/**
- * Map ring colors — slightly more saturated so ranks read at a glance
- * on the full map (outer bubble border).
- */
-export const RANK_RING_COLORS: Record<KolRank, string> = {
-  challenger: '#f5e6c8',
-  master: '#d8b4fe',
+  challenger: '#f0d78c',
+  master: '#a5b4fc',
   diamond: '#7dd3fc',
   platinum: '#5eead4',
   gold: '#fbbf24',
 }
 
+/**
+ * Map ring colors — hextech / Season-2017 ranked border palette
+ * (inspired by LoL 2017 summoner frames, not official assets).
+ */
+export const RANK_RING_COLORS: Record<KolRank, string> = {
+  challenger: '#e8c468', // warm gold armor
+  master: '#6366f1', // deep indigo
+  diamond: '#60a5fa', // crystal blue
+  platinum: '#2dd4bf', // teal metal
+  gold: '#d97706', // antique gold
+}
+
 /** Outer ring thickness multiplier by rank (higher = thicker border) */
 export const RANK_RING_WIDTH: Record<KolRank, number> = {
-  challenger: 1.22,
-  master: 1.16,
-  diamond: 1.14,
-  platinum: 1.12,
-  gold: 1.1,
+  challenger: 1.28,
+  master: 1.24,
+  diamond: 1.22,
+  platinum: 1.18,
+  gold: 1.16,
 }
 
 /** Map filter tier → ranks that belong to that tier bucket */

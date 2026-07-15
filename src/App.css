@@ -893,20 +893,34 @@ button.view-toggle-btn.is-active {
   color: #cbd5e1;
 }
 
-/* Mini ring swatch — pattern mirrors map bubble border */
+/* Mini hextech frame swatch — mirrors 2017-style rank borders */
 .legend-rank-ring {
   position: relative;
-  width: 16px;
-  height: 16px;
+  width: 18px;
+  height: 18px;
   border-radius: 50%;
-  border: 2.5px solid #94a3b8;
+  border: 2px solid #94a3b8;
   background: radial-gradient(
     circle at 40% 35%,
-    rgba(255, 255, 255, 0.1),
-    rgba(8, 12, 24, 0.88)
+    rgba(255, 255, 255, 0.12),
+    rgba(8, 12, 24, 0.9)
   );
   flex-shrink: 0;
   box-sizing: border-box;
+}
+
+.legend-rank-ring::after {
+  /* top crest gem */
+  content: '';
+  position: absolute;
+  width: 5px;
+  height: 5px;
+  left: 50%;
+  top: -4px;
+  transform: translateX(-50%) rotate(45deg);
+  background: currentColor;
+  box-shadow: 0 0 4px currentColor;
+  border-radius: 1px;
 }
 
 .legend-rank-meta {
@@ -924,66 +938,95 @@ button.view-toggle-btn.is-active {
   letter-spacing: 0.01em;
 }
 
-/* Challenger: double ring + 5 outer pips */
+/* Challenger: dual gold + side armor */
 .legend-rank-ring--challenger {
-  border-width: 2px;
+  border-width: 2.5px;
   box-shadow:
-    0 0 0 2.5px rgba(8, 12, 24, 0.9),
-    0 0 0 4px currentColor,
-    0 0 8px color-mix(in srgb, currentColor 40%, transparent);
+    0 0 0 2px rgba(8, 12, 24, 0.95),
+    0 0 0 3.5px currentColor,
+    0 0 10px color-mix(in srgb, currentColor 45%, transparent);
 }
-.legend-rank-ring--challenger::before,
-.legend-rank-ring--challenger::after {
+.legend-rank-ring--challenger::before {
   content: '';
   position: absolute;
-  width: 3px;
-  height: 3px;
-  border-radius: 50%;
-  background: currentColor;
-  left: 50%;
-  top: -5px;
-  transform: translateX(-50%);
-  box-shadow:
-    -7px 5px 0 currentColor,
-    7px 5px 0 currentColor,
-    -4px 11px 0 currentColor,
-    4px 11px 0 currentColor;
+  inset: 3px -3px;
+  border-radius: 40%;
+  border-left: 2.5px solid currentColor;
+  border-right: 2.5px solid currentColor;
+  opacity: 0.85;
 }
 
-/* Master: outer dashed feel via box-shadow ticks */
+/* Master: indigo wings */
 .legend-rank-ring--master {
   border-width: 2.5px;
-  border-style: solid;
-  outline: 1.5px dashed currentColor;
-  outline-offset: 2px;
+  box-shadow: 0 0 8px color-mix(in srgb, currentColor 40%, transparent);
+}
+.legend-rank-ring--master::before {
+  content: '';
+  position: absolute;
+  inset: 2px -4px;
+  border-radius: 45%;
+  border-left: 2px solid currentColor;
+  border-right: 2px solid currentColor;
+  opacity: 0.7;
 }
 
-/* Diamond: 4 cardinal ticks */
+/* Diamond: crystal multi-edge */
 .legend-rank-ring--diamond {
-  border-width: 2.5px;
+  border-width: 2px;
+  box-shadow:
+    0 0 0 1.5px color-mix(in srgb, currentColor 50%, transparent),
+    0 0 8px color-mix(in srgb, currentColor 35%, transparent);
 }
 .legend-rank-ring--diamond::before {
   content: '';
   position: absolute;
-  inset: -4px;
+  width: 3.5px;
+  height: 3.5px;
   border-radius: 50%;
-  background:
-    radial-gradient(circle at 50% 0, currentColor 1.4px, transparent 1.6px),
-    radial-gradient(circle at 100% 50%, currentColor 1.4px, transparent 1.6px),
-    radial-gradient(circle at 50% 100%, currentColor 1.4px, transparent 1.6px),
-    radial-gradient(circle at 0 50%, currentColor 1.4px, transparent 1.6px);
+  background: currentColor;
+  left: -3px;
+  top: 50%;
+  transform: translateY(-50%);
+  box-shadow: 18px 0 0 currentColor;
+  opacity: 0.9;
 }
 
-/* Platinum: sparse dashes */
+/* Platinum: dual gem (top gem + bottom pip) */
 .legend-rank-ring--platinum {
   border-width: 2px;
-  border-style: dashed;
+}
+.legend-rank-ring--platinum::before {
+  content: '';
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  left: 50%;
+  bottom: -3px;
+  transform: translateX(-50%) rotate(45deg);
+  background: currentColor;
+  opacity: 0.85;
+  border-radius: 1px;
 }
 
-/* Gold: plain thin */
+/* Gold: red banners L/R of crest */
 .legend-rank-ring--gold {
   border-width: 2px;
-  opacity: 0.95;
+}
+.legend-rank-ring--gold::before {
+  content: '';
+  position: absolute;
+  width: 0;
+  height: 0;
+  left: 1px;
+  top: -1px;
+  border-style: solid;
+  border-width: 0 0 5px 4px;
+  border-color: transparent transparent #b91c1c transparent;
+  transform: none;
+  background: none;
+  box-shadow: 10px 0 0 -1px #b91c1c;
+  opacity: 0.9;
 }
 
 .chip {

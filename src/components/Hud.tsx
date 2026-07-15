@@ -379,7 +379,8 @@ export function Hud({
             <span>Size ≈ followers + score</span>
           </div>
           <p className="legend-note legend-note--rank" style={{ marginTop: 6 }}>
-            <strong>Viền + họa tiết = rank</strong> — tier cao trang trí dày hơn.
+            <strong>Khung rank kiểu LMHT 2017</strong> — multi-ring + gem crest;
+            tier cao có giáp / cánh hai bên.
           </p>
           <div className="legend-rank-grid" aria-label="Rank ring patterns">
             {RANK_ORDER.map((r) => (
@@ -397,14 +398,14 @@ export function Hud({
                   <span style={{ color: RANK_COLORS[r] }}>{RANK_LABELS[r]}</span>
                   <small className="legend-rank-hint">
                     {r === 'challenger'
-                      ? 'double + 5 pips'
+                      ? 'vàng + giáp bên + gem'
                       : r === 'master'
-                        ? 'solid + 4 dashes'
+                        ? 'indigo + cánh + gem'
                         : r === 'diamond'
-                          ? 'solid + 4 ticks'
+                          ? 'xanh + 3 gem + nét đứt'
                           : r === 'platinum'
-                            ? 'solid + sparse dashes'
-                            : 'single thin ring'}
+                            ? 'teal + gem trên/dưới'
+                            : 'vàng + cờ đỏ + gem'}
                   </small>
                 </span>
               </div>

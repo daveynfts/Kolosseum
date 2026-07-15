@@ -8,22 +8,21 @@ interface Props {
   color: string
   opacity: number
   segs?: number
-  /** When dimmed, only a faint solid ring */
   dimmed?: boolean
-  /** Start z for layering */
   z?: number
   frontSide?: boolean
 }
 
 /**
- * Rank-specific outer border patterns for map-level tier scan.
- * High ranks = denser ornament; low ranks = simple ring.
+ * LoL Season-2017 style summoner borders (hextech):
+ * multi-layer metallic ring + crest gem + side plates for high tiers.
+ * Inspired by the 2017 ranked icon frames (not official assets).
  *
- * Challenger — double ring + 5 orbit pips
- * Master     — solid + 4 arc dashes
- * Diamond    — solid + 4 cardinal ticks
- * Platinum   — solid + sparse dashes
- * Gold       — single thin ring
+ * Gold      — warm gold double ring, top gem, small red corner flags
+ * Platinum  — cyan dual ring, top + bottom gems
+ * Diamond   — blue multi-ring, 3 gems (top/L/R), segmented outer
+ * Master    — deep indigo, thick ring, large top gem + wing plates
+ * Challenger— gold dual ring, large top gem, bold side plates + outer halo
  */
 export function RankRingDecor({
   baseR,
@@ -37,162 +36,370 @@ export function RankRingDecor({
 }: Props) {
   const side = frontSide ? THREE.FrontSide : THREE.DoubleSide
   const outer = RANK_RING_WIDTH[rank]
-  const mat = {
-    color,
+  const mat = (c: string, o: number) => ({
+    color: c,
     transparent: true as const,
+    opacity: o,
     depthWrite: false,
     depthTest: true,
     side,
     toneMapped: false as const,
-  }
+  })
 
   if (dimmed) {
     return (
       <mesh position={[0, 0, z]} renderOrder={2}>
         <ringGeometry args={[baseR * 0.97, baseR * outer * 0.98, segs]} />
-        <meshBasicMaterial {...mat} opacity={opacity * 0.55} />
+        <meshBasicMaterial {...mat(color, opacity * 0.5)} />
       </mesh>
     )
   }
 
-  // Shared solid core ring (all ranks)
-  const solidInner = baseR * 0.96
-  const solidOuter = baseR * (rank === 'gold' ? 1.08 : rank === 'platinum' ? 1.1 : 1.12)
+  // Accent metals per rank (hextech palette from 2017 frames)
+  const accent =
+    rank === 'challenger'
+      ? '#f0d78c'
+      : rank === 'master'
+        ? '#a5b4fc'
+        : rank === 'diamond'
+          ? '#c4b5fd'
+          : rank === 'platinum'
+            ? '#a5f3fc'
+            : '#fcd34d'
+  const metalDark =
+    rank === 'challenger'
+      ? '#b45309'
+      : rank === 'master'
+        ? '#312e81'
+        : rank === 'diamond'
+          ? '#1e3a5f'
+          : rank === 'platinum'
+            ? '#0e7490'
+            : '#92400e'
+  const gemCore =
+    rank === 'challenger'
+      ? '#38bdf8'
+      : rank === 'master'
+        ? '#34d399'
+        : rank === 'diamond'
+          ? '#e9d5ff'
+          : rank === 'platinum'
+            ? '#67e8f9'
+            : '#fde68a'
+
+  const r0 = baseR * 0.955
+  const r1 = baseR * 1.04
+  const r2 = baseR * 1.1
+  const rOuter = baseR * outer
 
   return (
     <group>
-      {/* Core solid border */}
-      <mesh position={[0, 0, z]} renderOrder={2}>
-        <ringGeometry args={[solidInner, solidOuter, segs]} />
-        <meshBasicMaterial
-          {...mat}
-          opacity={opacity}
-        />
+      {/* Inner dark metal band (depth like 2017 frames) */}
+      <mesh position={[0, 0, z - 0.001]} renderOrder={2}>
+        <ringGeometry args={[r0, r1, segs]} />
+        <meshBasicMaterial {...mat(metalDark, opacity * 0.75)} />
       </mesh>
 
-      {rank === 'challenger' && (
+      {/* Main colored metallic rim */}
+      <mesh position={[0, 0, z]} renderOrder={3}>
+        <ringGeometry args={[r1 * 0.98, r2, segs]} />
+        <meshBasicMaterial {...mat(color, opacity)} />
+      </mesh>
+
+      {/* Bright outer highlight edge */}
+      <mesh position={[0, 0, z + 0.001]} renderOrder={3}>
+        <ringGeometry args={[r2 * 0.99, rOuter * 0.92, segs]} />
+        <meshBasicMaterial {...mat(accent, opacity * 0.55)} />
+      </mesh>
+
+      {/* ——— GOLD: red triangular banners L/R of top ——— */}
+      {rank === 'gold' && (
         <>
-          {/* Second outer band */}
-          <mesh position={[0, 0, z + 0.001]} renderOrder={2}>
-            <ringGeometry
-              args={[baseR * 1.14, baseR * outer, segs]}
-            />
-            <meshBasicMaterial {...mat} opacity={opacity * 0.85} />
-          </mesh>
-          {/* Soft halo rim */}
-          <mesh position={[0, 0, z - 0.002]} renderOrder={1}>
-            <ringGeometry
-              args={[baseR * outer, baseR * (outer + 0.1), segs]}
-            />
-            <meshBasicMaterial {...mat} opacity={opacity * 0.35} />
-          </mesh>
-          {/* 5 orbit pips — crown / star cue */}
-          {Array.from({ length: 5 }, (_, i) => {
-            const a = (i / 5) * Math.PI * 2 - Math.PI / 2
-            const rr = baseR * (outer + 0.06)
-            const pr = baseR * 0.09
-            return (
-              <mesh
-                key={i}
-                position={[Math.cos(a) * rr, Math.sin(a) * rr, z + 0.002]}
-                renderOrder={4}
-              >
-                <circleGeometry args={[pr, 12]} />
-                <meshBasicMaterial {...mat} opacity={opacity * 0.95} />
-              </mesh>
-            )
-          })}
+          <Gem
+            x={0}
+            y={baseR * 1.14}
+            z={z + 0.003}
+            size={baseR * 0.11}
+            color={gemCore}
+            glow={accent}
+            opacity={opacity}
+            side={side}
+          />
+          {/* Red corner flags (small wedges via short arcs) */}
+          {[-1, 1].map((dir) => (
+            <mesh
+              key={dir}
+              position={[0, 0, z + 0.002]}
+              renderOrder={4}
+            >
+              <ringGeometry
+                args={[
+                  baseR * 1.08,
+                  baseR * 1.2,
+                  10,
+                  1,
+                  Math.PI / 2 + dir * 0.55 - 0.18,
+                  0.36,
+                ]}
+              />
+              <meshBasicMaterial {...mat('#b91c1c', opacity * 0.85)} />
+            </mesh>
+          ))}
         </>
       )}
 
-      {rank === 'master' && (
-        <>
-          {/* Outer dashed arcs (4 segments) */}
-          {[0, 1, 2, 3].map((i) => {
-            const thetaStart = (i / 4) * Math.PI * 2 + 0.12
-            const thetaLength = Math.PI * 0.5 - 0.28
-            return (
-              <mesh key={i} position={[0, 0, z + 0.001]} renderOrder={2}>
-                <ringGeometry
-                  args={[
-                    baseR * 1.13,
-                    baseR * outer,
-                    24,
-                    1,
-                    thetaStart,
-                    thetaLength,
-                  ]}
-                />
-                <meshBasicMaterial {...mat} opacity={opacity * 0.9} />
-              </mesh>
-            )
-          })}
-        </>
-      )}
-
-      {rank === 'diamond' && (
-        <>
-          {/* 4 cardinal ticks (N/E/S/W) — faceted cue */}
-          {[0, 1, 2, 3].map((i) => {
-            const a = (i / 4) * Math.PI * 2
-            const tipR = baseR * (outer + 0.05)
-            const tickW = baseR * 0.055
-            const thetaStart = a - 0.14
-            const thetaLength = 0.28
-            return (
-              <group key={i}>
-                <mesh position={[0, 0, z + 0.001]} renderOrder={3}>
-                  <ringGeometry
-                    args={[
-                      baseR * 1.12,
-                      baseR * outer,
-                      12,
-                      1,
-                      thetaStart,
-                      thetaLength,
-                    ]}
-                  />
-                  <meshBasicMaterial {...mat} opacity={opacity * 0.95} />
-                </mesh>
-                <mesh
-                  position={[Math.cos(a) * tipR, Math.sin(a) * tipR, z + 0.002]}
-                  renderOrder={4}
-                >
-                  <circleGeometry args={[tickW, 8]} />
-                  <meshBasicMaterial {...mat} opacity={opacity} />
-                </mesh>
-              </group>
-            )
-          })}
-        </>
-      )}
-
+      {/* ——— PLATINUM: dual gem top + bottom ——— */}
       {rank === 'platinum' && (
         <>
-          {/* Sparse outer dashes (6) */}
-          {Array.from({ length: 6 }, (_, i) => {
-            const thetaStart = (i / 6) * Math.PI * 2 + 0.08
-            const thetaLength = Math.PI / 6 - 0.14
-            return (
-              <mesh key={i} position={[0, 0, z + 0.001]} renderOrder={2}>
-                <ringGeometry
-                  args={[
-                    baseR * 1.11,
-                    baseR * outer,
-                    16,
-                    1,
-                    thetaStart,
-                    thetaLength,
-                  ]}
-                />
-                <meshBasicMaterial {...mat} opacity={opacity * 0.75} />
-              </mesh>
-            )
-          })}
+          <mesh position={[0, 0, z + 0.001]} renderOrder={3}>
+            <ringGeometry args={[baseR * 1.12, rOuter, segs]} />
+            <meshBasicMaterial {...mat(color, opacity * 0.7)} />
+          </mesh>
+          <Gem
+            x={0}
+            y={baseR * 1.16}
+            z={z + 0.003}
+            size={baseR * 0.1}
+            color={gemCore}
+            glow={accent}
+            opacity={opacity}
+            side={side}
+          />
+          <Gem
+            x={0}
+            y={-baseR * 1.16}
+            z={z + 0.003}
+            size={baseR * 0.08}
+            color={gemCore}
+            glow={accent}
+            opacity={opacity * 0.9}
+            side={side}
+          />
         </>
       )}
 
-      {/* Gold: solid only — intentionally plain for low tier */}
+      {/* ——— DIAMOND: multi-layer + 3 gems + side orbs ——— */}
+      {rank === 'diamond' && (
+        <>
+          {/* Segmented outer hextech arcs */}
+          {[0, 1, 2, 3, 4, 5].map((i) => {
+            const start = (i / 6) * Math.PI * 2 + 0.08
+            const len = Math.PI / 3 - 0.16
+            return (
+              <mesh key={i} position={[0, 0, z + 0.001]} renderOrder={3}>
+                <ringGeometry
+                  args={[baseR * 1.13, rOuter, 16, 1, start, len]}
+                />
+                <meshBasicMaterial {...mat(accent, opacity * 0.8)} />
+              </mesh>
+            )
+          })}
+          <Gem
+            x={0}
+            y={baseR * 1.18}
+            z={z + 0.004}
+            size={baseR * 0.12}
+            color={gemCore}
+            glow={color}
+            opacity={opacity}
+            side={side}
+          />
+          {/* Side gem orbs */}
+          {[-1, 1].map((dir) => (
+            <mesh
+              key={dir}
+              position={[dir * baseR * 1.18, 0, z + 0.003]}
+              renderOrder={5}
+            >
+              <circleGeometry args={[baseR * 0.07, 12]} />
+              <meshBasicMaterial {...mat(gemCore, opacity * 0.9)} />
+            </mesh>
+          ))}
+        </>
+      )}
+
+      {/* ——— MASTER: thick outer + wing plates + large top gem ——— */}
+      {rank === 'master' && (
+        <>
+          <mesh position={[0, 0, z + 0.001]} renderOrder={3}>
+            <ringGeometry args={[baseR * 1.12, rOuter, segs]} />
+            <meshBasicMaterial {...mat(color, opacity * 0.85)} />
+          </mesh>
+          {/* Wing / plate arcs left & right */}
+          {[-1, 1].map((dir) => (
+            <mesh key={dir} position={[0, 0, z + 0.002]} renderOrder={4}>
+              <ringGeometry
+                args={[
+                  baseR * 1.08,
+                  baseR * 1.22,
+                  14,
+                  1,
+                  dir > 0 ? -0.55 : Math.PI - 0.55,
+                  1.1,
+                ]}
+              />
+              <meshBasicMaterial {...mat(accent, opacity * 0.55)} />
+            </mesh>
+          ))}
+          <Gem
+            x={0}
+            y={baseR * 1.2}
+            z={z + 0.004}
+            size={baseR * 0.14}
+            color={gemCore}
+            glow={accent}
+            opacity={opacity}
+            side={side}
+            plate
+          />
+        </>
+      )}
+
+      {/* ——— CHALLENGER: dual gold rings + side armor plates + top crest ——— */}
+      {rank === 'challenger' && (
+        <>
+          {/* Second gold band */}
+          <mesh position={[0, 0, z + 0.001]} renderOrder={3}>
+            <ringGeometry args={[baseR * 1.12, rOuter, segs]} />
+            <meshBasicMaterial {...mat(color, opacity * 0.9)} />
+          </mesh>
+          {/* Soft outer halo */}
+          <mesh position={[0, 0, z - 0.002]} renderOrder={1}>
+            <ringGeometry
+              args={[rOuter * 0.98, baseR * (outer + 0.12), segs]}
+            />
+            <meshBasicMaterial {...mat(accent, opacity * 0.28)} />
+          </mesh>
+          {/* Bold side plates (armor) */}
+          {[-1, 1].map((dir) => (
+            <group key={dir}>
+              <mesh position={[0, 0, z + 0.002]} renderOrder={4}>
+                <ringGeometry
+                  args={[
+                    baseR * 1.05,
+                    baseR * 1.24,
+                    16,
+                    1,
+                    dir > 0 ? -0.7 : Math.PI - 0.7,
+                    1.4,
+                  ]}
+                />
+                <meshBasicMaterial {...mat(metalDark, opacity * 0.7)} />
+              </mesh>
+              <mesh position={[0, 0, z + 0.003]} renderOrder={4}>
+                <ringGeometry
+                  args={[
+                    baseR * 1.1,
+                    baseR * 1.2,
+                    12,
+                    1,
+                    dir > 0 ? -0.45 : Math.PI - 0.45,
+                    0.9,
+                  ]}
+                />
+                <meshBasicMaterial {...mat(accent, opacity * 0.75)} />
+              </mesh>
+            </group>
+          ))}
+          <Gem
+            x={0}
+            y={baseR * 1.22}
+            z={z + 0.005}
+            size={baseR * 0.15}
+            color={gemCore}
+            glow={accent}
+            opacity={opacity}
+            side={side}
+            plate
+          />
+          {/* Tiny bottom accent pip */}
+          <mesh position={[0, -baseR * 1.14, z + 0.003]} renderOrder={5}>
+            <circleGeometry args={[baseR * 0.05, 10]} />
+            <meshBasicMaterial {...mat(gemCore, opacity * 0.7)} />
+          </mesh>
+        </>
+      )}
+    </group>
+  )
+}
+
+function Gem({
+  x,
+  y,
+  z,
+  size,
+  color,
+  glow,
+  opacity,
+  side,
+  plate = false,
+}: {
+  x: number
+  y: number
+  z: number
+  size: number
+  color: string
+  glow: string
+  opacity: number
+  side: THREE.Side
+  plate?: boolean
+}) {
+  return (
+    <group position={[x, y, z]}>
+      {/* Soft glow behind gem */}
+      <mesh renderOrder={4}>
+        <circleGeometry args={[size * 1.55, 16]} />
+        <meshBasicMaterial
+          color={glow}
+          transparent
+          opacity={opacity * 0.35}
+          depthWrite={false}
+          depthTest
+          side={side}
+          toneMapped={false}
+        />
+      </mesh>
+      {/* Hextech plate under gem (Master / Challenger crest) */}
+      {plate && (
+        <mesh position={[0, -size * 0.15, -0.001]} renderOrder={4}>
+          <circleGeometry args={[size * 1.35, 6]} />
+          <meshBasicMaterial
+            color={glow}
+            transparent
+            opacity={opacity * 0.55}
+            depthWrite={false}
+            depthTest
+            side={side}
+            toneMapped={false}
+          />
+        </mesh>
+      )}
+      {/* Diamond-shaped gem body (rotated square) */}
+      <mesh rotation={[0, 0, Math.PI / 4]} renderOrder={6}>
+        <planeGeometry args={[size * 1.15, size * 1.15]} />
+        <meshBasicMaterial
+          color={color}
+          transparent
+          opacity={opacity * 0.95}
+          depthWrite={false}
+          depthTest
+          side={side}
+          toneMapped={false}
+        />
+      </mesh>
+      {/* Bright core */}
+      <mesh renderOrder={7}>
+        <circleGeometry args={[size * 0.35, 10]} />
+        <meshBasicMaterial
+          color="#ffffff"
+          transparent
+          opacity={opacity * 0.85}
+          depthWrite={false}
+          depthTest
+          side={side}
+          toneMapped={false}
+        />
+      </mesh>
     </group>
   )
 }

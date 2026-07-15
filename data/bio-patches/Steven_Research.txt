@@ -1,0 +1,39 @@
+Steven | Crypto Research (@Steven_Research) — Đánh giá công tâm KOL · Research curator VN · Band T2 · SurfAI 15/07/2026.
+
+TL;DR
+• Research/curation hạng khá — tổng thể **6,5/10** (SurfAI + Grok, 15/07/2026).
+• ~13.5K followers · following ~442 · join 10/2022 · 100% bài dài tiếng Việt.
+• Giá trị: radar tin / narrative VN về RWA–TradFi–ETF–chính sách; giải thích cơ chế & hệ quả, không chỉ spam tin.
+• Hạn chế: research thứ cấp (ít primary source/dataset); ~1 URL trực tiếp / 75 bài dài; headline đôi khi mạnh hơn bằng chứng; track record trade chưa audit.
+• ✅ Follow làm nguồn phát hiện tin & bản giải thích VN ban đầu · ❌ Không copy-trade / căn cứ pháp lý-thuế / primary research độc lập.
+
+Chân dung
+• Bio: Long-term investor · MBA · Founder @TrustFlow_VN · holder $BNB · Blockchain 100 (Binance Independent Researcher, 2025).
+• Danh hiệu Binance: đề cử Independent Researcher / top cộng đồng — **không** = nhân viên Binance Research; bio “Top Global Independent Researcher at Binance” dễ hiểu mạnh hơn bản chất.
+• 75/100 bài original là bài dài (>250 ký tự) · ~2.4 bài dài/tuần · 74/75 có media · cấu trúc mục + số liệu + kết luận.
+• Định vị chính xác: research curator/analyst diễn giải tốt — chưa primary on-chain investigator hay institutional desk.
+
+Nội dung & chất lượng
+• Trục: RWA, stablecoin, Digital Asset Treasury, ETF, chính sách VN, TradFi×crypto.
+• Mạnh: giải thích cơ chế (vd. reserves ngân hàng Mỹ $132B — TGA vs QE, khớp Fed H.4.1); có mặt rủi ro (unlock $HYPE, exit liquidity $TRUMP, chấm lại Galaxy); cập nhật khi phức tạp (thuế crypto 1→4, trích luật).
+• Yếu: ít dataset/on-chain query/link primary; tiêu đề framing (vd. “DTCC chọn Canton, không phải ETH”); headline clickbait nhẹ (“đã chết”, “úp bô”) trong khi thân bài cân bằng hơn.
+
+Reach & audience
+• Mẫu 100 bài (05/12/2025→15/07/2026): tổng views ~731K · median ~6.5K/bài · eng rate ~0.48%.
+• Reach median giảm mạnh: ~15.4K (12/2025) → ~1.9K (07/2026 partial) ≈ **−87%** — booking/exposure cần analytics 90d mới.
+• Follower mẫu 100: median ~447 · nhiều account nhỏ; 11 smart followers đáng chú ý (Peter Brandt, Jupiter, Ronin, Kyber…). Hỗn hợp thật + growth-network — không kết luận bot/mua follower chắc.
+
+Độ chính xác & track record
+• Spot-check sự kiện (Grayscale Canton S-1, HashKey/OKX CAEX, KelpDAO ~$300M, KOSPI CB, DTCC Treasury on Canton) — lõi khớp nguồn.
+• Trade công khai (mẫu): 2 lần “mua u $BTC” — avg cost ~$61.9K · uPnL ~+4.7% @15/07 — **không** đủ làm ledger (định nghĩa “u”, khớp lệnh, exit/SL thiếu).
+
+Xung đột lợi ích
+• Công khai: holder $BNB · Binance Blockchain 100 · từng nhận 1 $BNB Square · founder TrustFlow_VN.
+• Đọc bài Binance/BNB Chain/$BNB → tự áp chiết khấu bias (~15–20% gợi ý Grok) — không = nội dung sai, nhưng góc nhìn có thể lệch.
+
+Cách dùng (Radar / collab)
+• Primary: narrative radar layer-1 · RWA/TradFi/chính sách VN · bản giải thích tiếng Việt có cấu trúc.
+• Secondary research only nếu cross-check ≥1 nguồn chính thức (SEC/DTCC/Fed…) + 1 nguồn độc lập.
+• Không: tin on-chain/unlock không mở nguồn · thuế/pháp lý làm căn cứ hành động · copy-trade.
+• Booking: yêu cầu X Analytics 90d, geo, CTR, median impression, chính sách nhãn sponsored.
+• Kết luận: KOL research VN khá (6.5/10) — cầu nối hữu ích cho người bận; mạnh tổng hợp & diễn giải; yếu tái lập nguồn & reach đang giảm — điểm khởi đầu, không oracle đầu tư · NFA / DYOR.

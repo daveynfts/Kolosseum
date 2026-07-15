@@ -886,6 +886,39 @@ export const RECENT_FOLLOWERS_BY_HANDLE: Record<string, RecentFollower[]> = {
       followedAt: '2025-09-15T00:00:00.000Z',
     },
   ],
+  /** Thành Phan (@bachkhoabnb) — curated smart/recent followers snapshot */
+  bachkhoabnb: [
+    {
+      handle: 'plus_ultra_715',
+      displayName: 'Winchman@Renaiss',
+      followedAgo: '2 months ago',
+      followedAt: '2026-05-15T00:00:00.000Z',
+    },
+    {
+      handle: 'renaissxyz',
+      displayName: 'Renaiss.xyz',
+      followedAgo: '2 months ago',
+      followedAt: '2026-05-14T00:00:00.000Z',
+    },
+    {
+      handle: 'btc_789',
+      displayName: '0xKeyNG',
+      followedAgo: '3 months ago',
+      followedAt: '2026-04-15T00:00:00.000Z',
+    },
+    {
+      handle: 'jasonmdesimone',
+      displayName: 'Jason Desimone ⚔️',
+      followedAgo: '5 months ago',
+      followedAt: '2026-02-15T00:00:00.000Z',
+    },
+    {
+      handle: 'randhindi',
+      displayName: 'Rand',
+      followedAgo: '10 months ago',
+      followedAt: '2025-09-15T00:00:00.000Z',
+    },
+  ],
 }
 
 /**

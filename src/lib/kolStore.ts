@@ -161,7 +161,11 @@ export async function fetchServerKols(): Promise<KolStorePayload | null> {
   try {
     const res = await fetch(`${kolsApiUrl()}?t=${Date.now()}`, {
       method: 'GET',
-      headers: { Accept: 'application/json' },
+      cache: 'no-store',
+      headers: {
+        Accept: 'application/json',
+        'Cache-Control': 'no-cache',
+      },
     })
     if (res.status === 404 || res.status === 503) return null
     if (!res.ok) return null

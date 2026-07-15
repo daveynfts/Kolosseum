@@ -1,6 +1,6 @@
 {
   "version": 4,
-  "updatedAt": "2026-07-15T08:48:52.454Z",
+  "updatedAt": "2026-07-15T08:58:34.675Z",
   "source": "admin server · push_kol_bio",
   "note": "admin server · bio push (tranthanhbk)",
   "count": 107,
@@ -295,7 +295,7 @@
     {
       "id": "sheet-tranthanhbk",
       "handle": "tranthanhbk",
-      "displayName": "TranThanh",
+      "displayName": "Trấn Thành",
       "niche": "Trading",
       "tier": 2,
       "typeRaw": "Airdrop",

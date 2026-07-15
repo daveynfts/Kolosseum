@@ -41,7 +41,14 @@ function loadEnvFile(file) {
 }
 
 function parseArgs(argv) {
-  const out = { handle: null, bio: null, bioFile: null, fromJson: null, followers: null }
+  const out = {
+    handle: null,
+    bio: null,
+    bioFile: null,
+    fromJson: null,
+    followers: null,
+    displayName: null,
+  }
   for (let i = 2; i < argv.length; i++) {
     const a = argv[i]
     if (a === '--handle') out.handle = argv[++i]
@@ -49,6 +56,7 @@ function parseArgs(argv) {
     else if (a === '--bio-file') out.bioFile = argv[++i]
     else if (a === '--from-json') out.fromJson = argv[++i]
     else if (a === '--followers') out.followers = Number(argv[++i])
+    else if (a === '--display-name') out.displayName = argv[++i]
     else if (a === '--help' || a === '-h') out.help = true
   }
   return out
@@ -80,7 +88,7 @@ async function main() {
     'https://radar.daveynfts.com'
   ).replace(/\/$/, '')
 
-  /** @type {Record<string, { bio?: string, followers?: number }>} */
+  /** @type {Record<string, { bio?: string, followers?: number, displayName?: string }>} */
   const patches = {}
 
   if (args.fromJson) {
@@ -88,7 +96,12 @@ async function main() {
     for (const [h, v] of Object.entries(raw)) {
       const key = h.replace(/^@/, '').trim().toLowerCase()
       if (typeof v === 'string') patches[key] = { bio: v }
-      else patches[key] = { bio: v.bio, followers: v.followers }
+      else
+        patches[key] = {
+          bio: v.bio,
+          followers: v.followers,
+          displayName: v.displayName,
+        }
     }
   } else if (args.handle) {
     const key = args.handle.replace(/^@/, '').trim().toLowerCase()
@@ -103,6 +116,7 @@ async function main() {
     patches[key] = {
       bio: unescapeBio(bio).replace(/\r\n/g, '\n').trim(),
       followers: Number.isFinite(args.followers) ? args.followers : undefined,
+      displayName: args.displayName || undefined,
     }
   } else {
     console.error('Need --handle … or --from-json …  (see --help)')
@@ -116,7 +130,11 @@ async function main() {
     process.exit(1)
   }
 
-  const getRes = await fetch(`${apiBase}/api/kols?t=${Date.now()}`)
+  // Bust CDN/browser caches so we never PUT a stale full list over a prior patch
+  const getRes = await fetch(`${apiBase}/api/kols?t=${Date.now()}`, {
+    cache: 'no-store',
+    headers: { Accept: 'application/json', 'Cache-Control': 'no-cache' },
+  })
   if (!getRes.ok) throw new Error(`GET /api/kols ${getRes.status}`)
   const payload = await getRes.json()
   if (!payload?.kols?.length) throw new Error('No kols on server')
@@ -131,6 +149,7 @@ async function main() {
     if (!p) continue
     if (p.bio != null) k.bio = p.bio
     if (p.followers != null) k.followers = p.followers
+    if (p.displayName != null) k.displayName = p.displayName
     n++
     console.log(
       'patched',
@@ -138,6 +157,7 @@ async function main() {
       'bioLen',
       (k.bio || '').length,
       p.followers != null ? `followers=${p.followers}` : '',
+      p.displayName != null ? `name=${p.displayName}` : '',
     )
   }
   if (n === 0) {

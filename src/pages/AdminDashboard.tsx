@@ -23,12 +23,10 @@ import {
   exportKolsJson,
   getStoreMeta,
   importKolsJson,
-  getSurfDefaultPdfUrl,
   loadKols,
   loadKolsWithSource,
   recalculateScores,
   saveKolsToServer,
-  setSurfDefaultPdfUrl,
   type KolSource,
 } from '../lib/kolStore'
 import { getAdminToken, setAdminToken } from '../lib/feedStore'
@@ -71,9 +69,6 @@ export function AdminDashboard() {
   const [kolSource, setKolSource] = useState<KolSource | 'loading'>('loading')
   const [savingServer, setSavingServer] = useState(false)
   const [tokenInput, setTokenInput] = useState(() => getAdminToken())
-  const [surfDefaultPdf, setSurfDefaultPdf] = useState(() =>
-    getSurfDefaultPdfUrl(),
-  )
   const [uploadingSurf, setUploadingSurf] = useState(false)
 
   useEffect(() => {
@@ -86,12 +81,10 @@ export function AdminDashboard() {
   useEffect(() => {
     let cancelled = false
     void (async () => {
-      const { kols: list, source, surfDefaultPdfUrl } =
-        await loadKolsWithSource()
+      const { kols: list, source } = await loadKolsWithSource()
       if (cancelled) return
       setKols(list)
       setKolSource(source)
-      if (surfDefaultPdfUrl) setSurfDefaultPdf(surfDefaultPdfUrl)
     })()
     return () => {
       cancelled = true
@@ -157,7 +150,6 @@ export function AdminDashboard() {
           return false
         }
         setAdminToken(token)
-        setSurfDefaultPdfUrl(surfDefaultPdf)
         const result = await saveKolsToServer(next, note, token)
         if (!result.ok) {
           setKolSource('local')
@@ -177,7 +169,7 @@ export function AdminDashboard() {
         setSavingServer(false)
       }
     },
-    [tokenInput, surfDefaultPdf],
+    [tokenInput],
   )
 
   const buildFixedDraft = (src: Kol): Kol => {
@@ -288,11 +280,12 @@ export function AdminDashboard() {
     setDirty(true)
   }
 
-  /** Upload PDF/DOCX → R2 RadarKOLsReport/ → auto-fill URL field */
-  const onUploadSurfReport = async (
-    file: File,
-    target: 'default' | 'kol',
-  ) => {
+  /** Upload PDF/DOCX → R2 RadarKOLsReport/ → fill this KOL’s URL + publish */
+  const onUploadSurfReport = async (file: File) => {
+    if (!draft) {
+      flash('Mở 1 KOL ở tab Edit rồi mới upload Surf PDF')
+      return
+    }
     const token = tokenInput.trim() || getAdminToken()
     if (!token) {
       flash('Cần token — dán FEED_ADMIN_TOKEN → Apply token rồi upload')
@@ -301,45 +294,33 @@ export function AdminDashboard() {
     setAdminToken(token)
     setUploadingSurf(true)
     try {
-      const filename =
-        target === 'kol' && draft
-          ? suggestSurfReportFilename(draft.handle, file.name)
-          : undefined
+      const filename = suggestSurfReportFilename(draft.handle, file.name)
       const result = await uploadSurfReport(file, { token, filename })
       if (!result.ok) {
         flash(`Upload thất bại: ${result.error}`)
         return
       }
-      if (target === 'default') {
-        setSurfDefaultPdf(result.url)
-        setSurfDefaultPdfUrl(result.url)
+      const nextDraft = {
+        ...draft,
+        surfReportPdfUrl: result.url,
+      }
+      setDraft(nextDraft)
+      setDirty(true)
+      const next = kols.some((k) => k.id === nextDraft.id)
+        ? kols.map((k) => (k.id === nextDraft.id ? nextDraft : k))
+        : [...kols, nextDraft]
+      const ok = await persistServer(
+        next,
+        `admin surf upload @${nextDraft.handle}`,
+      )
+      if (ok) {
         flash(
-          `Đã upload default → ${result.key}. Bấm Save all (R2) để publish default cho mọi KOL.`,
+          `Đã upload + publish Surf @${nextDraft.handle} → ${result.filename}`,
         )
-      } else if (draft) {
-        const nextDraft = {
-          ...draft,
-          surfReportPdfUrl: result.url,
-        }
-        setDraft(nextDraft)
-        setDirty(true)
-        // Auto-publish this KOL so map sees the link immediately
-        const next = kols.some((k) => k.id === nextDraft.id)
-          ? kols.map((k) => (k.id === nextDraft.id ? nextDraft : k))
-          : [...kols, nextDraft]
-        const ok = await persistServer(
-          next,
-          `admin surf upload @${nextDraft.handle}`,
+      } else {
+        flash(
+          `Upload OK (${result.filename}) nhưng publish KOL list thất bại — bấm Save (R2)`,
         )
-        if (ok) {
-          flash(
-            `Đã upload + publish Surf @${nextDraft.handle} → ${result.filename}`,
-          )
-        } else {
-          flash(
-            `Upload OK (${result.filename}) nhưng publish KOL list thất bại — bấm Save (R2)`,
-          )
-        }
       }
     } finally {
       setUploadingSurf(false)
@@ -463,57 +444,6 @@ export function AdminDashboard() {
         <button type="button" className="btn" onClick={() => setTab('legend')}>
           Field legend
         </button>
-      </div>
-
-      <div className="admin-surf-config glass">
-        <div className="admin-surf-config__head">
-          <strong>Surf AI mock · PDF R2</strong>
-          <span>
-            Link PDF công khai trên R2 dùng khi user bấm logo Surf trong tab
-            “Phân tích sâu”. Có thể ghi đè theo từng KOL ở Editor.
-          </span>
-        </div>
-        <label className="admin-surf-config__field">
-          <span>Default PDF URL (R2 public)</span>
-          <input
-            type="url"
-            value={surfDefaultPdf}
-            onChange={(e) => setSurfDefaultPdf(e.target.value)}
-            placeholder="https://pub-xxxx.r2.dev/RadarKOLsReport/sample.pdf"
-            autoComplete="off"
-            spellCheck={false}
-          />
-        </label>
-        <div className="admin-surf-config__actions">
-          <label className={`btn btn--file ${uploadingSurf ? 'is-disabled' : ''}`}>
-            {uploadingSurf ? 'Uploading…' : 'Upload PDF → R2'}
-            <input
-              type="file"
-              accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-              hidden
-              disabled={uploadingSurf}
-              onChange={(e) => {
-                const f = e.target.files?.[0]
-                if (f) void onUploadSurfReport(f, 'default')
-                e.target.value = ''
-              }}
-            />
-          </label>
-          {surfDefaultPdf.trim() && (
-            <a
-              className="btn"
-              href={surfDefaultPdf.trim()}
-              target="_blank"
-              rel="noreferrer"
-            >
-              Test open
-            </a>
-          )}
-          <span className="admin-hint" style={{ margin: 0 }}>
-            Upload vào bucket prefix <code>RadarKOLsReport/</code> · URL tự
-            điền · <strong>Save all (R2)</strong> để publish default.
-          </span>
-        </div>
       </div>
 
       <div className="admin-stats">
@@ -1086,6 +1016,11 @@ export function AdminDashboard() {
                   <h3>
                     Surf AI report (mock) <SrcBadge source="ai" />
                   </h3>
+                  <p className="admin-hint" style={{ marginTop: 0 }}>
+                    Link PDF/DOCX public trên R2 cho <strong>KOL này</strong> —
+                    user bấm logo Surf ở tab “Phân tích sâu”. Không có URL =
+                    mock báo chưa cấu hình (không dùng default chung).
+                  </p>
                   <Field
                     label="Surf report (R2 · RadarKOLsReport/)"
                     source="ai"
@@ -1119,7 +1054,7 @@ export function AdminDashboard() {
                         disabled={uploadingSurf}
                         onChange={(e) => {
                           const f = e.target.files?.[0]
-                          if (f) void onUploadSurfReport(f, 'kol')
+                          if (f) void onUploadSurfReport(f)
                           e.target.value = ''
                         }}
                       />
@@ -1135,8 +1070,8 @@ export function AdminDashboard() {
                       </a>
                     ) : null}
                     <span className="admin-hint" style={{ margin: 0 }}>
-                      Upload → tự điền URL + auto <strong>Save (R2)</strong> KOL
-                      list. Prefix: <code>RadarKOLsReport/</code>
+                      Upload → tự điền URL + auto <strong>Save (R2)</strong>.
+                      Prefix: <code>RadarKOLsReport/</code>
                     </span>
                   </div>
                 </section>

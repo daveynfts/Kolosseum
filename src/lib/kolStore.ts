@@ -102,13 +102,15 @@ export function setSurfDefaultPdfUrl(url: string): void {
   }
 }
 
-/** Per-KOL URL wins; else global admin default. */
+/**
+ * Surf PDF for map mock: only per-KOL URL.
+ * (Legacy global default may still exist in localStorage/R2 but is no longer
+ * used — admin configures reports per account only.)
+ */
 export function resolveSurfReportPdfUrl(kol: {
   surfReportPdfUrl?: string
 }): string {
-  const per = (kol.surfReportPdfUrl || '').trim()
-  if (per) return per
-  return getSurfDefaultPdfUrl()
+  return (kol.surfReportPdfUrl || '').trim()
 }
 
 function readStoredPayload(): KolStorePayload | null {

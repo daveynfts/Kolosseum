@@ -991,17 +991,25 @@ export const RECENT_FOLLOWERS_BY_HANDLE: Record<string, RecentFollower[]> = {
 }
 
 /**
- * Prefer admin localStorage override **per handle** when present.
- * Other handles still fall back to compiled seed (do not blank the whole map).
+ * Server/cache mirror first (per handle), else compiled seed.
+ * Cache is written only after successful R2 load/save — no standalone local admin store.
  */
 export function getRecentFollowers(handle: string): RecentFollower[] {
   const key = handle.replace(/^@/, '').trim().toLowerCase()
   try {
     const raw = localStorage.getItem('vn-kol-map-recent-followers-v1')
     if (raw) {
-      const map = JSON.parse(raw) as Record<string, RecentFollower[]>
-      if (map && typeof map === 'object' && key in map) {
-        // Explicit override for this KOL (including intentional empty list)
+      const data = JSON.parse(raw) as unknown
+      let map: Record<string, RecentFollower[]> | null = null
+      if (data && typeof data === 'object') {
+        const obj = data as Record<string, unknown>
+        if (obj.map && typeof obj.map === 'object' && !Array.isArray(obj.map)) {
+          map = obj.map as Record<string, RecentFollower[]>
+        } else {
+          map = obj as Record<string, RecentFollower[]>
+        }
+      }
+      if (map && key in map) {
         const list = map[key]
         return Array.isArray(list) ? list : []
       }

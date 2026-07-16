@@ -3,7 +3,10 @@ import {
   getRecentFollowers,
   type RecentFollower,
 } from '../data/recentFollowers'
-import { RECENT_FOLLOWERS_EVENT } from '../lib/recentFollowersStore'
+import {
+  loadRecentFollowersWithSource,
+  RECENT_FOLLOWERS_EVENT,
+} from '../lib/recentFollowersStore'
 import { formatRelativeAgo } from '../lib/relativeTime'
 import { XProfileAvatar } from './XProfileAvatar'
 
@@ -19,6 +22,7 @@ export function RecentFollowersPanel({ kolHandle }: Props) {
   useEffect(() => {
     const refresh = () => setList(getRecentFollowers(kolHandle))
     refresh()
+    void loadRecentFollowersWithSource().then(() => refresh())
     window.addEventListener(RECENT_FOLLOWERS_EVENT, refresh)
     window.addEventListener('storage', refresh)
     return () => {

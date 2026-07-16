@@ -62,6 +62,8 @@ export function r2PublicBase(): string {
 export const FEED_OBJECT_KEY = 'feed/v1.json'
 /** Shared KOL list (admin edits) — same bucket, different key */
 export const KOLS_OBJECT_KEY = 'kols/v1.json'
+/** Smart / recent followers map (admin edits) */
+export const RECENT_FOLLOWERS_OBJECT_KEY = 'recent-followers/v1.json'
 
 export function mediaObjectKey(id: string) {
   return `media/${id}`

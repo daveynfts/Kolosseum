@@ -5,15 +5,16 @@ import {
   clearRecentFollowersOverride,
   exportRecentFollowersJson,
   getRecentFollowersFor,
-  hasRecentFollowersOverride,
   importRecentFollowersJson,
   listKolHandlesWithFollowers,
   loadRecentFollowersMap,
-  saveRecentFollowersMap,
+  loadRecentFollowersWithSource,
+  saveRecentFollowersToServer,
   seedRecentFollowersMap,
   setRecentFollowersFor,
   type RecentFollowersMap,
 } from '../lib/recentFollowersStore'
+import { getAdminToken } from '../lib/feedStore'
 import { AvatarImg } from '../components/AvatarImg'
 import { XProfileAvatar } from '../components/XProfileAvatar'
 import { NICHE_COLORS, primaryNiche } from '../types'
@@ -38,8 +39,22 @@ export function AdminRecentFollowersEditor({ kols, onToast }: Props) {
   const [selectedKol, setSelectedKol] = useState<string>('')
   const [draft, setDraft] = useState<RecentFollower[]>([])
   const [dirty, setDirty] = useState(false)
-  const [isOverride, setIsOverride] = useState(() => hasRecentFollowersOverride())
+  const [source, setSource] = useState<'server' | 'cache' | 'seed'>('seed')
+  const [saving, setSaving] = useState(false)
   const [query, setQuery] = useState('')
+  const [tokenInput, setTokenInput] = useState(() => getAdminToken())
+
+  useEffect(() => {
+    let cancelled = false
+    void loadRecentFollowersWithSource().then((r) => {
+      if (cancelled) return
+      setMap(r.map)
+      setSource(r.source)
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   const kolHandles = useMemo(() => {
     const fromKols = kols
@@ -111,8 +126,13 @@ export function AdminRecentFollowersEditor({ kols, onToast }: Props) {
     setDirty(true)
   }
 
-  const onSaveKol = () => {
+  const onSaveKol = async () => {
     if (!selectedKol) return
+    const token = tokenInput.trim() || getAdminToken()
+    if (!token) {
+      onToast('Nhập FEED_ADMIN_TOKEN rồi Save (publish R2)')
+      return
+    }
     const cleaned = draft
       .map((f) => ({
         ...f,
@@ -122,41 +142,54 @@ export function AdminRecentFollowersEditor({ kols, onToast }: Props) {
       }))
       .filter((f) => f.handle)
     const next = setRecentFollowersFor(map, selectedKol, cleaned)
-    const saved = saveRecentFollowersMap(next)
-    setMap(saved)
+    setSaving(true)
+    const result = await saveRecentFollowersToServer(
+      next,
+      `admin edit @${selectedKol}`,
+      token,
+    )
+    setSaving(false)
+    if (!result.ok) {
+      onToast(`Publish R2 thất bại: ${result.error}`)
+      return
+    }
+    setMap(result.map)
     setDraft(cleaned)
     setDirty(false)
-    setIsOverride(true)
-    onToast(`Đã lưu Smart Followers @${selectedKol} (local)`)
+    setSource('server')
+    onToast(`Đã publish Smart Followers @${selectedKol} lên R2`)
   }
 
   const onReload = () => {
-    const m = loadRecentFollowersMap()
-    setMap(m)
-    setIsOverride(hasRecentFollowersOverride())
-    if (selectedKol) {
-      setDraft(getRecentFollowersFor(selectedKol, m).map((f) => ({ ...f })))
-      setDirty(false)
-    }
-    onToast('Reloaded Smart Followers')
+    void loadRecentFollowersWithSource().then((r) => {
+      setMap(r.map)
+      setSource(r.source)
+      if (selectedKol) {
+        setDraft(
+          getRecentFollowersFor(selectedKol, r.map).map((f) => ({ ...f })),
+        )
+        setDirty(false)
+      }
+      onToast(`Reloaded from ${r.source}`)
+    })
   }
 
   const onResetSeed = () => {
     if (
       !confirm(
-        'Xóa override local → dùng lại seed trong code (recentFollowers.ts)?',
+        'Reset về seed trong code (recentFollowers.ts)? Cần Save để publish seed lên R2 nếu muốn website dùng seed.',
       )
     )
       return
     clearRecentFollowersOverride()
     const m = seedRecentFollowersMap()
     setMap(m)
-    setIsOverride(false)
+    setSource('seed')
     if (selectedKol) {
       setDraft(getRecentFollowersFor(selectedKol, m).map((f) => ({ ...f })))
     }
-    setDirty(false)
-    onToast('Đã reset về seed')
+    setDirty(true)
+    onToast('Đã load seed — bấm Save để publish R2')
   }
 
   const onExport = () => {
@@ -175,14 +208,17 @@ export function AdminRecentFollowersEditor({ kols, onToast }: Props) {
     try {
       const text = await file.text()
       const imported = importRecentFollowersJson(text)
-      const saved = saveRecentFollowersMap(imported)
-      setMap(saved)
-      setIsOverride(true)
+      setMap(imported)
+      setSource('seed')
       if (selectedKol) {
-        setDraft(getRecentFollowersFor(selectedKol, saved).map((f) => ({ ...f })))
+        setDraft(
+          getRecentFollowersFor(selectedKol, imported).map((f) => ({ ...f })),
+        )
       }
-      setDirty(false)
-      onToast(`Imported ${Object.keys(saved).length} KOL keys`)
+      setDirty(true)
+      onToast(
+        `Imported ${Object.keys(imported).length} KOL keys — bấm Save để publish R2`,
+      )
     } catch (e) {
       onToast(e instanceof Error ? e.message : 'Import failed')
     }
@@ -197,21 +233,30 @@ export function AdminRecentFollowersEditor({ kols, onToast }: Props) {
       <div className="admin-ai-banner glass" style={{ marginBottom: 12 }}>
         <strong>Smart Followers</strong>
         <span>
-          Chỉnh snapshot “Recent follows” trên map (ai follow KOL). Lưu{' '}
-          <em>local browser</em>
-          {isOverride ? ' · đang dùng override' : ' · đang dùng seed code'}.
-          Export JSON nếu muốn commit vào repo.
+          Snapshot “Recent follows” trên map. <strong>Save = publish R2</strong>{' '}
+          (mọi visitor). Source: <strong>{source}</strong>. Không còn lưu
+          local-only.
         </span>
+        <label className="admin-token-row">
+          Token
+          <input
+            type="password"
+            value={tokenInput}
+            onChange={(e) => setTokenInput(e.target.value)}
+            placeholder="FEED_ADMIN_TOKEN"
+            autoComplete="off"
+          />
+        </label>
       </div>
 
       <div className="admin-feed-toolbar glass">
         <button
           type="button"
           className="btn btn--primary"
-          onClick={onSaveKol}
-          disabled={!selectedKol || !dirty}
+          onClick={() => void onSaveKol()}
+          disabled={!selectedKol || saving}
         >
-          Save KOL
+          {saving ? 'Saving…' : 'Save (R2)'}
         </button>
         <button type="button" className="btn" onClick={onAddRow} disabled={!selectedKol}>
           + Add follower
@@ -337,8 +382,13 @@ export function AdminRecentFollowersEditor({ kols, onToast }: Props) {
                   </div>
                 </div>
                 {dirty && (
-                  <button type="button" className="btn btn--primary" onClick={onSaveKol}>
-                    Save
+                  <button
+                    type="button"
+                    className="btn btn--primary"
+                    onClick={() => void onSaveKol()}
+                    disabled={saving}
+                  >
+                    {saving ? 'Saving…' : 'Save (R2)'}
                   </button>
                 )}
               </div>

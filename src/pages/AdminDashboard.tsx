@@ -339,7 +339,7 @@ export function AdminDashboard() {
               onClick={onPushAllToServer}
               title="Đẩy toàn bộ list KOL lên R2 (mọi visitor thấy)"
             >
-              {savingServer ? 'Saving…' : 'Save all'}
+              {savingServer ? 'Saving…' : 'Save all (R2)'}
             </button>
           )}
           <button type="button" className="btn" onClick={onExport}>
@@ -390,12 +390,12 @@ export function AdminDashboard() {
             setAdminToken(tokenInput)
             flash(
               tokenInput.trim()
-                ? 'Đã lưu token — giờ sửa KOL rồi bấm Save'
+                ? 'Đã apply token — giờ sửa KOL rồi bấm Save (R2)'
                 : 'Đã xóa token',
             )
           }}
         >
-          Save token
+          Apply token
         </button>
         <button type="button" className="btn" onClick={() => setTab('legend')}>
           Field legend
@@ -421,20 +421,6 @@ export function AdminDashboard() {
           />
         </label>
         <div className="admin-surf-config__actions">
-          <button
-            type="button"
-            className="btn"
-            onClick={() => {
-              setSurfDefaultPdfUrl(surfDefaultPdf)
-              flash(
-                surfDefaultPdf.trim()
-                  ? 'Đã lưu default PDF (local). Bấm Save all để sync server.'
-                  : 'Đã xóa default PDF',
-              )
-            }}
-          >
-            Save PDF link
-          </button>
           {surfDefaultPdf.trim() && (
             <a
               className="btn"
@@ -445,6 +431,10 @@ export function AdminDashboard() {
               Test open PDF
             </a>
           )}
+          <span className="admin-hint" style={{ margin: 0 }}>
+            Default PDF áp dụng khi <strong>Save / Save all</strong> (publish
+            R2) — không lưu local riêng.
+          </span>
         </div>
       </div>
 
@@ -772,7 +762,7 @@ export function AdminDashboard() {
                       onClick={() => onSaveDraft()}
                       title="Lưu KOL này + đẩy list lên server (R2)"
                     >
-                      {savingServer ? 'Saving…' : 'Save'}
+                      {savingServer ? 'Saving…' : 'Save (R2)'}
                     </button>
                     <button
                       type="button"
@@ -1270,10 +1260,11 @@ export function AdminDashboard() {
                 </section>
 
                 <p className="admin-hint">
-                  <strong>Save</strong> = publish R2 <code>kols/v1.json</code>.
-                  Map/website <em>không</em> đọc draft admin — chỉ đọc R2.
-                  Cần token ở banner trên. Rank band đổi xong sẽ auto-save nếu
-                  đã có token. Hidden = ẩn trên map public.
+                  <strong>Save (R2)</strong> = publish toàn list kèm KOL này lên{' '}
+                  <code>kols/v1.json</code>. <strong>Save all (R2)</strong> =
+                  publish list hiện tại (header). Website chỉ đọc R2 — không có
+                  chế độ lưu local-only. Cần token. Rank đổi sẽ auto-save nếu đã
+                  có token.
                 </p>
               </>
             )}

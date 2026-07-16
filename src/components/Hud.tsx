@@ -16,6 +16,7 @@ import {
 } from '../types'
 import type { ViewMode } from '../lib/layout'
 import { AvatarImg } from './AvatarImg'
+import { BioRichText } from './BioRichText'
 import { RankBadge } from './RankBadge'
 import { SurfAnalysisMock } from './SurfAnalysisMock'
 import { RecentFollowersPanel } from './RecentFollowersPanel'
@@ -551,7 +552,10 @@ export function Hud({
           {detailTab === 'overview' && (
             <>
               <p className="detail-bio-label">Hoạt động &amp; assessment (AI)</p>
-              <p className="detail-bio detail-bio--assess">{selected.bio}</p>
+              <BioRichText
+                text={selected.bio || ''}
+                className="detail-bio detail-bio--assess"
+              />
               <div className="detail-tags">
                 <RankBadge
                   tier={selected.tier}

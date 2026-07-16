@@ -10,6 +10,7 @@ import {
 } from '../types'
 import type { StatusLabel } from '../types'
 import { AvatarImg } from './AvatarImg'
+import { BioRichText } from './BioRichText'
 import { RankBadge } from './RankBadge'
 
 interface Props {
@@ -300,7 +301,14 @@ export function ComparePanel({
 
                 {bio && (
                   <>
-                    <p className="feed-text compare-bio-text">{displayBio}</p>
+                    {openBio || !long ? (
+                      <BioRichText
+                        text={bio}
+                        className="feed-text compare-bio-text compare-bio-text--rich"
+                      />
+                    ) : (
+                      <p className="feed-text compare-bio-text">{displayBio}</p>
+                    )}
                     {long && (
                       <button
                         type="button"

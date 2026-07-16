@@ -1004,6 +1004,11 @@ export function AdminDashboard() {
                       onChange={(e) => patchDraft('bio', e.target.value)}
                       style={{ whiteSpace: 'pre-wrap', minHeight: 180 }}
                     />
+                    <p className="admin-hint" style={{ marginTop: 8 }}>
+                      Định dạng map: <code>**in đậm**</code>, bảng markdown (
+                      <code>| cột | cột |</code> + dòng <code>|---|---|</code>
+                      ), xuống dòng / bullet <code>•</code>.
+                    </p>
                   </Field>
                 </section>
 

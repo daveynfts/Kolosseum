@@ -919,6 +919,75 @@ export const RECENT_FOLLOWERS_BY_HANDLE: Record<string, RecentFollower[]> = {
       followedAt: '2025-09-15T00:00:00.000Z',
     },
   ],
+  /** Phạm Ninh (@NickyPham_HC) — curated smart/recent followers snapshot */
+  nickypham_hc: [
+    {
+      handle: 'nftunit01',
+      displayName: 'NFT特攻队(,)',
+      followedAgo: '3 months ago',
+      followedAt: '2026-04-16T00:00:00.000Z',
+    },
+    {
+      handle: '0x_chok',
+      displayName: 'Chok加密楚克',
+      followedAgo: '3 months ago',
+      followedAt: '2026-04-15T00:00:00.000Z',
+    },
+    {
+      handle: 'btc99m',
+      displayName: 'Dylan.迪伦丨RIVERTermMax',
+      followedAgo: '3 months ago',
+      followedAt: '2026-04-14T00:00:00.000Z',
+    },
+    {
+      handle: 'betashop',
+      displayName: 'Jason Goldberg',
+      followedAgo: '5 months ago',
+      followedAt: '2026-02-16T00:00:00.000Z',
+    },
+    {
+      handle: 'star_okx',
+      displayName: 'Star_OKX',
+      followedAgo: '6 months ago',
+      followedAt: '2026-01-16T00:00:00.000Z',
+    },
+    {
+      handle: 'cryptobella88',
+      displayName: 'Crypto 美美',
+      followedAgo: '8 months ago',
+      followedAt: '2025-11-16T00:00:00.000Z',
+    },
+    {
+      handle: 'aaronteng',
+      displayName: 'Aaron Teng 安伦',
+      followedAgo: '8 months ago',
+      followedAt: '2025-11-15T00:00:00.000Z',
+    },
+    {
+      handle: 'vvxiaoyu8888',
+      displayName: '小鱼DaisyBNB',
+      followedAgo: '8 months ago',
+      followedAt: '2025-11-14T00:00:00.000Z',
+    },
+    {
+      handle: 'syk233',
+      displayName: 'syk233 MemeMax ⚡️|TermMax',
+      followedAgo: '9 months ago',
+      followedAt: '2025-10-16T00:00:00.000Z',
+    },
+    {
+      handle: 'afangyuan',
+      displayName: '方源',
+      followedAgo: 'a year ago',
+      followedAt: '2025-07-16T00:00:00.000Z',
+    },
+    {
+      handle: 'chandlerguo',
+      displayName: 'ChandlerGuo 郭宏才 宝二爷',
+      followedAgo: 'a year ago',
+      followedAt: '2025-07-15T00:00:00.000Z',
+    },
+  ],
 }
 
 /**

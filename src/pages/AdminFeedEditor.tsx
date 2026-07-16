@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import type { FeedPost, Tier1Feed } from '../types/feed'
 import type { Kol } from '../types'
+import { getKolRank } from '../types'
 import {
   archiveOldPosts,
   clearFeedStore,
@@ -100,14 +101,19 @@ export function AdminFeedEditor({ kols, onToast, addSignal = 0 }: Props) {
     return list
   }, [feed, query])
 
-  /** T1 + T2 handles for feed authorship */
+  /** Challenger + Master handles for feed authorship */
   const feedHandles = useMemo(
     () =>
       kols
-        .filter((k) => !k.hidden && (k.tier === 1 || k.tier === 2))
+        .filter((k) => {
+          if (k.hidden) return false
+          const r = getKolRank(k)
+          return r === 'challenger' || r === 'master'
+        })
         .sort(
           (a, b) =>
-            (a.tier ?? 3) - (b.tier ?? 3) ||
+            (getKolRank(a) === 'challenger' ? 0 : 1) -
+              (getKolRank(b) === 'challenger' ? 0 : 1) ||
             b.score - a.score ||
             a.handle.localeCompare(b.handle),
         )

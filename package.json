@@ -9,7 +9,8 @@
     "lint": "oxlint",
     "preview": "vite preview",
     "sync:surf-pdfs": "node scripts/sync_surf_pdfs.mjs",
-    "sync:surf-pdfs:apply": "node scripts/sync_surf_pdfs.mjs --apply --fix-existing"
+    "sync:surf-pdfs:apply": "node scripts/sync_surf_pdfs.mjs --apply --fix-existing",
+    "feed:refresh-cm": "node scripts/refresh_feed_challenger_master.mjs"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1084.0",

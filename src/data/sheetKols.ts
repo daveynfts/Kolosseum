@@ -169,6 +169,7 @@ export const SHEET_KOLS: Kol[] = [
     "xFollowing": 765,
     "dataSource": "x-live",
     "isTop30": true,
+    "surfReportPdfUrl": "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/RadarKOLsReport/SurfAI_KOL_Evaluation_TradeCoinVN_20260716.pdf",
     "activity7dPosts": 34,
     "activity7dLikes": 472,
     "activity7dViews": 18880,

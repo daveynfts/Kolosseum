@@ -443,8 +443,8 @@ export function AdminFeedEditor({ kols, onToast, addSignal = 0 }: Props) {
           {feed
             ? ` · ${feed.postCount} live · ${archivedCount} archived · ${feed.kolCount} voices`
             : ''}
-          . Ưu tiên: <em>Cloudflare R2</em> → local → seed. Post &gt; 7 ngày →
-          bấm <strong>Archive &gt;7d</strong>. Save to server để user thấy.
+          . Ưu tiên R2. Post &gt; 7 ngày → <strong>Archive &gt;7d</strong> rồi{' '}
+          <strong>Save (R2)</strong> để user thấy.
         </span>
       </div>
 

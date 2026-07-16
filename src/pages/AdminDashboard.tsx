@@ -147,7 +147,7 @@ export function AdminDashboard() {
         const token = tokenInput.trim() || getAdminToken()
         if (!token) {
           flash(
-            'Chưa có token — dán FEED_ADMIN_TOKEN ở ô Token (cùng token Feed) → Save token → Save lại. Website public chỉ đọc R2, không dùng draft local.',
+            'Chưa có token — dán FEED_ADMIN_TOKEN → Apply token → Save (R2). Website chỉ đọc R2.',
           )
           return false
         }
@@ -235,7 +235,7 @@ export function AdminDashboard() {
   const onResetSeed = () => {
     if (
       !confirm(
-        'Reset về seed sheetKols.ts (xóa chỉnh sửa local)? Server không tự xóa — cần Save to server sau nếu muốn đồng bộ seed.',
+        'Load seed sheetKols.ts vào editor? Server R2 không đổi cho đến khi bấm Save all (R2).',
       )
     )
       return
@@ -246,7 +246,7 @@ export function AdminDashboard() {
     setDraft(null)
     setDirty(false)
     setKolSource('seed')
-    flash('Đã reset local về seed')
+    flash('Đã load seed — bấm Save all (R2) nếu muốn publish')
   }
 
   const onPushAllToServer = () => {

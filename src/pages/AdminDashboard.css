@@ -760,6 +760,13 @@
   align-items: center;
 }
 
+.btn--file.is-disabled,
+.btn--file:has(input:disabled) {
+  opacity: 0.55;
+  pointer-events: none;
+  cursor: wait;
+}
+
 .admin-feed-toolbar {
   display: flex;
   flex-wrap: wrap;

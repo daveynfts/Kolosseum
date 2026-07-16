@@ -1,8 +1,8 @@
 {
   "version": 4,
-  "updatedAt": "2026-07-15T10:49:16.188Z",
-  "source": "admin server · sync_surf_pdfs",
-  "note": "admin · sync_surf_pdfs (3 urls)",
+  "updatedAt": "2026-07-16T04:25:47.284Z",
+  "source": "admin server · push_kol_bio",
+  "note": "admin server · bio push (tcvncommunity)",
   "count": 107,
   "kols": [
     {
@@ -160,7 +160,7 @@
       "tier": 1,
       "typeRaw": "Community / Multi",
       "smartFollowers": 1074,
-      "followers": 63226,
+      "followers": 63300,
       "posts24h": 5,
       "likes24h": 229,
       "replies24h": 27,
@@ -169,7 +169,7 @@
       "hotScore": 96.3,
       "score": 96.3,
       "deltaPct": -1.1,
-      "bio": "TradeCoinVN (@TCVNcommunity)\nTier 1, positioning «Vietnam Crypto Community Hub»\n→ niche Trading.\nTài khoản đã xác minh tích xanh.\nTóm tắt self-bio X: cộng đồng crypto lớn tại Việt Nam; partnership + community link trong bio.\n\nFollowers live ~63.2K — base ổn, gần phẳng so baseline.\nFollow graph: broadcast mạnh (following/followers ~1.21%) — one-to-many. Nội dung thiên media/visual, community + market updates.\nQuality proxy (nội bộ Radar, không phải Smart Followers X chính thức): ~1.1K.\n\nPace lifetime ~4.9 post/ngày; tổng ~8.9K posts. Ước tuổi hoạt động ~5.0 năm (proxy từ tổng post / pace). Vận hành theo hướng series/curated feed hơn one-off spam; phù hợp giữ mindshare trên map Radar.\n\nCửa sổ 7 ngày: ~34 posts · 472 likes · 18.9K views · 56 replies · 37 reposts · 7d score 100 (ước từ pace lifetime × 7 (estimated, chưa sample full search)). ~13.9 like/post, ~555 view/post, reach proxy ~0.88% followers/post.\n\nTheme / góc nội dung gần đây (định vị): community pulse, trading/news desk collective, partnership announcements.\n\nĐọc trạng thái trên Radar: ACTIVE — duy trì presence đều, giữ mindshare ổn định. Composite score ~96.3/100 (blend base size + hot/activity). Activity level ~78. Nằm Top 30 visibility trên map.\n\nĐịnh vị dùng KOL trên Radar (campaign fit): Primary community amplification cho campaign VN; co-lead announce + quest. Hợp brand awareness, event, collab multi-KOL. Rủi ro: community account có thể loãng eng/post; cần brief rõ CTA.",
+      "bio": "TradeCoinVN (@TCVNcommunity) — Đánh giá công tâm KOL · Media / community gateway VN · Band T1 · SurfAI 16/07/2026.\n\nTL;DR\n• Media/community crypto VN — **không** phải KOL cá nhân alpha; điểm tổng hợp SurfAI **6,0/10**.\n• ~63.3K followers · join ~06/2021 · “biggest crypto community VN” · partnership TG / go.tradecoinvn.com.\n• ✅ Radar tin, sự kiện, narrative VN · ❌ Follow-is-do / signal / bảo chứng an toàn sàn-broker.\n• Không đủ bằng chứng gắn nhãn scam; **mọi** link KYC/nạp/đòn bẩy = ads/affiliate, không phải seal of safety.\n\nChân dung & xung đột lợi ích\n• Founder công khai: @ThienTCVN · LinkedIn Hoàng Minh Thiện — Founder–CEO TradeCoinVN & **K300 Ventures**.\n• K300 = fund/accelerator từ nền tảng TCVN → uy tín network **và** COI khi cover dự án/đối tác/danh mục.\n• Network thật: HSC Conference media partner · Mantle community supporter · ~12 smart followers (WOO X, Zama, Four…).\n\nBảng điểm SurfAI (99 bài · 18/05–15/07/2026)\n• Quy mô & độ phủ ~7.0 · Tần suất/trình bày ~7.5 · Quan hệ ngành ~7.5.\n• Chiều sâu phân tích ~5.5 · Minh bạch thương mại ~5.5.\n• Truy xuất nguồn ~4.5 · Chất lượng tương tác ~4.5.\n• **Tổng 6.0/10** — radar thông tin; chưa đủ nguồn ra quyết định đầu tư độc lập.\n\nNội dung\n• ~1.5 feed/ngày (87 feed chính / ~2 tháng); phủ BTC, DeFi/TVL/DEX, RWA/TradFi, funding, event VN, campaign đối tác.\n• Mạnh: đều, infographic, tiếng Việt dễ đọc; spot-check sự kiện lớn thường đúng lõi (vd. SpaceX/$SPCX; SCEX “đang xin cấp phép” không overclaim đã license).\n• Yếu: 51/99 có URL nhưng đa số TG/landing/referral; ít Glassnode/CryptoQuant/dataset gốc.\n• Lập luận đôi lúc một chiều (vd. long crowded Hyperliquid = bullish, thiếu long-squeeze).\n• Không track record call đủ entry/horizon/invalidation/SL/target → **không** tính win rate; kênh tổng hợp–diễn giải, không signal audit.\n\nTương tác & audience\n• Median views ~5.6K · reach/follower ~**8.9%** · eng/view ~**0.57%** · like median ~14 (mỏng so với base).\n• Pattern cần chiết khấu: 27/87 reply=repost đúng số; 35/87 like/reply/repost chênh ≤3; 6 account tạo ~49% inbound mentions; nhiều reply ngắn low-view (“Lfg”, “Gm ae”).\n• → Có thể pod/tương tác chéo hoặc cộng đồng nhỏ lặp; **không** kết luận bot chắc, nhưng không định giá campaign chỉ bằng follower/reply.\n• Audience: mix thật + network ngành; quality interaction hỗn hợp.\n\nThương mại & disclosure\n• ~**17%** feed gắn “được tài trợ” (15/87); mid-Jun→mid-Jul ~**22.7%** (gấp đôi giai đoạn trước ~11.6%).\n• Brand lặp: PrimeXBT, CoinW, Vantage/VT, AlphaNet, Mantle, BiFu, SCEX…\n• 39/99 CTA đăng ký/bonus/airdrop; 13/99 referral rõ; 52/99 NFA disclaimer.\n• Risk copy ads: Forex “gồng thoải mái / không lo quét râu / FCA=luôn rút được” — quá chắc; segregated funds ≠ bảo đảm thu hồi tức thì.\n• Cần disclosure tách: sponsored · affiliate · partner · K300 portfolio · holdings · unpaid media partner.\n• Link hygiene: go.tradecoinvn.com / tradecoinvn.com báo **domain for sale**; Link3 vẫn sống — rủi ro UX/trust khi kêu KYC.\n\nCách dùng (Radar / collab)\n| Mục đích | Fit |\n|---|---|\n| Tin nhanh / narrative VN | ~7.5 |\n| Event / campaign / airdrop discovery | ~7.0 (đọc terms official) |\n| Research dự án | ~5.0 (điểm bắt đầu only) |\n| Theo lệnh / dự báo giá | ~4.0 |\n| Đánh giá an toàn sàn | ~3.5 (không = bảo chứng) |\n| Collab media | ~6.0 (đòi impressions/clicks/conversions thật) |\n\n• 5 bước trước hành động: (1) nguồn gốc (2) sponsored/affiliate/K300? (3) legal entity broker cho user VN (4) “đang xin phép” ≠ “đã license” (5) timeframe + invalidation + risk nếu coi là call.\n• Kết luận: **media gateway** VN có network thật; mạnh phân phối, yếu research depth & trade track record; theo dõi để discover — **không** follow-is-do · NFA / DYOR.",
       "statusLabel": "active",
       "activityLevel": 78,
       "verified": true,

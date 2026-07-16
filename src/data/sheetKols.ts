@@ -476,6 +476,7 @@ export const SHEET_KOLS: Kol[] = [
     "xFollowing": 571,
     "dataSource": "x-live",
     "isTop30": true,
+    "surfReportPdfUrl": "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/RadarKOLsReport/Bao_cao_Danh_gia_KOL_NickyPham_HC_SurfAI_Grok.docx",
     "activity7dPosts": 8,
     "activity7dLikes": 40,
     "activity7dViews": 12000,

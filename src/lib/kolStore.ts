@@ -248,6 +248,34 @@ export type ServerSaveResult =
   | { ok: true; count: number; updatedAt: string }
   | { ok: false; error: string; status?: number }
 
+/**
+ * Merge local admin list with current server copy so missing
+ * surfReportPdfUrl / avatarUrl on a stale draft don't erase R2 values.
+ */
+export function mergeKolsPreserveServerExtras(
+  local: Kol[],
+  server: Kol[] | null | undefined,
+): Kol[] {
+  if (!server?.length) return local
+  const byId = new Map(server.map((k) => [k.id, k]))
+  const byHandle = new Map(
+    server.map((k) => [String(k.handle).toLowerCase(), k]),
+  )
+  return local.map((k) => {
+    const s =
+      byId.get(k.id) || byHandle.get(String(k.handle).toLowerCase()) || null
+    if (!s) return k
+    const next = { ...k }
+    const localPdf = (k.surfReportPdfUrl || '').trim()
+    const serverPdf = (s.surfReportPdfUrl || '').trim()
+    if (!localPdf && serverPdf) next.surfReportPdfUrl = serverPdf
+    const localAv = (k.avatarUrl || '').trim()
+    const serverAv = (s.avatarUrl || '').trim()
+    if (!localAv && serverAv) next.avatarUrl = serverAv
+    return next
+  })
+}
+
 /** PUT /api/kols + local mirror. Uses FEED_ADMIN_TOKEN. */
 export async function saveKolsToServer(
   kols: Kol[],
@@ -263,13 +291,22 @@ export async function saveKolsToServer(
     }
   }
 
+  // Always re-fetch server first and preserve PDF/avatar if local draft is empty
+  let merged = kols
+  try {
+    const server = await fetchServerKols()
+    merged = mergeKolsPreserveServerExtras(kols, server?.kols)
+  } catch {
+    /* proceed with local list */
+  }
+
   const payload: KolStorePayload = {
     version: STORAGE_VERSION,
     updatedAt: new Date().toISOString(),
-    kols,
+    kols: merged,
     note,
     source: note ? `admin server · ${note}` : 'admin server r2',
-    count: kols.length,
+    count: merged.length,
     surfDefaultPdfUrl: getSurfDefaultPdfUrl() || undefined,
   }
 
@@ -307,10 +344,10 @@ export async function saveKolsToServer(
 
     // Mirror local for fast reopen
     localStorage.setItem(STORAGE_KEY, JSON.stringify(payload))
-    emitKolsEvent(kols)
+    emitKolsEvent(merged)
     return {
       ok: true,
-      count: body.count ?? kols.length,
+      count: body.count ?? merged.length,
       updatedAt: body.updatedAt || payload.updatedAt,
     }
   } catch (e) {

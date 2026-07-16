@@ -162,8 +162,10 @@ export function AdminDashboard() {
         setKols(next)
         setDirty(false)
         setKolSource('server')
+        const withPdf = next.filter((k) => (k.surfReportPdfUrl || '').trim())
+          .length
         flash(
-          `Đã publish R2 (${result.count} KOLs) — mở map / hard-refresh để thấy tier & rank mới`,
+          `Đã publish R2 (${result.count} KOLs · ${withPdf} có Surf PDF) — hard-refresh map để thấy.`,
         )
         return true
       } finally {

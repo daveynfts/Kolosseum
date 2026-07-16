@@ -72,7 +72,7 @@ export function SurfAnalysisMock({ kol }: Props) {
       setPhase('error')
       setPopupBlocked(false)
       setMessage(
-        'Chưa cấu hình link PDF R2. Vào Admin → Edit KOL → “PDF R2 URL” → Save (token).',
+        'Chưa cấu hình link báo cáo R2 trên server. Admin → Edit KOL → dán URL public (…/RadarKOLsReport/….pdf hoặc .docx) → bấm Save (cần token). Chỉ upload file lên bucket chưa đủ.',
       )
       return
     }

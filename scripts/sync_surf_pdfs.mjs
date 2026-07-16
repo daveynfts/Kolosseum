@@ -133,6 +133,14 @@ const EXPLICIT = [
     'RadarKOLsReport/SurfAI_KOL_Evaluation_TradeCoinVN_20260716.pdf',
     'TCVNcommunity',
   ],
+  [
+    'RadarKOLsReport/Bao_cao_Danh_gia_KOL_NickyPham_HC_SurfAI_Grok.docx',
+    'NickyPham_HC',
+  ],
+  [
+    'RadarKOLsReport/Bao_cao_Danh_gia_KOL_NickyPham_HC_SurfAI_Grok.pdf',
+    'NickyPham_HC',
+  ],
   // optional alternates (same handles)
   ['BaoCao_KOL_YiwiJR_Premium_20260710.pdf', 'YiwiJR'],
   [

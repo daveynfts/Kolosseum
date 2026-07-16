@@ -919,6 +919,27 @@ export const RECENT_FOLLOWERS_BY_HANDLE: Record<string, RecentFollower[]> = {
       followedAt: '2025-09-15T00:00:00.000Z',
     },
   ],
+  /** Bi Cần Thơ (@BiCanTho) — curated smart/recent followers snapshot */
+  bicantho: [
+    {
+      handle: 'cryptobella88',
+      displayName: 'Crypto 美美',
+      followedAgo: '8 months ago',
+      followedAt: '2025-11-16T00:00:00.000Z',
+    },
+    {
+      handle: 'ki_young_ju',
+      displayName: 'Ki Young Ju',
+      followedAgo: '9 months ago',
+      followedAt: '2025-10-16T00:00:00.000Z',
+    },
+    {
+      handle: '0xmoon',
+      displayName: '0xMoon',
+      followedAgo: 'a year ago',
+      followedAt: '2025-07-16T00:00:00.000Z',
+    },
+  ],
   /** Phạm Ninh (@NickyPham_HC) — curated smart/recent followers snapshot */
   nickypham_hc: [
     {

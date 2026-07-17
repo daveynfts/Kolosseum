@@ -333,6 +333,7 @@ export function AdminTwitterScoreEditor({ onToast }: Props) {
                       handle={acc.handle}
                       name={acc.displayName}
                       size={32}
+                      liveFallback={false}
                     />
                     <span className="admin-ts-row__meta">
                       <strong>{acc.displayName}</strong>
@@ -361,6 +362,7 @@ export function AdminTwitterScoreEditor({ onToast }: Props) {
                   handle={selectedDetail.handle}
                   name={selectedDetail.displayName}
                   size={56}
+                  liveFallback
                 />
                 <div>
                   <h2>

@@ -1,11 +1,20 @@
-import { useEffect, useMemo, useState } from 'react'
-import { initials, xAvatarUrl } from '../lib/avatar'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import {
+  initials,
+  xAvatarTextureUrl,
+  xAvatarUrl,
+} from '../lib/avatar'
 
 interface Props {
   handle: string
   name: string
   size?: number
   className?: string
+  /**
+   * After R2/unavatar fail, try live fxtwitter once.
+   * Default false — long lists (TwitterScore 1k+) must not hammer live API.
+   */
+  liveFallback?: boolean
 }
 
 function upgradeTwimg(url: string): string {
@@ -45,51 +54,76 @@ async function fetchLiveAvatarUrl(handle: string): Promise<string | null> {
 }
 
 /**
- * Avatar for arbitrary X handles (smart/recent follows, etc.).
- * Live fxtwitter → R2 cache → unavatar → initials.
+ * Avatar for arbitrary X handles (TwitterScore, smart/recent follows, etc.).
+ * Order: R2 public → same-origin /r2 proxy → static /avatars → unavatar
+ * → optional live fxtwitter → initials.
+ *
+ * Avatars are expected on R2 at radar/avatars/{handle}.jpg (warm via
+ * scripts/warm_twitterscore_avatars.mjs or PUT /api/avatar).
  */
 export function XProfileAvatar({
   handle,
   name,
   size = 40,
   className = '',
+  liveFallback = false,
 }: Props) {
   const clean = handle.replace(/^@/, '').trim()
   const [liveUrl, setLiveUrl] = useState<string | null>(null)
   const [idx, setIdx] = useState(0)
   const [failed, setFailed] = useState(false)
+  const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading')
+  const triedLive = useRef(false)
+  const imgRef = useRef<HTMLImageElement | null>(null)
 
   const sources = useMemo(() => {
-    const list: string[] = []
-    if (liveUrl) list.push(liveUrl)
-    list.push(
+    const list: string[] = [
+      // Prefer durable R2 cache (warmed by admin scripts)
       xAvatarUrl(clean),
+      xAvatarTextureUrl(clean),
       `/avatars/${encodeURIComponent(clean)}.jpg`,
-      `https://unavatar.io/twitter/${encodeURIComponent(clean)}`,
+      // Live proxy CDN fallbacks
       `https://unavatar.io/x/${encodeURIComponent(clean)}`,
-    )
-    return list
+      `https://unavatar.io/twitter/${encodeURIComponent(clean)}`,
+    ]
+    if (liveUrl) list.push(liveUrl)
+    return [...new Set(list)]
   }, [clean, liveUrl])
 
   useEffect(() => {
     setIdx(0)
     setFailed(false)
     setLiveUrl(null)
-    let cancelled = false
-    void (async () => {
-      const url = await fetchLiveAvatarUrl(clean)
-      if (!cancelled && url) {
-        setLiveUrl(url)
-        setIdx(0)
-        setFailed(false)
-      }
-    })()
-    return () => {
-      cancelled = true
-    }
+    setStatus('loading')
+    triedLive.current = false
   }, [clean])
 
-  if (failed || idx >= sources.length) {
+  useEffect(() => {
+    const el = imgRef.current
+    if (!el) return
+    if (el.complete && el.naturalWidth > 0) setStatus('ready')
+  }, [idx, sources])
+
+  const tryLiveThenFail = async () => {
+    if (!liveFallback || triedLive.current) {
+      setFailed(true)
+      setStatus('error')
+      return
+    }
+    triedLive.current = true
+    const url = await fetchLiveAvatarUrl(clean)
+    if (url) {
+      setLiveUrl(url)
+      setIdx(0)
+      setFailed(false)
+      setStatus('loading')
+      return
+    }
+    setFailed(true)
+    setStatus('error')
+  }
+
+  if (failed || (idx >= sources.length && !liveUrl)) {
     return (
       <div
         className={`x-profile-avatar x-profile-avatar--fallback ${className}`}
@@ -106,20 +140,52 @@ export function XProfileAvatar({
   }
 
   return (
-    <img
-      className={`x-profile-avatar ${className}`}
-      src={sources[idx]}
-      alt={`@${clean}`}
-      width={size}
-      height={size}
-      loading="lazy"
-      decoding="async"
-      referrerPolicy="no-referrer"
-      onError={() => {
-        if (idx + 1 < sources.length) setIdx((i) => i + 1)
-        else setFailed(true)
+    <span
+      className={`x-profile-avatar-wrap ${className}`}
+      style={{
+        width: size,
+        height: size,
+        display: 'inline-flex',
+        position: 'relative',
+        flexShrink: 0,
       }}
-      style={{ width: size, height: size }}
-    />
+      title={`@${clean}`}
+    >
+      {status === 'loading' && (
+        <span
+          className="avatar-skeleton"
+          style={{ width: size, height: size, borderRadius: '50%' }}
+          aria-hidden
+        />
+      )}
+      <img
+        key={sources[idx] ?? clean}
+        ref={imgRef}
+        className={`x-profile-avatar ${className}`}
+        src={sources[idx]}
+        alt={`@${clean}`}
+        width={size}
+        height={size}
+        loading="lazy"
+        decoding="async"
+        referrerPolicy="no-referrer"
+        onLoad={() => setStatus('ready')}
+        onError={() => {
+          if (idx + 1 < sources.length) {
+            setIdx((i) => i + 1)
+            setStatus('loading')
+            return
+          }
+          void tryLiveThenFail()
+        }}
+        style={{
+          width: size,
+          height: size,
+          opacity: status === 'ready' ? 1 : 0,
+          position: status === 'ready' ? 'relative' : 'absolute',
+          inset: 0,
+        }}
+      />
+    </span>
   )
 }

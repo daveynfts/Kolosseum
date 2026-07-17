@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "kind": "twitterscore-top1200",
-  "asOf": "2026-07-17T07:42:22.230Z",
+  "kind": "twitterscore-top1300",
+  "asOf": "2026-07-17T07:49:49.186Z",
   "source": "https://twitterscore.io/topScored/",
   "sourceNote": "twitterscore.io · Top ~600 Web3 by follower-network influence score",
   "maxScore": 1000,
@@ -17,9 +17,10 @@
   "top1000Threshold": 316,
   "top1100Threshold": 304,
   "top1200Threshold": 293,
-  "listSize": 1199,
-  "median": 399,
-  "mean": 452.42,
+  "top1300Threshold": 284,
+  "listSize": 1259,
+  "median": 388,
+  "mean": 444.61,
   "atMax": 17,
   "accounts": [
     {
@@ -7215,8 +7216,368 @@
       "handle": "finnbags",
       "displayName": "FINN",
       "score": 293
+    },
+    {
+      "rank": 1200,
+      "handle": "turnernovak",
+      "displayName": "Turner Novak",
+      "score": 293
+    },
+    {
+      "rank": 1201,
+      "handle": "biancoresearch",
+      "displayName": "Jim Bianco",
+      "score": 292
+    },
+    {
+      "rank": 1202,
+      "handle": "0xenas",
+      "displayName": "Eugene Ng Ah Sio",
+      "score": 292
+    },
+    {
+      "rank": 1203,
+      "handle": "metaplex",
+      "displayName": "Metaplex",
+      "score": 292
+    },
+    {
+      "rank": 1204,
+      "handle": "amystreet",
+      "displayName": "Amy Street",
+      "score": 292
+    },
+    {
+      "rank": 1205,
+      "handle": "buyerofponzi",
+      "displayName": "Ponzi Trader",
+      "score": 292
+    },
+    {
+      "rank": 1206,
+      "handle": "gordongekko",
+      "displayName": "Gordon",
+      "score": 292
+    },
+    {
+      "rank": 1207,
+      "handle": "0xabhip",
+      "displayName": "Abhi/AP Collective",
+      "score": 292
+    },
+    {
+      "rank": 1208,
+      "handle": "theallinpod",
+      "displayName": "The All-In Podcast",
+      "score": 292
+    },
+    {
+      "rank": 1209,
+      "handle": "altcap",
+      "displayName": "Brad Gerstner",
+      "score": 292
+    },
+    {
+      "rank": 1210,
+      "handle": "benjitaylor",
+      "displayName": "Benji Taylor",
+      "score": 292
+    },
+    {
+      "rank": 1211,
+      "handle": "fantasy_top_",
+      "displayName": "fantasy.top",
+      "score": 292
+    },
+    {
+      "rank": 1212,
+      "handle": "moltbook",
+      "displayName": "moltbook",
+      "score": 292
+    },
+    {
+      "rank": 1213,
+      "handle": "jrnycrypto",
+      "displayName": "JRNY Crypto",
+      "score": 292
+    },
+    {
+      "rank": 1214,
+      "handle": "beausecurity",
+      "displayName": "Beau",
+      "score": 292
+    },
+    {
+      "rank": 1215,
+      "handle": "jconorgrogan",
+      "displayName": "Conor",
+      "score": 291
+    },
+    {
+      "rank": 1216,
+      "handle": "galxe",
+      "displayName": "Galxe",
+      "score": 291
+    },
+    {
+      "rank": 1217,
+      "handle": "mgnr_io",
+      "displayName": "mgnr",
+      "score": 291
+    },
+    {
+      "rank": 1218,
+      "handle": "mlevchin",
+      "displayName": "Max Levchin",
+      "score": 291
+    },
+    {
+      "rank": 1219,
+      "handle": "visualizevalue",
+      "displayName": "Visualize Value",
+      "score": 291
+    },
+    {
+      "rank": 1220,
+      "handle": "willpapper",
+      "displayName": "Will Papper",
+      "score": 291
+    },
+    {
+      "rank": 1221,
+      "handle": "memeland",
+      "displayName": "Memeland",
+      "score": 291
+    },
+    {
+      "rank": 1222,
+      "handle": "bullyesq",
+      "displayName": "Bully",
+      "score": 291
+    },
+    {
+      "rank": 1223,
+      "handle": "blocmates",
+      "displayName": "blocmates",
+      "score": 291
+    },
+    {
+      "rank": 1224,
+      "handle": "defiapp",
+      "displayName": "Defi App",
+      "score": 290
+    },
+    {
+      "rank": 1225,
+      "handle": "parisrouz",
+      "displayName": "Paris Rouzati",
+      "score": 290
+    },
+    {
+      "rank": 1226,
+      "handle": "carrawu",
+      "displayName": "Carra Wu",
+      "score": 290
+    },
+    {
+      "rank": 1227,
+      "handle": "mikebelshe",
+      "displayName": "Mike Belshe",
+      "score": 290
+    },
+    {
+      "rank": 1228,
+      "handle": "cryptocapo_",
+      "displayName": "il Capo",
+      "score": 290
+    },
+    {
+      "rank": 1229,
+      "handle": "ashrobin",
+      "displayName": "Ash Robin",
+      "score": 289
+    },
+    {
+      "rank": 1230,
+      "handle": "cryptoleon",
+      "displayName": "cryptoleon",
+      "score": 287
+    },
+    {
+      "rank": 1231,
+      "handle": "fwbtweets",
+      "displayName": "Friends With Benefits",
+      "score": 287
+    },
+    {
+      "rank": 1232,
+      "handle": "mhluongo",
+      "displayName": "Matt Luongo",
+      "score": 287
+    },
+    {
+      "rank": 1233,
+      "handle": "lokithebird",
+      "displayName": "LoKi",
+      "score": 287
+    },
+    {
+      "rank": 1234,
+      "handle": "cremieuxrecueil",
+      "displayName": "Crémieux",
+      "score": 287
+    },
+    {
+      "rank": 1235,
+      "handle": "slingshotcrypto",
+      "displayName": "Slingshot",
+      "score": 287
+    },
+    {
+      "rank": 1236,
+      "handle": "pitdesi",
+      "displayName": "Sheel Mohnot",
+      "score": 287
+    },
+    {
+      "rank": 1237,
+      "handle": "arjunbhuptani",
+      "displayName": "arya",
+      "score": 287
+    },
+    {
+      "rank": 1238,
+      "handle": "lightning",
+      "displayName": "Lightning Labs",
+      "score": 287
+    },
+    {
+      "rank": 1239,
+      "handle": "phintotten",
+      "displayName": "Phin",
+      "score": 287
+    },
+    {
+      "rank": 1240,
+      "handle": "macnbtc",
+      "displayName": "Mac",
+      "score": 287
+    },
+    {
+      "rank": 1241,
+      "handle": "0xdamien",
+      "displayName": "Damien",
+      "score": 286
+    },
+    {
+      "rank": 1242,
+      "handle": "davidtsocy",
+      "displayName": "David Tso",
+      "score": 286
+    },
+    {
+      "rank": 1243,
+      "handle": "lynk0x",
+      "displayName": "lynk",
+      "score": 286
+    },
+    {
+      "rank": 1244,
+      "handle": "grantyun2",
+      "displayName": "Grant Yun",
+      "score": 286
+    },
+    {
+      "rank": 1245,
+      "handle": "thegostep",
+      "displayName": "Stephane",
+      "score": 286
+    },
+    {
+      "rank": 1246,
+      "handle": "0xlawliette",
+      "displayName": "L",
+      "score": 285
+    },
+    {
+      "rank": 1247,
+      "handle": "noahpinion",
+      "displayName": "Noah Smith",
+      "score": 285
+    },
+    {
+      "rank": 1248,
+      "handle": "steveaoki",
+      "displayName": "Steve Aoki",
+      "score": 285
+    },
+    {
+      "rank": 1249,
+      "handle": "seedclub",
+      "displayName": "Seed Club",
+      "score": 285
+    },
+    {
+      "rank": 1250,
+      "handle": "mantle_official",
+      "displayName": "Mantle",
+      "score": 285
+    },
+    {
+      "rank": 1251,
+      "handle": "evankeast",
+      "displayName": "evan",
+      "score": 285
+    },
+    {
+      "rank": 1252,
+      "handle": "poapxyz",
+      "displayName": "POAP",
+      "score": 285
+    },
+    {
+      "rank": 1253,
+      "handle": "natbrunell",
+      "displayName": "Natalie Brunell",
+      "score": 284
+    },
+    {
+      "rank": 1254,
+      "handle": "smyyguy",
+      "displayName": "Dan Smith",
+      "score": 284
+    },
+    {
+      "rank": 1255,
+      "handle": "ottosuwen",
+      "displayName": "Otto Suwen",
+      "score": 284
+    },
+    {
+      "rank": 1256,
+      "handle": "rac",
+      "displayName": "RAC",
+      "score": 284
+    },
+    {
+      "rank": 1257,
+      "handle": "claynosaurz",
+      "displayName": "Claynosaurz",
+      "score": 284
+    },
+    {
+      "rank": 1258,
+      "handle": "paulframbot",
+      "displayName": "Paul Frambot",
+      "score": 284
+    },
+    {
+      "rank": 1259,
+      "handle": "flow_blockchain",
+      "displayName": "Flow",
+      "score": 284
     }
   ],
-  "updatedAt": "2026-07-17T07:42:22.230Z",
-  "note": "Internal benchmark · Top ~600 Web3 TwitterScore · admin editable · Extended with ranks 601-700 (twitterscore.io paste). · Extended with ranks 701-800 (twitterscore.io paste). · Extended with ranks 801-900 (twitterscore.io paste). · Extended with ranks 901-1000 (twitterscore.io paste). · Extended with ranks 1001-1100 (twitterscore.io paste). · Extended with ranks 1101-1200 (twitterscore.io paste)."
+  "updatedAt": "2026-07-17T07:49:49.186Z",
+  "note": "Internal benchmark · Top ~600 Web3 TwitterScore · admin editable · Extended with ranks 601-700 (twitterscore.io paste). · Extended with ranks 701-800 (twitterscore.io paste). · Extended with ranks 801-900 (twitterscore.io paste). · Extended with ranks 901-1000 (twitterscore.io paste). · Extended with ranks 1001-1100 (twitterscore.io paste). · Extended with ranks 1101-1200 (twitterscore.io paste). · Extended with ranks 1201-1280 partial (twitterscore.io paste)."
 }

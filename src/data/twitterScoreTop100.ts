@@ -58,28 +58,28 @@ export function normalizeTwitterScoreDataset(
   const accountsRaw = o.accounts
   if (!Array.isArray(accountsRaw) || !accountsRaw.length) return null
   const accounts: TwitterScoreAccount[] = []
-  for (const row of accountsRaw) {
-    if (!row || typeof row !== 'object') continue
-    const r = row as Record<string, unknown>
+  for (const item of accountsRaw) {
+    if (!item || typeof item !== 'object') continue
+    const r = item as Record<string, unknown>
     const handle = String(r.handle || '')
       .replace(/^@/, '')
       .trim()
     if (!handle) continue
     const score = Number(r.score)
     const rank = Number(r.rank)
-    const row: TwitterScoreAccount = {
+    const acc: TwitterScoreAccount = {
       handle,
       displayName: String(r.displayName || handle).trim() || handle,
       score: Number.isFinite(score) ? score : 0,
       rank: Number.isFinite(rank) ? rank : accounts.length + 1,
     }
-    if (r.role) row.role = String(r.role)
-    if (r.category) row.category = String(r.category)
-    if (r.notes) row.notes = String(r.notes)
-    if (r.tags) row.tags = String(r.tags)
-    if (r.website) row.website = String(r.website)
-    if (r.lastReviewedAt) row.lastReviewedAt = String(r.lastReviewedAt)
-    accounts.push(row)
+    if (r.role) acc.role = String(r.role)
+    if (r.category) acc.category = String(r.category)
+    if (r.notes) acc.notes = String(r.notes)
+    if (r.tags) acc.tags = String(r.tags)
+    if (r.website) acc.website = String(r.website)
+    if (r.lastReviewedAt) acc.lastReviewedAt = String(r.lastReviewedAt)
+    accounts.push(acc)
   }
   if (!accounts.length) return null
   // Re-sort by score desc, then rank, re-number ranks for consistency when admin edits

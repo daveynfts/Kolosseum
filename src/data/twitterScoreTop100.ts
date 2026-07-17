@@ -21,6 +21,13 @@ export interface TwitterScoreAccount {
   displayName: string
   /** TwitterScore 0–1000 */
   score: number
+  /** Optional internal detail (admin-filled over time) */
+  role?: string
+  category?: string
+  notes?: string
+  tags?: string
+  website?: string
+  lastReviewedAt?: string
 }
 
 export type TwitterScoreDataset = {
@@ -60,12 +67,19 @@ export function normalizeTwitterScoreDataset(
     if (!handle) continue
     const score = Number(r.score)
     const rank = Number(r.rank)
-    accounts.push({
+    const row: TwitterScoreAccount = {
       handle,
       displayName: String(r.displayName || handle).trim() || handle,
       score: Number.isFinite(score) ? score : 0,
       rank: Number.isFinite(rank) ? rank : accounts.length + 1,
-    })
+    }
+    if (r.role) row.role = String(r.role)
+    if (r.category) row.category = String(r.category)
+    if (r.notes) row.notes = String(r.notes)
+    if (r.tags) row.tags = String(r.tags)
+    if (r.website) row.website = String(r.website)
+    if (r.lastReviewedAt) row.lastReviewedAt = String(r.lastReviewedAt)
+    accounts.push(row)
   }
   if (!accounts.length) return null
   // Re-sort by score desc, then rank, re-number ranks for consistency when admin edits

@@ -4,7 +4,7 @@ Structured **internal datasets** for admin control and agent/analysis tasks.
 
 | Dataset | Repo seed | R2 key | API | Admin |
 |---------|-----------|--------|-----|--------|
-| **TwitterScore Top N (100→200+)** | `src/data/internal/twitterscore-top100.json` (+ mirror here) | `internal/twitterscore-top100/v1.json` | `GET/PUT /api/twitterscore-top100` | Smart Followers tab → panel **TwitterScore Top N** |
+| **TwitterScore Top N (100→200+)** | `src/data/internal/twitterscore-top100.json` (+ mirror here) | `internal/twitterscore-top100/v1.json` | `GET/PUT /api/twitterscore-top100` | Admin tab **★ Data / TwitterScore** (`#/admin/data`) |
 | **Recent Followers** (per KOL) | `src/data/recentFollowers.ts` → `RECENT_FOLLOWERS_BY_HANDLE` | `recent-followers/v1.json` (`map`) | `GET/PUT /api/recent-followers` | Smart Followers tab |
 | **Smart Followers** (per KOL) | `src/data/recentFollowers.ts` → `SMART_FOLLOWERS_BY_HANDLE` | `recent-followers/v1.json` (`smartMap`) | same | Map UI sub-tab (seed/R2) |
 | **KOL bios / ranks** | `src/data/sheetKols.ts`, `data/bio-patches/*.txt` | `kols/v1.json` | `GET/PUT /api/kols` | KOL Editor |
@@ -56,10 +56,11 @@ import { getTwitterScoreAccount, isTwitterScoreTop100 } from '../src/data/twitte
 
 ### Admin workflow
 
-1. Open **Admin → Smart Followers**
-2. Right panel **TwitterScore Top 100** — search, edit, add/remove
-3. **Save Top 100 (R2)** with token
+1. Open **Admin → ★ Data / TwitterScore** (`#/admin/data`)
+2. List (trái) + form chi tiết (phải): identity, role, category, tags, notes…
+3. **Save (R2)** with token
 4. Optional: **Export JSON** → commit to `src/data/internal/` + `data/internal/` to refresh seed
+5. Per-KOL Smart Followers vẫn ở tab **Smart Followers** (badge TwitterScore nếu match)
 
 ### Sync seed after admin export
 

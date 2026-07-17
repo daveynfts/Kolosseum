@@ -994,6 +994,45 @@ export const RECENT_FOLLOWERS_BY_HANDLE: Record<string, RecentFollower[]> = {
       followedAt: '2025-07-16T00:00:00.000Z',
     },
   ],
+  /** Martin (@Martin_bml) — curated smart/recent followers snapshot */
+  martin_bml: [
+    {
+      handle: 'wilsonye2025',
+      displayName: 'Wilson Ye',
+      followedAgo: '1 month ago',
+      followedAt: '2026-06-17T00:00:00.000Z',
+    },
+    {
+      handle: 'jiujinshan2022',
+      displayName: '旧金山不是巴黎(Meme部部长）',
+      followedAgo: '2 months ago',
+      followedAt: '2026-05-17T00:00:00.000Z',
+    },
+    {
+      handle: 'andrea__chang',
+      displayName: 'Andrea',
+      followedAgo: '4 months ago',
+      followedAt: '2026-03-17T00:00:00.000Z',
+    },
+    {
+      handle: 'wenser2010',
+      displayName: 'Wenser（.）',
+      followedAgo: '10 months ago',
+      followedAt: '2025-09-17T00:00:00.000Z',
+    },
+    {
+      handle: 'hongchen1476842',
+      displayName: '彭鱼宴',
+      followedAgo: 'a year ago',
+      followedAt: '2025-07-17T00:00:00.000Z',
+    },
+    {
+      handle: 'cryptoamandal',
+      displayName: '阿曼达要吃肉Amanda.eth',
+      followedAgo: 'a year ago',
+      followedAt: '2025-07-16T00:00:00.000Z',
+    },
+  ],
   /** Jack Vĩ (@jackvi810) — curated smart/recent followers snapshot */
   jackvi810: [
     {

@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "kind": "twitterscore-top1900",
-  "asOf": "2026-07-17T08:44:07.822Z",
+  "kind": "twitterscore-top2000",
+  "asOf": "2026-07-17T08:49:38.414Z",
   "source": "https://twitterscore.io/topScored/",
   "sourceNote": "twitterscore.io · Top ~600 Web3 by follower-network influence score",
   "maxScore": 1000,
@@ -24,9 +24,10 @@
   "top1700Threshold": 246,
   "top1800Threshold": 239,
   "top1900Threshold": 233,
-  "listSize": 1899,
-  "median": 322,
-  "mean": 381.37,
+  "top2000Threshold": 226,
+  "listSize": 1999,
+  "median": 316,
+  "mean": 373.78,
   "atMax": 17,
   "accounts": [
     {
@@ -11422,8 +11423,608 @@
       "handle": "bankrbot",
       "displayName": "Bankr",
       "score": 233
+    },
+    {
+      "rank": 1900,
+      "handle": "eulerfinance",
+      "displayName": "Euler Labs",
+      "score": 233
+    },
+    {
+      "rank": 1901,
+      "handle": "dachshundwizard",
+      "displayName": "DachshundWizard",
+      "score": 233
+    },
+    {
+      "rank": 1902,
+      "handle": "larry0x",
+      "displayName": "Larry Engineer",
+      "score": 233
+    },
+    {
+      "rank": 1903,
+      "handle": "debussy100",
+      "displayName": "Debussy",
+      "score": 233
+    },
+    {
+      "rank": 1904,
+      "handle": "bonafidehan",
+      "displayName": "bonafidehan.eth",
+      "score": 232
+    },
+    {
+      "rank": 1905,
+      "handle": "dedeep__",
+      "displayName": "DeDeep",
+      "score": 232
+    },
+    {
+      "rank": 1906,
+      "handle": "moo9000",
+      "displayName": "Mikko Ohtamaa",
+      "score": 232
+    },
+    {
+      "rank": 1907,
+      "handle": "crediblecrypto",
+      "displayName": "CrediBULL Crypto",
+      "score": 232
+    },
+    {
+      "rank": 1908,
+      "handle": "zguz",
+      "displayName": "Zack Guzmán",
+      "score": 232
+    },
+    {
+      "rank": 1909,
+      "handle": "defi_mochi",
+      "displayName": "Defi_Mochi",
+      "score": 232
+    },
+    {
+      "rank": 1910,
+      "handle": "vanessagrellet_",
+      "displayName": "Vanessa Grellet",
+      "score": 232
+    },
+    {
+      "rank": 1911,
+      "handle": "coopernicus01",
+      "displayName": "Coop",
+      "score": 232
+    },
+    {
+      "rank": 1912,
+      "handle": "mckaywrigley",
+      "displayName": "Mckay Wrigley",
+      "score": 232
+    },
+    {
+      "rank": 1913,
+      "handle": "thedankoe",
+      "displayName": "Dan Koe",
+      "score": 232
+    },
+    {
+      "rank": 1914,
+      "handle": "bytheophana",
+      "displayName": "tiff",
+      "score": 232
+    },
+    {
+      "rank": 1915,
+      "handle": "wmougayar",
+      "displayName": "William Mougayar",
+      "score": 232
+    },
+    {
+      "rank": 1916,
+      "handle": "austinvirts",
+      "displayName": "Austin",
+      "score": 232
+    },
+    {
+      "rank": 1917,
+      "handle": "looponchain",
+      "displayName": "Alex Martin",
+      "score": 232
+    },
+    {
+      "rank": 1918,
+      "handle": "theblondebroker",
+      "displayName": "The Blonde Broker",
+      "score": 232
+    },
+    {
+      "rank": 1919,
+      "handle": "brxckinridge",
+      "displayName": "breck",
+      "score": 232
+    },
+    {
+      "rank": 1920,
+      "handle": "alexmccurryo",
+      "displayName": "Alex/Sushi",
+      "score": 232
+    },
+    {
+      "rank": 1921,
+      "handle": "jmonegro",
+      "displayName": "Joel Monegro",
+      "score": 231
+    },
+    {
+      "rank": 1922,
+      "handle": "vaderresearch",
+      "displayName": "mete",
+      "score": 231
+    },
+    {
+      "rank": 1923,
+      "handle": "christianeth",
+      "displayName": "Christian/0xinfini",
+      "score": 231
+    },
+    {
+      "rank": 1924,
+      "handle": "jtwald",
+      "displayName": "Justin Waldron",
+      "score": 231
+    },
+    {
+      "rank": 1925,
+      "handle": "aaronvanw",
+      "displayName": "Aaron van Wirdum",
+      "score": 231
+    },
+    {
+      "rank": 1926,
+      "handle": "avischiffmann",
+      "displayName": "Avi Schiffmann",
+      "score": 231
+    },
+    {
+      "rank": 1927,
+      "handle": "0xkydo",
+      "displayName": "Kydo",
+      "score": 231
+    },
+    {
+      "rank": 1928,
+      "handle": "brendan_defi",
+      "displayName": "brendan.base.eth",
+      "score": 231
+    },
+    {
+      "rank": 1929,
+      "handle": "groowut",
+      "displayName": "Wut",
+      "score": 231
+    },
+    {
+      "rank": 1930,
+      "handle": "crainbf",
+      "displayName": "Brian Fabian Crain",
+      "score": 231
+    },
+    {
+      "rank": 1931,
+      "handle": "aragonproject",
+      "displayName": "Aragon",
+      "score": 231
+    },
+    {
+      "rank": 1932,
+      "handle": "eric_turner",
+      "displayName": "Eric Turner",
+      "score": 231
+    },
+    {
+      "rank": 1933,
+      "handle": "jasonmdesimone",
+      "displayName": "Jason Desimone",
+      "score": 231
+    },
+    {
+      "rank": 1934,
+      "handle": "lewsiphur",
+      "displayName": "Lew",
+      "score": 231
+    },
+    {
+      "rank": 1935,
+      "handle": "hmalviya9",
+      "displayName": "VD",
+      "score": 231
+    },
+    {
+      "rank": 1936,
+      "handle": "gumsays",
+      "displayName": "gum",
+      "score": 231
+    },
+    {
+      "rank": 1937,
+      "handle": "cryptowizardd",
+      "displayName": "WIZZ",
+      "score": 231
+    },
+    {
+      "rank": 1938,
+      "handle": "drjimfan",
+      "displayName": "Jim Fan",
+      "score": 231
+    },
+    {
+      "rank": 1939,
+      "handle": "sandypeng",
+      "displayName": "Sandy Peng",
+      "score": 231
+    },
+    {
+      "rank": 1940,
+      "handle": "davidvorick",
+      "displayName": "David Vorick",
+      "score": 230
+    },
+    {
+      "rank": 1941,
+      "handle": "pcaversaccio",
+      "displayName": "pcaversaccio",
+      "score": 230
+    },
+    {
+      "rank": 1942,
+      "handle": "jeffdean",
+      "displayName": "Jeff Dean",
+      "score": 230
+    },
+    {
+      "rank": 1943,
+      "handle": "tommykimmelman",
+      "displayName": "Tommy",
+      "score": 230
+    },
+    {
+      "rank": 1944,
+      "handle": "zoomeroracle",
+      "displayName": "Zoomer Oracle",
+      "score": 230
+    },
+    {
+      "rank": 1945,
+      "handle": "matthewroszak",
+      "displayName": "Matthew Roszak",
+      "score": 230
+    },
+    {
+      "rank": 1946,
+      "handle": "zaimiri",
+      "displayName": "Dani",
+      "score": 230
+    },
+    {
+      "rank": 1947,
+      "handle": "brave",
+      "displayName": "Brave",
+      "score": 230
+    },
+    {
+      "rank": 1948,
+      "handle": "arfurrock",
+      "displayName": "Arfur Rock",
+      "score": 230
+    },
+    {
+      "rank": 1949,
+      "handle": "worthalter",
+      "displayName": "worthalter",
+      "score": 230
+    },
+    {
+      "rank": 1950,
+      "handle": "pents90",
+      "displayName": "John Watkinson",
+      "score": 230
+    },
+    {
+      "rank": 1951,
+      "handle": "naughtaliestone",
+      "displayName": "STONE",
+      "score": 229
+    },
+    {
+      "rank": 1952,
+      "handle": "degens",
+      "displayName": "MLow",
+      "score": 229
+    },
+    {
+      "rank": 1953,
+      "handle": "kevinweil",
+      "displayName": "Kevin Weil",
+      "score": 229
+    },
+    {
+      "rank": 1954,
+      "handle": "potus46archive",
+      "displayName": "President Biden Archived",
+      "score": 229
+    },
+    {
+      "rank": 1955,
+      "handle": "finkd",
+      "displayName": "Mark Zuckerberg",
+      "score": 229
+    },
+    {
+      "rank": 1956,
+      "handle": "emilylai",
+      "displayName": "Emily Lai",
+      "score": 229
+    },
+    {
+      "rank": 1957,
+      "handle": "giancarlomkts",
+      "displayName": "Chris Giancarlo",
+      "score": 229
+    },
+    {
+      "rank": 1958,
+      "handle": "slatestarcodex",
+      "displayName": "Scott Alexander",
+      "score": 229
+    },
+    {
+      "rank": 1959,
+      "handle": "pastagotsauce",
+      "displayName": "Pasta",
+      "score": 229
+    },
+    {
+      "rank": 1960,
+      "handle": "chimpershq",
+      "displayName": "Chimpers",
+      "score": 229
+    },
+    {
+      "rank": 1961,
+      "handle": "brianbrooksus",
+      "displayName": "Brian Brooks",
+      "score": 228
+    },
+    {
+      "rank": 1962,
+      "handle": "jalilwahdat",
+      "displayName": "jalil",
+      "score": 228
+    },
+    {
+      "rank": 1963,
+      "handle": "rdtothemoon",
+      "displayName": "Rob De Los Santos",
+      "score": 228
+    },
+    {
+      "rank": 1964,
+      "handle": "stayloudio",
+      "displayName": "Loud!",
+      "score": 228
+    },
+    {
+      "rank": 1965,
+      "handle": "guyoseary",
+      "displayName": "Guy Oseary",
+      "score": 228
+    },
+    {
+      "rank": 1966,
+      "handle": "everclearorg",
+      "displayName": "Everclear",
+      "score": 228
+    },
+    {
+      "rank": 1967,
+      "handle": "angellist",
+      "displayName": "AngelList",
+      "score": 228
+    },
+    {
+      "rank": 1968,
+      "handle": "katana",
+      "displayName": "Katana",
+      "score": 228
+    },
+    {
+      "rank": 1969,
+      "handle": "dangerwillrobin",
+      "displayName": "Will Robinson/Alliance",
+      "score": 228
+    },
+    {
+      "rank": 1970,
+      "handle": "neonapesyc",
+      "displayName": "N3ON",
+      "score": 228
+    },
+    {
+      "rank": 1971,
+      "handle": "usv",
+      "displayName": "USV",
+      "score": 228
+    },
+    {
+      "rank": 1972,
+      "handle": "legiondotcc",
+      "displayName": "LEGION",
+      "score": 228
+    },
+    {
+      "rank": 1973,
+      "handle": "helium",
+      "displayName": "Helium",
+      "score": 228
+    },
+    {
+      "rank": 1974,
+      "handle": "lukegromen",
+      "displayName": "Luke Gromen",
+      "score": 228
+    },
+    {
+      "rank": 1975,
+      "handle": "ashleevance",
+      "displayName": "Ashlee Vance",
+      "score": 228
+    },
+    {
+      "rank": 1976,
+      "handle": "austin_rief",
+      "displayName": "Austin Rief",
+      "score": 228
+    },
+    {
+      "rank": 1977,
+      "handle": "mattwalshinbos",
+      "displayName": "Matt Walsh",
+      "score": 228
+    },
+    {
+      "rank": 1978,
+      "handle": "ethstatus",
+      "displayName": "Status",
+      "score": 228
+    },
+    {
+      "rank": 1979,
+      "handle": "nftx_",
+      "displayName": "NFTX",
+      "score": 227
+    },
+    {
+      "rank": 1980,
+      "handle": "jimmyfallon",
+      "displayName": "Jimmy Fallon",
+      "score": 227
+    },
+    {
+      "rank": 1981,
+      "handle": "gogotalks",
+      "displayName": "gogo",
+      "score": 227
+    },
+    {
+      "rank": 1982,
+      "handle": "ellazhang516",
+      "displayName": "Ella Zhang",
+      "score": 227
+    },
+    {
+      "rank": 1983,
+      "handle": "13yroldwithcc",
+      "displayName": "13yr old with a credit card",
+      "score": 227
+    },
+    {
+      "rank": 1984,
+      "handle": "chefgoyardi",
+      "displayName": "Chef",
+      "score": 227
+    },
+    {
+      "rank": 1985,
+      "handle": "stephencurry30",
+      "displayName": "Stephen Curry",
+      "score": 227
+    },
+    {
+      "rank": 1986,
+      "handle": "peterdiamandis",
+      "displayName": "Peter Diamandis",
+      "score": 227
+    },
+    {
+      "rank": 1987,
+      "handle": "fraxfinance",
+      "displayName": "Frax Finance",
+      "score": 227
+    },
+    {
+      "rank": 1988,
+      "handle": "cryptocurb",
+      "displayName": "curb",
+      "score": 227
+    },
+    {
+      "rank": 1989,
+      "handle": "0xwassie",
+      "displayName": "WASSIE",
+      "score": 227
+    },
+    {
+      "rank": 1990,
+      "handle": "jr_0x1",
+      "displayName": "JR",
+      "score": 227
+    },
+    {
+      "rank": 1991,
+      "handle": "tma_420",
+      "displayName": "T.M.A",
+      "score": 227
+    },
+    {
+      "rank": 1992,
+      "handle": "kylechasse",
+      "displayName": "Kyle Chassé",
+      "score": 227
+    },
+    {
+      "rank": 1993,
+      "handle": "hnshah",
+      "displayName": "Hiten Shah",
+      "score": 227
+    },
+    {
+      "rank": 1994,
+      "handle": "fiege_max",
+      "displayName": "max.hl",
+      "score": 227
+    },
+    {
+      "rank": 1995,
+      "handle": "allodev",
+      "displayName": "Allo",
+      "score": 227
+    },
+    {
+      "rank": 1996,
+      "handle": "unitxyz",
+      "displayName": "Unit",
+      "score": 227
+    },
+    {
+      "rank": 1997,
+      "handle": "mikesilagadze",
+      "displayName": "Mike Silagadze",
+      "score": 227
+    },
+    {
+      "rank": 1998,
+      "handle": "eastdakota",
+      "displayName": "Matthew Prince",
+      "score": 226
+    },
+    {
+      "rank": 1999,
+      "handle": "trente",
+      "displayName": "trent e",
+      "score": 226
     }
   ],
-  "updatedAt": "2026-07-17T08:44:07.822Z",
-  "note": "Internal benchmark · Top ~600 Web3 TwitterScore · admin editable · Extended with ranks 601-700 (twitterscore.io paste). · Extended with ranks 701-800 (twitterscore.io paste). · Extended with ranks 801-900 (twitterscore.io paste). · Extended with ranks 901-1000 (twitterscore.io paste). · Extended with ranks 1001-1100 (twitterscore.io paste). · Extended with ranks 1101-1200 (twitterscore.io paste). · Extended with ranks 1201-1300 full (twitterscore.io paste). · Extended with ranks 1301-1400 (twitterscore.io paste). · Extended with ranks 1401-1500 (twitterscore.io paste). · Extended with ranks 1501-1600 (twitterscore.io paste). · Extended with ranks 1601-1700 (twitterscore.io paste). · Extended with ranks 1701-1800 (twitterscore.io paste). · Extended with ranks 1801-1900 (twitterscore.io paste)."
+  "updatedAt": "2026-07-17T08:49:38.414Z",
+  "note": "Internal benchmark · Top ~600 Web3 TwitterScore · admin editable · Extended with ranks 601-700 (twitterscore.io paste). · Extended with ranks 701-800 (twitterscore.io paste). · Extended with ranks 801-900 (twitterscore.io paste). · Extended with ranks 901-1000 (twitterscore.io paste). · Extended with ranks 1001-1100 (twitterscore.io paste). · Extended with ranks 1101-1200 (twitterscore.io paste). · Extended with ranks 1201-1300 full (twitterscore.io paste). · Extended with ranks 1301-1400 (twitterscore.io paste). · Extended with ranks 1401-1500 (twitterscore.io paste). · Extended with ranks 1501-1600 (twitterscore.io paste). · Extended with ranks 1601-1700 (twitterscore.io paste). · Extended with ranks 1701-1800 (twitterscore.io paste). · Extended with ranks 1801-1900 (twitterscore.io paste). · Extended with ranks 1901-2000 (twitterscore.io paste)."
 }

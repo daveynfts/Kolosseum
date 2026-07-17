@@ -1,18 +1,19 @@
 {
   "version": 1,
-  "kind": "twitterscore-top500",
+  "kind": "twitterscore-top600",
   "asOf": "2026-07-17T04:23:00.000Z",
   "source": "https://twitterscore.io/topScored/",
-  "sourceNote": "twitterscore.io · Top ~500 Web3 by follower-network influence score",
+  "sourceNote": "twitterscore.io · Top ~600 Web3 by follower-network influence score",
   "maxScore": 1000,
   "top100Threshold": 740,
   "top200Threshold": 591,
   "top300Threshold": 518,
   "top400Threshold": 466,
-  "top500Threshold": 434,
-  "listSize": 499,
-  "median": 557,
-  "mean": 599.67,
+  "top500Threshold": 433,
+  "top600Threshold": 399,
+  "listSize": 599,
+  "median": 518,
+  "mean": 568.9,
   "atMax": 17,
   "accounts": [
     {
@@ -3008,8 +3009,608 @@
       "handle": "wallstreetbets",
       "displayName": "WallStreetBets",
       "score": 434
+    },
+    {
+      "rank": 500,
+      "handle": "citrini",
+      "displayName": "Citrini",
+      "score": 433
+    },
+    {
+      "rank": 501,
+      "handle": "frankieislost",
+      "displayName": "frankie",
+      "score": 433
+    },
+    {
+      "rank": 502,
+      "handle": "1inch",
+      "displayName": "1inch",
+      "score": 432
+    },
+    {
+      "rank": 503,
+      "handle": "joemccann",
+      "displayName": "Joe McCann",
+      "score": 432
+    },
+    {
+      "rank": 504,
+      "handle": "tferriss",
+      "displayName": "Tim Ferriss",
+      "score": 432
+    },
+    {
+      "rank": 505,
+      "handle": "alexonchain",
+      "displayName": "Alex",
+      "score": 431
+    },
+    {
+      "rank": 506,
+      "handle": "dhof",
+      "displayName": "Dom Hofmann",
+      "score": 431
+    },
+    {
+      "rank": 507,
+      "handle": "goodalexander",
+      "displayName": "goodalexander",
+      "score": 431
+    },
+    {
+      "rank": 508,
+      "handle": "hollanderadam",
+      "displayName": "Adam Hollander",
+      "score": 431
+    },
+    {
+      "rank": 509,
+      "handle": "taikimaeda2",
+      "displayName": "Taiki Maeda",
+      "score": 431
+    },
+    {
+      "rank": 510,
+      "handle": "0xproject",
+      "displayName": "0x Protocol",
+      "score": 429
+    },
+    {
+      "rank": 511,
+      "handle": "crypto_mckenna",
+      "displayName": "McKenna",
+      "score": 429
+    },
+    {
+      "rank": 512,
+      "handle": "micsolana",
+      "displayName": "Mike Solana",
+      "score": 429
+    },
+    {
+      "rank": 513,
+      "handle": "tuurdemeester",
+      "displayName": "Tuur Demeester",
+      "score": 429
+    },
+    {
+      "rank": 514,
+      "handle": "lilmoonlambo",
+      "displayName": "LilMoonLambo",
+      "score": 428
+    },
+    {
+      "rank": 515,
+      "handle": "techcrunch",
+      "displayName": "TechCrunch",
+      "score": 428
+    },
+    {
+      "rank": 516,
+      "handle": "aubreystrobel",
+      "displayName": "Aubrey Strobel",
+      "score": 427
+    },
+    {
+      "rank": 517,
+      "handle": "valkenburgh",
+      "displayName": "Peter Van Valkenburgh",
+      "score": 427
+    },
+    {
+      "rank": 518,
+      "handle": "daryllautk",
+      "displayName": "Daryl Lau",
+      "score": 426
+    },
+    {
+      "rank": 519,
+      "handle": "paralleltcg",
+      "displayName": "Parallel",
+      "score": 425
+    },
+    {
+      "rank": 520,
+      "handle": "bnbchain",
+      "displayName": "BNB Chain",
+      "score": 424
+    },
+    {
+      "rank": 521,
+      "handle": "ftx_official",
+      "displayName": "FTX",
+      "score": 424
+    },
+    {
+      "rank": 522,
+      "handle": "nlw",
+      "displayName": "Nathaniel Whittemore",
+      "score": 424
+    },
+    {
+      "rank": 523,
+      "handle": "nousresearch",
+      "displayName": "Nous Research",
+      "score": 424
+    },
+    {
+      "rank": 524,
+      "handle": "to",
+      "displayName": "TO",
+      "score": 424
+    },
+    {
+      "rank": 525,
+      "handle": "tokenterminal",
+      "displayName": "Token Terminal",
+      "score": 424
+    },
+    {
+      "rank": 526,
+      "handle": "alexmasmej",
+      "displayName": "Alex Masmej",
+      "score": 423
+    },
+    {
+      "rank": 527,
+      "handle": "eddylazzarin",
+      "displayName": "Eddy Lazzarin",
+      "score": 423
+    },
+    {
+      "rank": 528,
+      "handle": "patrick_oshag",
+      "displayName": "Patrick O’Shaughnessy",
+      "score": 423
+    },
+    {
+      "rank": 529,
+      "handle": "vaneck_us",
+      "displayName": "VanEck",
+      "score": 423
+    },
+    {
+      "rank": 530,
+      "handle": "azuki",
+      "displayName": "Azuki",
+      "score": 422
+    },
+    {
+      "rank": 531,
+      "handle": "flynnjamm",
+      "displayName": "Brian Flynn",
+      "score": 422
+    },
+    {
+      "rank": 532,
+      "handle": "_richardteng",
+      "displayName": "Richard Teng",
+      "score": 421
+    },
+    {
+      "rank": 533,
+      "handle": "clairesilver",
+      "displayName": "Claire Silver",
+      "score": 421
+    },
+    {
+      "rank": 534,
+      "handle": "jackmallers",
+      "displayName": "Jack Mallers",
+      "score": 421
+    },
+    {
+      "rank": 535,
+      "handle": "richardchen39",
+      "displayName": "Richard Chen",
+      "score": 421
+    },
+    {
+      "rank": 536,
+      "handle": "awrigh01",
+      "displayName": "Aaron Wright",
+      "score": 420
+    },
+    {
+      "rank": 537,
+      "handle": "cbb0fe",
+      "displayName": "CBB",
+      "score": 420
+    },
+    {
+      "rank": 538,
+      "handle": "gaby_goldberg",
+      "displayName": "Gaby Goldberg",
+      "score": 420
+    },
+    {
+      "rank": 539,
+      "handle": "minhxdynasty",
+      "displayName": "MINH",
+      "score": 420
+    },
+    {
+      "rank": 540,
+      "handle": "spidercrypto0x",
+      "displayName": "SpiderCrypto",
+      "score": 420
+    },
+    {
+      "rank": 541,
+      "handle": "peter_szilagyi",
+      "displayName": "Péter Szilágyi",
+      "score": 419
+    },
+    {
+      "rank": 542,
+      "handle": "uponlytv",
+      "displayName": "Up Only",
+      "score": 419
+    },
+    {
+      "rank": 543,
+      "handle": "dragonfly_xyz",
+      "displayName": "Dragonfly",
+      "score": 418
+    },
+    {
+      "rank": 544,
+      "handle": "ryancarson",
+      "displayName": "Ryan Carson",
+      "score": 418
+    },
+    {
+      "rank": 545,
+      "handle": "apolynya",
+      "displayName": "polynya",
+      "score": 417
+    },
+    {
+      "rank": 546,
+      "handle": "evabeylin",
+      "displayName": "Eva Beylin",
+      "score": 417
+    },
+    {
+      "rank": 547,
+      "handle": "justinaversano",
+      "displayName": "Justin Aversano",
+      "score": 417
+    },
+    {
+      "rank": 548,
+      "handle": "lomahcrypto",
+      "displayName": "Loma",
+      "score": 417
+    },
+    {
+      "rank": 549,
+      "handle": "nanexcool",
+      "displayName": "mariano.eth",
+      "score": 417
+    },
+    {
+      "rank": 550,
+      "handle": "0xdoug",
+      "displayName": "Doug Colkitt",
+      "score": 415
+    },
+    {
+      "rank": 551,
+      "handle": "cryptunez",
+      "displayName": "tunez",
+      "score": 415
+    },
+    {
+      "rank": 552,
+      "handle": "martinshkreli",
+      "displayName": "Martin Shkreli",
+      "score": 415
+    },
+    {
+      "rank": 553,
+      "handle": "berachain",
+      "displayName": "Berachain Foundation",
+      "score": 414
+    },
+    {
+      "rank": 554,
+      "handle": "iamjosephyoung",
+      "displayName": "Joseph Young",
+      "score": 414
+    },
+    {
+      "rank": 555,
+      "handle": "theunipcs",
+      "displayName": "Unipcs/Bonk Guy",
+      "score": 413
+    },
+    {
+      "rank": 556,
+      "handle": "thiccyth0t",
+      "displayName": "thiccy",
+      "score": 413
+    },
+    {
+      "rank": 557,
+      "handle": "tszzl",
+      "displayName": "roon",
+      "score": 413
+    },
+    {
+      "rank": 558,
+      "handle": "jon_charb",
+      "displayName": "Jon Charbonneau",
+      "score": 412
+    },
+    {
+      "rank": 559,
+      "handle": "soona",
+      "displayName": "Soona",
+      "score": 412
+    },
+    {
+      "rank": 560,
+      "handle": "ashleydcan",
+      "displayName": "Ashley",
+      "score": 411
+    },
+    {
+      "rank": 561,
+      "handle": "gabusch",
+      "displayName": "Gabby Dizon/YGG",
+      "score": 411
+    },
+    {
+      "rank": 562,
+      "handle": "pancakesbrah",
+      "displayName": "Pancakesbrah",
+      "score": 411
+    },
+    {
+      "rank": 563,
+      "handle": "wublockchain",
+      "displayName": "Wu Blockchain",
+      "score": 411
+    },
+    {
+      "rank": 564,
+      "handle": "grayscale",
+      "displayName": "Grayscale",
+      "score": 410
+    },
+    {
+      "rank": 565,
+      "handle": "stevekbark",
+      "displayName": "Steve",
+      "score": 409
+    },
+    {
+      "rank": 566,
+      "handle": "friendtech",
+      "displayName": "friend.tech",
+      "score": 408
+    },
+    {
+      "rank": 567,
+      "handle": "knowerofmarkets",
+      "displayName": "knower",
+      "score": 408
+    },
+    {
+      "rank": 568,
+      "handle": "spencer",
+      "displayName": "Spencer",
+      "score": 408
+    },
+    {
+      "rank": 569,
+      "handle": "bitcoinpalmer",
+      "displayName": "palmer",
+      "score": 407
+    },
+    {
+      "rank": 570,
+      "handle": "camolnft",
+      "displayName": "camol",
+      "score": 407
+    },
+    {
+      "rank": 571,
+      "handle": "dogetoshi",
+      "displayName": "Steven",
+      "score": 407
+    },
+    {
+      "rank": 572,
+      "handle": "elibensasson",
+      "displayName": "Eli Ben-Sasson",
+      "score": 407
+    },
+    {
+      "rank": 573,
+      "handle": "rasmr_eth",
+      "displayName": "rasmr",
+      "score": 407
+    },
+    {
+      "rank": 574,
+      "handle": "jebus",
+      "displayName": "Jebus",
+      "score": 406
+    },
+    {
+      "rank": 575,
+      "handle": "bcherny",
+      "displayName": "Boris Cherny",
+      "score": 405
+    },
+    {
+      "rank": 576,
+      "handle": "billym2k",
+      "displayName": "Shibetoshi Nakamoto",
+      "score": 405
+    },
+    {
+      "rank": 577,
+      "handle": "vibhu",
+      "displayName": "vibhu",
+      "score": 405
+    },
+    {
+      "rank": 578,
+      "handle": "benroy",
+      "displayName": "Ben Roy",
+      "score": 404
+    },
+    {
+      "rank": 579,
+      "handle": "zaheerebtikar",
+      "displayName": "Zaheer",
+      "score": 404
+    },
+    {
+      "rank": 580,
+      "handle": "clementetv_",
+      "displayName": "Clemente",
+      "score": 403
+    },
+    {
+      "rank": 581,
+      "handle": "heyibinance",
+      "displayName": "Yi He",
+      "score": 403
+    },
+    {
+      "rank": 582,
+      "handle": "jmj",
+      "displayName": "Jeff Morris Jr.",
+      "score": 403
+    },
+    {
+      "rank": 583,
+      "handle": "kookcapitalllc",
+      "displayName": "Kook Capital",
+      "score": 403
+    },
+    {
+      "rank": 584,
+      "handle": "samkazemian",
+      "displayName": "Sam Kazemian",
+      "score": 403
+    },
+    {
+      "rank": 585,
+      "handle": "theflowhorse",
+      "displayName": "The Flow Horse",
+      "score": 403
+    },
+    {
+      "rank": 586,
+      "handle": "wormhole",
+      "displayName": "Wormhole",
+      "score": 403
+    },
+    {
+      "rank": 587,
+      "handle": "othersidemeta",
+      "displayName": "Otherside",
+      "score": 402
+    },
+    {
+      "rank": 588,
+      "handle": "sandraleow",
+      "displayName": "Sandra",
+      "score": 402
+    },
+    {
+      "rank": 589,
+      "handle": "star_okx",
+      "displayName": "Star Xu/OKX",
+      "score": 402
+    },
+    {
+      "rank": 590,
+      "handle": "vcbrags",
+      "displayName": "VC Brags",
+      "score": 402
+    },
+    {
+      "rank": 591,
+      "handle": "betty_nft",
+      "displayName": "BETTY",
+      "score": 401
+    },
+    {
+      "rank": 592,
+      "handle": "apecoin",
+      "displayName": "ApeCoin",
+      "score": 400
+    },
+    {
+      "rank": 593,
+      "handle": "ceterispar1bus",
+      "displayName": "ceteris",
+      "score": 400
+    },
+    {
+      "rank": 594,
+      "handle": "ethena",
+      "displayName": "Ethena",
+      "score": 400
+    },
+    {
+      "rank": 595,
+      "handle": "levie",
+      "displayName": "Aaron Levie",
+      "score": 400
+    },
+    {
+      "rank": 596,
+      "handle": "muratpak",
+      "displayName": "Pak",
+      "score": 400
+    },
+    {
+      "rank": 597,
+      "handle": "sgoldfed",
+      "displayName": "Steven Goldfeder",
+      "score": 400
+    },
+    {
+      "rank": 598,
+      "handle": "brettharrison",
+      "displayName": "Brett Harrison",
+      "score": 399
+    },
+    {
+      "rank": 599,
+      "handle": "rivatez",
+      "displayName": "Riva",
+      "score": 399
     }
   ],
-  "updatedAt": "2026-07-17T05:17:16.917Z",
-  "note": "Internal benchmark · Top ~500 Web3 TwitterScore · admin editable"
+  "updatedAt": "2026-07-17T05:22:54.830Z",
+  "note": "Internal benchmark · Top ~600 Web3 TwitterScore · admin editable"
 }

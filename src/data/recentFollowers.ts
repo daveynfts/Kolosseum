@@ -994,6 +994,33 @@ export const RECENT_FOLLOWERS_BY_HANDLE: Record<string, RecentFollower[]> = {
       followedAt: '2025-07-16T00:00:00.000Z',
     },
   ],
+  /** Đông Phạm (@phamduydong179) — curated smart/recent followers snapshot */
+  phamduydong179: [
+    {
+      handle: 'evans666666',
+      displayName: 'Evans.eth  ｜买美股上币安',
+      followedAgo: '4 months ago',
+      followedAt: '2026-03-17T00:00:00.000Z',
+    },
+    {
+      handle: 'madcapslaugh',
+      displayName: 'Jonathan Caras',
+      followedAgo: '8 months ago',
+      followedAt: '2025-11-17T00:00:00.000Z',
+    },
+    {
+      handle: 'btc_strategy',
+      displayName: '策略掌门人 BNB',
+      followedAgo: '9 months ago',
+      followedAt: '2025-10-17T00:00:00.000Z',
+    },
+    {
+      handle: 'chandlerguo',
+      displayName: 'ChandlerGuo 郭宏才 宝二爷',
+      followedAgo: 'a year ago',
+      followedAt: '2025-07-17T00:00:00.000Z',
+    },
+  ],
   /** Bi Cần Thơ (@BiCanTho) — curated smart/recent followers snapshot */
   bicantho: [
     {

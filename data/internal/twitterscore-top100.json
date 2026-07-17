@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "kind": "twitterscore-top2300",
-  "asOf": "2026-07-17T09:43:01.022Z",
+  "kind": "twitterscore-top2400",
+  "asOf": "2026-07-17T09:48:15.534Z",
   "source": "https://twitterscore.io/topScored/",
   "sourceNote": "twitterscore.io · Top ~600 Web3 by follower-network influence score",
   "maxScore": 1000,
@@ -28,9 +28,10 @@
   "top2100Threshold": 221,
   "top2200Threshold": 217,
   "top2300Threshold": 211,
-  "listSize": 2299,
-  "median": 299,
-  "mean": 353.52,
+  "top2400Threshold": 208,
+  "listSize": 2331,
+  "median": 297,
+  "mean": 351.55,
   "atMax": 17,
   "accounts": [
     {
@@ -13826,8 +13827,200 @@
       "handle": "seth",
       "displayName": "Seth Goldstein",
       "score": 211
+    },
+    {
+      "rank": 2300,
+      "handle": "adeets_22",
+      "displayName": "aditi",
+      "score": 211
+    },
+    {
+      "rank": 2301,
+      "handle": "maxieryan",
+      "displayName": "Maxine Ryan",
+      "score": 211
+    },
+    {
+      "rank": 2302,
+      "handle": "sudoswap",
+      "displayName": "sudoswap",
+      "score": 211
+    },
+    {
+      "rank": 2303,
+      "handle": "internbrah",
+      "displayName": "internbrah",
+      "score": 211
+    },
+    {
+      "rank": 2304,
+      "handle": "geiger_capital",
+      "displayName": "Geiger Capital",
+      "score": 211
+    },
+    {
+      "rank": 2305,
+      "handle": "skupor",
+      "displayName": "Scott Kupor",
+      "score": 211
+    },
+    {
+      "rank": 2306,
+      "handle": "loshmi",
+      "displayName": "Loshmi",
+      "score": 211
+    },
+    {
+      "rank": 2307,
+      "handle": "martypartymusic",
+      "displayName": "MartyParty",
+      "score": 211
+    },
+    {
+      "rank": 2308,
+      "handle": "dominic_w",
+      "displayName": "Dominic Williams",
+      "score": 211
+    },
+    {
+      "rank": 2309,
+      "handle": "ggreenwald",
+      "displayName": "Glenn Greenwald",
+      "score": 211
+    },
+    {
+      "rank": 2310,
+      "handle": "clementdelangue",
+      "displayName": "Clément Delangue",
+      "score": 211
+    },
+    {
+      "rank": 2311,
+      "handle": "liquityprotocol",
+      "displayName": "Liquity",
+      "score": 211
+    },
+    {
+      "rank": 2312,
+      "handle": "cryptofishx",
+      "displayName": "fish",
+      "score": 211
+    },
+    {
+      "rank": 2313,
+      "handle": "polychain",
+      "displayName": "Polychain",
+      "score": 211
+    },
+    {
+      "rank": 2314,
+      "handle": "naiivememe",
+      "displayName": "naiive",
+      "score": 211
+    },
+    {
+      "rank": 2315,
+      "handle": "collector_crypt",
+      "displayName": "Collector Crypt",
+      "score": 211
+    },
+    {
+      "rank": 2316,
+      "handle": "playshrapnel",
+      "displayName": "SHRAPNEL",
+      "score": 209
+    },
+    {
+      "rank": 2317,
+      "handle": "benjaminion_xyz",
+      "displayName": "Ben Edgington",
+      "score": 209
+    },
+    {
+      "rank": 2318,
+      "handle": "ttunguz",
+      "displayName": "Tomasz Tunguz",
+      "score": 209
+    },
+    {
+      "rank": 2319,
+      "handle": "kieranwarwick",
+      "displayName": "Kieran Warwick",
+      "score": 209
+    },
+    {
+      "rank": 2320,
+      "handle": "gonzogardner",
+      "displayName": "Jeremy Gardner",
+      "score": 209
+    },
+    {
+      "rank": 2321,
+      "handle": "sentientagi",
+      "displayName": "Sentient",
+      "score": 209
+    },
+    {
+      "rank": 2322,
+      "handle": "arcanic",
+      "displayName": "Arcanic",
+      "score": 209
+    },
+    {
+      "rank": 2323,
+      "handle": "katiewav",
+      "displayName": "Katie Chiou",
+      "score": 209
+    },
+    {
+      "rank": 2324,
+      "handle": "superchiefnft",
+      "displayName": "SuperchiefGalleryNFT",
+      "score": 209
+    },
+    {
+      "rank": 2325,
+      "handle": "helloshreyas",
+      "displayName": "Shreyas Hariharan",
+      "score": 209
+    },
+    {
+      "rank": 2326,
+      "handle": "dollarr",
+      "displayName": "dollar",
+      "score": 209
+    },
+    {
+      "rank": 2327,
+      "handle": "gabrieljweis",
+      "displayName": "Gabe Weis",
+      "score": 208
+    },
+    {
+      "rank": 2328,
+      "handle": "sophon",
+      "displayName": "Sophon",
+      "score": 208
+    },
+    {
+      "rank": 2329,
+      "handle": "toadswiback",
+      "displayName": "die with the most likes",
+      "score": 208
+    },
+    {
+      "rank": 2330,
+      "handle": "brtmoments",
+      "displayName": "Bright Moments",
+      "score": 208
+    },
+    {
+      "rank": 2331,
+      "handle": "zaingaziani",
+      "displayName": "Zain Gaziani",
+      "score": 208
     }
   ],
-  "updatedAt": "2026-07-17T09:43:01.022Z",
-  "note": "Internal benchmark · Top ~600 Web3 TwitterScore · admin editable · Extended with ranks 601-700 (twitterscore.io paste). · Extended with ranks 701-800 (twitterscore.io paste). · Extended with ranks 801-900 (twitterscore.io paste). · Extended with ranks 901-1000 (twitterscore.io paste). · Extended with ranks 1001-1100 (twitterscore.io paste). · Extended with ranks 1101-1200 (twitterscore.io paste). · Extended with ranks 1201-1300 full (twitterscore.io paste). · Extended with ranks 1301-1400 (twitterscore.io paste). · Extended with ranks 1401-1500 (twitterscore.io paste). · Extended with ranks 1501-1600 (twitterscore.io paste). · Extended with ranks 1601-1700 (twitterscore.io paste). · Extended with ranks 1701-1800 (twitterscore.io paste). · Extended with ranks 1801-1900 (twitterscore.io paste). · Extended with ranks 1901-2000 (twitterscore.io paste). · Extended with ranks 2001-2100 (twitterscore.io paste). · Extended with ranks 2101-2200 (twitterscore.io paste). · Extended with ranks 2201-2300 (twitterscore.io paste)."
+  "updatedAt": "2026-07-17T09:48:15.534Z",
+  "note": "Internal benchmark · Top ~600 Web3 TwitterScore · admin editable · Extended with ranks 601-700 (twitterscore.io paste). · Extended with ranks 701-800 (twitterscore.io paste). · Extended with ranks 801-900 (twitterscore.io paste). · Extended with ranks 901-1000 (twitterscore.io paste). · Extended with ranks 1001-1100 (twitterscore.io paste). · Extended with ranks 1101-1200 (twitterscore.io paste). · Extended with ranks 1201-1300 full (twitterscore.io paste). · Extended with ranks 1301-1400 (twitterscore.io paste). · Extended with ranks 1401-1500 (twitterscore.io paste). · Extended with ranks 1501-1600 (twitterscore.io paste). · Extended with ranks 1601-1700 (twitterscore.io paste). · Extended with ranks 1701-1800 (twitterscore.io paste). · Extended with ranks 1801-1900 (twitterscore.io paste). · Extended with ranks 1901-2000 (twitterscore.io paste). · Extended with ranks 2001-2100 (twitterscore.io paste). · Extended with ranks 2101-2200 (twitterscore.io paste). · Extended with ranks 2201-2300 (twitterscore.io paste). · Extended with ranks 2301-2366 partial (twitterscore.io paste)."
 }

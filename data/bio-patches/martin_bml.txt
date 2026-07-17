@@ -1,0 +1,49 @@
+Martin (@Martin_bml) — Đánh giá công tâm KOL · Narrative discovery / DeFi–perp commentary · Band T1 size · SurfAI + Grok 17/07/2026 · v1.0.
+
+TL;DR
+• Tổng hợp SurfAI **~5.2/10** — **B-** narrative discovery · **C** trade signal / kiểm chứng / minh bạch lợi ích.
+• ~**107.6K** followers · following ~1.5K · median reach ~**2.4%** (~2.604 view/bài) · eng/view ~**0.32%**.
+• Mạnh: bắt narrative **perp DEX / DeFi / PMF** (Lighter, Hyperliquid, Morpho…) · yếu: disclosure affiliate + claim regulatory.
+• ✅ Máy quét ý tưởng / Signal of the Day (có verification) · ❌ **Không** copy-trade · không chọn CEX/pháp lý chỉ vì 1 tweet.
+
+Chân dung
+• KOL crypto VN quy mô lớn; broadcaster (F/F ~**70×**) hơn hội thoại 2 chiều.
+• Mẫu **283** bài công khai (06/04–13/07/2026) · ~**2.3** bài độc lập/ngày · ~**20.4%** có ticker/signal rõ.
+• ~**28** smart followers chất lượng (Star OKX, Gracy Bitget, Boxmining, OSF, RyanD… — list trên Radar).
+• Ngoại lệ: reply Elon/Starlink ~**388K** views — bóp méo average; **median** phản ánh reach thường ngày tốt hơn.
+
+Năng lực nội dung
+• Điểm narrative & dòng tiền ~**7/10**: so sánh Morpho vs Aave (risk isolation), OI/PMF/revenue perp DEX, token qua revenue–buyback.
+• Phong cách “idea spark”: ~**27.6%** bài <50 ký tự · chỉ ~**21%** dài ≥200 ký tự — discovery > deep research.
+• Thiếu trade plan đầy đủ: entry / sizing / stop / horizon / invalidation — khó audit & tái tạo.
+• Một số bài “up / sẽ pump / sắp ATH” sau khi narrative đã nóng; vài bài chính trị/xã hội làm tăng noise.
+
+Track record công khai (tham chiếu giá, **không** = PnL thực)
+• Nổi bật: thesis **$LIT** ~**+92.8%** (đến ~17/07/2026).
+• Hỗn hợp: **$HYPE** ~+21.8% · **$PENGU** ~−32.4% · **$TAO** ~−21.2%.
+• Điểm cộng: công khai **đóng thua $APE / $PENGU** (02/06) — minh bạch hơn KOL chỉ khoe thắng.
+• Kết luận: có call thắng thật, **không** đủ chuẩn copy-trade / track record độc lập.
+
+Minh bạch & pháp lý (điểm yếu)
+• Minh bạch lợi ích ~**3.5/10**: ~**2.5%** bài có join/referral (OKX, Phoenix, Fomo Family…) **không** gắn nhãn affiliate/hoa hồng.
+• Claim regulatory dễ **nói quá**:
+  - OKX “sàn hợp pháp đầu tiên VN” via CAEX → thực tế đầu tư giúp **thí điểm**, chưa = license first.
+  - Bybit “không MiCA / rút EU” → Bybit EU **đã MiCAR** (Áo, 05/2025).
+  - Binance EU: có rủi ro thật nhưng bị khái quát hóa quá mức; phạt ~$4.3B AML có căn cứ.
+• Bio “Not investment advice” **không** thay disclosure quan hệ quảng bá.
+
+Khung dùng (SurfAI / Radar)
+| Nên | Không nên |
+| Phát hiện narrative perp/DeFi/RWA/AI | Copy đòn bẩy / size theo tweet |
+| Idea generation cho research sâu | Mua low-cap/meme chỉ vì mention |
+| Sentiment & dòng tiền product mới | Chọn CEX dài hạn theo regulatory hot take |
+| Enrich PMF / revenue angle | Kết luận pháp lý không đọc regulator |
+
+Quy trình an toàn khi thấy call: contract + liquidity + zone + horizon + invalidation + plan thoát; nếu vừa đả kích đối thủ vừa gắn referral → **High conflict** → cross-check nguồn chính thức.
+
+Khuyến nghị
+• Theo dõi **có điều kiện** — layer discovery, weight execution thấp.
+• Auto-flag: referral + claim regulatory mạnh → human review.
+• Re-evaluate định kỳ (hàng quý) nếu ingest sâu vào Signal pipeline.
+
+Nguồn: SurfAI KOL Evaluation Report — Martin (@Martin_bml) · 17/07/2026 · v1.0 · Grok + SurfAI. NFA · DYOR.

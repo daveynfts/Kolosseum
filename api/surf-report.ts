@@ -1,10 +1,11 @@
 /**
- * Upload Surf report PDF/DOCX to R2 prefix RadarKOLsReport/.
+ * Upload Surf report PDF to R2 prefix RadarKOLsReport/.
+ * DOCX is not accepted — convert to PDF before upload.
  *
  * PUT /api/surf-report?filename=Report.pdf
  *   Authorization: Bearer FEED_ADMIN_TOKEN
- *   Body: raw file bytes
- *   Content-Type: application/pdf | application/vnd...docx | application/octet-stream
+ *   Body: raw PDF bytes
+ *   Content-Type: application/pdf | application/octet-stream
  *
  * Returns { ok, key, url, bytes, contentType }
  */
@@ -52,30 +53,17 @@ function sanitizeFilename(raw: string): string {
   name = name.split('/').pop() || 'report.pdf'
   name = name.replace(/[^\w.\-()+\s\u00C0-\u024F]/g, '_')
   name = name.replace(/\s+/g, '_')
-  if (!/\.(pdf|docx)$/i.test(name)) {
+  // Force .pdf — reject .docx names (replace extension)
+  if (/\.docx$/i.test(name)) {
+    name = name.replace(/\.docx$/i, '.pdf')
+  }
+  if (!/\.pdf$/i.test(name)) {
     name = `${name.replace(/\.[^.]+$/, '') || 'report'}.pdf`
   }
   if (name.length > 180) {
-    const ext = name.match(/\.(pdf|docx)$/i)?.[0] || '.pdf'
-    name = name.slice(0, 170) + ext
+    name = name.slice(0, 170) + '.pdf'
   }
   return name
-}
-
-function contentTypeFor(name: string, header?: string): string {
-  const h = (header || '').split(';')[0].trim().toLowerCase()
-  if (h === 'application/pdf' || h.includes('pdf')) return 'application/pdf'
-  if (
-    h.includes('wordprocessingml') ||
-    h.includes('msword') ||
-    h.includes('docx')
-  ) {
-    return 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-  }
-  if (/\.docx$/i.test(name)) {
-    return 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-  }
-  return 'application/pdf'
 }
 
 async function readRawBody(req: VercelRequest): Promise<Buffer> {
@@ -132,6 +120,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
     const qName = String(req.query.filename || req.query.name || '')
     const hName = String(req.headers['x-filename'] || '')
+    // Explicit reject of docx before sanitize renames
+    const rawName = (qName || hName || '').toLowerCase()
+    if (rawName.endsWith('.docx') || rawName.includes('.docx')) {
+      return res.status(415).json({
+        error: 'docx_not_allowed',
+        message:
+          'Chỉ nhận PDF. Export/convert DOCX → PDF rồi upload lại (không upload .docx lên R2).',
+      })
+    }
+
     const filename = sanitizeFilename(qName || hName || 'report.pdf')
     const key = `${PREFIX}/${filename}`
 
@@ -139,7 +137,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (!body.length || body.length < 64) {
       return res.status(400).json({
         error: 'empty_body',
-        message: 'Upload raw PDF/DOCX bytes in request body',
+        message: 'Upload raw PDF bytes in request body',
       })
     }
     if (body.length > MAX_BYTES) {
@@ -150,24 +148,23 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       })
     }
 
-    // Magic bytes soft check
+    // Magic bytes: PDF only (%PDF). DOCX is ZIP (PK) — reject.
     const isPdf =
       body[0] === 0x25 &&
       body[1] === 0x50 &&
       body[2] === 0x44 &&
       body[3] === 0x46 // %PDF
-    const isZip = body[0] === 0x50 && body[1] === 0x4b // DOCX is zip
-    if (!isPdf && !isZip && !/\.docx$/i.test(filename)) {
-      return res.status(400).json({
-        error: 'invalid_file',
-        message: 'Expected PDF or DOCX file',
+    const isZip = body[0] === 0x50 && body[1] === 0x4b // DOCX/ZIP
+    if (isZip || !isPdf) {
+      return res.status(415).json({
+        error: isZip ? 'docx_not_allowed' : 'invalid_file',
+        message: isZip
+          ? 'DOCX/ZIP không được upload. Chỉ PDF (magic %PDF).'
+          : 'Expected a PDF file (starts with %PDF)',
       })
     }
 
-    const contentType = contentTypeFor(
-      filename,
-      String(req.headers['content-type'] || ''),
-    )
+    const contentType = 'application/pdf'
     await r2PutBytes(client, key, body, contentType)
 
     const publicBase = r2PublicBase()

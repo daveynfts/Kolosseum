@@ -1017,12 +1017,13 @@ export function AdminDashboard() {
                     Surf AI report (mock) <SrcBadge source="ai" />
                   </h3>
                   <p className="admin-hint" style={{ marginTop: 0 }}>
-                    Link PDF/DOCX public trên R2 cho <strong>KOL này</strong> —
-                    user bấm logo Surf ở tab “Phân tích sâu”. Không có URL =
-                    mock báo chưa cấu hình (không dùng default chung).
+                    Link <strong>PDF</strong> public trên R2 cho{' '}
+                    <strong>KOL này</strong> — user bấm logo Surf ở tab “Phân
+                    tích sâu”. Chỉ upload PDF (export từ DOCX nếu cần). Không
+                    có URL = chưa cấu hình.
                   </p>
                   <Field
-                    label="Surf report (R2 · RadarKOLsReport/)"
+                    label="Surf report PDF (R2 · RadarKOLsReport/)"
                     source="ai"
                   >
                     <input
@@ -1049,7 +1050,7 @@ export function AdminDashboard() {
                       {uploadingSurf ? 'Uploading…' : 'Upload PDF → R2'}
                       <input
                         type="file"
-                        accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                        accept=".pdf,application/pdf"
                         hidden
                         disabled={uploadingSurf}
                         onChange={(e) => {
@@ -1070,8 +1071,9 @@ export function AdminDashboard() {
                       </a>
                     ) : null}
                     <span className="admin-hint" style={{ margin: 0 }}>
-                      Upload → tự điền URL + auto <strong>Save (R2)</strong>.
-                      Prefix: <code>RadarKOLsReport/</code>
+                      Chỉ <strong>PDF</strong> (không .docx) → URL + auto{' '}
+                      <strong>Save (R2)</strong>. Prefix:{' '}
+                      <code>RadarKOLsReport/</code>
                     </span>
                   </div>
                 </section>

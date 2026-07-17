@@ -1,6 +1,7 @@
 /**
- * Client helper: upload Surf report to R2 via PUT /api/surf-report
+ * Client helper: upload Surf report PDF to R2 via PUT /api/surf-report
  * → key RadarKOLsReport/{filename}
+ * DOCX is not accepted — convert to PDF first.
  */
 import { withBase } from './base'
 import { getAdminToken } from './feedStore'
@@ -18,18 +19,18 @@ export type SurfUploadResult =
 function sanitizeClientName(name: string): string {
   let n = name.trim().replace(/\\/g, '/').split('/').pop() || 'report.pdf'
   n = n.replace(/[^\w.\-()+\s\u00C0-\u024F]/g, '_').replace(/\s+/g, '_')
-  if (!/\.(pdf|docx)$/i.test(n)) n = `${n}.pdf`
+  if (/\.docx$/i.test(n)) n = n.replace(/\.docx$/i, '.pdf')
+  if (!/\.pdf$/i.test(n)) n = `${n.replace(/\.[^.]+$/, '') || 'report'}.pdf`
   return n
 }
 
-/** Suggest filename for a KOL handle */
+/** Suggest PDF filename for a KOL handle */
 export function suggestSurfReportFilename(
   handle: string,
   originalName?: string,
 ): string {
   const h = handle.replace(/^@/, '').trim() || 'kol'
-  if (originalName && /\.(pdf|docx)$/i.test(originalName)) {
-    // Prefer original if already descriptive
+  if (originalName && /\.pdf$/i.test(originalName)) {
     const base = sanitizeClientName(originalName)
     if (base.toLowerCase().includes(h.toLowerCase())) return base
   }
@@ -37,9 +38,7 @@ export function suggestSurfReportFilename(
   const y = d.getUTCFullYear()
   const m = String(d.getUTCMonth() + 1).padStart(2, '0')
   const day = String(d.getUTCDate()).padStart(2, '0')
-  const ext =
-    originalName && /\.docx$/i.test(originalName) ? 'docx' : 'pdf'
-  return `SurfAI_KOL_Evaluation_${h}_${y}${m}${day}.${ext}`
+  return `SurfAI_KOL_Evaluation_${h}_${y}${m}${day}.pdf`
 }
 
 export async function uploadSurfReport(
@@ -67,9 +66,30 @@ export async function uploadSurfReport(
     }
   }
 
+  const name = (file.name || '').toLowerCase()
+  const type = (file.type || '').toLowerCase()
+  if (
+    name.endsWith('.docx') ||
+    type.includes('wordprocessingml') ||
+    type.includes('msword')
+  ) {
+    return {
+      ok: false,
+      error:
+        'Không upload .docx lên R2. Export/convert sang PDF rồi upload lại.',
+    }
+  }
+
   const filename = sanitizeClientName(
     options?.filename || file.name || 'report.pdf',
   )
+  if (/\.docx$/i.test(filename)) {
+    return {
+      ok: false,
+      error: 'Filename phải là .pdf (không nhận .docx).',
+    }
+  }
+
   const url = `${withBase('/api/surf-report')}?filename=${encodeURIComponent(filename)}`
 
   try {
@@ -77,7 +97,7 @@ export async function uploadSurfReport(
       method: 'PUT',
       headers: {
         Authorization: `Bearer ${token}`,
-        'Content-Type': file.type || 'application/octet-stream',
+        'Content-Type': file.type || 'application/pdf',
         'X-Filename': filename,
       },
       body: file,

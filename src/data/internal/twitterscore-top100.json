@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "kind": "twitterscore-top2200",
-  "asOf": "2026-07-17T09:34:21.221Z",
+  "kind": "twitterscore-top2300",
+  "asOf": "2026-07-17T09:43:01.022Z",
   "source": "https://twitterscore.io/topScored/",
   "sourceNote": "twitterscore.io · Top ~600 Web3 by follower-network influence score",
   "maxScore": 1000,
@@ -27,9 +27,10 @@
   "top2000Threshold": 226,
   "top2100Threshold": 221,
   "top2200Threshold": 217,
-  "listSize": 2199,
-  "median": 304,
-  "mean": 359.87,
+  "top2300Threshold": 211,
+  "listSize": 2299,
+  "median": 299,
+  "mean": 353.52,
   "atMax": 17,
   "accounts": [
     {
@@ -13225,8 +13226,608 @@
       "handle": "colludingnode",
       "displayName": "c-node",
       "score": 217
+    },
+    {
+      "rank": 2200,
+      "handle": "lorepunk",
+      "displayName": "lorepunk",
+      "score": 217
+    },
+    {
+      "rank": 2201,
+      "handle": "bscholl",
+      "displayName": "Blake Scholl",
+      "score": 216
+    },
+    {
+      "rank": 2202,
+      "handle": "puntium",
+      "displayName": "Ken Deeter",
+      "score": 216
+    },
+    {
+      "rank": 2203,
+      "handle": "bitmex",
+      "displayName": "BitMEX",
+      "score": 216
+    },
+    {
+      "rank": 2204,
+      "handle": "phygitals",
+      "displayName": "phygitals",
+      "score": 216
+    },
+    {
+      "rank": 2205,
+      "handle": "cryptokitties",
+      "displayName": "CryptoKitties",
+      "score": 216
+    },
+    {
+      "rank": 2206,
+      "handle": "superstateinc",
+      "displayName": "Superstate",
+      "score": 216
+    },
+    {
+      "rank": 2207,
+      "handle": "ns",
+      "displayName": "NS",
+      "score": 216
+    },
+    {
+      "rank": 2208,
+      "handle": "pbartstephens",
+      "displayName": "Bart Stephens",
+      "score": 216
+    },
+    {
+      "rank": 2209,
+      "handle": "jacobpphillips",
+      "displayName": "Jacob Phillips",
+      "score": 216
+    },
+    {
+      "rank": 2210,
+      "handle": "heart_",
+      "displayName": "Heart",
+      "score": 216
+    },
+    {
+      "rank": 2211,
+      "handle": "0xbeans",
+      "displayName": "0xBeans",
+      "score": 216
+    },
+    {
+      "rank": 2212,
+      "handle": "benjaminsimon97",
+      "displayName": "Ben Simon",
+      "score": 216
+    },
+    {
+      "rank": 2213,
+      "handle": "_seal_org",
+      "displayName": "Security Alliance",
+      "score": 216
+    },
+    {
+      "rank": 2214,
+      "handle": "resaang",
+      "displayName": "Resaang",
+      "score": 216
+    },
+    {
+      "rank": 2215,
+      "handle": "davemcclure",
+      "displayName": "Dave McClure",
+      "score": 215
+    },
+    {
+      "rank": 2216,
+      "handle": "floodcapital",
+      "displayName": "Duncan",
+      "score": 215
+    },
+    {
+      "rank": 2217,
+      "handle": "iterintellectus",
+      "displayName": "vittorio",
+      "score": 215
+    },
+    {
+      "rank": 2218,
+      "handle": "averyching",
+      "displayName": "Avery Ching",
+      "score": 215
+    },
+    {
+      "rank": 2219,
+      "handle": "babylonlabs_io",
+      "displayName": "Babylon",
+      "score": 215
+    },
+    {
+      "rank": 2220,
+      "handle": "swickie",
+      "displayName": "swickie",
+      "score": 215
+    },
+    {
+      "rank": 2221,
+      "handle": "kastxyz",
+      "displayName": "KAST",
+      "score": 215
+    },
+    {
+      "rank": 2222,
+      "handle": "cc2ventures",
+      "displayName": "CC2 Ventures",
+      "score": 215
+    },
+    {
+      "rank": 2223,
+      "handle": "wagmialexander",
+      "displayName": "alexander",
+      "score": 215
+    },
+    {
+      "rank": 2224,
+      "handle": "adambain",
+      "displayName": "Adam Bain",
+      "score": 215
+    },
+    {
+      "rank": 2225,
+      "handle": "0xaneri",
+      "displayName": "aneri",
+      "score": 215
+    },
+    {
+      "rank": 2226,
+      "handle": "alexrkonrad",
+      "displayName": "Alex Konrad",
+      "score": 215
+    },
+    {
+      "rank": 2227,
+      "handle": "bayc2745",
+      "displayName": "voltura.eth",
+      "score": 215
+    },
+    {
+      "rank": 2228,
+      "handle": "jeff_weinstein",
+      "displayName": "Jeff Weinstein",
+      "score": 215
+    },
+    {
+      "rank": 2229,
+      "handle": "ostium",
+      "displayName": "Ostium",
+      "score": 215
+    },
+    {
+      "rank": 2230,
+      "handle": "web3foundation",
+      "displayName": "Web3 Foundation",
+      "score": 215
+    },
+    {
+      "rank": 2231,
+      "handle": "validatoreth",
+      "displayName": "validator.eth",
+      "score": 215
+    },
+    {
+      "rank": 2232,
+      "handle": "historyinmemes",
+      "displayName": "Historic Vids",
+      "score": 215
+    },
+    {
+      "rank": 2233,
+      "handle": "bearsnake_21",
+      "displayName": "bearsnake",
+      "score": 215
+    },
+    {
+      "rank": 2234,
+      "handle": "terencechain",
+      "displayName": "terence",
+      "score": 215
+    },
+    {
+      "rank": 2235,
+      "handle": "kinkybedbugs",
+      "displayName": "Father",
+      "score": 215
+    },
+    {
+      "rank": 2236,
+      "handle": "paperdstudio",
+      "displayName": "PaperD",
+      "score": 215
+    },
+    {
+      "rank": 2237,
+      "handle": "justinmezzell",
+      "displayName": "Justin Mezzell",
+      "score": 215
+    },
+    {
+      "rank": 2238,
+      "handle": "blockworksres",
+      "displayName": "Blockworks Research",
+      "score": 214
+    },
+    {
+      "rank": 2239,
+      "handle": "valko",
+      "displayName": "valko",
+      "score": 214
+    },
+    {
+      "rank": 2240,
+      "handle": "mg",
+      "displayName": "Matt Galligan",
+      "score": 214
+    },
+    {
+      "rank": 2241,
+      "handle": "jacklipstone",
+      "displayName": "Jack Lipstone",
+      "score": 214
+    },
+    {
+      "rank": 2242,
+      "handle": "maxbranzburg",
+      "displayName": "Max Branzburg",
+      "score": 214
+    },
+    {
+      "rank": 2243,
+      "handle": "bitget",
+      "displayName": "Bitget",
+      "score": 214
+    },
+    {
+      "rank": 2244,
+      "handle": "varunsrin",
+      "displayName": "Varun Srinivasan",
+      "score": 214
+    },
+    {
+      "rank": 2245,
+      "handle": "hawkwardart",
+      "displayName": "hawkward",
+      "score": 214
+    },
+    {
+      "rank": 2246,
+      "handle": "cosmo_1393",
+      "displayName": "Cosmo",
+      "score": 214
+    },
+    {
+      "rank": 2247,
+      "handle": "cited",
+      "displayName": "Cited",
+      "score": 214
+    },
+    {
+      "rank": 2248,
+      "handle": "milessuter",
+      "displayName": "Miles",
+      "score": 214
+    },
+    {
+      "rank": 2249,
+      "handle": "0xmistblade",
+      "displayName": "0xMistBlade",
+      "score": 214
+    },
+    {
+      "rank": 2250,
+      "handle": "huntersolaire_",
+      "displayName": "Hunter Solaire",
+      "score": 214
+    },
+    {
+      "rank": 2251,
+      "handle": "tzhongg",
+      "displayName": "Tiffany Zhong",
+      "score": 214
+    },
+    {
+      "rank": 2252,
+      "handle": "khanabbas201",
+      "displayName": "Abbas Khan",
+      "score": 214
+    },
+    {
+      "rank": 2253,
+      "handle": "fabianosolana",
+      "displayName": "fabiano.sol",
+      "score": 214
+    },
+    {
+      "rank": 2254,
+      "handle": "arweaveeco",
+      "displayName": "Arweave Ecosystem",
+      "score": 214
+    },
+    {
+      "rank": 2255,
+      "handle": "schorlukas",
+      "displayName": "Lukas Schor",
+      "score": 214
+    },
+    {
+      "rank": 2256,
+      "handle": "simkinstepan",
+      "displayName": "Stepan/Squads",
+      "score": 214
+    },
+    {
+      "rank": 2257,
+      "handle": "dharma_hq",
+      "displayName": "Dharma",
+      "score": 213
+    },
+    {
+      "rank": 2258,
+      "handle": "achalvs",
+      "displayName": "Achal",
+      "score": 213
+    },
+    {
+      "rank": 2259,
+      "handle": "coryswan",
+      "displayName": "Cory Swan",
+      "score": 213
+    },
+    {
+      "rank": 2260,
+      "handle": "ngbxshpend",
+      "displayName": "ngbshpend.eth",
+      "score": 213
+    },
+    {
+      "rank": 2261,
+      "handle": "nillion",
+      "displayName": "Nillion",
+      "score": 213
+    },
+    {
+      "rank": 2262,
+      "handle": "alexgedevani",
+      "displayName": "Alex Gedevani",
+      "score": 213
+    },
+    {
+      "rank": 2263,
+      "handle": "musashi_dev",
+      "displayName": "musashi",
+      "score": 213
+    },
+    {
+      "rank": 2264,
+      "handle": "alexia",
+      "displayName": "Alexia Bonatsos",
+      "score": 213
+    },
+    {
+      "rank": 2265,
+      "handle": "lootproject",
+      "displayName": "Loot",
+      "score": 213
+    },
+    {
+      "rank": 2266,
+      "handle": "what3verman",
+      "displayName": "whateverman",
+      "score": 213
+    },
+    {
+      "rank": 2267,
+      "handle": "chatwithcharles",
+      "displayName": "Charles Read",
+      "score": 213
+    },
+    {
+      "rank": 2268,
+      "handle": "kobigurk",
+      "displayName": "Kobi Gurkan",
+      "score": 213
+    },
+    {
+      "rank": 2269,
+      "handle": "mad_dog_jones",
+      "displayName": "Mad Dog Jones",
+      "score": 213
+    },
+    {
+      "rank": 2270,
+      "handle": "lexsokolin",
+      "displayName": "Lex Sokolin",
+      "score": 213
+    },
+    {
+      "rank": 2271,
+      "handle": "collins_belton",
+      "displayName": "Collins Belton",
+      "score": 213
+    },
+    {
+      "rank": 2272,
+      "handle": "originprotocol",
+      "displayName": "Origin Protocol",
+      "score": 213
+    },
+    {
+      "rank": 2273,
+      "handle": "arampell",
+      "displayName": "Alex Rampell",
+      "score": 213
+    },
+    {
+      "rank": 2274,
+      "handle": "davidesilverman",
+      "displayName": "davidev.eth",
+      "score": 213
+    },
+    {
+      "rank": 2275,
+      "handle": "dennis_porter_",
+      "displayName": "Dennis Porter",
+      "score": 212
+    },
+    {
+      "rank": 2276,
+      "handle": "lexaprotrader",
+      "displayName": "Lexapro",
+      "score": 212
+    },
+    {
+      "rank": 2277,
+      "handle": "zachwitkoff",
+      "displayName": "Zach Witkoff",
+      "score": 212
+    },
+    {
+      "rank": 2278,
+      "handle": "abetrade",
+      "displayName": "Adam",
+      "score": 212
+    },
+    {
+      "rank": 2279,
+      "handle": "nftguyy",
+      "displayName": "nftguyy",
+      "score": 212
+    },
+    {
+      "rank": 2280,
+      "handle": "grass",
+      "displayName": "Grass",
+      "score": 212
+    },
+    {
+      "rank": 2281,
+      "handle": "jgebbia",
+      "displayName": "Joe Gebbia",
+      "score": 212
+    },
+    {
+      "rank": 2282,
+      "handle": "lukecannon727",
+      "displayName": "Luke Cannon",
+      "score": 212
+    },
+    {
+      "rank": 2283,
+      "handle": "archillect",
+      "displayName": "Archillect",
+      "score": 212
+    },
+    {
+      "rank": 2284,
+      "handle": "joshconstine",
+      "displayName": "Josh Constine",
+      "score": 212
+    },
+    {
+      "rank": 2285,
+      "handle": "zephyr_z9",
+      "displayName": "Zephyr",
+      "score": 212
+    },
+    {
+      "rank": 2286,
+      "handle": "edfelten",
+      "displayName": "Ed Felten",
+      "score": 212
+    },
+    {
+      "rank": 2287,
+      "handle": "yoannturpin1",
+      "displayName": "Yoann Turpin",
+      "score": 212
+    },
+    {
+      "rank": 2288,
+      "handle": "gmx_io",
+      "displayName": "GMX",
+      "score": 212
+    },
+    {
+      "rank": 2289,
+      "handle": "adietrichs",
+      "displayName": "Ansgar Dietrichs",
+      "score": 212
+    },
+    {
+      "rank": 2290,
+      "handle": "cryptoparadyme",
+      "displayName": "Dyme",
+      "score": 212
+    },
+    {
+      "rank": 2291,
+      "handle": "joshbobrowsky",
+      "displayName": "Josh",
+      "score": 212
+    },
+    {
+      "rank": 2292,
+      "handle": "mattkaneartist",
+      "displayName": "Matt Kane",
+      "score": 212
+    },
+    {
+      "rank": 2293,
+      "handle": "veh0rny",
+      "displayName": "vxh0rny",
+      "score": 211
+    },
+    {
+      "rank": 2294,
+      "handle": "artofconviction",
+      "displayName": "Conviction",
+      "score": 211
+    },
+    {
+      "rank": 2295,
+      "handle": "daniel100eth",
+      "displayName": "Daniel100.eth",
+      "score": 211
+    },
+    {
+      "rank": 2296,
+      "handle": "producthunt",
+      "displayName": "Product Hunt",
+      "score": 211
+    },
+    {
+      "rank": 2297,
+      "handle": "vivekventures",
+      "displayName": "Vivek Raman",
+      "score": 211
+    },
+    {
+      "rank": 2298,
+      "handle": "xverse",
+      "displayName": "Xverse",
+      "score": 211
+    },
+    {
+      "rank": 2299,
+      "handle": "seth",
+      "displayName": "Seth Goldstein",
+      "score": 211
     }
   ],
-  "updatedAt": "2026-07-17T09:34:21.221Z",
-  "note": "Internal benchmark · Top ~600 Web3 TwitterScore · admin editable · Extended with ranks 601-700 (twitterscore.io paste). · Extended with ranks 701-800 (twitterscore.io paste). · Extended with ranks 801-900 (twitterscore.io paste). · Extended with ranks 901-1000 (twitterscore.io paste). · Extended with ranks 1001-1100 (twitterscore.io paste). · Extended with ranks 1101-1200 (twitterscore.io paste). · Extended with ranks 1201-1300 full (twitterscore.io paste). · Extended with ranks 1301-1400 (twitterscore.io paste). · Extended with ranks 1401-1500 (twitterscore.io paste). · Extended with ranks 1501-1600 (twitterscore.io paste). · Extended with ranks 1601-1700 (twitterscore.io paste). · Extended with ranks 1701-1800 (twitterscore.io paste). · Extended with ranks 1801-1900 (twitterscore.io paste). · Extended with ranks 1901-2000 (twitterscore.io paste). · Extended with ranks 2001-2100 (twitterscore.io paste). · Extended with ranks 2101-2200 (twitterscore.io paste)."
+  "updatedAt": "2026-07-17T09:43:01.022Z",
+  "note": "Internal benchmark · Top ~600 Web3 TwitterScore · admin editable · Extended with ranks 601-700 (twitterscore.io paste). · Extended with ranks 701-800 (twitterscore.io paste). · Extended with ranks 801-900 (twitterscore.io paste). · Extended with ranks 901-1000 (twitterscore.io paste). · Extended with ranks 1001-1100 (twitterscore.io paste). · Extended with ranks 1101-1200 (twitterscore.io paste). · Extended with ranks 1201-1300 full (twitterscore.io paste). · Extended with ranks 1301-1400 (twitterscore.io paste). · Extended with ranks 1401-1500 (twitterscore.io paste). · Extended with ranks 1501-1600 (twitterscore.io paste). · Extended with ranks 1601-1700 (twitterscore.io paste). · Extended with ranks 1701-1800 (twitterscore.io paste). · Extended with ranks 1801-1900 (twitterscore.io paste). · Extended with ranks 1901-2000 (twitterscore.io paste). · Extended with ranks 2001-2100 (twitterscore.io paste). · Extended with ranks 2101-2200 (twitterscore.io paste). · Extended with ranks 2201-2300 (twitterscore.io paste)."
 }

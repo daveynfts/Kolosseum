@@ -38,12 +38,47 @@ function avatarKey(handle: string): string {
   return `radar/avatars/${clean}.jpg`
 }
 
-function upgradeTwimg(url: string): string {
-  return url
-    .replace('_normal.', '_400x400.')
-    .replace('_bigger.', '_400x400.')
-    .replace('_mini.', '_400x400.')
-    .split('?')[0]
+/**
+ * Build candidate twimg URLs. Some accounts return tiny _normal PNGs
+ * and broken _400x400 variants; original (no size suffix) is often larger.
+ */
+function twimgCandidates(url: string): string[] {
+  const base = url.split('?')[0]
+  const stripped = base
+    .replace(/_normal(\.[a-zA-Z0-9]+)$/i, '$1')
+    .replace(/_bigger(\.[a-zA-Z0-9]+)$/i, '$1')
+    .replace(/_mini(\.[a-zA-Z0-9]+)$/i, '$1')
+    .replace(/_x96(\.[a-zA-Z0-9]+)$/i, '$1')
+    .replace(/_200x200(\.[a-zA-Z0-9]+)$/i, '$1')
+    .replace(/_400x400(\.[a-zA-Z0-9]+)$/i, '$1')
+  const list = [
+    base.replace(/_normal\./i, '_400x400.'),
+    base.replace(/_bigger\./i, '_400x400.'),
+    base.replace(/_mini\./i, '_400x400.'),
+    stripped,
+    base,
+  ]
+  return [...new Set(list.filter(Boolean))]
+}
+
+const MIN_AVATAR_BYTES = 400
+
+async function downloadImage(
+  url: string,
+): Promise<{ body: Buffer; contentType: string } | null> {
+  try {
+    const imgRes = await fetch(url, {
+      headers: { Accept: 'image/*', 'User-Agent': 'vn-kol-radar/1.0' },
+    })
+    if (!imgRes.ok) return null
+    const ab = await imgRes.arrayBuffer()
+    const body = Buffer.from(ab)
+    if (body.length < MIN_AVATAR_BYTES) return null
+    const contentType = imgRes.headers.get('content-type') || 'image/jpeg'
+    return { body, contentType }
+  } catch {
+    return null
+  }
 }
 
 async function fetchXAvatar(handle: string): Promise<{
@@ -66,16 +101,11 @@ async function fetchXAvatar(handle: string): Promise<{
         (user.profile_image_url_https as string) ||
         (user.avatar as string) ||
         ''
-      if (!img) continue
-      const imgRes = await fetch(upgradeTwimg(img), {
-        headers: { Accept: 'image/*', 'User-Agent': 'vn-kol-radar/1.0' },
-      })
-      if (!imgRes.ok) continue
-      const ab = await imgRes.arrayBuffer()
-      const body = Buffer.from(ab)
-      if (body.length < 800) continue
-      const contentType = imgRes.headers.get('content-type') || 'image/jpeg'
-      return { body, contentType }
+      if (!img || !/^https?:\/\//i.test(img)) continue
+      for (const candidate of twimgCandidates(img)) {
+        const got = await downloadImage(candidate)
+        if (got) return got
+      }
     } catch {
       continue
     }
@@ -85,21 +115,8 @@ async function fetchXAvatar(handle: string): Promise<{
     `https://unavatar.io/x/${encodeURIComponent(h)}`,
     `https://unavatar.io/twitter/${encodeURIComponent(h)}`,
   ]) {
-    try {
-      const imgRes = await fetch(path, {
-        headers: { Accept: 'image/*', 'User-Agent': 'vn-kol-radar/1.0' },
-      })
-      if (!imgRes.ok) continue
-      const ab = await imgRes.arrayBuffer()
-      const body = Buffer.from(ab)
-      if (body.length < 800) continue
-      return {
-        body,
-        contentType: imgRes.headers.get('content-type') || 'image/jpeg',
-      }
-    } catch {
-      continue
-    }
+    const got = await downloadImage(path)
+    if (got) return got
   }
   return null
 }
@@ -165,7 +182,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         body = Buffer.from(raw, 'binary')
       }
 
-      if (!body || body.length < 800) {
+      if (!body || body.length < MIN_AVATAR_BYTES) {
         const fetched = await fetchXAvatar(handle)
         if (!fetched) {
           return res.status(502).json({

@@ -4,7 +4,9 @@
  */
 import {
   RECENT_FOLLOWERS_BY_HANDLE,
+  SMART_FOLLOWERS_BY_HANDLE,
   type RecentFollower,
+  type SmartFollower,
 } from '../data/recentFollowers'
 import { withBase } from './base'
 import { getAdminToken } from './feedStore'
@@ -13,6 +15,7 @@ const CACHE_KEY = 'vn-kol-map-recent-followers-v1'
 export const RECENT_FOLLOWERS_EVENT = 'vn-kol-recent-followers-updated'
 
 export type RecentFollowersMap = Record<string, RecentFollower[]>
+export type SmartFollowersMap = Record<string, SmartFollower[]>
 
 export type RecentFollowersPayload = {
   version?: number
@@ -20,7 +23,10 @@ export type RecentFollowersPayload = {
   source?: string
   note?: string
   count?: number
+  /** Recent followers (who followed the KOL recently) */
   map: RecentFollowersMap
+  /** Smart / high-signal followers list */
+  smartMap?: SmartFollowersMap
 }
 
 function apiUrl() {
@@ -42,6 +48,26 @@ function normalizeFollower(f: Partial<RecentFollower>): RecentFollower | null {
   }
 }
 
+function normalizeSmartFollower(
+  f: Partial<SmartFollower>,
+): SmartFollower | null {
+  const handle = normalizeHandle(f.handle || '')
+  if (!handle) return null
+  return {
+    handle,
+    displayName: (f.displayName || handle).trim(),
+    role: (f.role || '').trim() || undefined,
+    followers:
+      typeof f.followers === 'number' && Number.isFinite(f.followers)
+        ? f.followers
+        : undefined,
+    influenceScore:
+      typeof f.influenceScore === 'number' && Number.isFinite(f.influenceScore)
+        ? f.influenceScore
+        : undefined,
+  }
+}
+
 export function normalizeMap(raw: unknown): RecentFollowersMap {
   if (!raw || typeof raw !== 'object') return {}
   const out: RecentFollowersMap = {}
@@ -56,13 +82,38 @@ export function normalizeMap(raw: unknown): RecentFollowersMap {
   return out
 }
 
+export function normalizeSmartMap(raw: unknown): SmartFollowersMap {
+  if (!raw || typeof raw !== 'object') return {}
+  const out: SmartFollowersMap = {}
+  for (const [k, list] of Object.entries(raw as Record<string, unknown>)) {
+    const key = normalizeHandle(k)
+    if (!Array.isArray(list)) continue
+    const followers = list
+      .map((x) => normalizeSmartFollower(x as Partial<SmartFollower>))
+      .filter((x): x is SmartFollower => !!x)
+    if (followers.length) out[key] = followers
+  }
+  return out
+}
+
 /** Deep-clone of compiled seed. */
 export function seedRecentFollowersMap(): RecentFollowersMap {
   return normalizeMap(RECENT_FOLLOWERS_BY_HANDLE)
 }
 
-function writeCache(map: RecentFollowersMap, meta?: Partial<RecentFollowersPayload>) {
+export function seedSmartFollowersMap(): SmartFollowersMap {
+  return normalizeSmartMap(SMART_FOLLOWERS_BY_HANDLE)
+}
+
+function writeCache(
+  map: RecentFollowersMap,
+  meta?: Partial<RecentFollowersPayload>,
+) {
   try {
+    const smartMap =
+      meta?.smartMap !== undefined
+        ? normalizeSmartMap(meta.smartMap)
+        : readCache()?.smartMap
     const payload: RecentFollowersPayload = {
       version: 1,
       updatedAt: meta?.updatedAt || new Date().toISOString(),
@@ -70,6 +121,8 @@ function writeCache(map: RecentFollowersMap, meta?: Partial<RecentFollowersPaylo
       note: meta?.note,
       count: Object.keys(map).length,
       map,
+      smartMap:
+        smartMap && Object.keys(smartMap).length ? smartMap : undefined,
     }
     localStorage.setItem(CACHE_KEY, JSON.stringify(payload))
   } catch {
@@ -91,9 +144,13 @@ function readCache(): RecentFollowersPayload | null {
     const payload = data as RecentFollowersPayload
     if (!payload?.map) return null
     const map = normalizeMap(payload.map)
-    return Object.keys(map).length
-      ? { ...payload, map }
-      : null
+    const smartMap = normalizeSmartMap(payload.smartMap)
+    if (!Object.keys(map).length && !Object.keys(smartMap).length) return null
+    return {
+      ...payload,
+      map,
+      smartMap: Object.keys(smartMap).length ? smartMap : undefined,
+    }
   } catch {
     return null
   }
@@ -125,8 +182,13 @@ export async function fetchServerRecentFollowers(): Promise<RecentFollowersPaylo
     const data = (await res.json()) as RecentFollowersPayload
     if (!data?.map || typeof data.map !== 'object') return null
     const map = normalizeMap(data.map)
-    if (!Object.keys(map).length) return null
-    return { ...data, map }
+    const smartMap = normalizeSmartMap(data.smartMap)
+    if (!Object.keys(map).length && !Object.keys(smartMap).length) return null
+    return {
+      ...data,
+      map,
+      smartMap: Object.keys(smartMap).length ? smartMap : undefined,
+    }
   } catch {
     return null
   }
@@ -134,6 +196,7 @@ export async function fetchServerRecentFollowers(): Promise<RecentFollowersPaylo
 
 export type LoadFollowersResult = {
   map: RecentFollowersMap
+  smartMap: SmartFollowersMap
   source: 'server' | 'cache' | 'seed'
   updatedAt: string | null
 }
@@ -144,6 +207,7 @@ export async function loadRecentFollowersWithSource(): Promise<LoadFollowersResu
     writeCache(server.map, server)
     return {
       map: server.map,
+      smartMap: server.smartMap ?? {},
       source: 'server',
       updatedAt: server.updatedAt ?? null,
     }
@@ -152,12 +216,14 @@ export async function loadRecentFollowersWithSource(): Promise<LoadFollowersResu
   if (cache) {
     return {
       map: cache.map,
+      smartMap: cache.smartMap ?? {},
       source: 'cache',
       updatedAt: cache.updatedAt ?? null,
     }
   }
   return {
     map: seedRecentFollowersMap(),
+    smartMap: seedSmartFollowersMap(),
     source: 'seed',
     updatedAt: null,
   }
@@ -172,6 +238,7 @@ export async function saveRecentFollowersToServer(
   map: RecentFollowersMap,
   note?: string,
   tokenOverride?: string,
+  smartMap?: SmartFollowersMap,
 ): Promise<ServerFollowersSaveResult> {
   const token = (tokenOverride ?? getAdminToken()).trim()
   if (!token) {
@@ -181,6 +248,10 @@ export async function saveRecentFollowersToServer(
     }
   }
   const next = normalizeMap(map)
+  const nextSmart =
+    smartMap !== undefined
+      ? normalizeSmartMap(smartMap)
+      : readCache()?.smartMap || seedSmartFollowersMap()
   const payload: RecentFollowersPayload = {
     version: 1,
     updatedAt: new Date().toISOString(),
@@ -188,6 +259,7 @@ export async function saveRecentFollowersToServer(
     note,
     count: Object.keys(next).length,
     map: next,
+    smartMap: Object.keys(nextSmart).length ? nextSmart : undefined,
   }
   try {
     const res = await fetch(apiUrl(), {
@@ -214,6 +286,7 @@ export async function saveRecentFollowersToServer(
     writeCache(next, {
       updatedAt: body.updatedAt || payload.updatedAt,
       source: payload.source,
+      smartMap: payload.smartMap,
     })
     return {
       ok: true,

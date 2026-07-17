@@ -2112,7 +2112,7 @@ button.view-toggle-btn.is-active {
   box-shadow: 0 0 8px rgba(34, 211, 238, 0.55);
 }
 
-/* ——— Recent followers tab ——— */
+/* ——— Smart / Recent followers tab ——— */
 .recent-follows {
   display: flex;
   flex-direction: column;
@@ -2143,6 +2143,61 @@ button.view-toggle-btn.is-active {
   margin: 4px 0 0;
   font-size: 0.68rem;
   color: #64748b;
+}
+
+.recent-follows__subtabs {
+  display: flex;
+  gap: 6px;
+  padding: 2px;
+  border-radius: 10px;
+  background: rgba(15, 23, 42, 0.55);
+  border: 1px solid rgba(148, 163, 184, 0.12);
+}
+
+.recent-follows__subtab {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin: 0;
+  padding: 7px 8px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: #94a3b8;
+  font-size: 0.7rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.recent-follows__subtab:hover:not(:disabled) {
+  color: #e2e8f0;
+  background: rgba(148, 163, 184, 0.08);
+}
+
+.recent-follows__subtab.is-active {
+  color: #0f172a;
+  background: linear-gradient(135deg, #7dd3fc, #a5b4fc);
+}
+
+.recent-follows__subtab:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.recent-follows__subtab-n {
+  font-size: 0.62rem;
+  font-weight: 700;
+  opacity: 0.85;
+  padding: 1px 5px;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.18);
+}
+
+.recent-follows__subtab.is-active .recent-follows__subtab-n {
+  background: rgba(15, 23, 42, 0.2);
 }
 
 .recent-follows__empty {
@@ -2181,9 +2236,60 @@ button.view-toggle-btn.is-active {
   transition: background 0.15s, border-color 0.15s;
 }
 
+.recent-follows__link--smart {
+  grid-template-columns: 22px 40px 1fr auto;
+}
+
 .recent-follows__link:hover {
   background: rgba(34, 211, 238, 0.08);
   border-color: rgba(34, 211, 238, 0.22);
+}
+
+.recent-follows__rank {
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: #64748b;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.recent-follows__role {
+  font-size: 0.62rem;
+  color: #94a3b8;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.recent-follows__stats {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.recent-follows__stat {
+  font-size: 0.65rem;
+  color: #94a3b8;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.recent-follows__stat em {
+  font-style: normal;
+  color: #64748b;
+  font-size: 0.58rem;
+}
+
+.recent-follows__stat--score {
+  font-weight: 700;
+  color: #7dd3fc;
+}
+
+.recent-follows__stat--score.is-zero {
+  color: #64748b;
+  font-weight: 600;
 }
 
 .x-profile-avatar,

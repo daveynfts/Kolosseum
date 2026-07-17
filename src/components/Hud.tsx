@@ -20,7 +20,7 @@ import { BioRichText } from './BioRichText'
 import { RankBadge } from './RankBadge'
 import { SurfAnalysisMock } from './SurfAnalysisMock'
 import { RecentFollowersPanel } from './RecentFollowersPanel'
-import { getRecentFollowers } from '../data/recentFollowers'
+import { hasFollowerTabData } from '../data/recentFollowers'
 
 const NICHES: Array<Niche | 'All'> = [
   'All',
@@ -536,7 +536,7 @@ export function Hud({
             >
               Phân tích sâu
             </button>
-            {getRecentFollowers(selected.handle).length > 0 && (
+            {hasFollowerTabData(selected.handle) && (
               <button
                 type="button"
                 role="tab"
@@ -544,7 +544,7 @@ export function Hud({
                 className={`detail-tab ${detailTab === 'follows' ? 'is-active' : ''}`}
                 onClick={() => setDetailTab('follows')}
               >
-                Recent follows
+                Smart follower
               </button>
             )}
           </div>

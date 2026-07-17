@@ -21,8 +21,10 @@ type Body = {
   source?: string
   note?: string
   count?: number
-  /** handle (lowercase) → followers[] */
+  /** handle (lowercase) → recent followers[] */
   map?: Record<string, unknown>
+  /** handle (lowercase) → smart followers[] */
+  smartMap?: Record<string, unknown>
   [k: string]: unknown
 }
 
@@ -92,11 +94,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         note: body.note,
         count: Object.keys(body.map).length,
         map: body.map,
+        smartMap:
+          body.smartMap && typeof body.smartMap === 'object'
+            ? body.smartMap
+            : undefined,
       }
       await r2PutJson(client, RECENT_FOLLOWERS_OBJECT_KEY, payload)
       return res.status(200).json({
         ok: true,
         count: payload.count,
+        smartCount: payload.smartMap
+          ? Object.keys(payload.smartMap).length
+          : 0,
         updatedAt: payload.updatedAt,
         storage: 'r2',
       })

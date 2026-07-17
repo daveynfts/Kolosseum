@@ -11,6 +11,18 @@ export interface RecentFollower {
   followedAt?: string
 }
 
+/** High-signal accounts that follow the KOL (SurfAI / graph quality list). */
+export interface SmartFollower {
+  handle: string
+  displayName: string
+  /** Role label, e.g. "Founder of OKX" */
+  role?: string
+  /** Their X follower count (if known) */
+  followers?: number
+  /** Influence score (SurfAI / ranking proxy) */
+  influenceScore?: number
+}
+
 export const RECENT_FOLLOWERS_BY_HANDLE: Record<string, RecentFollower[]> = {
   thuancapital: [
     {
@@ -1221,32 +1233,252 @@ export const RECENT_FOLLOWERS_BY_HANDLE: Record<string, RecentFollower[]> = {
   ],
 }
 
+/** Smart followers seed — key = KOL handle lowercase */
+export const SMART_FOLLOWERS_BY_HANDLE: Record<string, SmartFollower[]> = {
+  /** Martin (@Martin_bml) — SurfAI smart followers snapshot */
+  martin_bml: [
+    {
+      handle: 'star_okx',
+      displayName: 'Star Xu',
+      role: 'Founder of OKX',
+      followers: 234774,
+      influenceScore: 917.36,
+    },
+    {
+      handle: 'osf_rekt',
+      displayName: 'OSF',
+      role: 'Co-Founder, Rektguy AI',
+      followers: 213343,
+      influenceScore: 843.59,
+    },
+    {
+      handle: 'ryandcrypto',
+      displayName: 'ryandcrypto',
+      role: 'KOL',
+      followers: 241366,
+      influenceScore: 839.97,
+    },
+    {
+      handle: 'gracybitget',
+      displayName: 'Gracy Chen',
+      role: 'CEO of Bitget',
+      followers: 285054,
+      influenceScore: 766.26,
+    },
+    {
+      handle: 'cozymaximalist',
+      displayName: 'cozy',
+      role: 'Director of Growth, Kuru',
+      followers: 15077,
+      influenceScore: 729.64,
+    },
+    {
+      handle: 'xenbh',
+      displayName: 'Xen',
+      role: 'Head of Global Builders, Coinbase',
+      followers: 24070,
+      influenceScore: 726.36,
+    },
+    {
+      handle: 'kmoney',
+      displayName: 'kmoney',
+      role: 'KOL',
+      followers: 169120,
+      influenceScore: 715.62,
+    },
+    {
+      handle: 'andrewmoh',
+      displayName: 'andrewmoh',
+      role: 'KOL',
+      followers: 53594,
+      influenceScore: 702.7,
+    },
+    {
+      handle: 'heyaura',
+      displayName: 'heyAura',
+      role: 'Chưa gắn nhãn',
+      followers: 182556,
+      influenceScore: 612.01,
+    },
+    {
+      handle: 'aggrnews',
+      displayName: 'Aggr News',
+      role: 'KOL/news account',
+      followers: 35557,
+      influenceScore: 597.37,
+    },
+    {
+      handle: 'boxmining',
+      displayName: 'Boxmining',
+      role: 'Investor/VC',
+      followers: 177240,
+      influenceScore: 559.29,
+    },
+    {
+      handle: 'tinweb_3',
+      displayName: 'Kutin',
+      role: 'KOL',
+      followers: 13632,
+      influenceScore: 534.6,
+    },
+    {
+      handle: '0xtindorr',
+      displayName: 'Tindorr',
+      role: 'KOL',
+      followers: 44697,
+      influenceScore: 534.31,
+    },
+    {
+      handle: 'kisc_0',
+      displayName: 'Afrolite',
+      role: 'KOL',
+      followers: 8636,
+      influenceScore: 477.41,
+    },
+    {
+      handle: 'airtightfish',
+      displayName: 'Squid',
+      role: 'Chưa gắn nhãn',
+      followers: 7192,
+      influenceScore: 475.92,
+    },
+    {
+      handle: 'be_kindplss',
+      displayName: 'be',
+      role: 'Chưa gắn nhãn',
+      followers: 10543,
+      influenceScore: 466.74,
+    },
+    {
+      handle: 'pinkbrains_io',
+      displayName: 'Pink Brains',
+      role: 'Project',
+      followers: 15129,
+      influenceScore: 460.24,
+    },
+    {
+      handle: 'bobbybigyield',
+      displayName: 'BOBBY',
+      role: 'KOL',
+      followers: 16619,
+      influenceScore: 420.09,
+    },
+    {
+      handle: 'tgd_duu',
+      displayName: 'TGD Crypto',
+      role: 'KOL',
+      followers: 15607,
+      influenceScore: 372.51,
+    },
+    {
+      handle: 'imnotthewolf',
+      displayName: 'imnotthewolf',
+      role: 'Founder',
+      followers: 63951,
+      influenceScore: 358.53,
+    },
+    {
+      handle: 'web3karina',
+      displayName: 'Karina',
+      role: 'Chưa gắn nhãn',
+      followers: 6013,
+      influenceScore: 290.04,
+    },
+    {
+      handle: 'quanti_xbt',
+      displayName: 'QuantuM',
+      role: 'Chưa gắn nhãn',
+      followers: 186494,
+      influenceScore: 284.51,
+    },
+    {
+      handle: 'sandyxbt',
+      displayName: 'Sandy',
+      role: 'Project',
+      followers: 65205,
+      influenceScore: 258.82,
+    },
+    {
+      handle: 'zoraweb3',
+      displayName: 'Zora',
+      role: 'Chưa gắn nhãn',
+      followers: 9992,
+      influenceScore: 251.81,
+    },
+    {
+      handle: 'shimal2i_eth',
+      displayName: 'shimal2i_eth',
+      role: 'Chưa gắn nhãn',
+      followers: 10287,
+      influenceScore: 234.62,
+    },
+    {
+      handle: 'robin_t100',
+      displayName: 'Robin τ',
+      role: 'Chưa gắn nhãn / không được chấm điểm',
+      followers: 11214,
+      influenceScore: 0,
+    },
+  ],
+}
+
+function readCachePayload(): {
+  map?: Record<string, RecentFollower[]>
+  smartMap?: Record<string, SmartFollower[]>
+} | null {
+  try {
+    const raw = localStorage.getItem('vn-kol-map-recent-followers-v1')
+    if (!raw) return null
+    const data = JSON.parse(raw) as unknown
+    if (!data || typeof data !== 'object') return null
+    return data as {
+      map?: Record<string, RecentFollower[]>
+      smartMap?: Record<string, SmartFollower[]>
+    }
+  } catch {
+    return null
+  }
+}
+
 /**
  * Server/cache mirror first (per handle), else compiled seed.
  * Cache is written only after successful R2 load/save — no standalone local admin store.
  */
 export function getRecentFollowers(handle: string): RecentFollower[] {
   const key = handle.replace(/^@/, '').trim().toLowerCase()
-  try {
-    const raw = localStorage.getItem('vn-kol-map-recent-followers-v1')
-    if (raw) {
-      const data = JSON.parse(raw) as unknown
-      let map: Record<string, RecentFollower[]> | null = null
-      if (data && typeof data === 'object') {
-        const obj = data as Record<string, unknown>
-        if (obj.map && typeof obj.map === 'object' && !Array.isArray(obj.map)) {
-          map = obj.map as Record<string, RecentFollower[]>
-        } else {
-          map = obj as Record<string, RecentFollower[]>
-        }
-      }
-      if (map && key in map) {
-        const list = map[key]
-        return Array.isArray(list) ? list : []
-      }
+  const cache = readCachePayload()
+  if (cache) {
+    let map: Record<string, RecentFollower[]> | null = null
+    if (cache.map && typeof cache.map === 'object' && !Array.isArray(cache.map)) {
+      map = cache.map
+    } else if (!('map' in cache) && !('smartMap' in cache)) {
+      map = cache as unknown as Record<string, RecentFollower[]>
     }
-  } catch {
-    /* fall through to seed */
+    if (map && key in map && Array.isArray(map[key])) {
+      return map[key]
+    }
   }
   return RECENT_FOLLOWERS_BY_HANDLE[key] ?? []
+}
+
+export function getSmartFollowers(handle: string): SmartFollower[] {
+  const key = handle.replace(/^@/, '').trim().toLowerCase()
+  const cache = readCachePayload()
+  if (
+    cache?.smartMap &&
+    typeof cache.smartMap === 'object' &&
+    key in cache.smartMap &&
+    Array.isArray(cache.smartMap[key])
+  ) {
+    return cache.smartMap[key]
+  }
+  return SMART_FOLLOWERS_BY_HANDLE[key] ?? []
+}
+
+/** Show the Smart follower pill if either sub-list has data */
+export function hasFollowerTabData(handle: string): boolean {
+  return (
+    getRecentFollowers(handle).length > 0 ||
+    getSmartFollowers(handle).length > 0
+  )
 }

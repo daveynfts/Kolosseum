@@ -1,11 +1,18 @@
 /**
- * TwitterScore Top 100 Web3 snapshot — network influence of follower graph
- * (0–1000), NOT content accuracy or investment performance.
+ * TwitterScore Top 100 — internal benchmark data.
  *
- * Source: https://twitterscore.io/topScored/
- * Snapshot: 2026-07-17 04:23 UTC
- * Top-100 threshold: 740 · 17 accounts at max 1000
+ * Source of truth (repo seed):
+ *   src/data/internal/twitterscore-top100.json
+ *   data/internal/twitterscore-top100.json  (mirror for agents / offline)
+ *
+ * Runtime (admin): R2 `internal/twitterscore-top100/v1.json` via
+ *   GET/PUT /api/twitterscore-top100
+ *   → cached in localStorage after load
+ *
+ * Score = follower-network influence 0–1000 (twitterscore.io),
+ * NOT content accuracy or investment performance.
  */
+import seedJson from './internal/twitterscore-top100.json'
 
 export interface TwitterScoreAccount {
   rank: number
@@ -15,143 +22,162 @@ export interface TwitterScoreAccount {
   score: number
 }
 
+export type TwitterScoreDataset = {
+  version: number
+  kind: 'twitterscore-top100'
+  asOf: string
+  source: string
+  sourceNote: string
+  maxScore: number
+  top100Threshold: number
+  median: number
+  mean: number
+  atMax: number
+  accounts: TwitterScoreAccount[]
+  updatedAt?: string
+  note?: string
+}
+
+export function normalizeTwitterScoreDataset(
+  raw: unknown,
+): TwitterScoreDataset | null {
+  if (!raw || typeof raw !== 'object') return null
+  const o = raw as Record<string, unknown>
+  const accountsRaw = o.accounts
+  if (!Array.isArray(accountsRaw) || !accountsRaw.length) return null
+  const accounts: TwitterScoreAccount[] = []
+  for (const row of accountsRaw) {
+    if (!row || typeof row !== 'object') continue
+    const r = row as Record<string, unknown>
+    const handle = String(r.handle || '')
+      .replace(/^@/, '')
+      .trim()
+    if (!handle) continue
+    const score = Number(r.score)
+    const rank = Number(r.rank)
+    accounts.push({
+      handle,
+      displayName: String(r.displayName || handle).trim() || handle,
+      score: Number.isFinite(score) ? score : 0,
+      rank: Number.isFinite(rank) ? rank : accounts.length + 1,
+    })
+  }
+  if (!accounts.length) return null
+  // Re-sort by score desc, then rank, re-number ranks for consistency when admin edits
+  accounts.sort(
+    (a, b) =>
+      b.score - a.score || a.rank - b.rank || a.handle.localeCompare(b.handle),
+  )
+  accounts.forEach((a, i) => {
+    a.rank = i + 1
+  })
+
+  const scores = accounts.map((a) => a.score)
+  const sum = scores.reduce((s, n) => s + n, 0)
+  const mean = sum / scores.length
+  const sorted = [...scores].sort((a, b) => a - b)
+  const mid = Math.floor(sorted.length / 2)
+  const median =
+    sorted.length % 2
+      ? sorted[mid]
+      : (sorted[mid - 1] + sorted[mid]) / 2
+  const maxScore = Math.max(...scores, 1000)
+  const atMax = scores.filter((s) => s >= maxScore).length
+
+  return {
+    version: Number(o.version) || 1,
+    kind: 'twitterscore-top100',
+    asOf: String(o.asOf || new Date().toISOString()),
+    source: String(o.source || 'https://twitterscore.io/topScored/'),
+    sourceNote: String(
+      o.sourceNote ||
+        'twitterscore.io · Top accounts by follower-network influence score',
+    ),
+    maxScore,
+    top100Threshold: Number(o.top100Threshold) || sorted[sorted.length - 1] || 0,
+    median: Number(o.median) || median,
+    mean: Number(o.mean) || mean,
+    atMax: Number(o.atMax) || atMax,
+    accounts,
+    updatedAt: o.updatedAt ? String(o.updatedAt) : undefined,
+    note: o.note ? String(o.note) : undefined,
+  }
+}
+
+/** Compiled seed from internal JSON (always available offline). */
+export const TWITTER_SCORE_SEED: TwitterScoreDataset =
+  normalizeTwitterScoreDataset(seedJson) || {
+    version: 1,
+    kind: 'twitterscore-top100',
+    asOf: new Date().toISOString(),
+    source: 'https://twitterscore.io/topScored/',
+    sourceNote: 'empty seed',
+    maxScore: 1000,
+    top100Threshold: 0,
+    median: 0,
+    mean: 0,
+    atMax: 0,
+    accounts: [],
+  }
+
+/** @deprecated use dataset.accounts — kept for existing imports */
+export const TWITTER_SCORE_TOP_100: TwitterScoreAccount[] =
+  TWITTER_SCORE_SEED.accounts
+
+/** @deprecated use dataset fields — kept for existing imports */
 export const TWITTER_SCORE_SNAPSHOT = {
-  asOf: '2026-07-17T04:23:00.000Z',
-  source: 'https://twitterscore.io/topScored/',
-  sourceNote: 'twitterscore.io · Top 100 by follower-network influence score',
-  maxScore: 1000,
-  top100Threshold: 740,
-  median: 833.5,
-  mean: 856.57,
-  atMax: 17,
+  asOf: TWITTER_SCORE_SEED.asOf,
+  source: TWITTER_SCORE_SEED.source,
+  sourceNote: TWITTER_SCORE_SEED.sourceNote,
+  maxScore: TWITTER_SCORE_SEED.maxScore,
+  top100Threshold: TWITTER_SCORE_SEED.top100Threshold,
+  median: TWITTER_SCORE_SEED.median,
+  mean: TWITTER_SCORE_SEED.mean,
+  atMax: TWITTER_SCORE_SEED.atMax,
 } as const
-
-/** Ranked 1–100 (ties at 1000 keep source order). */
-export const TWITTER_SCORE_TOP_100: TwitterScoreAccount[] = [
-  { rank: 1, handle: 'VitalikButerin', displayName: 'vitalik.eth', score: 1000 },
-  { rank: 2, handle: 'elonmusk', displayName: 'Elon Musk', score: 1000 },
-  { rank: 3, handle: 'brian_armstrong', displayName: 'Brian Armstrong', score: 1000 },
-  { rank: 4, handle: 'cz_binance', displayName: 'CZ', score: 1000 },
-  { rank: 5, handle: 'cobie', displayName: 'Cobie', score: 1000 },
-  { rank: 6, handle: 'balajis', displayName: 'Balaji', score: 1000 },
-  { rank: 7, handle: 'zachxbt', displayName: 'ZachXBT', score: 1000 },
-  { rank: 8, handle: 'coinbase', displayName: 'Coinbase', score: 1000 },
-  { rank: 9, handle: 'toly', displayName: 'toly', score: 1000 },
-  { rank: 10, handle: 'pmarca', displayName: 'Marc Andreessen', score: 1000 },
-  { rank: 11, handle: 'sama', displayName: 'Sam Altman', score: 1000 },
-  { rank: 12, handle: 'cdixon', displayName: 'Chris Dixon', score: 1000 },
-  { rank: 13, handle: 'naval', displayName: 'Naval', score: 1000 },
-  { rank: 14, handle: 'jessepollak', displayName: 'jesse.base.eth', score: 1000 },
-  { rank: 15, handle: 'CryptoHayes', displayName: 'Arthur Hayes', score: 1000 },
-  { rank: 16, handle: 'blknoiz06', displayName: 'Ansem', score: 1000 },
-  { rank: 17, handle: 'solana', displayName: 'Solana', score: 1000 },
-  { rank: 18, handle: 'erikvoorhees', displayName: 'Erik Voorhees', score: 996 },
-  { rank: 19, handle: 'laurashin', displayName: 'Laura Shin', score: 996 },
-  { rank: 20, handle: 'jack', displayName: 'jack', score: 984 },
-  { rank: 21, handle: 'ethereum', displayName: 'Ethereum', score: 978 },
-  { rank: 22, handle: 'saylor', displayName: 'Michael Saylor', score: 972 },
-  { rank: 23, handle: 'nikitabier', displayName: 'Nikita Bier', score: 968 },
-  { rank: 24, handle: 'punk6529', displayName: '6529', score: 965 },
-  { rank: 25, handle: 'stanikulechov', displayName: 'Stani', score: 961 },
-  { rank: 26, handle: 'realDonaldTrump', displayName: 'Donald J. Trump', score: 959 },
-  { rank: 27, handle: 'CoinDesk', displayName: 'CoinDesk', score: 952 },
-  { rank: 28, handle: 'mdudas', displayName: 'Mike Dudas', score: 944 },
-  { rank: 29, handle: 'haydenzadams', displayName: 'Hayden Adams', score: 933 },
-  { rank: 30, handle: 'cburniske', displayName: 'Chris Burniske', score: 927 },
-  { rank: 31, handle: 'binance', displayName: 'Binance', score: 920 },
-  { rank: 32, handle: 'matthuang', displayName: 'Matt Huang', score: 906 },
-  { rank: 33, handle: 'notthreadguy', displayName: 'threadguy', score: 905 },
-  { rank: 34, handle: 'mert', displayName: 'mert', score: 901 },
-  { rank: 35, handle: 'fehrsam', displayName: 'Fred Ehrsam', score: 889 },
-  { rank: 36, handle: 'KyleSamani', displayName: 'Kyle Samani', score: 888 },
-  { rank: 37, handle: 'nic_carter', displayName: 'nic carter', score: 887 },
-  { rank: 38, handle: 'apompliano', displayName: 'Anthony Pompliano', score: 877 },
-  { rank: 39, handle: 'Rewkang', displayName: 'Andrew Kang', score: 876 },
-  { rank: 40, handle: 'SBF_FTX', displayName: 'SBF', score: 871 },
-  { rank: 41, handle: 'Melt_Dem', displayName: 'Meltem Demirors', score: 866 },
-  { rank: 42, handle: 'inversebrah', displayName: 'smolting', score: 863 },
-  { rank: 43, handle: 'zhusu', displayName: 'Zhu Su', score: 863 },
-  { rank: 44, handle: 'ethereumJoseph', displayName: 'Joseph Lubin', score: 861 },
-  { rank: 45, handle: 'raoulgmi', displayName: 'Raoul Pal', score: 857 },
-  { rank: 46, handle: 'udiWertheimer', displayName: 'Udi Wertheimer', score: 846 },
-  { rank: 47, handle: 'LucaNetz', displayName: 'Luca Netz', score: 845 },
-  { rank: 48, handle: 'opensea', displayName: 'OpenSea', score: 842 },
-  { rank: 49, handle: 'DCinvestor', displayName: 'DCinvestor', score: 838 },
-  { rank: 50, handle: 'hosseeb', displayName: 'Haseeb', score: 837 },
-  { rank: 51, handle: 'hasufl', displayName: 'Hasu', score: 830 },
-  { rank: 52, handle: 'ASvanevik', displayName: 'Alex Svanevik', score: 822 },
-  { rank: 53, handle: 'Selkis_2028', displayName: 'Ryan Selkis', score: 817 },
-  { rank: 54, handle: 'base', displayName: 'Base', score: 815 },
-  { rank: 55, handle: 'CL207', displayName: 'CL', score: 814 },
-  { rank: 56, handle: 'TrustlessState', displayName: 'David Hoffman', score: 811 },
-  { rank: 57, handle: 'uniswap', displayName: 'Uniswap', score: 808 },
-  { rank: 58, handle: 'karpathy', displayName: 'Andrej Karpathy', score: 807 },
-  { rank: 59, handle: 'farokh', displayName: 'Farokh', score: 806 },
-  { rank: 60, handle: 'loomdart', displayName: 'loomdart', score: 805 },
-  { rank: 61, handle: 'DavidSacks', displayName: 'David Sacks', score: 798 },
-  { rank: 62, handle: 'garyvee', displayName: 'Gary Vaynerchuk', score: 792 },
-  { rank: 63, handle: 'rleshner', displayName: 'Robert Leshner', score: 792 },
-  { rank: 64, handle: 'beeple', displayName: 'beeple', score: 791 },
-  { rank: 65, handle: 'gmoneyNFT', displayName: 'gmoney', score: 790 },
-  { rank: 66, handle: 'chamath', displayName: 'Chamath Palihapitiya', score: 789 },
-  { rank: 67, handle: 'AndreCronjeTech', displayName: 'Andre Cronje', score: 788 },
-  { rank: 68, handle: 'a16z', displayName: 'a16z', score: 785 },
-  { rank: 69, handle: 'DeeZe', displayName: 'DeeZe', score: 783 },
-  { rank: 70, handle: 'jespow', displayName: 'Jesse Powell', score: 782 },
-  { rank: 71, handle: 'HsakaTrades', displayName: 'Hsaka', score: 782 },
-  { rank: 72, handle: '0xpolygon', displayName: 'Polygon', score: 772 },
-  { rank: 73, handle: 'justinsuntron', displayName: 'Justin Sun', score: 771 },
-  { rank: 74, handle: 'MustStopMurad', displayName: 'Murad', score: 770 },
-  { rank: 75, handle: 'tyler', displayName: 'Tyler Winklevoss', score: 769 },
-  { rank: 76, handle: 'kain', displayName: 'kain', score: 766 },
-  { rank: 77, handle: 'fintechfrank', displayName: 'Frank Chaparro', score: 762 },
-  { rank: 78, handle: 'cointelegraph', displayName: 'Cointelegraph', score: 762 },
-  { rank: 79, handle: 'tier10k', displayName: 'db', score: 760 },
-  { rank: 80, handle: 'WatcherGuru', displayName: 'Watcher.Guru', score: 759 },
-  { rank: 81, handle: 'santiagoroel', displayName: 'Santiago R Santos', score: 759 },
-  { rank: 82, handle: 'lindaxie', displayName: 'Linda Xie', score: 759 },
-  { rank: 83, handle: 'barrysilbert', displayName: 'Barry Silbert', score: 758 },
-  { rank: 84, handle: 'garrytan', displayName: 'Garry Tan', score: 758 },
-  { rank: 85, handle: '0xfoobar', displayName: 'foobar', score: 755 },
-  { rank: 86, handle: 'arthur0x', displayName: 'Arthur', score: 755 },
-  { rank: 87, handle: 'alexisohanian', displayName: 'Alexis Ohanian', score: 753 },
-  { rank: 88, handle: 'Polymarket', displayName: 'Polymarket', score: 751 },
-  { rank: 89, handle: 'gakonst', displayName: 'Georgios Konstantopoulos', score: 749 },
-  { rank: 90, handle: 'lawmaster', displayName: 'Larry Cermak', score: 749 },
-  { rank: 91, handle: 'dwr', displayName: 'Dan Romero', score: 748 },
-  { rank: 92, handle: 'paulg', displayName: 'Paul Graham', score: 748 },
-  { rank: 93, handle: 'QwQiao', displayName: 'qw', score: 748 },
-  { rank: 94, handle: 'shayne_coplan', displayName: 'Shayne Coplan', score: 746 },
-  { rank: 95, handle: 'ercwl', displayName: 'Eric Wall', score: 744 },
-  { rank: 96, handle: 'mcuban', displayName: 'Mark Cuban', score: 744 },
-  { rank: 97, handle: 'samczsun', displayName: 'samczsun', score: 742 },
-  { rank: 98, handle: 'rajgokal', displayName: 'raj', score: 740 },
-  { rank: 99, handle: 'danrobinson', displayName: 'Dan Robinson', score: 740 },
-  { rank: 100, handle: 'TheBlockCo', displayName: 'The Block', score: 740 },
-]
-
-const BY_HANDLE = new Map(
-  TWITTER_SCORE_TOP_100.map((a) => [a.handle.toLowerCase(), a]),
-)
 
 export function getTwitterScoreAccount(
   handle: string,
+  accounts: TwitterScoreAccount[] = TWITTER_SCORE_TOP_100,
 ): TwitterScoreAccount | undefined {
-  return BY_HANDLE.get(handle.replace(/^@/, '').trim().toLowerCase())
+  const key = handle.replace(/^@/, '').trim().toLowerCase()
+  return accounts.find((a) => a.handle.toLowerCase() === key)
 }
 
-export function isTwitterScoreTop100(handle: string): boolean {
-  return !!getTwitterScoreAccount(handle)
+export function isTwitterScoreTop100(
+  handle: string,
+  accounts: TwitterScoreAccount[] = TWITTER_SCORE_TOP_100,
+): boolean {
+  return !!getTwitterScoreAccount(handle, accounts)
 }
 
-export function searchTwitterScoreTop100(query: string): TwitterScoreAccount[] {
+export function searchTwitterScoreTop100(
+  query: string,
+  accounts: TwitterScoreAccount[] = TWITTER_SCORE_TOP_100,
+): TwitterScoreAccount[] {
   const q = query.trim().toLowerCase().replace(/^@/, '')
-  if (!q) return TWITTER_SCORE_TOP_100
-  return TWITTER_SCORE_TOP_100.filter(
+  if (!q) return accounts
+  return accounts.filter(
     (a) =>
       a.handle.toLowerCase().includes(q) ||
       a.displayName.toLowerCase().includes(q) ||
       String(a.rank) === q ||
       String(a.score).includes(q),
+  )
+}
+
+/** Recompute mean/median/atMax after admin edits (preserves asOf/source). */
+export function recomputeTwitterScoreStats(
+  dataset: TwitterScoreDataset,
+): TwitterScoreDataset {
+  return (
+    normalizeTwitterScoreDataset({
+      ...dataset,
+      // force recompute from accounts
+      median: undefined,
+      mean: undefined,
+      atMax: undefined,
+      maxScore: undefined,
+    }) || dataset
   )
 }

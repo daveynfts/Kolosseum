@@ -16,12 +16,20 @@ import {
 } from '../lib/recentFollowersStore'
 import {
   getTwitterScoreAccount,
+  recomputeTwitterScoreStats,
   searchTwitterScoreTop100,
-  TWITTER_SCORE_SNAPSHOT,
-  TWITTER_SCORE_TOP_100,
   type TwitterScoreAccount,
+  type TwitterScoreDataset,
 } from '../data/twitterScoreTop100'
-import { getAdminToken } from '../lib/feedStore'
+import {
+  clearTwitterScoreCache,
+  exportTwitterScoreJson,
+  importTwitterScoreJson,
+  loadTwitterScoreWithSource,
+  saveTwitterScoreToServer,
+  seedTwitterScoreDataset,
+} from '../lib/twitterScoreStore'
+import { getAdminToken, setAdminToken } from '../lib/feedStore'
 import { AvatarImg } from '../components/AvatarImg'
 import { XProfileAvatar } from '../components/XProfileAvatar'
 import { NICHE_COLORS, primaryNiche } from '../types'
@@ -51,6 +59,13 @@ export function AdminRecentFollowersEditor({ kols, onToast }: Props) {
   const [query, setQuery] = useState('')
   const [tsQuery, setTsQuery] = useState('')
   const [tokenInput, setTokenInput] = useState(() => getAdminToken())
+  const [tsDataset, setTsDataset] = useState<TwitterScoreDataset>(() =>
+    seedTwitterScoreDataset(),
+  )
+  const [tsSource, setTsSource] = useState<'server' | 'cache' | 'seed'>('seed')
+  const [tsDirty, setTsDirty] = useState(false)
+  const [tsSaving, setTsSaving] = useState(false)
+  const [tsEditHandle, setTsEditHandle] = useState<string | null>(null)
 
   useEffect(() => {
     let cancelled = false
@@ -58,6 +73,11 @@ export function AdminRecentFollowersEditor({ kols, onToast }: Props) {
       if (cancelled) return
       setMap(r.map)
       setSource(r.source)
+    })
+    void loadTwitterScoreWithSource().then((r) => {
+      if (cancelled) return
+      setTsDataset(r.dataset)
+      setTsSource(r.source)
     })
     return () => {
       cancelled = true
@@ -246,18 +266,19 @@ export function AdminRecentFollowersEditor({ kols, onToast }: Props) {
     [draft],
   )
 
+  const tsAccounts = tsDataset.accounts
   const tsList = useMemo(
-    () => searchTwitterScoreTop100(tsQuery),
-    [tsQuery],
+    () => searchTwitterScoreTop100(tsQuery, tsAccounts),
+    [tsQuery, tsAccounts],
   )
 
   const draftInTop100 = useMemo(() => {
     let n = 0
     for (const h of draftHandles) {
-      if (getTwitterScoreAccount(h)) n++
+      if (getTwitterScoreAccount(h, tsAccounts)) n++
     }
     return n
-  }, [draftHandles])
+  }, [draftHandles, tsAccounts])
 
   const onAddFromTwitterScore = (acc: TwitterScoreAccount) => {
     if (!selectedKol) {
@@ -275,23 +296,154 @@ export function AdminRecentFollowersEditor({ kols, onToast }: Props) {
         handle: acc.handle,
         displayName: acc.displayName,
         followedAgo: 'TwitterScore top 100',
-        followedAt: TWITTER_SCORE_SNAPSHOT.asOf,
+        followedAt: tsDataset.asOf,
       },
     ])
     setDirty(true)
     onToast(`Đã thêm @${acc.handle} (#${acc.rank} · ${acc.score})`)
   }
 
+  const patchTsAccount = (
+    handle: string,
+    patch: Partial<TwitterScoreAccount>,
+  ) => {
+    setTsDataset((prev) => {
+      const accounts = prev.accounts.map((a) =>
+        a.handle.toLowerCase() === handle.toLowerCase()
+          ? {
+              ...a,
+              ...patch,
+              handle: (patch.handle ?? a.handle).replace(/^@/, '').trim(),
+            }
+          : a,
+      )
+      return recomputeTwitterScoreStats({ ...prev, accounts })
+    })
+    setTsDirty(true)
+  }
+
+  const onAddTsRow = () => {
+    const handle = `new_account_${Date.now().toString(36).slice(-4)}`
+    setTsDataset((prev) =>
+      recomputeTwitterScoreStats({
+        ...prev,
+        accounts: [
+          ...prev.accounts,
+          {
+            rank: prev.accounts.length + 1,
+            handle,
+            displayName: 'New account',
+            score: prev.top100Threshold || 740,
+          },
+        ],
+      }),
+    )
+    setTsEditHandle(handle)
+    setTsDirty(true)
+    setTsQuery(handle)
+  }
+
+  const onRemoveTsRow = (handle: string) => {
+    if (!confirm(`Xóa @${handle} khỏi TwitterScore Top 100?`)) return
+    setTsDataset((prev) =>
+      recomputeTwitterScoreStats({
+        ...prev,
+        accounts: prev.accounts.filter(
+          (a) => a.handle.toLowerCase() !== handle.toLowerCase(),
+        ),
+      }),
+    )
+    setTsDirty(true)
+    if (tsEditHandle?.toLowerCase() === handle.toLowerCase()) {
+      setTsEditHandle(null)
+    }
+  }
+
+  const onSaveTwitterScore = async () => {
+    const token = tokenInput.trim() || getAdminToken()
+    if (!token) {
+      onToast('Nhập FEED_ADMIN_TOKEN rồi Save Top 100')
+      return
+    }
+    setAdminToken(token)
+    setTsSaving(true)
+    const result = await saveTwitterScoreToServer(
+      tsDataset,
+      'admin edit TwitterScore Top 100',
+      token,
+    )
+    setTsSaving(false)
+    if (!result.ok) {
+      onToast(`Publish Top 100 thất bại: ${result.error}`)
+      return
+    }
+    setTsDataset(result.dataset)
+    setTsSource('server')
+    setTsDirty(false)
+    onToast(
+      `Đã publish TwitterScore Top ${result.dataset.accounts.length} lên R2`,
+    )
+  }
+
+  const onReloadTwitterScore = () => {
+    void loadTwitterScoreWithSource().then((r) => {
+      setTsDataset(r.dataset)
+      setTsSource(r.source)
+      setTsDirty(false)
+      onToast(`Top 100 reloaded from ${r.source}`)
+    })
+  }
+
+  const onResetTwitterScoreSeed = () => {
+    if (!confirm('Reset TwitterScore Top 100 về seed JSON trong code?')) return
+    clearTwitterScoreCache()
+    const seed = seedTwitterScoreDataset()
+    setTsDataset(seed)
+    setTsSource('seed')
+    setTsDirty(true)
+    onToast('Đã load seed Top 100 — bấm Save Top 100 (R2) để publish')
+  }
+
+  const onExportTwitterScore = () => {
+    const blob = new Blob([exportTwitterScoreJson(tsDataset)], {
+      type: 'application/json',
+    })
+    const a = document.createElement('a')
+    a.href = URL.createObjectURL(blob)
+    a.download = `twitterscore-top100-${new Date().toISOString().slice(0, 10)}.json`
+    a.click()
+    URL.revokeObjectURL(a.href)
+    onToast('Exported Top 100 JSON (commit vào data/internal/ nếu cần)')
+  }
+
+  const onImportTwitterScore = async (file: File) => {
+    try {
+      const text = await file.text()
+      const imported = importTwitterScoreJson(text)
+      setTsDataset(imported)
+      setTsSource('seed')
+      setTsDirty(true)
+      onToast(
+        `Imported ${imported.accounts.length} accounts — Save Top 100 (R2)`,
+      )
+    } catch (e) {
+      onToast(e instanceof Error ? e.message : 'Import Top 100 failed')
+    }
+  }
+
   return (
     <div className="admin-feed">
       <div className="admin-ai-banner glass" style={{ marginBottom: 12 }}>
-        <strong>Smart Followers</strong>
+        <strong>Smart Followers + internal Top 100</strong>
         <span>
-          Snapshot Recent / Smart trên map + bảng đối chiếu{' '}
-          <strong>TwitterScore Top 100</strong> (Web3 network influence).{' '}
-          <strong>Save = publish R2</strong>. Source: <strong>{source}</strong>
-          . Snapshot TS: {TWITTER_SCORE_SNAPSHOT.asOf.slice(0, 10)} · ngưỡng top
-          100 = {TWITTER_SCORE_SNAPSHOT.top100Threshold}.
+          Recent/Smart per KOL (map) +{' '}
+          <strong>TwitterScore Top 100</strong> là data nội bộ (seed JSON · R2{' '}
+          <code>internal/twitterscore-top100/v1.json</code>). Followers source:{' '}
+          <strong>{source}</strong> · Top100:{' '}
+          <strong>{tsSource}</strong>
+          {tsDirty ? ' · Top100 unsaved' : ''}. asOf{' '}
+          {tsDataset.asOf.slice(0, 10)} · cut-off {tsDataset.top100Threshold} ·{' '}
+          {tsDataset.accounts.length} accounts.
         </span>
         <label className="admin-token-row">
           Token
@@ -462,7 +614,7 @@ export function AdminRecentFollowersEditor({ kols, onToast }: Props) {
                 <div className="admin-sf-list">
                   {draft.map((f, i) => {
                     const ts = f.handle
-                      ? getTwitterScoreAccount(f.handle)
+                      ? getTwitterScoreAccount(f.handle, tsAccounts)
                       : undefined
                     return (
                       <div
@@ -546,27 +698,71 @@ export function AdminRecentFollowersEditor({ kols, onToast }: Props) {
           )}
         </div>
 
-        {/* TwitterScore Top 100 reference */}
+        {/* TwitterScore Top 100 — internal editable dataset */}
         <div className="admin-edit-side glass admin-ts-panel">
           <div className="admin-side-list-head">
             <strong>TwitterScore Top 100</strong>
+            {tsDirty && (
+              <span className="admin-ts-dirty" title="Unsaved">
+                ·
+              </span>
+            )}
           </div>
           <p className="admin-ts-panel__note">
-            Snapshot Web3 network influence ({TWITTER_SCORE_TOP_100.length}{' '}
-            accounts) · max {TWITTER_SCORE_SNAPSHOT.maxScore} · cut-off{' '}
-            {TWITTER_SCORE_SNAPSHOT.top100Threshold} · mean{' '}
-            {TWITTER_SCORE_SNAPSHOT.mean} · median{' '}
-            {TWITTER_SCORE_SNAPSHOT.median}. Điểm cao = graph mạnh,{' '}
-            <em>không</em> = uy tín/đầu tư. Nguồn:{' '}
-            <a
-              href={TWITTER_SCORE_SNAPSHOT.source}
-              target="_blank"
-              rel="noreferrer"
-            >
-              twitterscore.io
-            </a>
-            .
+            Data nội bộ ({tsAccounts.length}) · source <strong>{tsSource}</strong>{' '}
+            · mean {tsDataset.mean.toFixed(1)} · median {tsDataset.median} ·
+            cut-off {tsDataset.top100Threshold}. Điểm ={' '}
+            <em>network influence</em>, không = uy tín/trade. Seed:{' '}
+            <code>data/internal/twitterscore-top100.json</code> · R2:{' '}
+            <code>internal/twitterscore-top100/v1.json</code>.
           </p>
+          <div className="admin-ts-actions">
+            <button
+              type="button"
+              className="btn btn--primary btn--sm"
+              onClick={() => void onSaveTwitterScore()}
+              disabled={tsSaving}
+            >
+              {tsSaving ? '…' : 'Save Top 100 (R2)'}
+            </button>
+            <button type="button" className="btn btn--sm" onClick={onAddTsRow}>
+              + Row
+            </button>
+            <button
+              type="button"
+              className="btn btn--sm"
+              onClick={onExportTwitterScore}
+            >
+              Export
+            </button>
+            <label className="btn btn--file btn--sm">
+              Import
+              <input
+                type="file"
+                accept="application/json,.json"
+                hidden
+                onChange={(e) => {
+                  const f = e.target.files?.[0]
+                  if (f) void onImportTwitterScore(f)
+                  e.target.value = ''
+                }}
+              />
+            </label>
+            <button
+              type="button"
+              className="btn btn--sm"
+              onClick={onReloadTwitterScore}
+            >
+              Reload
+            </button>
+            <button
+              type="button"
+              className="btn btn--sm btn--danger"
+              onClick={onResetTwitterScoreSeed}
+            >
+              Seed
+            </button>
+          </div>
           <div className="admin-toolbar" style={{ margin: '0 10px 4px' }}>
             <label className="admin-search-wrap">
               <span className="admin-search-wrap__icon" aria-hidden>
@@ -601,10 +797,12 @@ export function AdminRecentFollowersEditor({ kols, onToast }: Props) {
             )}
             {tsList.map((acc) => {
               const inDraft = draftHandles.has(acc.handle.toLowerCase())
+              const editing =
+                tsEditHandle?.toLowerCase() === acc.handle.toLowerCase()
               return (
-                <li key={acc.handle}>
+                <li key={`${acc.rank}-${acc.handle}`}>
                   <div
-                    className={`admin-ts-row ${inDraft ? 'is-in-draft' : ''}`}
+                    className={`admin-ts-row ${inDraft ? 'is-in-draft' : ''} ${editing ? 'is-editing' : ''}`}
                   >
                     <span className="admin-ts-row__rank">#{acc.rank}</span>
                     <XProfileAvatar
@@ -612,29 +810,86 @@ export function AdminRecentFollowersEditor({ kols, onToast }: Props) {
                       name={acc.displayName}
                       size={28}
                     />
-                    <span className="admin-ts-row__meta">
-                      <strong>{acc.displayName}</strong>
-                      <small>@{acc.handle}</small>
+                    {editing ? (
+                      <span className="admin-ts-row__edit">
+                        <input
+                          value={acc.displayName}
+                          onChange={(e) =>
+                            patchTsAccount(acc.handle, {
+                              displayName: e.target.value,
+                            })
+                          }
+                          placeholder="Name"
+                        />
+                        <input
+                          value={acc.handle}
+                          onChange={(e) =>
+                            patchTsAccount(acc.handle, {
+                              handle: e.target.value.replace(/^@/, ''),
+                            })
+                          }
+                          placeholder="handle"
+                        />
+                        <input
+                          type="number"
+                          value={acc.score}
+                          min={0}
+                          max={1000}
+                          onChange={(e) =>
+                            patchTsAccount(acc.handle, {
+                              score: Number(e.target.value) || 0,
+                            })
+                          }
+                          placeholder="score"
+                        />
+                      </span>
+                    ) : (
+                      <span className="admin-ts-row__meta">
+                        <strong>{acc.displayName}</strong>
+                        <small>@{acc.handle}</small>
+                      </span>
+                    )}
+                    {!editing && (
+                      <span
+                        className={`admin-ts-row__score ${acc.score >= 1000 ? 'is-max' : ''}`}
+                        title="TwitterScore"
+                      >
+                        {acc.score}
+                      </span>
+                    )}
+                    <span className="admin-ts-row__btns">
+                      <button
+                        type="button"
+                        className="btn btn--sm"
+                        title={editing ? 'Done' : 'Edit'}
+                        onClick={() =>
+                          setTsEditHandle(editing ? null : acc.handle)
+                        }
+                      >
+                        {editing ? '✓' : '✎'}
+                      </button>
+                      <button
+                        type="button"
+                        className="btn btn--sm"
+                        disabled={!selectedKol || inDraft}
+                        title={
+                          inDraft
+                            ? 'Đã có trong list KOL'
+                            : `Thêm @${acc.handle} vào draft`
+                        }
+                        onClick={() => onAddFromTwitterScore(acc)}
+                      >
+                        {inDraft ? '✓' : '+'}
+                      </button>
+                      <button
+                        type="button"
+                        className="btn btn--sm btn--danger"
+                        title="Remove from Top 100"
+                        onClick={() => onRemoveTsRow(acc.handle)}
+                      >
+                        ×
+                      </button>
                     </span>
-                    <span
-                      className={`admin-ts-row__score ${acc.score >= 1000 ? 'is-max' : ''}`}
-                      title="TwitterScore"
-                    >
-                      {acc.score}
-                    </span>
-                    <button
-                      type="button"
-                      className="btn btn--sm"
-                      disabled={!selectedKol || inDraft}
-                      title={
-                        inDraft
-                          ? 'Đã có trong list KOL'
-                          : `Thêm @${acc.handle} vào draft`
-                      }
-                      onClick={() => onAddFromTwitterScore(acc)}
-                    >
-                      {inDraft ? '✓' : '+'}
-                    </button>
                   </div>
                 </li>
               )

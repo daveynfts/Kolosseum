@@ -1,0 +1,54 @@
+Jack Vĩ (@jackvi810) — Đánh giá công tâm KOL · Research communicator / Community builder · AI + crypto education · SurfAI 17/07/2026.
+
+TL;DR
+• Tài khoản **người thật**, nghề nghiệp & cộng đồng **kiểm chứng được** — không phải KOL ẩn danh bơm narrative.
+• ~**31.8K** followers · join ~12/2017 (8+ năm) · HCMC · Community Growth Lead **@Upside** · Researcher **@Coin98 Insights** · Admin **Nghiên AI**.
+• Thế mạnh: **truyền đạt + workshop/workflow** (phổ cập AI non-tech) · hạn chế: curation > research nguyên bản · COI Coin98/Ninety Eight / sponsor.
+• ✅ Khám phá AI tool & community · ❌ Không copy-trade / không coi là nguồn kỹ thuật–macro cuối cùng.
+
+Chân dung
+• Định vị: **research communicator / community builder** — không ML researcher hay trader signal.
+• Lộ trình: research/content Coin98 → community Upside → admin Nghiên AI (~04/2026).
+• Offline verify: speaker UniHackfest (AI ứng dụng + blockchain) — xác nhận bên thứ ba.
+• Self-frame: học tài chính, non-tech, “không phải chuyên gia AI” — hiệu chỉnh kỳ vọng tốt.
+
+Hiệu suất & reach
+• Mẫu 47 bài (08/04–16/07/2026): reach **có thật nhưng sự kiện** · eng rate ~**0.46%** · median tương tác thường ngày mỏng (~16).
+• Spike: Claude Code ~**20.7K** views · Codex case ~**12.7K** · YouTube launch ~**16.9K**.
+• ~**61.7%** bài < 3K views — lõi daily mỏng so với 31.8K followers.
+• Smart followers **29** (~0.09%) · sample geo ~**31.4% VN** (497 hồ sơ) · cộng đồng lõi + mạng quen thuộc.
+
+Nội dung — điểm mạnh
+• Cấu trúc rõ: vấn đề → khái niệm → ví dụ → action (AI Agent / sales–CRM workflow).
+• Crypto giai đoạn: “10 sự thật nghề research” ~**159K** views · review ZenCard có ưu/nhược.
+• Minh bạch thất bại: phân tích **$LBR / eUSD depeg**, thừa nhận “kèo thua” — hiếm trong KOL space.
+• Tư duy cộng đồng thực dụng: workshop nhỏ, bàn làm việc, tương tác trực tiếp > chase headcount.
+
+Nội dung — hạn chế
+• AI content = **curation + diễn giải** (ChinaTalk, JPM, Boris Cherny…) — không phải original tech paper.
+• Tiêu đề đôi lúc giật (“giấu bạn”, “bí mật”, “vô đối”) → dễ over-confidence cho newbie.
+• Case Claude Code source map: frame “họ giấu bạn” mạnh hơn thực tế Anthropic (lỗi release); bài sau cân bằng hơn.
+• Macro/tokenomics phức tạp: từng bị phản biện đáng kể (vd. M0/M2).
+
+Minh bạch & COI
+• Tốt hơn KOL crypto trung bình: bio rõ role · từng nói **không công tâm** về **$C98** (Ninety Eight + holding).
+• Công khai allocation: $C98, $VIC, $DADA, $ETER, $ONEID, $DEF (theo report).
+• Nghiên AI collab/sponsor: Qoder, Alibaba Cloud, BytePlus, Conviction — cảm ơn sponsor có, nhưng không phải mọi bài product đều label “tài trợ”.
+• Không thấy scam/PnD có chứng cứ mạnh trong phạm vi rà soát — cũng **không** “chứng nhận sạch” tuyệt đối.
+
+Ma trận dùng (SurfAI)
+| Mục đích | Band | Ghi chú |
+| Workshop / cộng đồng | **Cao** | Offline + partner verify |
+| Phổ cập AI non-tech | **~7.5/10** | Thế mạnh chính |
+| Workflow / tool discovery | **Khá** | Tự thử nghiệm sau |
+| Research crypto giáo dục | **~6.5–7/10** | Check data độc lập |
+| Kỹ thuật AI/ML sâu | **~5.5/10** | Đọc source official |
+| Token call / copy-trade | **~4/10** | Không có P&L audit |
+| Nội dung Coin98 / sponsor | **Chiết khấu COI** | Check holding & deal |
+
+Khuyến nghị
+• Theo dõi **chủ động**: bộ lọc chủ đề AI/crypto + cảm hứng workflow — không theo thụ động.
+• Mọi claim kỹ thuật / macro / đầu tư: verify nguồn + disclosure trước khi action.
+• SurfAI: hợp series phổ cập AI & community; short-form spike khi narrative mạnh + demo storytelling.
+
+Nguồn: SurfAI Research Desk · @jackvi810 · 17/07/2026 03:18 UTC. NFA · DYOR.

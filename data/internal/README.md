@@ -10,24 +10,25 @@ Structured **internal datasets** for admin control and agent/analysis tasks.
 | **KOL bios / ranks** | `src/data/sheetKols.ts`, `data/bio-patches/*.txt` | `kols/v1.json` | `GET/PUT /api/kols` | KOL Editor |
 | **X Feed** | `public/feed/tier1-feed.json` | `feed/v1.json` | `GET/PUT /api/feed` | X Feed tab |
 
-## TwitterScore Top N (currently ~200)
+## TwitterScore Top N (currently ~300)
 
 - **Meaning:** network influence of follower graph (0–1000), **not** content trust or trade skill.
-- **Snapshot:** ranks 1–100 + extension 101–200 (The Block #100/#101 deduped → **199** unique accounts).
-- Floor score of list ≈ **592** · #100 ≈ **740**.
+- **Snapshot:** ranks 1–300 (duplicates merged by handle → listSize may be &lt; 300).
+- Approx thresholds: **#100 ≈ 740** · **#200 ≈ 592** · floor ≈ **518**.
 - **Seed JSON schema:**
 
 ```json
 {
   "version": 1,
-  "kind": "twitterscore-top200",
+  "kind": "twitterscore-top300",
   "asOf": "ISO",
   "source": "https://twitterscore.io/topScored/",
   "sourceNote": "…",
   "maxScore": 1000,
   "top100Threshold": 740,
   "top200Threshold": 592,
-  "listSize": 199,
+  "top300Threshold": 518,
+  "listSize": 298,
   "median": 0,
   "mean": 0,
   "atMax": 17,

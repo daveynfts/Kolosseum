@@ -39,8 +39,10 @@ export type TwitterScoreDataset = {
   maxScore: number
   /** Score of rank #100 (compat) */
   top100Threshold: number
-  /** Lowest score in current list (e.g. #200) */
+  /** Lowest score near #200 */
   top200Threshold?: number
+  /** Lowest score near #300 / list floor when size ≥ 300 */
+  top300Threshold?: number
   listSize?: number
   median: number
   mean: number
@@ -119,7 +121,13 @@ export function normalizeTwitterScoreDataset(
     top100Threshold:
       Number(o.top100Threshold) || scoreAt100 || minScore || 0,
     top200Threshold:
-      Number(o.top200Threshold) || (listSize >= 200 ? minScore : undefined),
+      Number(o.top200Threshold) ||
+      accounts.find((a) => a.rank === 200)?.score ||
+      (listSize >= 200 ? minScore : undefined),
+    top300Threshold:
+      Number(o.top300Threshold) ||
+      accounts.find((a) => a.rank === 300)?.score ||
+      (listSize >= 300 ? minScore : undefined),
     listSize,
     median: Number(o.median) || median,
     mean: Number(o.mean) || mean,

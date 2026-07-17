@@ -994,6 +994,75 @@ export const RECENT_FOLLOWERS_BY_HANDLE: Record<string, RecentFollower[]> = {
       followedAt: '2025-07-16T00:00:00.000Z',
     },
   ],
+  /** Jack Vĩ (@jackvi810) — curated smart/recent followers snapshot */
+  jackvi810: [
+    {
+      handle: 'emilylazar_sm',
+      displayName: 'Emily Lazar',
+      followedAgo: '6 months ago',
+      followedAt: '2026-01-17T00:00:00.000Z',
+    },
+    {
+      handle: 'tortugo',
+      displayName: 'Tortugo.HL',
+      followedAgo: '7 months ago',
+      followedAt: '2025-12-17T00:00:00.000Z',
+    },
+    {
+      handle: 'rileybeans_',
+      displayName: 'rileybeans',
+      followedAgo: '9 months ago',
+      followedAt: '2025-10-17T00:00:00.000Z',
+    },
+    {
+      handle: 'daxianvip',
+      displayName: '大仙',
+      followedAgo: '9 months ago',
+      followedAt: '2025-10-16T00:00:00.000Z',
+    },
+    {
+      handle: 'shivst3r',
+      displayName: 'Shiv',
+      followedAgo: 'a year ago',
+      followedAt: '2025-07-17T00:00:00.000Z',
+    },
+    {
+      handle: 'rav_hedda',
+      displayName: 'Hedda',
+      followedAgo: 'a year ago',
+      followedAt: '2025-07-16T00:00:00.000Z',
+    },
+    {
+      handle: 'playmatejaylene',
+      displayName: 'Jaylene',
+      followedAgo: 'a year ago',
+      followedAt: '2025-07-15T00:00:00.000Z',
+    },
+    {
+      handle: 'riconomi',
+      displayName: 'Rico里里',
+      followedAgo: 'a year ago',
+      followedAt: '2025-07-14T00:00:00.000Z',
+    },
+    {
+      handle: 'hongchen1476842',
+      displayName: '彭鱼宴',
+      followedAgo: 'a year ago',
+      followedAt: '2025-07-13T00:00:00.000Z',
+    },
+    {
+      handle: 'zhoukelvinzzzz',
+      displayName: 'Vincentzzh｜Techflame & ScalingX',
+      followedAgo: 'a year ago',
+      followedAt: '2025-07-12T00:00:00.000Z',
+    },
+    {
+      handle: 'junshao_666',
+      displayName: 'Crypto_君少',
+      followedAgo: 'a year ago',
+      followedAt: '2025-07-11T00:00:00.000Z',
+    },
+  ],
   /** Đông Phạm (@phamduydong179) — curated smart/recent followers snapshot */
   phamduydong179: [
     {

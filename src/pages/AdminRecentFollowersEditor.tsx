@@ -14,6 +14,13 @@ import {
   setRecentFollowersFor,
   type RecentFollowersMap,
 } from '../lib/recentFollowersStore'
+import {
+  getTwitterScoreAccount,
+  searchTwitterScoreTop100,
+  TWITTER_SCORE_SNAPSHOT,
+  TWITTER_SCORE_TOP_100,
+  type TwitterScoreAccount,
+} from '../data/twitterScoreTop100'
 import { getAdminToken } from '../lib/feedStore'
 import { AvatarImg } from '../components/AvatarImg'
 import { XProfileAvatar } from '../components/XProfileAvatar'
@@ -42,6 +49,7 @@ export function AdminRecentFollowersEditor({ kols, onToast }: Props) {
   const [source, setSource] = useState<'server' | 'cache' | 'seed'>('seed')
   const [saving, setSaving] = useState(false)
   const [query, setQuery] = useState('')
+  const [tsQuery, setTsQuery] = useState('')
   const [tokenInput, setTokenInput] = useState(() => getAdminToken())
 
   useEffect(() => {
@@ -228,14 +236,62 @@ export function AdminRecentFollowersEditor({ kols, onToast }: Props) {
     (k) => k.handle.toLowerCase() === selectedKol.toLowerCase(),
   )
 
+  const draftHandles = useMemo(
+    () =>
+      new Set(
+        draft
+          .map((f) => f.handle.replace(/^@/, '').trim().toLowerCase())
+          .filter(Boolean),
+      ),
+    [draft],
+  )
+
+  const tsList = useMemo(
+    () => searchTwitterScoreTop100(tsQuery),
+    [tsQuery],
+  )
+
+  const draftInTop100 = useMemo(() => {
+    let n = 0
+    for (const h of draftHandles) {
+      if (getTwitterScoreAccount(h)) n++
+    }
+    return n
+  }, [draftHandles])
+
+  const onAddFromTwitterScore = (acc: TwitterScoreAccount) => {
+    if (!selectedKol) {
+      onToast('Chọn KOL bên trái trước')
+      return
+    }
+    const h = acc.handle.toLowerCase()
+    if (draftHandles.has(h)) {
+      onToast(`@${acc.handle} đã có trong list`)
+      return
+    }
+    setDraft((prev) => [
+      ...prev,
+      {
+        handle: acc.handle,
+        displayName: acc.displayName,
+        followedAgo: 'TwitterScore top 100',
+        followedAt: TWITTER_SCORE_SNAPSHOT.asOf,
+      },
+    ])
+    setDirty(true)
+    onToast(`Đã thêm @${acc.handle} (#${acc.rank} · ${acc.score})`)
+  }
+
   return (
     <div className="admin-feed">
       <div className="admin-ai-banner glass" style={{ marginBottom: 12 }}>
         <strong>Smart Followers</strong>
         <span>
-          Snapshot “Recent follows” trên map. <strong>Save = publish R2</strong>{' '}
-          (mọi visitor). Source: <strong>{source}</strong>. Không còn lưu
-          local-only.
+          Snapshot Recent / Smart trên map + bảng đối chiếu{' '}
+          <strong>TwitterScore Top 100</strong> (Web3 network influence).{' '}
+          <strong>Save = publish R2</strong>. Source: <strong>{source}</strong>
+          . Snapshot TS: {TWITTER_SCORE_SNAPSHOT.asOf.slice(0, 10)} · ngưỡng top
+          100 = {TWITTER_SCORE_SNAPSHOT.top100Threshold}.
         </span>
         <label className="admin-token-row">
           Token
@@ -286,11 +342,14 @@ export function AdminRecentFollowersEditor({ kols, onToast }: Props) {
         <span className="admin-count" style={{ alignSelf: 'center' }}>
           {Object.keys(map).length} KOLs ·{' '}
           {Object.values(map).reduce((n, a) => n + a.length, 0)} followers
+          {selectedKol
+            ? ` · draft ${draftInTop100}/${draft.length} in TS top100`
+            : ''}
           {dirty ? ' · unsaved' : ''}
         </span>
       </div>
 
-      <div className="admin-edit-layout">
+      <div className="admin-edit-layout admin-edit-layout--sf3">
         <div className="admin-edit-side glass">
           <div className="admin-side-list-head">
             <strong>KOL ({filteredHandles.length})</strong>
@@ -378,7 +437,8 @@ export function AdminRecentFollowersEditor({ kols, onToast }: Props) {
                     {selectedKolMeta ? ` · ${selectedKolMeta.displayName}` : ''}
                   </strong>
                   <div className="muted" style={{ fontSize: '0.75rem' }}>
-                    {draft.length} followers · map tab “Recent follows”
+                    {draft.length} followers · {draftInTop100} trong TwitterScore
+                    top 100 · map “Smart Followers”
                   </div>
                 </div>
                 {dirty && (
@@ -395,77 +455,191 @@ export function AdminRecentFollowersEditor({ kols, onToast }: Props) {
 
               {draft.length === 0 ? (
                 <p className="muted">
-                  Chưa có follower — bấm <strong>+ Add follower</strong>.
+                  Chưa có follower — bấm <strong>+ Add follower</strong> hoặc
+                  chọn từ <strong>TwitterScore Top 100</strong> bên phải.
                 </p>
               ) : (
                 <div className="admin-sf-list">
-                  {draft.map((f, i) => (
-                    <div key={i} className="admin-sf-row glass">
-                      <XProfileAvatar
-                        handle={f.handle || 'user'}
-                        name={f.displayName || f.handle || '?'}
-                        size={36}
-                      />
-                      <div className="admin-sf-fields">
-                        <label>
-                          Display name
-                          <input
-                            value={f.displayName}
-                            onChange={(e) =>
-                              patchFollower(i, { displayName: e.target.value })
-                            }
-                            placeholder="Name"
-                          />
-                        </label>
-                        <label>
-                          Handle
-                          <input
-                            value={f.handle}
-                            onChange={(e) =>
-                              patchFollower(i, {
-                                handle: e.target.value.replace(/^@/, ''),
-                              })
-                            }
-                            placeholder="handle"
-                          />
-                        </label>
-                        <label>
-                          Thời gian
-                          <input
-                            value={f.followedAgo}
-                            onChange={(e) =>
-                              patchFollower(i, { followedAgo: e.target.value })
-                            }
-                            placeholder="a month ago"
-                          />
-                        </label>
-                        <label>
-                          followedAt (ISO, optional)
-                          <input
-                            value={f.followedAt || ''}
-                            onChange={(e) =>
-                              patchFollower(i, {
-                                followedAt: e.target.value || undefined,
-                              })
-                            }
-                            placeholder="2026-06-15T00:00:00.000Z"
-                          />
-                        </label>
-                      </div>
-                      <button
-                        type="button"
-                        className="btn btn--danger"
-                        onClick={() => onRemoveRow(i)}
-                        title="Remove"
+                  {draft.map((f, i) => {
+                    const ts = f.handle
+                      ? getTwitterScoreAccount(f.handle)
+                      : undefined
+                    return (
+                      <div
+                        key={i}
+                        className={`admin-sf-row glass ${ts ? 'admin-sf-row--top100' : ''}`}
                       >
-                        ×
-                      </button>
-                    </div>
-                  ))}
+                        <XProfileAvatar
+                          handle={f.handle || 'user'}
+                          name={f.displayName || f.handle || '?'}
+                          size={36}
+                        />
+                        <div className="admin-sf-fields">
+                          <label>
+                            Display name
+                            <input
+                              value={f.displayName}
+                              onChange={(e) =>
+                                patchFollower(i, {
+                                  displayName: e.target.value,
+                                })
+                              }
+                              placeholder="Name"
+                            />
+                          </label>
+                          <label>
+                            Handle
+                            <input
+                              value={f.handle}
+                              onChange={(e) =>
+                                patchFollower(i, {
+                                  handle: e.target.value.replace(/^@/, ''),
+                                })
+                              }
+                              placeholder="handle"
+                            />
+                          </label>
+                          <label>
+                            Thời gian
+                            <input
+                              value={f.followedAgo}
+                              onChange={(e) =>
+                                patchFollower(i, {
+                                  followedAgo: e.target.value,
+                                })
+                              }
+                              placeholder="a month ago"
+                            />
+                          </label>
+                          <label>
+                            followedAt (ISO, optional)
+                            <input
+                              value={f.followedAt || ''}
+                              onChange={(e) =>
+                                patchFollower(i, {
+                                  followedAt: e.target.value || undefined,
+                                })
+                              }
+                              placeholder="2026-06-15T00:00:00.000Z"
+                            />
+                          </label>
+                          {ts && (
+                            <div className="admin-sf-ts-badge">
+                              TwitterScore #{ts.rank} · {ts.score}/1000
+                            </div>
+                          )}
+                        </div>
+                        <button
+                          type="button"
+                          className="btn btn--danger"
+                          onClick={() => onRemoveRow(i)}
+                          title="Remove"
+                        >
+                          ×
+                        </button>
+                      </div>
+                    )
+                  })}
                 </div>
               )}
             </>
           )}
+        </div>
+
+        {/* TwitterScore Top 100 reference */}
+        <div className="admin-edit-side glass admin-ts-panel">
+          <div className="admin-side-list-head">
+            <strong>TwitterScore Top 100</strong>
+          </div>
+          <p className="admin-ts-panel__note">
+            Snapshot Web3 network influence ({TWITTER_SCORE_TOP_100.length}{' '}
+            accounts) · max {TWITTER_SCORE_SNAPSHOT.maxScore} · cut-off{' '}
+            {TWITTER_SCORE_SNAPSHOT.top100Threshold} · mean{' '}
+            {TWITTER_SCORE_SNAPSHOT.mean} · median{' '}
+            {TWITTER_SCORE_SNAPSHOT.median}. Điểm cao = graph mạnh,{' '}
+            <em>không</em> = uy tín/đầu tư. Nguồn:{' '}
+            <a
+              href={TWITTER_SCORE_SNAPSHOT.source}
+              target="_blank"
+              rel="noreferrer"
+            >
+              twitterscore.io
+            </a>
+            .
+          </p>
+          <div className="admin-toolbar" style={{ margin: '0 10px 4px' }}>
+            <label className="admin-search-wrap">
+              <span className="admin-search-wrap__icon" aria-hidden>
+                ⌕
+              </span>
+              <input
+                type="text"
+                className="admin-search"
+                value={tsQuery}
+                onChange={(e) => setTsQuery(e.target.value)}
+                placeholder="Tìm #rank, @handle, điểm…"
+                aria-label="Search TwitterScore top 100"
+                autoComplete="off"
+              />
+              {tsQuery && (
+                <button
+                  type="button"
+                  className="admin-search-wrap__clear"
+                  title="Xóa tìm kiếm"
+                  onClick={() => setTsQuery('')}
+                >
+                  ×
+                </button>
+              )}
+            </label>
+          </div>
+          <ul className="admin-side-list admin-ts-list">
+            {tsList.length === 0 && (
+              <li className="admin-empty admin-empty--side">
+                Không khớp “{tsQuery.trim()}”
+              </li>
+            )}
+            {tsList.map((acc) => {
+              const inDraft = draftHandles.has(acc.handle.toLowerCase())
+              return (
+                <li key={acc.handle}>
+                  <div
+                    className={`admin-ts-row ${inDraft ? 'is-in-draft' : ''}`}
+                  >
+                    <span className="admin-ts-row__rank">#{acc.rank}</span>
+                    <XProfileAvatar
+                      handle={acc.handle}
+                      name={acc.displayName}
+                      size={28}
+                    />
+                    <span className="admin-ts-row__meta">
+                      <strong>{acc.displayName}</strong>
+                      <small>@{acc.handle}</small>
+                    </span>
+                    <span
+                      className={`admin-ts-row__score ${acc.score >= 1000 ? 'is-max' : ''}`}
+                      title="TwitterScore"
+                    >
+                      {acc.score}
+                    </span>
+                    <button
+                      type="button"
+                      className="btn btn--sm"
+                      disabled={!selectedKol || inDraft}
+                      title={
+                        inDraft
+                          ? 'Đã có trong list KOL'
+                          : `Thêm @${acc.handle} vào draft`
+                      }
+                      onClick={() => onAddFromTwitterScore(acc)}
+                    >
+                      {inDraft ? '✓' : '+'}
+                    </button>
+                  </div>
+                </li>
+              )
+            })}
+          </ul>
         </div>
       </div>
     </div>

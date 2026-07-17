@@ -423,6 +423,22 @@
   min-height: calc(100vh - 320px);
 }
 
+/* KOL list | editor | TwitterScore Top 100 */
+.admin-edit-layout--sf3 {
+  grid-template-columns:
+    minmax(200px, 240px) minmax(0, 1fr) minmax(260px, 300px);
+}
+
+@media (max-width: 1100px) {
+  .admin-edit-layout--sf3 {
+    grid-template-columns: minmax(200px, 240px) 1fr;
+  }
+  .admin-edit-layout--sf3 .admin-ts-panel {
+    grid-column: 1 / -1;
+    max-height: 360px;
+  }
+}
+
 .admin-edit-side {
   border-radius: var(--radius-lg);
   padding: 10px;
@@ -859,6 +875,115 @@
   border-radius: 8px;
   padding: 7px 9px;
   font-size: 0.8rem;
+}
+
+.admin-sf-row--top100 {
+  border: 1px solid rgba(125, 211, 252, 0.35);
+  box-shadow: 0 0 0 1px rgba(125, 211, 252, 0.08);
+}
+
+.admin-sf-ts-badge {
+  grid-column: 1 / -1;
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: #7dd3fc;
+  padding: 4px 8px;
+  border-radius: 8px;
+  background: rgba(125, 211, 252, 0.1);
+  width: fit-content;
+}
+
+.admin-ts-panel {
+  min-height: 0;
+}
+
+.admin-ts-panel__note {
+  margin: 0 10px 8px;
+  font-size: 0.65rem;
+  line-height: 1.45;
+  color: #94a3b8;
+}
+
+.admin-ts-panel__note a {
+  color: #7dd3fc;
+}
+
+.admin-ts-panel__note em {
+  font-style: normal;
+  color: #fbbf24;
+}
+
+.admin-ts-list {
+  padding-bottom: 8px;
+}
+
+.admin-ts-row {
+  display: grid;
+  grid-template-columns: 36px 28px 1fr auto auto;
+  gap: 8px;
+  align-items: center;
+  padding: 7px 8px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  background: rgba(15, 23, 42, 0.35);
+}
+
+.admin-ts-row:hover {
+  border-color: rgba(148, 163, 184, 0.18);
+  background: rgba(30, 41, 59, 0.45);
+}
+
+.admin-ts-row.is-in-draft {
+  border-color: rgba(52, 211, 153, 0.35);
+  background: rgba(52, 211, 153, 0.08);
+}
+
+.admin-ts-row__rank {
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: #64748b;
+  font-variant-numeric: tabular-nums;
+}
+
+.admin-ts-row__meta {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.admin-ts-row__meta strong {
+  font-size: 0.72rem;
+  color: #f1f5f9;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.admin-ts-row__meta small {
+  font-size: 0.62rem;
+  color: #38bdf8;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.admin-ts-row__score {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #a5b4fc;
+  font-variant-numeric: tabular-nums;
+}
+
+.admin-ts-row__score.is-max {
+  color: #fbbf24;
+}
+
+.admin .btn--sm {
+  padding: 4px 8px;
+  font-size: 0.7rem;
+  min-width: 28px;
+  justify-content: center;
 }
 
 @media (max-width: 720px) {

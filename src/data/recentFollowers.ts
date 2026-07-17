@@ -919,6 +919,81 @@ export const RECENT_FOLLOWERS_BY_HANDLE: Record<string, RecentFollower[]> = {
       followedAt: '2025-09-15T00:00:00.000Z',
     },
   ],
+  /** Ape (@immrape) — curated smart/recent followers snapshot */
+  immrape: [
+    {
+      handle: 'tiezhucrypto',
+      displayName: '铁柱',
+      followedAgo: '21 days ago',
+      followedAt: '2026-06-26T00:00:00.000Z',
+    },
+    {
+      handle: 'nftcps',
+      displayName: '鸟哥 | 蓝鸟会️',
+      followedAgo: '2 months ago',
+      followedAt: '2026-05-17T00:00:00.000Z',
+    },
+    {
+      handle: 'coldwhite18',
+      displayName: 'zack | 扎克',
+      followedAgo: '6 months ago',
+      followedAt: '2026-01-17T00:00:00.000Z',
+    },
+    {
+      handle: 'ki_smoon12',
+      displayName: 'Ki.',
+      followedAgo: '10 months ago',
+      followedAt: '2025-09-17T00:00:00.000Z',
+    },
+    {
+      handle: 'longtian168',
+      displayName: '八發金豆',
+      followedAgo: '10 months ago',
+      followedAt: '2025-09-16T00:00:00.000Z',
+    },
+    {
+      handle: 'xiaofeilong99',
+      displayName: '币天天',
+      followedAgo: '10 months ago',
+      followedAt: '2025-09-15T00:00:00.000Z',
+    },
+    {
+      handle: 'fityeth',
+      displayName: 'fity.eth',
+      followedAgo: '10 months ago',
+      followedAt: '2025-09-14T00:00:00.000Z',
+    },
+    {
+      handle: 'cryptoukong',
+      displayName: 'UKong | Bird️',
+      followedAgo: '10 months ago',
+      followedAt: '2025-09-13T00:00:00.000Z',
+    },
+    {
+      handle: 'daoheking',
+      displayName: 'LF 刀河王 ｜买美股上币安',
+      followedAgo: '10 months ago',
+      followedAt: '2025-09-12T00:00:00.000Z',
+    },
+    {
+      handle: 'btc100000015252',
+      displayName: '加密贝姐LK',
+      followedAgo: '10 months ago',
+      followedAt: '2025-09-11T00:00:00.000Z',
+    },
+    {
+      handle: 'theog_general',
+      displayName: 'OG General',
+      followedAgo: 'a year ago',
+      followedAt: '2025-07-17T00:00:00.000Z',
+    },
+    {
+      handle: 'thesoftestrock1',
+      displayName: 'Thesoftestrock',
+      followedAgo: 'a year ago',
+      followedAt: '2025-07-16T00:00:00.000Z',
+    },
+  ],
   /** Bi Cần Thơ (@BiCanTho) — curated smart/recent followers snapshot */
   bicantho: [
     {

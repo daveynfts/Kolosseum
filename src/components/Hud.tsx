@@ -544,7 +544,7 @@ export function Hud({
                 className={`detail-tab ${detailTab === 'follows' ? 'is-active' : ''}`}
                 onClick={() => setDetailTab('follows')}
               >
-                Smart follower
+                Smart Followers
               </button>
             )}
           </div>

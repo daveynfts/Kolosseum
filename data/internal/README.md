@@ -4,28 +4,32 @@ Structured **internal datasets** for admin control and agent/analysis tasks.
 
 | Dataset | Repo seed | R2 key | API | Admin |
 |---------|-----------|--------|-----|--------|
-| **TwitterScore Top 100** | `src/data/internal/twitterscore-top100.json` (+ mirror here) | `internal/twitterscore-top100/v1.json` | `GET/PUT /api/twitterscore-top100` | Smart Followers tab → panel **TwitterScore Top 100** |
+| **TwitterScore Top N (100→200+)** | `src/data/internal/twitterscore-top100.json` (+ mirror here) | `internal/twitterscore-top100/v1.json` | `GET/PUT /api/twitterscore-top100` | Smart Followers tab → panel **TwitterScore Top N** |
 | **Recent Followers** (per KOL) | `src/data/recentFollowers.ts` → `RECENT_FOLLOWERS_BY_HANDLE` | `recent-followers/v1.json` (`map`) | `GET/PUT /api/recent-followers` | Smart Followers tab |
 | **Smart Followers** (per KOL) | `src/data/recentFollowers.ts` → `SMART_FOLLOWERS_BY_HANDLE` | `recent-followers/v1.json` (`smartMap`) | same | Map UI sub-tab (seed/R2) |
 | **KOL bios / ranks** | `src/data/sheetKols.ts`, `data/bio-patches/*.txt` | `kols/v1.json` | `GET/PUT /api/kols` | KOL Editor |
 | **X Feed** | `public/feed/tier1-feed.json` | `feed/v1.json` | `GET/PUT /api/feed` | X Feed tab |
 
-## TwitterScore Top 100
+## TwitterScore Top N (currently ~200)
 
 - **Meaning:** network influence of follower graph (0–1000), **not** content trust or trade skill.
+- **Snapshot:** ranks 1–100 + extension 101–200 (The Block #100/#101 deduped → **199** unique accounts).
+- Floor score of list ≈ **592** · #100 ≈ **740**.
 - **Seed JSON schema:**
 
 ```json
 {
   "version": 1,
-  "kind": "twitterscore-top100",
+  "kind": "twitterscore-top200",
   "asOf": "ISO",
   "source": "https://twitterscore.io/topScored/",
   "sourceNote": "…",
   "maxScore": 1000,
   "top100Threshold": 740,
-  "median": 833.5,
-  "mean": 856.57,
+  "top200Threshold": 592,
+  "listSize": 199,
+  "median": 0,
+  "mean": 0,
   "atMax": 17,
   "accounts": [
     { "rank": 1, "handle": "VitalikButerin", "displayName": "vitalik.eth", "score": 1000 }

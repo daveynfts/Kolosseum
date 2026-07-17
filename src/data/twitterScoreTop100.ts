@@ -1,5 +1,5 @@
 /**
- * TwitterScore Top 100 — internal benchmark data.
+ * TwitterScore Top N (100→200+) — internal benchmark data.
  *
  * Source of truth (repo seed):
  *   src/data/internal/twitterscore-top100.json
@@ -11,6 +11,7 @@
  *
  * Score = follower-network influence 0–1000 (twitterscore.io),
  * NOT content accuracy or investment performance.
+ * Filename keeps top100 for stable R2/API keys; listSize is dynamic.
  */
 import seedJson from './internal/twitterscore-top100.json'
 
@@ -24,12 +25,16 @@ export interface TwitterScoreAccount {
 
 export type TwitterScoreDataset = {
   version: number
-  kind: 'twitterscore-top100'
+  kind: 'twitterscore-top100' | 'twitterscore-top200' | string
   asOf: string
   source: string
   sourceNote: string
   maxScore: number
+  /** Score of rank #100 (compat) */
   top100Threshold: number
+  /** Lowest score in current list (e.g. #200) */
+  top200Threshold?: number
+  listSize?: number
   median: number
   mean: number
   atMax: number
@@ -84,9 +89,12 @@ export function normalizeTwitterScoreDataset(
   const maxScore = Math.max(...scores, 1000)
   const atMax = scores.filter((s) => s >= maxScore).length
 
+  const listSize = accounts.length
+  const scoreAt100 = accounts.find((a) => a.rank === 100)?.score
+  const minScore = sorted[0] || 0
   return {
     version: Number(o.version) || 1,
-    kind: 'twitterscore-top100',
+    kind: String(o.kind || (listSize > 100 ? 'twitterscore-top200' : 'twitterscore-top100')),
     asOf: String(o.asOf || new Date().toISOString()),
     source: String(o.source || 'https://twitterscore.io/topScored/'),
     sourceNote: String(
@@ -94,7 +102,11 @@ export function normalizeTwitterScoreDataset(
         'twitterscore.io · Top accounts by follower-network influence score',
     ),
     maxScore,
-    top100Threshold: Number(o.top100Threshold) || sorted[sorted.length - 1] || 0,
+    top100Threshold:
+      Number(o.top100Threshold) || scoreAt100 || minScore || 0,
+    top200Threshold:
+      Number(o.top200Threshold) || (listSize >= 200 ? minScore : undefined),
+    listSize,
     median: Number(o.median) || median,
     mean: Number(o.mean) || mean,
     atMax: Number(o.atMax) || atMax,

@@ -434,16 +434,19 @@ export function AdminRecentFollowersEditor({ kols, onToast }: Props) {
   return (
     <div className="admin-feed">
       <div className="admin-ai-banner glass" style={{ marginBottom: 12 }}>
-        <strong>Smart Followers + internal Top 100</strong>
+        <strong>Smart Followers + internal TwitterScore list</strong>
         <span>
           Recent/Smart per KOL (map) +{' '}
-          <strong>TwitterScore Top 100</strong> là data nội bộ (seed JSON · R2{' '}
-          <code>internal/twitterscore-top100/v1.json</code>). Followers source:{' '}
-          <strong>{source}</strong> · Top100:{' '}
-          <strong>{tsSource}</strong>
-          {tsDirty ? ' · Top100 unsaved' : ''}. asOf{' '}
-          {tsDataset.asOf.slice(0, 10)} · cut-off {tsDataset.top100Threshold} ·{' '}
-          {tsDataset.accounts.length} accounts.
+          <strong>TwitterScore Top {tsDataset.accounts.length || 200}</strong>{' '}
+          (data nội bộ · seed JSON · R2{' '}
+          <code>internal/twitterscore-top100/v1.json</code>). Followers:{' '}
+          <strong>{source}</strong> · TS list: <strong>{tsSource}</strong>
+          {tsDirty ? ' · TS unsaved' : ''}. asOf {tsDataset.asOf.slice(0, 10)} ·
+          #100≥{tsDataset.top100Threshold}
+          {tsDataset.top200Threshold != null
+            ? ` · floor ${tsDataset.top200Threshold}`
+            : ''}{' '}
+          · {tsDataset.accounts.length} accounts.
         </span>
         <label className="admin-token-row">
           Token
@@ -701,7 +704,7 @@ export function AdminRecentFollowersEditor({ kols, onToast }: Props) {
         {/* TwitterScore Top 100 — internal editable dataset */}
         <div className="admin-edit-side glass admin-ts-panel">
           <div className="admin-side-list-head">
-            <strong>TwitterScore Top 100</strong>
+            <strong>TwitterScore Top {tsAccounts.length || 'N'}</strong>
             {tsDirty && (
               <span className="admin-ts-dirty" title="Unsaved">
                 ·
@@ -710,9 +713,12 @@ export function AdminRecentFollowersEditor({ kols, onToast }: Props) {
           </div>
           <p className="admin-ts-panel__note">
             Data nội bộ ({tsAccounts.length}) · source <strong>{tsSource}</strong>{' '}
-            · mean {tsDataset.mean.toFixed(1)} · median {tsDataset.median} ·
-            cut-off {tsDataset.top100Threshold}. Điểm ={' '}
-            <em>network influence</em>, không = uy tín/trade. Seed:{' '}
+            · mean {Number(tsDataset.mean).toFixed(1)} · median{' '}
+            {tsDataset.median} · #100={tsDataset.top100Threshold}
+            {tsDataset.top200Threshold != null
+              ? ` · #${tsAccounts.length}=${tsDataset.top200Threshold}`
+              : ''}
+            . Điểm = <em>network influence</em>, không = uy tín/trade. Seed:{' '}
             <code>data/internal/twitterscore-top100.json</code> · R2:{' '}
             <code>internal/twitterscore-top100/v1.json</code>.
           </p>
@@ -723,7 +729,7 @@ export function AdminRecentFollowersEditor({ kols, onToast }: Props) {
               onClick={() => void onSaveTwitterScore()}
               disabled={tsSaving}
             >
-              {tsSaving ? '…' : 'Save Top 100 (R2)'}
+              {tsSaving ? '…' : `Save Top ${tsAccounts.length} (R2)`}
             </button>
             <button type="button" className="btn btn--sm" onClick={onAddTsRow}>
               + Row

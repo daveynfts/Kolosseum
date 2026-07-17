@@ -121,6 +121,15 @@ async function fetchXAvatar(handle: string): Promise<{
   return null
 }
 
+/** Accept raw image uploads (PNG/JPEG/WebP) up to ~2MB */
+export const config = {
+  api: {
+    bodyParser: {
+      sizeLimit: '2mb',
+    },
+  },
+}
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   cors(res)
   if (req.method === 'OPTIONS') return res.status(204).end()
@@ -171,7 +180,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       let body: Buffer | null = null
       let contentType = 'image/jpeg'
 
-      // Vercel may parse body as Buffer for raw uploads
+      // Vercel may parse body as Buffer / base64 string / { data }
       const raw = req.body
       if (raw && (Buffer.isBuffer(raw) || raw instanceof Uint8Array)) {
         body = Buffer.from(raw)
@@ -179,7 +188,33 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           String(req.headers['content-type'] || 'image/jpeg').split(';')[0] ||
           'image/jpeg'
       } else if (typeof raw === 'string' && raw.length > 100) {
-        body = Buffer.from(raw, 'binary')
+        // raw binary string or data-url / base64
+        if (raw.startsWith('data:image/')) {
+          const m = raw.match(/^data:(image\/[a-zA-Z0-9.+-]+);base64,(.+)$/)
+          if (m) {
+            contentType = m[1]
+            body = Buffer.from(m[2], 'base64')
+          }
+        } else if (/^[A-Za-z0-9+/=\r\n]+$/.test(raw.slice(0, 80)) && raw.length > 400) {
+          body = Buffer.from(raw.replace(/\s/g, ''), 'base64')
+          contentType =
+            String(req.headers['content-type'] || 'image/jpeg').split(';')[0] ||
+            'image/jpeg'
+        } else {
+          body = Buffer.from(raw, 'binary')
+          contentType =
+            String(req.headers['content-type'] || 'image/jpeg').split(';')[0] ||
+            'image/jpeg'
+        }
+      } else if (raw && typeof raw === 'object' && 'data' in (raw as object)) {
+        const d = (raw as { data?: string; contentType?: string }).data
+        if (typeof d === 'string' && d.length > 100) {
+          body = Buffer.from(d, 'base64')
+          contentType =
+            (raw as { contentType?: string }).contentType ||
+            String(req.headers['content-type'] || 'image/jpeg').split(';')[0] ||
+            'image/jpeg'
+        }
       }
 
       if (!body || body.length < MIN_AVATAR_BYTES) {

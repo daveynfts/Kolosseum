@@ -1,5 +1,5 @@
 /**
- * Public partner view — SCEX 3D mention matrix + livefeed (VI).
+ * Public partner view — SCEX 2D/3D mention matrix + livefeed (VI).
  */
 import { useEffect, useMemo, useState } from 'react'
 import {
@@ -12,10 +12,25 @@ import { loadScexWithSource } from '../lib/scexStore'
 import { loadKolsWithSource } from '../lib/kolStore'
 import type { Kol } from '../types'
 import { XProfileAvatar } from '../components/XProfileAvatar'
+import { ScexMatrix2D } from '../components/ScexMatrix2D'
 import { ScexMatrix3D } from '../components/ScexMatrix3D'
 import { ScexKolDetail } from '../components/ScexKolDetail'
 import { resolveMediaUrl } from '../lib/avatar'
 import './ScexTrackingPage.css'
+
+type MatrixView = '2d' | '3d'
+
+const VIEW_KEY = 'scex-matrix-view-v1'
+
+function readView(): MatrixView {
+  try {
+    const v = localStorage.getItem(VIEW_KEY)
+    if (v === '2d' || v === '3d') return v
+  } catch {
+    /* ignore */
+  }
+  return '2d'
+}
 
 function formatCompact(n: number): string {
   if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`
@@ -54,6 +69,7 @@ export function ScexTrackingPage() {
   const [expanded, setExpanded] = useState<Record<string, boolean>>({})
   const [selectedActor, setSelectedActor] = useState<ScexActor | null>(null)
   const [autoRotate, setAutoRotate] = useState(true)
+  const [matrixView, setMatrixView] = useState<MatrixView>(() => readView())
 
   useEffect(() => {
     let cancelled = false
@@ -69,6 +85,39 @@ export function ScexTrackingPage() {
       cancelled = true
     }
   }, [])
+
+  // Keep detail panel below event banner (avoid overlap)
+  useEffect(() => {
+    const el = document.querySelector('.scex-event-banner')
+    const apply = () => {
+      const h = el?.getBoundingClientRect().height ?? 0
+      document.documentElement.style.setProperty(
+        '--scex-banner-h',
+        `${Math.max(0, Math.round(h))}px`,
+      )
+    }
+    apply()
+    const ro =
+      el && typeof ResizeObserver !== 'undefined'
+        ? new ResizeObserver(apply)
+        : null
+    if (el && ro) ro.observe(el)
+    window.addEventListener('resize', apply)
+    return () => {
+      ro?.disconnect()
+      window.removeEventListener('resize', apply)
+    }
+  }, [])
+
+  const setView = (v: MatrixView) => {
+    setMatrixView(v)
+    try {
+      localStorage.setItem(VIEW_KEY, v)
+    } catch {
+      /* ignore */
+    }
+    if (v === '2d') setAutoRotate(false)
+  }
 
   const visible = useMemo(() => {
     if (!dataset) return [] as ScexActor[]
@@ -170,29 +219,59 @@ export function ScexTrackingPage() {
               <h2>{viMatrixTitle(config.matrixTitle)}</h2>
               <p>
                 Trục ngang: số lần nhắc · Trục dọc: chất lượng · Kích thước:
-                followers ·{' '}
-                {onMapCount}/{visible.length} KOL có trên map (bấm xem chi tiết /
-                Surf)
+                followers · {onMapCount}/{visible.length} KOL trên map
               </p>
             </div>
-            <button
-              type="button"
-              className={`scex-rotate-btn ${autoRotate ? 'is-on' : ''}`}
-              onClick={() => setAutoRotate((v) => !v)}
-              title="Tự xoay đám mây 3D"
-            >
-              {autoRotate ? '⏸ Tạm dừng xoay' : '▶ Tự xoay'}
-            </button>
+            <div className="scex-matrix__toolbar">
+              <div className="scex-view-toggle" role="group" aria-label="Chế độ ma trận">
+                <button
+                  type="button"
+                  className={matrixView === '2d' ? 'is-active' : ''}
+                  onClick={() => setView('2d')}
+                >
+                  2D
+                </button>
+                <button
+                  type="button"
+                  className={matrixView === '3d' ? 'is-active' : ''}
+                  onClick={() => setView('3d')}
+                >
+                  3D
+                </button>
+              </div>
+              {matrixView === '3d' && (
+                <button
+                  type="button"
+                  className={`scex-rotate-btn ${autoRotate ? 'is-on' : ''}`}
+                  onClick={() => setAutoRotate((v) => !v)}
+                  title="Tự xoay đám mây 3D"
+                >
+                  {autoRotate ? '⏸ Dừng xoay' : '▶ Tự xoay'}
+                </button>
+              )}
+            </div>
           </div>
-          <div className="scex-matrix__body scex-matrix__body--3d">
-            <ScexMatrix3D
-              actors={visible}
-              config={config}
-              selectedId={selectedActor?.id ?? null}
-              mapHandles={mapHandles}
-              autoRotate={autoRotate}
-              onSelect={setSelectedActor}
-            />
+          <div
+            className={`scex-matrix__body ${matrixView === '3d' ? 'scex-matrix__body--3d' : 'scex-matrix__body--2d'}`}
+          >
+            {matrixView === '3d' ? (
+              <ScexMatrix3D
+                actors={visible}
+                config={config}
+                selectedId={selectedActor?.id ?? null}
+                mapHandles={mapHandles}
+                autoRotate={autoRotate}
+                onSelect={setSelectedActor}
+              />
+            ) : (
+              <ScexMatrix2D
+                actors={visible}
+                config={config}
+                selectedId={selectedActor?.id ?? null}
+                mapHandles={mapHandles}
+                onSelect={setSelectedActor}
+              />
+            )}
             <div className="scex-matrix__legend">
               <span>
                 <i className="scex-matrix__legend-dot scex-matrix__legend-dot--map" />
@@ -243,12 +322,20 @@ export function ScexTrackingPage() {
       </div>
 
       {selectedActor && (
-        <ScexKolDetail
-          actor={selectedActor}
-          mapKol={selectedMapKol}
-          config={config}
-          onClose={() => setSelectedActor(null)}
-        />
+        <>
+          <button
+            type="button"
+            className="scex-detail-scrim"
+            aria-label="Đóng chi tiết"
+            onClick={() => setSelectedActor(null)}
+          />
+          <ScexKolDetail
+            actor={selectedActor}
+            mapKol={selectedMapKol}
+            config={config}
+            onClose={() => setSelectedActor(null)}
+          />
+        </>
       )}
     </div>
   )

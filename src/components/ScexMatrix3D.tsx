@@ -1,10 +1,10 @@
 /**
- * SCEX mention matrix as interactive 3D cloud (OrbitControls like main map).
- * X = volume (số lần nhắc), Y = quality, Z = depth scatter.
+ * SCEX mention matrix — interactive 3D cloud (OrbitControls).
+ * Quadrant labels live in CSS overlay (clean, no Html clutter).
  */
 import { useMemo, useRef, useState } from 'react'
 import { Canvas, useFrame } from '@react-three/fiber'
-import { Html, OrbitControls, Billboard } from '@react-three/drei'
+import { Html, OrbitControls, Billboard, Stars } from '@react-three/drei'
 import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib'
 import * as THREE from 'three'
 import type { ScexActor, ScexConfig } from '../data/scexTracking'
@@ -15,7 +15,6 @@ export type ScexMatrix3DProps = {
   actors: ScexActor[]
   config: ScexConfig
   selectedId: string | null
-  /** Handles present on the main VN KOL map */
   mapHandles: Set<string>
   onSelect: (actor: ScexActor | null) => void
   autoRotate?: boolean
@@ -38,11 +37,10 @@ function placeActors(actors: ScexActor[], config: ScexConfig): Placed[] {
   const maxSize = Math.max(...actors.map((a) => actorSizeValue(a, config)), 1)
   const items = actors.map((actor) => {
     const { x, y } = actorMatrixPos(actor, config)
-    // Map unit coords → 3D stage
-    const px = (x - 0.5) * 14
-    const py = (y - 0.5) * 10
-    const pz = (hash01(actor.handle) - 0.5) * 5.5
-    const radius = 0.38 + (actorSizeValue(actor, config) / maxSize) * 0.72
+    const px = (x - 0.5) * 13.2
+    const py = (y - 0.5) * 9.2
+    const pz = (hash01(actor.handle) - 0.5) * 4.2
+    const radius = 0.42 + (actorSizeValue(actor, config) / maxSize) * 0.68
     return {
       actor,
       position: [px, py, pz] as [number, number, number],
@@ -51,9 +49,8 @@ function placeActors(actors: ScexActor[], config: ScexConfig): Placed[] {
     }
   })
 
-  // Soft 3D repulsion so avatars don't stack
-  for (let iter = 0; iter < 36; iter++) {
-    const s = 0.5 * (1 - iter / 36) + 0.1
+  for (let iter = 0; iter < 40; iter++) {
+    const s = 0.52 * (1 - iter / 40) + 0.1
     for (let i = 0; i < items.length; i++) {
       for (let j = i + 1; j < items.length; j++) {
         const a = items[i]
@@ -62,7 +59,7 @@ function placeActors(actors: ScexActor[], config: ScexConfig): Placed[] {
         const dy = b.position[1] - a.position[1]
         const dz = b.position[2] - a.position[2]
         const dist = Math.hypot(dx, dy, dz) || 0.01
-        const minD = a.radius + b.radius + 0.55
+        const minD = a.radius + b.radius + 0.62
         if (dist < minD) {
           const push = ((minD - dist) / 2) * s
           const ux = dx / dist
@@ -80,16 +77,15 @@ function placeActors(actors: ScexActor[], config: ScexConfig): Placed[] {
         }
       }
     }
-    // Pull slightly toward data anchors
     for (const it of items) {
       const { x, y } = actorMatrixPos(it.actor, config)
-      const ax = (x - 0.5) * 14
-      const ay = (y - 0.5) * 10
-      it.position[0] += (ax - it.position[0]) * 0.05
-      it.position[1] += (ay - it.position[1]) * 0.05
-      it.position[0] = Math.max(-7.2, Math.min(7.2, it.position[0]))
-      it.position[1] = Math.max(-5.2, Math.min(5.2, it.position[1]))
-      it.position[2] = Math.max(-3.2, Math.min(3.2, it.position[2]))
+      const ax = (x - 0.5) * 13.2
+      const ay = (y - 0.5) * 9.2
+      it.position[0] += (ax - it.position[0]) * 0.045
+      it.position[1] += (ay - it.position[1]) * 0.045
+      it.position[0] = Math.max(-6.8, Math.min(6.8, it.position[0]))
+      it.position[1] = Math.max(-4.8, Math.min(4.8, it.position[1]))
+      it.position[2] = Math.max(-2.6, Math.min(2.6, it.position[2]))
     }
   }
 
@@ -100,88 +96,58 @@ function placeActors(actors: ScexActor[], config: ScexConfig): Placed[] {
   }))
 }
 
-function QuadrantPlanes({ config }: { config: ScexConfig }) {
-  const q = config.quadrantLabels
-  const labels: Array<{
-    key: string
-    title: string
-    sub: string
-    pos: [number, number, number]
-    color: string
-  }> = [
-    {
-      key: 'nurture',
-      title: q.nurture?.title || 'CẦN NUÔI',
-      sub: q.nurture?.subtitle || '',
-      pos: [-3.6, 3.2, -2.8],
-      color: '#38bdf8',
-    },
-    {
-      key: 'stars',
-      title: q.stars?.title || 'NGÔI SAO',
-      sub: q.stars?.subtitle || '',
-      pos: [3.6, 3.2, -2.8],
-      color: '#22c55e',
-    },
-    {
-      key: 'ignore',
-      title: q.ignore?.title || 'THẤP',
-      sub: q.ignore?.subtitle || '',
-      pos: [-3.6, -3.2, -2.8],
-      color: '#64748b',
-    },
-    {
-      key: 'noise',
-      title: q.noise?.title || 'ỒN ÀO',
-      sub: q.noise?.subtitle || '',
-      pos: [3.6, -3.2, -2.8],
-      color: '#f59e0b',
-    },
-  ]
-
+function StageFrame() {
   return (
     <group>
-      {/* Soft stage floor */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -5.4, 0]} receiveShadow>
-        <circleGeometry args={[11, 48]} />
-        <meshBasicMaterial color="#0a1224" transparent opacity={0.55} />
+      {/* Soft radial floor glow */}
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -5.1, 0]}>
+        <circleGeometry args={[10.5, 64]} />
+        <meshBasicMaterial color="#0c1a2e" transparent opacity={0.5} />
       </mesh>
-      {/* Cross axes */}
-      <mesh position={[0, 0, -3]}>
-        <planeGeometry args={[14.5, 10.5]} />
+      {/* Back plate with quadrant tints */}
+      <mesh position={[0, 0, -3.2]}>
+        <planeGeometry args={[14.2, 10.2]} />
         <meshBasicMaterial
-          color="#0f172a"
+          color="#0a1220"
           transparent
-          opacity={0.35}
+          opacity={0.55}
           side={THREE.DoubleSide}
           depthWrite={false}
         />
       </mesh>
-      {/* Vertical split */}
-      <mesh position={[0, 0, -2.95]}>
-        <planeGeometry args={[0.04, 10.4]} />
-        <meshBasicMaterial color="#ffffff" transparent opacity={0.12} />
-      </mesh>
-      {/* Horizontal split */}
-      <mesh position={[0, 0, -2.95]}>
-        <planeGeometry args={[14.4, 0.04]} />
-        <meshBasicMaterial color="#ffffff" transparent opacity={0.12} />
-      </mesh>
-      {labels.map((L) => (
-        <Html
-          key={L.key}
-          position={L.pos}
-          center
-          distanceFactor={14}
-          style={{ pointerEvents: 'none' }}
-          zIndexRange={[10, 0]}
-        >
-          <div className="scex3d-quad-label" style={{ borderColor: `${L.color}55` }}>
-            <strong style={{ color: L.color }}>{L.title}</strong>
-            {L.sub ? <small>{L.sub}</small> : null}
-          </div>
-        </Html>
+      {/* Quadrant color washes */}
+      {(
+        [
+          { pos: [-3.5, 2.5, -3.15] as const, color: '#38bdf8' },
+          { pos: [3.5, 2.5, -3.15] as const, color: '#22c55e' },
+          { pos: [-3.5, -2.5, -3.15] as const, color: '#64748b' },
+          { pos: [3.5, -2.5, -3.15] as const, color: '#f59e0b' },
+        ] as const
+      ).map((q, i) => (
+        <mesh key={i} position={[...q.pos]}>
+          <planeGeometry args={[6.8, 4.8]} />
+          <meshBasicMaterial
+            color={q.color}
+            transparent
+            opacity={0.055}
+            depthWrite={false}
+          />
+        </mesh>
       ))}
+      {/* Axis lines */}
+      <mesh position={[0, 0, -3.1]}>
+        <planeGeometry args={[0.035, 10]} />
+        <meshBasicMaterial color="#94a3b8" transparent opacity={0.28} />
+      </mesh>
+      <mesh position={[0, 0, -3.1]}>
+        <planeGeometry args={[14, 0.035]} />
+        <meshBasicMaterial color="#94a3b8" transparent opacity={0.28} />
+      </mesh>
+      {/* Outer frame */}
+      <lineSegments position={[0, 0, -3.05]}>
+        <edgesGeometry args={[new THREE.PlaneGeometry(14.1, 10.1)]} />
+        <lineBasicMaterial color="#64748b" transparent opacity={0.35} />
+      </lineSegments>
     </group>
   )
 }
@@ -208,28 +174,25 @@ function ActorBubble3D({
 
   useFrame((_, dt) => {
     if (!group.current) return
-    const target = focus ? 1.12 : 1
+    const target = focus ? 1.14 : 1
     const s = group.current.scale.x
-    const next = s + (target - s) * Math.min(1, dt * 10)
-    group.current.scale.setScalar(next)
+    group.current.scale.setScalar(s + (target - s) * Math.min(1, dt * 12))
   })
 
-  const pxSize = Math.round(Math.max(36, Math.min(72, radius * 52)))
+  const pxSize = Math.round(Math.max(40, Math.min(76, radius * 56)))
 
   return (
     <group ref={group} position={position}>
       <Billboard follow lockZ={false}>
-        {/* Halo */}
-        <mesh position={[0, 0, -0.02]}>
-          <circleGeometry args={[radius * 1.22, 32]} />
+        <mesh position={[0, 0, -0.03]}>
+          <circleGeometry args={[radius * (focus ? 1.38 : 1.26), 40]} />
           <meshBasicMaterial
             color={ring}
             transparent
-            opacity={focus ? 0.35 : 0.16}
+            opacity={focus ? 0.42 : onMap ? 0.22 : 0.12}
             depthWrite={false}
           />
         </mesh>
-        {/* Hit target */}
         <mesh
           onClick={(e) => {
             e.stopPropagation()
@@ -238,24 +201,25 @@ function ActorBubble3D({
           onPointerOver={(e) => {
             e.stopPropagation()
             setHovered(true)
-            document.body.style.cursor = onMap ? 'pointer' : 'default'
+            document.body.style.cursor = 'pointer'
           }}
           onPointerOut={() => {
             setHovered(false)
             document.body.style.cursor = 'default'
           }}
         >
-          <circleGeometry args={[radius, 32]} />
+          <circleGeometry args={[radius * 1.05, 32]} />
           <meshBasicMaterial transparent opacity={0} depthWrite={false} />
         </mesh>
       </Billboard>
 
       <Html
         center
-        distanceFactor={11}
-        position={[0, 0, 0.02]}
+        distanceFactor={10.5}
+        position={[0, 0, 0.04]}
         style={{ pointerEvents: 'none' }}
-        zIndexRange={[40, 0]}
+        zIndexRange={[50, 0]}
+        occlude={false}
       >
         <div
           className={[
@@ -273,15 +237,25 @@ function ActorBubble3D({
             ['--ring' as string]: ring,
           }}
         >
-          <XProfileAvatar
-            handle={actor.handle}
-            name={actor.displayName}
-            size={Math.max(28, pxSize - 8)}
-          />
-          {onMap && <span className="scex3d-bubble__map-dot" title="Có trên map" />}
-          <span className="scex3d-bubble__label">
-            @{actor.handle.length > 11 ? `${actor.handle.slice(0, 10)}…` : actor.handle}
+          <span className="scex3d-bubble__face">
+            <XProfileAvatar
+              handle={actor.handle}
+              name={actor.displayName}
+              size={Math.max(30, pxSize - 10)}
+            />
           </span>
+          {onMap && (
+            <span className="scex3d-bubble__map-dot" title="Có trên map" />
+          )}
+          {(focus || selected) && (
+            <span className="scex3d-bubble__tip">
+              <em>{actor.displayName}</em>
+              <small>
+                @{actor.handle} · V{actor.postsVolume} · Q{actor.qualityScore}
+                {onMap ? ' · Map' : ''}
+              </small>
+            </span>
+          )}
         </div>
       </Html>
     </group>
@@ -301,14 +275,25 @@ function SceneInner({
 
   return (
     <>
-      <color attach="background" args={['#050814']} />
-      <fog attach="fog" args={['#050814', 22, 48]} />
-      <ambientLight intensity={0.55} />
-      <hemisphereLight args={['#94a3b8', '#020617', 0.4]} />
-      <pointLight position={[10, 8, 12]} intensity={0.55} color="#e2e8f0" />
-      <pointLight position={[-8, -2, 6]} intensity={0.28} color="#67e8f9" />
+      <color attach="background" args={['#04080f']} />
+      <fog attach="fog" args={['#04080f', 24, 52]} />
+      <ambientLight intensity={0.5} />
+      <hemisphereLight args={['#a5b4fc', '#020617', 0.35]} />
+      <pointLight position={[12, 9, 14]} intensity={0.65} color="#e2e8f0" />
+      <pointLight position={[-9, -1, 7]} intensity={0.32} color="#38bdf8" />
+      <pointLight position={[0, 6, -4]} intensity={0.2} color="#22c55e" />
 
-      <QuadrantPlanes config={config} />
+      <Stars
+        radius={60}
+        depth={40}
+        count={900}
+        factor={2.2}
+        saturation={0.2}
+        fade
+        speed={0.25}
+      />
+
+      <StageFrame />
 
       {placed.map((p) => (
         <ActorBubble3D
@@ -317,50 +302,75 @@ function SceneInner({
           config={config}
           selected={selectedId === p.actor.id}
           onMap={mapHandles.has(p.actor.handle.toLowerCase())}
-          onSelect={(a) =>
-            onSelect(selectedId === a.id ? null : a)
-          }
+          onSelect={(a) => onSelect(selectedId === a.id ? null : a)}
         />
       ))}
 
       <OrbitControls
         ref={controlsRef}
         makeDefault
-        target={[0, 0, 0]}
+        target={[0, 0.2, 0]}
         enablePan={false}
-        minDistance={9}
-        maxDistance={28}
+        minDistance={10}
+        maxDistance={26}
         autoRotate={autoRotate}
-        autoRotateSpeed={0.35}
-        minPolarAngle={0.25}
-        maxPolarAngle={Math.PI * 0.88}
+        autoRotateSpeed={0.28}
+        minPolarAngle={0.35}
+        maxPolarAngle={Math.PI * 0.82}
         enableDamping
-        dampingFactor={0.08}
+        dampingFactor={0.075}
       />
     </>
   )
 }
 
 export function ScexMatrix3D(props: ScexMatrix3DProps) {
+  const q = props.config.quadrantLabels
   return (
     <div className="scex3d-canvas-wrap">
+      {/* CSS quadrant chrome — stable, no 3D label clutter */}
+      <div className="scex3d-overlay" aria-hidden>
+        <div className="scex3d-overlay__quad scex3d-overlay__quad--nurture">
+          <strong>{q.nurture?.title || 'CẦN NUÔI'}</strong>
+          <small>{q.nurture?.subtitle}</small>
+        </div>
+        <div className="scex3d-overlay__quad scex3d-overlay__quad--stars">
+          <strong>{q.stars?.title || 'NGÔI SAO'}</strong>
+          <small>{q.stars?.subtitle}</small>
+        </div>
+        <div className="scex3d-overlay__quad scex3d-overlay__quad--ignore">
+          <strong>{q.ignore?.title || 'THẤP'}</strong>
+          <small>{q.ignore?.subtitle}</small>
+        </div>
+        <div className="scex3d-overlay__quad scex3d-overlay__quad--noise">
+          <strong>{q.noise?.title || 'ỒN ÀO'}</strong>
+          <small>{q.noise?.subtitle}</small>
+        </div>
+        <span className="scex3d-overlay__axis-y">
+          ↑ {props.config.qualityAxis.label || 'Chất lượng'}
+        </span>
+        <span className="scex3d-overlay__axis-x">
+          {props.config.volumeAxis.label || 'Số lần nhắc'} →
+        </span>
+      </div>
+
       <Canvas
-        camera={{ position: [0, 2.2, 16], fov: 42, near: 0.1, far: 80 }}
-        dpr={[1, 1.6]}
+        camera={{ position: [0, 1.6, 15.5], fov: 40, near: 0.1, far: 90 }}
+        dpr={[1, 1.75]}
         gl={{
           antialias: true,
-          alpha: true,
+          alpha: false,
           powerPreference: 'high-performance',
         }}
         onCreated={({ gl }) => {
-          gl.setClearColor(0x050814, 1)
+          gl.setClearColor(0x04080f, 1)
         }}
         onPointerMissed={() => props.onSelect(null)}
       >
         <SceneInner {...props} />
       </Canvas>
-      <div className="scex3d-hint" aria-hidden>
-        Kéo để xoay · Cuộn để zoom · Chấm xanh = có trên map Radar
+      <div className="scex3d-hint">
+        Kéo xoay · Cuộn zoom · Hover xem tên · Chấm xanh = có trên map
       </div>
     </div>
   )

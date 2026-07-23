@@ -53,92 +53,170 @@ input {
   font-family: inherit;
 }
 
-/* ── SCEX event top banner (public map + #/scex) ───────── */
+/* ── SCEX event top banner (official assets) ───────────── */
 .scex-event-banner {
-  display: flex;
-  align-items: center;
-  gap: 10px 12px;
+  position: relative;
+  display: block;
   flex-shrink: 0;
   width: 100%;
   box-sizing: border-box;
-  padding: 8px 16px;
-  min-height: 40px;
+  min-height: 52px;
   text-decoration: none;
-  color: rgba(255, 255, 255, 0.95);
+  color: #fff;
+  overflow: hidden;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  z-index: 200;
+  isolation: isolate;
+}
+
+.scex-event-banner__bg {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center 35%;
+  transform: scale(1.02);
+  z-index: 0;
+}
+
+.scex-event-banner__shade {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
   background:
     linear-gradient(
       90deg,
-      rgba(14, 116, 144, 0.92) 0%,
-      rgba(15, 23, 42, 0.94) 45%,
-      rgba(22, 101, 52, 0.88) 100%
+      rgba(5, 12, 28, 0.92) 0%,
+      rgba(8, 20, 40, 0.78) 42%,
+      rgba(6, 40, 28, 0.72) 100%
+    ),
+    linear-gradient(
+      180deg,
+      rgba(0, 0, 0, 0.15) 0%,
+      rgba(0, 0, 0, 0.35) 100%
     );
-  border-bottom: 1px solid rgba(125, 211, 252, 0.28);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
-  font-size: 0.82rem;
-  letter-spacing: -0.01em;
-  transition: filter 0.15s ease, background 0.15s ease;
-  z-index: 200;
+}
+
+.scex-event-banner__inner {
   position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 12px 16px;
+  padding: 8px 18px;
+  min-height: 52px;
+  box-sizing: border-box;
 }
 
-.scex-event-banner:hover {
-  filter: brightness(1.08);
-}
-
-.scex-event-banner__badge {
+.scex-event-banner__logo {
+  height: 30px;
+  width: auto;
+  max-width: 110px;
+  object-fit: contain;
   flex-shrink: 0;
-  font-size: 0.65rem;
-  font-weight: 750;
-  letter-spacing: 0.08em;
-  padding: 3px 8px;
-  border-radius: 999px;
-  background: rgba(125, 211, 252, 0.2);
-  border: 1px solid rgba(125, 211, 252, 0.45);
-  color: #7dd3fc;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.35));
 }
 
-.scex-event-banner__text {
+.scex-event-banner__divider {
+  width: 1px;
+  height: 28px;
+  background: rgba(255, 255, 255, 0.2);
+  flex-shrink: 0;
+}
+
+.scex-event-banner__copy {
   flex: 1;
   min-width: 0;
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 4px 8px;
-  line-height: 1.35;
-  color: rgba(255, 255, 255, 0.88);
+  flex-direction: column;
+  gap: 2px;
 }
 
-.scex-event-banner__text strong {
-  font-weight: 650;
+.scex-event-banner__kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.88rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.25;
   color: #fff;
 }
 
-.scex-event-banner__sep {
-  opacity: 0.45;
+.scex-event-banner__medal {
+  width: 15px;
+  height: 15px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.scex-event-banner__desc {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 6px;
+  font-size: 0.74rem;
+  color: rgba(255, 255, 255, 0.72);
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+}
+
+.scex-event-banner__wordmark {
+  height: 12px;
+  width: auto;
+  vertical-align: middle;
+  display: inline-block;
+  filter: brightness(0) invert(1);
+  opacity: 0.95;
 }
 
 .scex-event-banner__cta {
   flex-shrink: 0;
-  font-size: 0.75rem;
-  font-weight: 700;
-  padding: 5px 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.78rem;
+  font-weight: 750;
+  padding: 8px 14px;
   border-radius: 999px;
-  background: linear-gradient(135deg, #38bdf8, #22c55e);
-  color: #0f172a;
-  letter-spacing: -0.01em;
+  background: linear-gradient(135deg, #38bdf8 0%, #22c55e 100%);
+  color: #04101a;
+  letter-spacing: -0.015em;
   white-space: nowrap;
+  box-shadow: 0 4px 14px rgba(34, 197, 94, 0.25);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 
-@media (max-width: 640px) {
-  .scex-event-banner {
+.scex-event-banner:hover .scex-event-banner__cta {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(56, 189, 248, 0.35);
+}
+
+.scex-event-banner:hover .scex-event-banner__bg {
+  transform: scale(1.04);
+  transition: transform 0.4s ease;
+}
+
+@media (max-width: 720px) {
+  .scex-event-banner__inner {
     padding: 8px 12px;
-    font-size: 0.75rem;
+    gap: 10px;
   }
-  .scex-event-banner__text span:not(.scex-event-banner__sep) {
+  .scex-event-banner__logo {
+    height: 26px;
+    max-width: 88px;
+  }
+  .scex-event-banner__divider {
     display: none;
   }
-  .scex-event-banner__sep {
+  .scex-event-banner__desc {
     display: none;
+  }
+  .scex-event-banner__kicker {
+    font-size: 0.8rem;
+  }
+  .scex-event-banner__cta {
+    padding: 7px 11px;
+    font-size: 0.72rem;
   }
 }
 

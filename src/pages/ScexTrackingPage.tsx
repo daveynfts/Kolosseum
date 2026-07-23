@@ -1,17 +1,19 @@
 /**
- * Public partner view — SCEX mention matrix + livefeed.
- * Clean product UI (no admin chrome).
+ * Public partner view — SCEX mention matrix (2.5D packed) + livefeed (FeedPanel-style).
  */
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import {
   actorMatrixPos,
   actorPassesThresholds,
   actorSizeValue,
   type ScexActor,
   type ScexDataset,
+  type ScexPost,
 } from '../data/scexTracking'
 import { loadScexWithSource } from '../lib/scexStore'
 import { XProfileAvatar } from '../components/XProfileAvatar'
+import { resolveMediaUrl } from '../lib/avatar'
+import { withBase } from '../lib/base'
 import './ScexTrackingPage.css'
 
 function formatCompact(n: number): string {
@@ -35,8 +37,144 @@ function formatTime(iso: string): string {
   }
 }
 
+type BubbleLayout = {
+  id: string
+  x: number
+  y: number
+  r: number
+  z: number
+  depth: number
+}
+
+/**
+ * Place bubbles by volume×quality, then resolve overlaps with repulsion
+ * so the matrix reads like the 2.5D map cloud (no stacked avatars).
+ */
+function packBubbles(
+  actors: ScexActor[],
+  config: ScexDataset['config'],
+  width: number,
+  height: number,
+  maxSize: number,
+): BubbleLayout[] {
+  if (!actors.length || width < 40 || height < 40) return []
+
+  const pad = 10
+  const items = actors.map((a) => {
+    const { x, y } = actorMatrixPos(a, config)
+    const r = 16 + (actorSizeValue(a, config) / maxSize) * 26
+    // Map data coords → pixels (y up in data, CSS down)
+    const px = pad + r + x * Math.max(1, width - 2 * pad - 2 * r)
+    const py = pad + r + (1 - y) * Math.max(1, height - 2 * pad - 2 * r)
+    return {
+      id: a.id,
+      x: px,
+      y: py,
+      r,
+      // Larger / higher quality → “closer” (higher z + stronger shadow)
+      depth: actorSizeValue(a, config) / maxSize,
+      followers: a.followers || 0,
+      quality: a.qualityScore || 0,
+    }
+  })
+
+  const iterations = 48
+  for (let iter = 0; iter < iterations; iter++) {
+    const strength = 0.55 * (1 - iter / iterations) + 0.12
+    for (let i = 0; i < items.length; i++) {
+      for (let j = i + 1; j < items.length; j++) {
+        const a = items[i]
+        const b = items[j]
+        const dx = b.x - a.x
+        const dy = b.y - a.y
+        const dist = Math.hypot(dx, dy) || 0.01
+        const minDist = a.r + b.r + 10
+        if (dist < minDist) {
+          const push = ((minDist - dist) / 2) * strength
+          const ux = dx / dist
+          const uy = dy / dist
+          // Heavier (more followers) moves less
+          const wa = 1 / (1 + Math.log10((a.followers || 1) + 1))
+          const wb = 1 / (1 + Math.log10((b.followers || 1) + 1))
+          const sum = wa + wb
+          a.x -= ux * push * (wb / sum)
+          a.y -= uy * push * (wb / sum)
+          b.x += ux * push * (wa / sum)
+          b.y += uy * push * (wa / sum)
+        }
+      }
+    }
+    // Soft pull back to data anchors + clamp
+    for (let i = 0; i < items.length; i++) {
+      const a = actors[i]
+      const { x, y } = actorMatrixPos(a, config)
+      const r = items[i].r
+      const ax = pad + r + x * Math.max(1, width - 2 * pad - 2 * r)
+      const ay = pad + r + (1 - y) * Math.max(1, height - 2 * pad - 2 * r)
+      items[i].x += (ax - items[i].x) * 0.04
+      items[i].y += (ay - items[i].y) * 0.04
+      items[i].x = Math.min(width - r - pad, Math.max(r + pad, items[i].x))
+      items[i].y = Math.min(height - r - pad, Math.max(r + pad, items[i].y))
+    }
+  }
+
+  return items
+    .map((it) => ({
+      id: it.id,
+      x: it.x,
+      y: it.y,
+      r: it.r,
+      depth: it.depth,
+      z: Math.round(10 + it.depth * 40 + it.quality * 0.15),
+    }))
+    .sort((a, b) => a.z - b.z)
+}
+
+type MediaHydration = {
+  media: string[]
+  likes?: number
+  replies?: number
+  reposts?: number
+  views?: number
+  text?: string
+}
+
+async function fetchXStatusPublic(url: string): Promise<MediaHydration | null> {
+  try {
+    const api = `${withBase('/api/x-status')}?url=${encodeURIComponent(url)}`
+    const res = await fetch(api, { headers: { Accept: 'application/json' } })
+    if (!res.ok) return null
+    const body = (await res.json()) as {
+      post?: {
+        media?: string[]
+        likes?: number
+        replies?: number
+        reposts?: number
+        views?: number
+        text?: string
+      }
+    }
+    if (!body.post) return null
+    return {
+      media: Array.isArray(body.post.media) ? body.post.media.filter(Boolean) : [],
+      likes: body.post.likes,
+      replies: body.post.replies,
+      reposts: body.post.reposts,
+      views: body.post.views,
+      text: body.post.text,
+    }
+  } catch {
+    return null
+  }
+}
+
 export function ScexTrackingPage() {
   const [dataset, setDataset] = useState<ScexDataset | null>(null)
+  const [plotSize, setPlotSize] = useState({ w: 0, h: 0 })
+  const [mediaById, setMediaById] = useState<Record<string, MediaHydration>>({})
+  const [expanded, setExpanded] = useState<Record<string, boolean>>({})
+  const [selectedId, setSelectedId] = useState<string | null>(null)
+  const plotRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     let cancelled = false
@@ -55,6 +193,64 @@ export function ScexTrackingPage() {
       actorPassesThresholds(a, dataset.config),
     )
   }, [dataset])
+
+  // Measure matrix plot for pixel packing
+  useLayoutEffect(() => {
+    const el = plotRef.current
+    if (!el) return
+    const measure = () => {
+      const rect = el.getBoundingClientRect()
+      setPlotSize({ w: rect.width, h: rect.height })
+    }
+    measure()
+    const ro = new ResizeObserver(measure)
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [dataset?.config.enabled])
+
+  // Hydrate post media / metrics like main feed (public x-status)
+  useEffect(() => {
+    if (!dataset) return
+    const posts = dataset.posts.filter((p) => !p.hidden && p.url).slice(0, 40)
+    let cancelled = false
+    const queue = [...posts]
+    const concurrency = 3
+
+    async function worker() {
+      while (!cancelled && queue.length) {
+        const p = queue.shift()
+        if (!p) break
+        // Skip if seed already has media
+        if (p.media?.length) {
+          setMediaById((prev) =>
+            prev[p.id]
+              ? prev
+              : {
+                  ...prev,
+                  [p.id]: {
+                    media: p.media || [],
+                    likes: p.likes,
+                    replies: p.replies,
+                    reposts: p.reposts,
+                    views: p.views,
+                  },
+                },
+          )
+          continue
+        }
+        if (mediaById[p.id]) continue
+        const got = await fetchXStatusPublic(p.url)
+        if (cancelled || !got) continue
+        setMediaById((prev) => ({ ...prev, [p.id]: got }))
+      }
+    }
+
+    void Promise.all(Array.from({ length: concurrency }, () => worker()))
+    return () => {
+      cancelled = true
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- hydrate once per dataset
+  }, [dataset?.asOf, dataset?.updatedAt, dataset?.posts.length])
 
   if (!dataset) {
     return (
@@ -83,6 +279,10 @@ export function ScexTrackingPage() {
   const posts = dataset.posts.filter((p) => !p.hidden).slice(0, 50)
   const totalFollowers = visible.reduce((s, a) => s + (a.followers || 0), 0)
   const handle = config.brandHandle?.replace(/^@/, '') || 'scexofficial'
+
+  const packed = packBubbles(visible, config, plotSize.w, plotSize.h, maxSize)
+  const packedById = new Map(packed.map((b) => [b.id, b]))
+  const actorById = new Map(visible.map((a) => [a.id, a]))
 
   return (
     <div className="scex-page">
@@ -124,12 +324,12 @@ export function ScexTrackingPage() {
           <div className="scex-card__head">
             <h2>{config.matrixTitle}</h2>
             <p>
-              Volume × quality · size by{' '}
+              Volume × quality · 2.5D pack · size by{' '}
               {config.sizeMetric === 'reach7d' ? 'reach' : 'followers'}
             </p>
           </div>
           <div className="scex-matrix__body">
-            <div className="scex-matrix__plot">
+            <div className="scex-matrix__plot" ref={plotRef}>
               <div className="scex-matrix__quad scex-matrix__quad--nurture">
                 <strong>{config.quadrantLabels.nurture?.title}</strong>
                 <small>{config.quadrantLabels.nurture?.subtitle}</small>
@@ -146,32 +346,50 @@ export function ScexTrackingPage() {
                 <strong>{config.quadrantLabels.noise?.title}</strong>
                 <small>{config.quadrantLabels.noise?.subtitle}</small>
               </div>
-              {visible.map((a) => {
-                const { x, y } = actorMatrixPos(a, config)
-                const sz = 28 + (actorSizeValue(a, config) / maxSize) * 44
-                const ring =
-                  config.sentimentLabels[a.sentiment]?.color || '#94a3b8'
-                return (
-                  <div
-                    key={a.id}
-                    className="scex-bubble"
-                    style={{
-                      left: `${Math.min(96, Math.max(4, x * 100))}%`,
-                      bottom: `${Math.min(96, Math.max(4, y * 100))}%`,
-                      width: sz,
-                      height: sz,
-                      borderColor: ring,
-                    }}
-                    title={`@${a.handle} · V${a.postsVolume} · Q${a.qualityScore}`}
-                  >
-                    <XProfileAvatar
-                      handle={a.handle}
-                      name={a.displayName}
-                      size={Math.max(22, Math.round(sz - 8))}
-                    />
-                  </div>
-                )
-              })}
+
+              <div className="scex-matrix__stage" aria-hidden={false}>
+                {packed.map((b) => {
+                  const a = actorById.get(b.id)
+                  if (!a) return null
+                  const ring =
+                    config.sentimentLabels[a.sentiment]?.color || '#94a3b8'
+                  const diam = b.r * 2
+                  const selected = selectedId === a.id
+                  return (
+                    <button
+                      key={a.id}
+                      type="button"
+                      className={`scex-bubble ${selected ? 'is-selected' : ''}`}
+                      style={{
+                        left: b.x,
+                        top: b.y,
+                        width: diam,
+                        height: diam,
+                        borderColor: ring,
+                        zIndex: selected ? 80 : b.z,
+                        ['--depth' as string]: String(b.depth),
+                        ['--ring' as string]: ring,
+                      }}
+                      title={`@${a.handle} · V${a.postsVolume} · Q${a.qualityScore} · ${formatCompact(a.followers)}`}
+                      onClick={() =>
+                        setSelectedId((prev) => (prev === a.id ? null : a.id))
+                      }
+                    >
+                      <span className="scex-bubble__glow" aria-hidden />
+                      <span className="scex-bubble__disc">
+                        <XProfileAvatar
+                          handle={a.handle}
+                          name={a.displayName}
+                          size={Math.max(24, Math.round(diam - 6))}
+                        />
+                      </span>
+                      <span className="scex-bubble__label">
+                        @{a.handle.length > 10 ? `${a.handle.slice(0, 9)}…` : a.handle}
+                      </span>
+                    </button>
+                  )
+                })}
+              </div>
             </div>
             <div className="scex-matrix__axis-x">
               {config.volumeAxis.label} →
@@ -179,59 +397,49 @@ export function ScexTrackingPage() {
             <div className="scex-matrix__axis-y">
               ↑ {config.qualityAxis.label}
             </div>
+            {selectedId && packedById.has(selectedId) && (
+              <div className="scex-matrix__tip">
+                {(() => {
+                  const a = actorById.get(selectedId)
+                  if (!a) return null
+                  return (
+                    <>
+                      <strong>
+                        {a.displayName}{' '}
+                        <span>@{a.handle}</span>
+                      </strong>
+                      <span>
+                        V{a.postsVolume} · Q{a.qualityScore} ·{' '}
+                        {formatCompact(a.followers)} followers · {a.sentiment}
+                      </span>
+                    </>
+                  )
+                })()}
+              </div>
+            )}
           </div>
         </section>
 
         <section className="scex-card scex-feed">
           <div className="scex-card__head">
             <h2>{config.feedTitle}</h2>
-            <p>{posts.length} recent</p>
+            <p>{posts.length} recent · media from X</p>
           </div>
           <ul className="scex-feed__list">
-            {posts.map((p) => {
-              const sent = config.sentimentLabels[p.sentiment]
-              const actor = dataset.actors.find((a) => a.handle === p.handle)
-              return (
-                <li key={p.id} className="scex-feed-item">
-                  <XProfileAvatar
-                    handle={p.handle}
-                    name={actor?.displayName || p.handle}
-                    size={42}
-                  />
-                  <div className="scex-feed-item__body">
-                    <div className="scex-feed-item__meta">
-                      <strong>
-                        {actor?.displayName || p.handle}
-                      </strong>
-                      <span style={{ color: 'rgba(255,255,255,0.4)' }}>
-                        @{p.handle}
-                      </span>
-                      {actor?.tier && (
-                        <span className="scex-pill scex-pill--tier">
-                          {actor.tier}
-                        </span>
-                      )}
-                      {actor?.kind === 'kol' && (
-                        <span className="scex-pill scex-pill--kol">KOL</span>
-                      )}
-                      <span
-                        className="scex-pill scex-pill--sent"
-                        style={{ background: sent?.color || '#64748b' }}
-                      >
-                        {sent?.label || p.sentiment}
-                      </span>
-                      <time>{formatTime(p.postedAt)}</time>
-                    </div>
-                    <p>{p.text || '—'}</p>
-                    {p.url && (
-                      <a href={p.url} target="_blank" rel="noreferrer">
-                        View on X ↗
-                      </a>
-                    )}
-                  </div>
-                </li>
-              )
-            })}
+            {posts.map((p, index) => (
+              <ScexFeedCard
+                key={p.id}
+                post={p}
+                actor={dataset.actors.find((a) => a.handle === p.handle)}
+                sentimentLabel={config.sentimentLabels[p.sentiment]}
+                hydration={mediaById[p.id]}
+                expanded={!!expanded[p.id]}
+                onToggleExpand={() =>
+                  setExpanded((prev) => ({ ...prev, [p.id]: !prev[p.id] }))
+                }
+                index={index}
+              />
+            ))}
             {!posts.length && (
               <li className="scex-empty">No posts in this window yet.</li>
             )}
@@ -239,5 +447,151 @@ export function ScexTrackingPage() {
         </section>
       </div>
     </div>
+  )
+}
+
+function ScexFeedCard({
+  post,
+  actor,
+  sentimentLabel,
+  hydration,
+  expanded,
+  onToggleExpand,
+  index,
+}: {
+  post: ScexPost
+  actor?: ScexActor
+  sentimentLabel?: { label: string; color: string }
+  hydration?: MediaHydration
+  expanded: boolean
+  onToggleExpand: () => void
+  index: number
+}) {
+  const media =
+    (hydration?.media?.length ? hydration.media : post.media) || []
+  const likes = hydration?.likes ?? post.likes
+  const replies = hydration?.replies ?? post.replies
+  const reposts = hydration?.reposts ?? post.reposts
+  const views = hydration?.views ?? post.views
+  const text = (hydration?.text || post.text || '').trim() || '—'
+  const long = text.length > 180
+  const displayText =
+    long && !expanded ? `${text.slice(0, 170).trim()}…` : text
+  const sentColor = sentimentLabel?.color || '#64748b'
+
+  return (
+    <li
+      className="scex-feed-card"
+      style={{ animationDelay: `${Math.min(index, 10) * 28}ms` }}
+    >
+      <div
+        className="scex-feed-card__accent"
+        style={{ background: sentColor }}
+        aria-hidden
+      />
+      <div className="scex-feed-card__top">
+        <div className="scex-feed-card__author">
+          <div
+            className="scex-feed-card__av"
+            style={{ boxShadow: `0 0 0 2px ${sentColor}55` }}
+          >
+            <XProfileAvatar
+              handle={post.handle}
+              name={actor?.displayName || post.handle}
+              size={42}
+            />
+          </div>
+          <div className="scex-feed-card__meta">
+            <div className="scex-feed-card__name">
+              <strong>{actor?.displayName || post.handle}</strong>
+              {actor?.tier && (
+                <span className="scex-pill scex-pill--tier">{actor.tier}</span>
+              )}
+              {actor?.kind === 'kol' && (
+                <span className="scex-pill scex-pill--kol">KOL</span>
+              )}
+              <span
+                className="scex-pill scex-pill--sent"
+                style={{ background: sentColor }}
+              >
+                {sentimentLabel?.label || post.sentiment}
+              </span>
+            </div>
+            <span className="scex-feed-card__sub">
+              @{post.handle}
+              <span className="scex-feed-card__dot">·</span>
+              <time dateTime={post.postedAt}>{formatTime(post.postedAt)}</time>
+            </span>
+          </div>
+        </div>
+        {post.url && (
+          <a
+            className="scex-feed-card__open"
+            href={post.url}
+            target="_blank"
+            rel="noreferrer"
+            title="Mở trên X"
+          >
+            ↗
+          </a>
+        )}
+      </div>
+
+      <p className={`scex-feed-card__text ${expanded ? 'is-expanded' : ''}`}>
+        {displayText}
+      </p>
+      {long && (
+        <button type="button" className="scex-feed-card__more" onClick={onToggleExpand}>
+          {expanded ? 'Thu gọn' : 'Xem thêm'}
+        </button>
+      )}
+
+      {media[0] && (
+        <a
+          href={post.url || media[0]}
+          target="_blank"
+          rel="noreferrer"
+          className="scex-feed-media"
+        >
+          <img
+            src={resolveMediaUrl(media[0])}
+            alt=""
+            loading="lazy"
+            referrerPolicy="no-referrer"
+            onError={(e) => {
+              const el = e.currentTarget
+              el.style.display = 'none'
+              const wrap = el.closest('.scex-feed-media') as HTMLElement | null
+              if (wrap) wrap.style.display = 'none'
+            }}
+          />
+        </a>
+      )}
+
+      {(likes != null || replies != null || reposts != null || views != null) && (
+        <div className="scex-feed-metrics">
+          {likes != null && (
+            <span title="Likes">
+              <i>♥</i> {formatCompact(likes)}
+            </span>
+          )}
+          {reposts != null && (
+            <span title="Reposts">
+              <i>↻</i> {formatCompact(reposts)}
+            </span>
+          )}
+          {replies != null && (
+            <span title="Replies">
+              <i>💬</i> {formatCompact(replies)}
+            </span>
+          )}
+          {views != null && views > 0 && (
+            <span title="Views">
+              <i>👁</i> {formatCompact(views)}
+            </span>
+          )}
+        </div>
+      )}
+    </li>
   )
 }

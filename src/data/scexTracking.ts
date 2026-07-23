@@ -94,6 +94,9 @@ export interface ScexPost {
   likes?: number
   replies?: number
   reposts?: number
+  views?: number
+  /** Image URLs (R2-cached or remote) — same shape as main feed */
+  media?: string[]
   hidden?: boolean
   notes?: string
 }
@@ -244,6 +247,9 @@ function normalizePost(raw: unknown, i: number): ScexPost | null {
     .trim()
     .toLowerCase()
   if (!handle) return null
+  const media = Array.isArray(o.media)
+    ? o.media.map((m) => String(m || '').trim()).filter(Boolean)
+    : undefined
   return {
     id: String(o.id || `post_${i}_${handle}`),
     handle,
@@ -254,6 +260,8 @@ function normalizePost(raw: unknown, i: number): ScexPost | null {
     likes: o.likes != null ? Number(o.likes) || 0 : undefined,
     replies: o.replies != null ? Number(o.replies) || 0 : undefined,
     reposts: o.reposts != null ? Number(o.reposts) || 0 : undefined,
+    views: o.views != null ? Number(o.views) || 0 : undefined,
+    media: media?.length ? media : undefined,
     hidden: !!o.hidden,
     notes: o.notes != null ? String(o.notes) : undefined,
   }

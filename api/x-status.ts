@@ -2,10 +2,11 @@
  * Fetch X status by URL (snapshot) via fxtwitter; cache photos on Cloudflare R2.
  *
  * GET /api/x-status?url=https://x.com/user/status/123
- * If FEED_ADMIN_TOKEN is set, require Authorization: Bearer <token>
+ * Public read (no auth) so SCEX livefeed can hydrate media.
+ * Optional Authorization: Bearer FEED_ADMIN_TOKEN still accepted.
  */
 import type { VercelRequest, VercelResponse } from '@vercel/node'
-import { env, r2Client } from '../lib/server/r2.js'
+import { r2Client } from '../lib/server/r2.js'
 import { cacheRemoteImage } from '../lib/server/mediaCache.js'
 
 type TweetOut = {
@@ -37,12 +38,6 @@ function cors(res: VercelResponse) {
     'Content-Type, Authorization',
   )
   res.setHeader('Cache-Control', 'no-store')
-}
-
-function bearer(req: VercelRequest): string {
-  const h = req.headers.authorization || ''
-  if (h.startsWith('Bearer ') || h.startsWith('bearer ')) return h.slice(7).trim()
-  return ''
 }
 
 function parseXStatusUrl(raw: string): { id: string; handle?: string } | null {
@@ -120,13 +115,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(405).json({ error: 'method_not_allowed' })
   }
 
-  const secret = env('FEED_ADMIN_TOKEN')
-  if (secret && bearer(req) !== secret) {
-    return res.status(401).json({
-      error: 'unauthorized',
-      message: 'Authorization: Bearer FEED_ADMIN_TOKEN required',
-    })
-  }
+  // Public read: SCEX livefeed + tools hydrate tweet media without admin token.
+  // Bearer is optional (accepted if present for admin tools).
 
   const rawUrl = String(req.query.url || req.query.u || '').trim()
   if (!rawUrl) {

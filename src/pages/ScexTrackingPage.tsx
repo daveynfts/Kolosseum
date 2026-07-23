@@ -13,7 +13,6 @@ import {
 import { loadScexWithSource } from '../lib/scexStore'
 import { XProfileAvatar } from '../components/XProfileAvatar'
 import { resolveMediaUrl } from '../lib/avatar'
-import { withBase } from '../lib/base'
 import './ScexTrackingPage.css'
 
 function formatCompact(n: number): string {
@@ -130,48 +129,9 @@ function packBubbles(
     .sort((a, b) => a.z - b.z)
 }
 
-type MediaHydration = {
-  media: string[]
-  likes?: number
-  replies?: number
-  reposts?: number
-  views?: number
-  text?: string
-}
-
-async function fetchXStatusPublic(url: string): Promise<MediaHydration | null> {
-  try {
-    const api = `${withBase('/api/x-status')}?url=${encodeURIComponent(url)}`
-    const res = await fetch(api, { headers: { Accept: 'application/json' } })
-    if (!res.ok) return null
-    const body = (await res.json()) as {
-      post?: {
-        media?: string[]
-        likes?: number
-        replies?: number
-        reposts?: number
-        views?: number
-        text?: string
-      }
-    }
-    if (!body.post) return null
-    return {
-      media: Array.isArray(body.post.media) ? body.post.media.filter(Boolean) : [],
-      likes: body.post.likes,
-      replies: body.post.replies,
-      reposts: body.post.reposts,
-      views: body.post.views,
-      text: body.post.text,
-    }
-  } catch {
-    return null
-  }
-}
-
 export function ScexTrackingPage() {
   const [dataset, setDataset] = useState<ScexDataset | null>(null)
   const [plotSize, setPlotSize] = useState({ w: 0, h: 0 })
-  const [mediaById, setMediaById] = useState<Record<string, MediaHydration>>({})
   const [expanded, setExpanded] = useState<Record<string, boolean>>({})
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const plotRef = useRef<HTMLDivElement>(null)
@@ -207,50 +167,6 @@ export function ScexTrackingPage() {
     ro.observe(el)
     return () => ro.disconnect()
   }, [dataset?.config.enabled])
-
-  // Hydrate post media / metrics like main feed (public x-status)
-  useEffect(() => {
-    if (!dataset) return
-    const posts = dataset.posts.filter((p) => !p.hidden && p.url).slice(0, 40)
-    let cancelled = false
-    const queue = [...posts]
-    const concurrency = 3
-
-    async function worker() {
-      while (!cancelled && queue.length) {
-        const p = queue.shift()
-        if (!p) break
-        // Skip if seed already has media
-        if (p.media?.length) {
-          setMediaById((prev) =>
-            prev[p.id]
-              ? prev
-              : {
-                  ...prev,
-                  [p.id]: {
-                    media: p.media || [],
-                    likes: p.likes,
-                    replies: p.replies,
-                    reposts: p.reposts,
-                    views: p.views,
-                  },
-                },
-          )
-          continue
-        }
-        if (mediaById[p.id]) continue
-        const got = await fetchXStatusPublic(p.url)
-        if (cancelled || !got) continue
-        setMediaById((prev) => ({ ...prev, [p.id]: got }))
-      }
-    }
-
-    void Promise.all(Array.from({ length: concurrency }, () => worker()))
-    return () => {
-      cancelled = true
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- hydrate once per dataset
-  }, [dataset?.asOf, dataset?.updatedAt, dataset?.posts.length])
 
   if (!dataset) {
     return (
@@ -423,7 +339,10 @@ export function ScexTrackingPage() {
         <section className="scex-card scex-feed">
           <div className="scex-card__head">
             <h2>{config.feedTitle}</h2>
-            <p>{posts.length} recent · media from X</p>
+            <p>
+              {posts.length} recent ·{' '}
+              {posts.filter((p) => p.media?.length).length} with media (R2)
+            </p>
           </div>
           <ul className="scex-feed__list">
             {posts.map((p, index) => (
@@ -432,7 +351,6 @@ export function ScexTrackingPage() {
                 post={p}
                 actor={dataset.actors.find((a) => a.handle === p.handle)}
                 sentimentLabel={config.sentimentLabels[p.sentiment]}
-                hydration={mediaById[p.id]}
                 expanded={!!expanded[p.id]}
                 onToggleExpand={() =>
                   setExpanded((prev) => ({ ...prev, [p.id]: !prev[p.id] }))
@@ -454,7 +372,6 @@ function ScexFeedCard({
   post,
   actor,
   sentimentLabel,
-  hydration,
   expanded,
   onToggleExpand,
   index,
@@ -462,18 +379,17 @@ function ScexFeedCard({
   post: ScexPost
   actor?: ScexActor
   sentimentLabel?: { label: string; color: string }
-  hydration?: MediaHydration
   expanded: boolean
   onToggleExpand: () => void
   index: number
 }) {
-  const media =
-    (hydration?.media?.length ? hydration.media : post.media) || []
-  const likes = hydration?.likes ?? post.likes
-  const replies = hydration?.replies ?? post.replies
-  const reposts = hydration?.reposts ?? post.reposts
-  const views = hydration?.views ?? post.views
-  const text = (hydration?.text || post.text || '').trim() || '—'
+  // Media is pre-cached to R2 by scripts/hydrate_scex_media.mjs (no runtime X API)
+  const media = post.media || []
+  const likes = post.likes
+  const replies = post.replies
+  const reposts = post.reposts
+  const views = post.views
+  const text = (post.text || '').trim() || '—'
   const long = text.length > 180
   const displayText =
     long && !expanded ? `${text.slice(0, 170).trim()}…` : text

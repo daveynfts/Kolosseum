@@ -2,8 +2,8 @@
   "version": 1,
   "kind": "scex-tracking",
   "asOf": "2026-07-23T12:00:00.000Z",
-  "updatedAt": "2026-07-23T04:12:30.589Z",
-  "note": "Expanded Blue Verified snapshot @scexofficial / SCEX / “sàn SCEX” (23/06–23/07/2026). 38 posts · 20 KOL actors (brand posts in feed only). ~70% bullish / mixed mild critique. Not 100% of all mentions — representative high-engagement set. Mild Bearish mapped to bearish + notes.",
+  "updatedAt": "2026-07-23T04:26:30.040Z",
+  "note": "Expanded Blue Verified snapshot @scexofficial / SCEX / “sàn SCEX” (23/06–23/07/2026). 38 posts · 20 KOL actors (brand posts in feed only). ~70% bullish / mixed mild critique. Not 100% of all mentions — representative high-engagement set. Mild Bearish mapped to bearish + notes. Media hydrated to R2 (30/38 posts with images, 38 fetched).",
   "config": {
     "brandName": "SCEX",
     "brandHandle": "scexofficial",
@@ -448,380 +448,639 @@
       "handle": "qwarm1990",
       "url": "https://x.com/qwarm1990/status/2080124599636004870",
       "text": "Reply chúc mừng sàn.",
-      "postedAt": "2026-07-23T02:55:26.056Z",
+      "postedAt": "2026-07-23T02:55:26.000Z",
       "sentiment": "bullish",
       "hidden": false,
-      "notes": "STT 13 · Blue Verified mention · 23/06–23/07/2026"
+      "notes": "STT 13 · Blue Verified mention · 23/06–23/07/2026 · media→R2 via x-status",
+      "media": [],
+      "likes": 0,
+      "reposts": 0,
+      "replies": 0,
+      "views": 18
     },
     {
       "id": "p_2080123242954850748",
       "handle": "scexofficial",
       "url": "https://x.com/scexofficial/status/2080123242954850748",
-      "text": "Tổng kết 2 tuần Đấu trường: 50K+ ĐK, 195K+ lệnh, 81K+ tỷ volume. Kêu gọi tham gia.",
-      "postedAt": "2026-07-23T02:50:02.598Z",
+      "text": "Nhìn lại 2 tuần đầu tiên của Đấu trường Tài sản mã hóa\n\nSau nửa chặng đường, Đấu trường Tài sản mã hóa đã ghi nhận những con số đầy ấn tượng:\n\n👥 50K+ lượt đăng ký\n\n📈 195K+ lệnh giao dịch mô phỏng\n\n📊 81K+ tỷ VNĐ volume mô phỏng\n\n🔥 Top 3 tài sản được giao dịch nhiều nhất\n• SDOT\n• SAVAX\n• SSOL\n\n🏆 Top 3 dẫn đầu bảng xếp hạng\n• ph***9@gmail.com\n• ba***v@gmail.com \n• ti***1@gmail.com\n\n⏳ 2 tuần cuối cùng sẽ là giai đoạn quyết định. Nếu chưa tham gia, hãy đăng ký ngay tại: https://phocaptaisanso.com/vi\n\nThông tin thêm: SCEX Trading Simulator là nền tảng giao dịch mô phỏng. Mọi giao dịch trên hệ thống đều nhằm mục đích học tập và thực hành, không phát sinh giao dịch tài sản mã hóa thực tế.\n\n──────────\nSCEX - Công ty Cổ phần Sàn giao dịch Tài sản mã hoá SACOM.\nSàn đang trong quá trình nộp hồ sơ cấp phép và xét duyệt từ Bộ Tài Chính, tuân thủ pháp luật Việt Nam và Nghị quyết 05/2025/NQ-CP.\n\n#SCEX #SCEXSimulator #Dautruongtaisanmahoa",
+      "postedAt": "2026-07-23T02:50:02.000Z",
       "sentiment": "bullish",
       "hidden": false,
-      "notes": "STT 1 · Official brand post (feed context)"
+      "notes": "STT 1 · Official brand post (feed context) · media→R2 via x-status",
+      "media": [
+        "https://pbs.twimg.com/media/HN4UgLVaUAAEusd.jpg?name=orig"
+      ],
+      "likes": 2,
+      "reposts": 0,
+      "replies": 1,
+      "views": 314
     },
     {
       "id": "p_2079764123051860016",
       "handle": "luong4101992",
       "url": "https://x.com/luong4101992/status/2079764123051860016",
-      "text": "Khen booth SCEX tại RWA, khuyến khích lên tàu sớm + share ref giải thưởng lớn.",
-      "postedAt": "2026-07-22T03:03:01.741Z",
+      "text": "Trong quá trình hơn 2 tuần Scex ra mắt web Phocaptaisanso; em đã active và nhận đc 3x ref từ anh em\n\nCâu hỏi đặt ra là: số Ref này có được tính khi sàn chính thức ra mắt (và điều kiện các ref này có thực hiện KYC)\n\nTuy nhiên việc đó để sau đi; câu chuyện trước mắt là Scex vẫn chạy chạy trương trình chia giải top siêu to dành cho anh em trader\n\nTop 1: 200 củ\nTop 2: 150 củ \nTop 3: 100 củ   \nTop 4 - 10: 20 củ\nTop 11 - 100: 5 củ \nĐợt này trade nhiều lỗ nhiều, khi anh em đki để đó 1 2 lệnh lại thắng =)))\n\nĐể tham gia: anh em làm theo hướng dẫn nha \n\n1. Đăng kí tại: https://phocaptaisanso.com/r/pA1amj15J8uUPM0e  Login bằng mail là xong nhé anh em (ref của em nha) hữu duyên xin ref luôn anh em    \n\n2. Vô web mô phỏng SCEX: https://trading.scex.com.vn/home    \nĐăng kí tài khoản sản SCEX    \n- Mã giới thiệu: 60926352 và nhận ngay 1 tỏi VNĐ (mô phỏng)    \n\nChúc anh em bú kèo nha",
+      "postedAt": "2026-07-22T03:03:01.000Z",
       "sentiment": "bullish",
       "hidden": false,
-      "notes": "STT 7 · Blue Verified mention · 23/06–23/07/2026"
+      "notes": "STT 7 · Blue Verified mention · 23/06–23/07/2026 · media→R2 via x-status",
+      "media": [
+        "https://pbs.twimg.com/media/HNzORgMaYAABVCL.png?name=orig",
+        "https://pbs.twimg.com/media/HNzOSoFa0AArwKe.jpg?name=orig"
+      ],
+      "likes": 45,
+      "reposts": 1,
+      "replies": 39,
+      "views": 1238
     },
     {
       "id": "p_2079555518297686171",
       "handle": "dinhthang97",
       "url": "https://x.com/dinhthang97/status/2079555518297686171",
-      "text": "Test mua 1 tỷ BTC demo, lãi 34 triệu, khen vui + share mã mời.",
-      "postedAt": "2026-07-21T13:14:06.492Z",
+      "text": "Mới mua trải nghiệm 1 tỷ VNĐ BTC thì nay đã lãi được 34 triệu rồi!!!\n\nAnh em tính hộ nếu lãi như này thì đóng thuế nhiêu đây ae kaka!\n\nTest thử sàn @scexofficial cũng vui nhỉ, vào phát cho hẳn 1 tỷ để mua đó ae, \n\nAnh em ai đăng ký sàn mô phỏng này thì có thể ủng hộ mình mã mời này thử xem sau này có gì mình sẽ cập nhật cho ae: 23419825",
+      "postedAt": "2026-07-21T13:14:06.000Z",
       "sentiment": "bullish",
       "hidden": false,
-      "notes": "STT 9 · Blue Verified mention · 23/06–23/07/2026"
+      "notes": "STT 9 · Blue Verified mention · 23/06–23/07/2026 · media→R2 via x-status",
+      "media": [
+        "https://pbs.twimg.com/media/HNwQGA-boAEjH1z.jpg?name=orig"
+      ],
+      "likes": 15,
+      "reposts": 1,
+      "replies": 7,
+      "views": 1244
     },
     {
       "id": "p_2079508007029981362",
       "handle": "scexofficial",
       "url": "https://x.com/scexofficial/status/2079508007029981362",
-      "text": "Công bố BXH Tuần 2 + kêu gọi Tuần 3 (giải >1.6 tỷ).",
-      "postedAt": "2026-07-21T10:05:18.923Z",
+      "text": "🏆 BXH TUẦN 2 ĐÃ CHÍNH THỨC CÓ MẶT!\n\nĐấu trường Tài sản mã hóa - Tuần 2 khép lại với nhiều bất ngờ khi Top 3 nhận giải thưởng tuần đều thuộc về những gương mặt mới. Cuộc đua đang ngày càng hấp dẫn và khó đoán hơn!\n\n🎉 Chúc mừng những cái tên đã góp mặt trên BXH Tuần 2!\n\n👉 Xem BXH đầy đủ tại: https://phocaptaisanso.com/vi/leaderboard.\n\n⚡ Tuần 3 chỉ mới vừa bắt đầu. Nếu chưa tham gia, vẫn còn cơ hội cho bạn để nhập cuộc và cạnh tranh giải thưởng với tổng trị giá hơn 1,6 TỶ VNĐ. \n\nThông tin thêm: SCEX Trading Simulator là nền tảng giao dịch mô phỏng. Mọi giao dịch trên hệ thống đều nhằm mục đích học tập và thực hành, không phát sinh giao dịch tài sản mã hóa thực tế.\n\n──────────\nSCEX - Công ty Cổ phần Sàn giao dịch Tài sản mã hoá SACOM.\nSàn đang trong quá trình nộp hồ sơ cấp phép và xét duyệt từ Bộ Tài Chính, tuân thủ pháp luật Việt Nam và Nghị quyết 05/2025/NQ-CP.",
+      "postedAt": "2026-07-21T10:05:18.000Z",
       "sentiment": "bullish",
       "hidden": false,
-      "notes": "STT 2 · Official brand post (feed context)"
+      "notes": "STT 2 · Official brand post (feed context) · media→R2 via x-status",
+      "media": [
+        "https://pbs.twimg.com/media/HNvgU7TakAAM963.jpg?name=orig"
+      ],
+      "likes": 16,
+      "reposts": 0,
+      "replies": 1,
+      "views": 1257
     },
     {
       "id": "p_2079490163009634517",
       "handle": "gynis_tao",
       "url": "https://x.com/gynis_tao/status/2079490163009634517",
-      "text": "Dự đoán trước 1/9 sẽ có sàn chính thức, hỏi còn sàn nào ngoài SCEX.",
-      "postedAt": "2026-07-21T08:54:24.577Z",
+      "text": "Chắc đợt này chính xác rồi \n\nTrong nước mấy nay cũng có luật nhiều hơn về crypto\n\nMấy trang tin tức thế giới cũng có đề cập tới\n\nVậy là trước 1/9 sẽ có sàn crypto chính thức của Việt Nam \n\nKhông biết ngoài SCEX rồi còn sàn nào nữa không đây",
+      "postedAt": "2026-07-21T08:54:24.000Z",
       "sentiment": "neutral",
       "hidden": false,
-      "notes": "STT 35 · Blue Verified mention · 23/06–23/07/2026"
+      "notes": "STT 35 · Blue Verified mention · 23/06–23/07/2026 · media→R2 via x-status",
+      "media": [
+        "https://pbs.twimg.com/media/HNvVR0sbEAAiZm8.jpg?name=orig"
+      ],
+      "likes": 11,
+      "reposts": 0,
+      "replies": 10,
+      "views": 123
     },
     {
       "id": "p_2079464135268704592",
       "handle": "lucasng990",
       "url": "https://x.com/lucasng990/status/2079464135268704592",
-      "text": "Đùa về giao diện không đổi sang USD.",
-      "postedAt": "2026-07-21T07:10:59.080Z",
+      "text": "@bachkhoabnb @scexofficial sàn ko đổi sang USD nhìn lé con mắt :))",
+      "postedAt": "2026-07-21T07:10:59.000Z",
       "sentiment": "neutral",
       "hidden": false,
-      "notes": "STT 17 · Blue Verified mention · 23/06–23/07/2026"
+      "notes": "STT 17 · Blue Verified mention · 23/06–23/07/2026 · media→R2 via x-status",
+      "media": [],
+      "likes": 0,
+      "reposts": 0,
+      "replies": 1,
+      "views": 45
     },
     {
       "id": "p_2079121884960940037",
       "handle": "lensmoso",
       "url": "https://x.com/lensmoso/status/2079121884960940037",
-      "text": "Chúc mừng SCEX tài trợ vàng RWA Summit, hy vọng đóng góp hệ sinh thái.",
-      "postedAt": "2026-07-20T08:31:00.248Z",
+      "text": "Chúc mừng SCEX đã trở thành Nhà tài trợ Vàng của Vietnam RWA Summit 2026! 🇻🇳\n\nĐây là một cột mốc đáng chú ý, thể hiện sự hiện diện và cam kết của @scexofficial trong việc đồng hành cùng sự phát triển của thị trường tài sản số và RWA tại Việt Nam.\n\nHy vọng đây sẽ là bước tiến quan trọng để SCEX tiếp tục khẳng định vị thế, đóng góp vào việc xây dựng một hệ sinh thái tài sản số minh bạch, an toàn và bền vững trong thời gian tới.\n\nChúc SCEX gặt hái nhiều thành công trên chặng đường phía trước! 🚀",
+      "postedAt": "2026-07-20T08:31:00.000Z",
       "sentiment": "bullish",
       "hidden": false,
-      "notes": "STT 22 · Blue Verified mention · 23/06–23/07/2026"
+      "notes": "STT 22 · Blue Verified mention · 23/06–23/07/2026 · media→R2 via x-status",
+      "media": [
+        "https://pbs.twimg.com/media/HNplLCuboAA8jzV.png?name=orig"
+      ],
+      "likes": 24,
+      "reposts": 1,
+      "replies": 21,
+      "views": 768
     },
     {
       "id": "p_2079116595818013109",
       "handle": "dinhthang97",
       "url": "https://x.com/dinhthang97/status/2079116595818013109",
-      "text": "Thích giao diện VNĐ, all-in thử 1 tỷ BTC.",
-      "postedAt": "2026-07-20T08:09:59.218Z",
+      "text": "Trước nay trade coin /Usdt quen rồi!!!\n\nGiờ kiểu ghi ra tiền VNĐ trên @scexofficial xong mình kiểu:\n\nỦa, alo, BTC tận 1 tỉ 7 cơ à, all in 1 tỉ phát thử xem demo này vài tháng lãi lỗ thế nào kkk! \n\nTại căn bản giờ mà có 1 tỏi ra sàn VN cũng đi mua BTC. tập trước sau có 10tr đồ mua nhẩm cho nó quen 🤣",
+      "postedAt": "2026-07-20T08:09:59.000Z",
       "sentiment": "bullish",
       "hidden": false,
-      "notes": "STT 10 · Blue Verified mention · 23/06–23/07/2026"
+      "notes": "STT 10 · Blue Verified mention · 23/06–23/07/2026 · media→R2 via x-status",
+      "media": [
+        "https://pbs.twimg.com/media/HNqBDVAWAAAy9aN.jpg?name=orig"
+      ],
+      "likes": 24,
+      "reposts": 0,
+      "replies": 23,
+      "views": 2396
     },
     {
       "id": "p_2079045578311467483",
       "handle": "scexofficial",
       "url": "https://x.com/scexofficial/status/2079045578311467483",
-      "text": "Thông báo Tuần 3 Đấu trường bắt đầu.",
-      "postedAt": "2026-07-20T03:27:47.325Z",
+      "text": "🔥 ĐẤU TRƯỜNG TÀI SẢN MÃ HÓA - TUẦN 3 CHÍNH THỨC BẮT ĐẦU!\n\nTuần 3 là giai đoạn quyết định để tạo lợi thế trước chặng nước rút. Anh em đừng bỏ lỡ cơ hội bứt phá trong tuần này nhé.\n\n📅 Thời gian: 00:00 Thứ 2 (20/07) - 23:59 Chủ Nhật (26/07).\n\n❗️ Đừng quên, Bảng xếp hạng Tuần 2 sẽ lên sóng vào ngày mai. \n\n📌 Thông tin thêm: SCEX Trading Simulator là nền tảng giao dịch mô phỏng. Mọi giao dịch trên hệ thống đều nhằm mục đích học tập và thực hành, không phát sinh giao dịch tài sản mã hóa thực tế.\n\n──────────\nSCEX - Công ty Cổ phần Sàn giao dịch Tài sản mã hoá SACOM.\nSàn đang trong quá trình nộp hồ sơ cấp phép và xét duyệt từ Bộ Tài Chính, tuân thủ pháp luật Việt Nam và Nghị quyết 05/2025/NQ-CP.",
+      "postedAt": "2026-07-20T03:27:47.000Z",
       "sentiment": "bullish",
       "hidden": false,
-      "notes": "STT 3 · Official brand post (feed context)"
+      "notes": "STT 3 · Official brand post (feed context) · media→R2 via x-status",
+      "media": [
+        "https://pbs.twimg.com/media/HNpAy65bYAAGGnx.jpg?name=orig"
+      ],
+      "likes": 15,
+      "reposts": 0,
+      "replies": 4,
+      "views": 1294
     },
     {
       "id": "p_2079039587067064705",
       "handle": "kt_btc",
       "url": "https://x.com/kt_btc/status/2079039587067064705",
-      "text": "Phân tích nếu chỉ giao dịch VND (không USDT) sẽ khó, đề xuất sớm có cặp USDT/VND.",
-      "postedAt": "2026-07-20T03:03:58.901Z",
+      "text": "Nhiều ae đag thắc mắc:\n- Nếu sau này sàn crypto tại Việt Nam chỉ cho giao dịch bằng #VND, không dùng #USDT thì sao?\n\nHiện tại trên sàn Demo trên #SCEX mình chưa thấy USDT xuất hiện và nếu chỉ có duy nhất 1 option là sử dụng VND thì khá khó cho ae.\n\n- Vì coin trên sàn hầu như chỉ tích luỹ chứ không mang nhiều đột biến cao về ROI.  \n\n- Cả airdrop, hiddengem, và mọi trend sơ khai,... đều nằm ở Dex và $USDT + $USDC là cầu nối cho tất cả mọi loại tài sản trên market \n\n=> Nên việc bổ sung 2 cặp USDT/VND và USDC/VND sẽ là sớm muộn thôi.\n\nCòn anh em nghĩ thế nào về vấn đề này? \n\nDEX vẫn chưa có luật cụ thể và mặc định vẫn còn là vùng xám của Crypto VN nên mình sẽ quan sát và update thêm trong thời gian tới.",
+      "postedAt": "2026-07-20T03:03:58.000Z",
       "sentiment": "neutral",
       "hidden": false,
-      "notes": "STT 23 · Blue Verified mention · 23/06–23/07/2026"
+      "notes": "STT 23 · Blue Verified mention · 23/06–23/07/2026 · media→R2 via x-status",
+      "media": [
+        "https://pbs.twimg.com/media/HNo7LaObAAAZltt.jpg?name=orig"
+      ],
+      "likes": 108,
+      "reposts": 2,
+      "replies": 106,
+      "views": 22060
     },
     {
       "id": "p_2078775666984800456",
       "handle": "scexofficial",
       "url": "https://x.com/scexofficial/status/2078775666984800456",
-      "text": "Nhắc ngày cuối Tuần 2 + mở Tuần 3.",
-      "postedAt": "2026-07-19T09:35:15.450Z",
+      "text": "⚡ ĐẤU TRƯỜNG TÀI SẢN MÃ HÓA - TUẦN 2 SẮP KHÉP LẠI!\n\nĐừng quên, ngoài minigame dự đoán tỉ số World Cup thì hôm nay cũng là ngày giao dịch cuối cùng của Đấu trường Tài sản mã hóa - Tuần 2.\n\n⏳ 23:59 hệ thống sẽ chốt kết quả tuần.\n\n🔥 Ngay sau đó, Tuần 3 sẽ chính thức bắt đầu với một tuần tranh tài mới.\n\n🏆 Hẹn gặp bạn trên bảng xếp hạng!\n\n📌 Thông tin thêm: SCEX Trading Simulator là nền tảng giao dịch mô phỏng. Mọi giao dịch trên hệ thống đều nhằm mục đích học tập và thực hành, không phát sinh giao dịch tài sản mã hóa thực tế.\n\n──────────\nSCEX - Công ty Cổ phần Sàn giao dịch Tài sản mã hoá SACOM.\nSàn đang trong quá trình nộp hồ sơ cấp phép và xét duyệt từ Bộ Tài Chính, tuân thủ pháp luật Việt Nam và Nghị quyết 05/2025/NQ-CP.",
+      "postedAt": "2026-07-19T09:35:15.000Z",
       "sentiment": "bullish",
       "hidden": false,
-      "notes": "STT 6 · Official brand post (feed context)"
+      "notes": "STT 6 · Official brand post (feed context) · media→R2 via x-status",
+      "media": [
+        "https://pbs.twimg.com/media/HNlLTJ7aIAAesCG.jpg?name=orig"
+      ],
+      "likes": 18,
+      "reposts": 2,
+      "replies": 6,
+      "views": 1430
     },
     {
       "id": "p_2078664190823408001",
       "handle": "scexofficial",
       "url": "https://x.com/scexofficial/status/2078664190823408001",
-      "text": "Minigame dự đoán World Cup + quà >30 triệu.",
-      "postedAt": "2026-07-19T02:12:17.462Z",
+      "text": "⚽️ Dự đoán tỉ số Chung kết World Cup 2026 – Rinh quà hơn 30 triệu đồng! 🎁\n\nBạn tin Tây Ban Nha sẽ lên ngôi, hay Argentina sẽ bảo vệ thành công chức vô địch?\n\nCùng SCEX và PCTSS hòa mình vào không khí trận chung kết World Cup 2026 với minigame dự đoán tỉ số và cơ hội nhận những phần quà hấp dẫn có tổng giá trị hơn 30 triệu đồng.\n\n⏰ Thời gian tham gia: Đến 01:59 ngày 20/07/2026.\n\n🎁 Tổng giá trị giải thưởng lên đến 30 triệu đồng cho 10 người chơi may mắn nhất:\n\n🥇 01 Giải Nhất: Apple Watch Series 11\n🥈 01 Giải Nhì: Airpods Pro 3\n🥉 01 Giải Ba: Airpods 4\n🎖️ 07 Giải Khuyến khích: Đồng hồ thông minh Mi Band 10\n\n👉 Xem đầy đủ thể lệ và tham gia ngay tại bài viết gốc của PCTSS tại: https://www.facebook.com/share/p/16v5knwUrR/",
+      "postedAt": "2026-07-19T02:12:17.000Z",
       "sentiment": "bullish",
       "hidden": false,
-      "notes": "STT 5 · Official brand post (feed context)"
+      "notes": "STT 5 · Official brand post (feed context) · media→R2 via x-status",
+      "media": [
+        "https://pbs.twimg.com/media/HNjl9RaaIAAamum.jpg?name=orig"
+      ],
+      "likes": 43,
+      "reposts": 4,
+      "replies": 8,
+      "views": 4827
     },
     {
       "id": "p_2078468333889065087",
       "handle": "trieutiger",
       "url": "https://x.com/trieutiger/status/2078468333889065087",
-      "text": "Hóng khi nào sàn chính thức xong.",
-      "postedAt": "2026-07-18T13:14:01.530Z",
+      "text": "@CayairdropX @scexofficial hóng quá, không biết khi nào thì xong nhỉ",
+      "postedAt": "2026-07-18T13:14:01.000Z",
       "sentiment": "neutral",
       "hidden": false,
-      "notes": "STT 19 · Blue Verified mention · 23/06–23/07/2026"
+      "notes": "STT 19 · Blue Verified mention · 23/06–23/07/2026 · media→R2 via x-status",
+      "media": [],
+      "likes": 0,
+      "reposts": 0,
+      "replies": 0,
+      "views": 23
     },
     {
       "id": "p_2078398675962024357",
       "handle": "petertran_ct",
       "url": "https://x.com/petertran_ct/status/2078398675962024357",
-      "text": "“Sàn Việt Nam giờ xịn thật sự luôn”.",
-      "postedAt": "2026-07-18T08:37:13.786Z",
+      "text": "@luong4101992 @scexofficial Sàn Việt Nam giờ xịn thật sự luôn",
+      "postedAt": "2026-07-18T08:37:13.000Z",
       "sentiment": "bullish",
       "hidden": false,
-      "notes": "STT 31 · Blue Verified mention · 23/06–23/07/2026"
+      "notes": "STT 31 · Blue Verified mention · 23/06–23/07/2026 · media→R2 via x-status",
+      "media": [],
+      "likes": 1,
+      "reposts": 0,
+      "replies": 1,
+      "views": 19
     },
     {
       "id": "p_2078340123184488529",
       "handle": "luong4101992",
       "url": "https://x.com/luong4101992/status/2078340123184488529",
-      "text": "Quan sát sự kiện RWA, tin blockchain VN sẽ về sàn nội địa.",
-      "postedAt": "2026-07-18T04:44:33.716Z",
+      "text": "Đến với sự kiện VIETNAM RWA SUBMIT 2026 mình nhận thấy rằng  @scexofficial hoạt động rất mạnh tại sự kiện\n\nTừ gian hàng tặng quà, đến không gian trao đổi, trò chuyện về định hướng hoạt động\n\nVới quan điểm của mình thì kiểu gì anh em blockchain cũng phải về với các sàn Việt Nam mình thôi\n\nVì vậy không tội gì mà không lên tàu sớm\n\nLên sớm biết đâu sau này có vị thế\n\nHiện Scex vẫn chạy chạy trương trình Kèo nội địa vẫn đang có cái giải top siêu to dành cho anh em trader \n\nTop 1: 200 triệu đồng \nTop 2: 150 triệu đồng \nTop 3: 100 triệu đồng  \nTop 4 - 10: 20 triệu đồng\nTop 11 - 100: 5 triệu đồng\n\nĐể tham gia: anh em làm theo hướng dẫn nha  \n\n1. Đăng kí tại: https://phocaptaisanso.com/r/pA1amj15J8uUPM0e \nLogin bằng mail là xong nhé anh em (ref của em nha) hữu duyên xin ref luôn anh em  \n\n2. Vô web mô phỏng SCEX: https://trading.scex.com.vn/home   \nĐăng kí tài khoản sản SCEX   \n- Mã giới thiệu: 60926352 và nhận ngay 1 tỏi VNĐ (mô phỏng)  \n\nChúc anh em bú kèo nha",
+      "postedAt": "2026-07-18T04:44:33.000Z",
       "sentiment": "bullish",
       "hidden": false,
-      "notes": "STT 8 · Blue Verified mention · 23/06–23/07/2026"
+      "notes": "STT 8 · Blue Verified mention · 23/06–23/07/2026 · media→R2 via x-status",
+      "media": [
+        "https://pbs.twimg.com/media/HNe_NlxaYAAhimT.jpg?name=orig"
+      ],
+      "likes": 50,
+      "reposts": 1,
+      "replies": 50,
+      "views": 8183
     },
     {
       "id": "p_2078335348564971972",
       "handle": "scexofficial",
       "url": "https://x.com/scexofficial/status/2078335348564971972",
-      "text": "Có mặt tại Vietnam RWA Summit 2026, tặng quà.",
-      "postedAt": "2026-07-18T04:25:35.358Z",
+      "text": "📍 SCEX đã có mặt tại Vietnam RWA Summit 2026!\n\nNếu bạn đang tham dự sự kiện hôm nay, đừng quên ghé booth SCEX để:\n\n🎁 Nhận những phần quà phiên bản giới hạn.\n\n💬 Giao lưu cùng đội ngũ SCEX.\n\nHẹn gặp anh em tại booth SCEX nhé!\n\n📌 Thông tin thêm: SCEX Trading Simulator là nền tảng giao dịch mô phỏng. Mọi giao dịch trên hệ thống đều nhằm mục đích học tập và thực hành, không phát sinh giao dịch tài sản mã hóa thực tế.\n\n──────────\nSCEX - Công ty Cổ phần Sàn giao dịch Tài sản mã hoá SACOM.\nSàn đang trong quá trình nộp hồ sơ cấp phép và xét duyệt từ Bộ Tài Chính, tuân thủ pháp luật Việt Nam và Nghị quyết 05/2025/NQ-CP.",
+      "postedAt": "2026-07-18T04:25:35.000Z",
       "sentiment": "bullish",
       "hidden": false,
-      "notes": "STT 4 · Official brand post (feed context)"
+      "notes": "STT 4 · Official brand post (feed context) · media→R2 via x-status",
+      "media": [
+        "https://pbs.twimg.com/media/HNe6oT-aYAA24zC.jpg?name=orig",
+        "https://pbs.twimg.com/media/HNe6oT6aYAA5_Cb.jpg?name=orig",
+        "https://pbs.twimg.com/media/HNe6oT6aUAAk7x4.jpg?name=orig",
+        "https://pbs.twimg.com/media/HNe6oT8aMAADiZk.jpg?name=orig"
+      ],
+      "likes": 47,
+      "reposts": 1,
+      "replies": 13,
+      "views": 3114
     },
     {
       "id": "p_2077725183150788627",
       "handle": "qwarm1990",
       "url": "https://x.com/qwarm1990/status/2077725183150788627",
-      "text": "Chúc mừng SCEX tài trợ vàng RWA, khuyến khích trải nghiệm demo.",
-      "postedAt": "2026-07-16T12:01:00.587Z",
+      "text": "Hóng sàn chính thức quá anh em\n\nHiện chỉ là đang thử nghiệm nên anh có nên trải nghiệm trước nhé\n\nChúc mừng @scexofficial được tài trợ vàng VIetnam RWA summit 2026\n\nThế này mới là nền tảng để RWA tiến gần hơn đến ứng dụng thực tế. Hy vọng sẽ có thêm nhiều sáng kiến đáng mong đợi từ SCEX",
+      "postedAt": "2026-07-16T12:01:00.000Z",
       "sentiment": "bullish",
       "hidden": false,
-      "notes": "STT 11 · Blue Verified mention · 23/06–23/07/2026"
+      "notes": "STT 11 · Blue Verified mention · 23/06–23/07/2026 · media→R2 via x-status",
+      "media": [
+        "https://pbs.twimg.com/media/HNWBCxhbYAIZzNi.jpg?name=orig"
+      ],
+      "likes": 27,
+      "reposts": 1,
+      "replies": 27,
+      "views": 868
     },
     {
       "id": "p_2076914937784668529",
       "handle": "tuannguyen_6789",
       "url": "https://x.com/tuannguyen_6789/status/2076914937784668529",
-      "text": "Nghi ngờ top 1 BXH (volume 60 tỷ/ngày, lãi ảo cao).",
-      "postedAt": "2026-07-14T06:21:23.038Z",
+      "text": "Có bạn đang rất thắc mắc với ông Top 1 sàn SCEX hiện tại trên bảng xếp hạng\n\nLiệu có phải chính là tài khoản của sàn?\n\nTrade Volume trung bình 60 tỷ đồng -> cần phải đóng thuế 30 triệu / ngày ~3% tài khoản\n\nMà tài khoản này đạt 28% lợi nhuận tổng\n\nNghĩa là mỗi ngày phải lãi ~4%\n\n👉 Vậy mỗi ngày phải lãi 7% tổng tài khoản\n\nChỉ bằng cách giao dịch Spot khoảng 10 dự án top coin\n\nTrong điều kiện thị trường ít biến động, và đa số là ngày giảm.",
+      "postedAt": "2026-07-14T06:21:23.000Z",
       "sentiment": "bearish",
       "hidden": false,
-      "notes": "STT 28 · mild_bearish (mapped to bearish) · Blue Verified snapshot"
+      "notes": "STT 28 · mild_bearish (mapped to bearish) · Blue Verified snapshot · media→R2 via x-status",
+      "media": [
+        "https://pbs.twimg.com/media/HNKupC_a8AA2q7a.png?name=orig",
+        "https://pbs.twimg.com/media/HNKusAEbkAAiFrY.png?name=orig",
+        "https://pbs.twimg.com/media/HNKutTsbEAAOlfH.jpg?name=orig"
+      ],
+      "likes": 17,
+      "reposts": 0,
+      "replies": 12,
+      "views": 7077
     },
     {
       "id": "p_2075068928771129848",
       "handle": "tuannguyen_6789",
       "url": "https://x.com/tuannguyen_6789/status/2075068928771129848",
-      "text": "Phản ánh app SCEX tốn dung lượng (4G không chịu nổi).",
-      "postedAt": "2026-07-09T04:06:00.192Z",
+      "text": "1 người dùng phản ánh sàn thí điểm mô phỏng SCEX quá tốn dung lượng\n\n4g không chịu nổi😅",
+      "postedAt": "2026-07-09T04:06:00.000Z",
       "sentiment": "bearish",
       "hidden": false,
-      "notes": "STT 29 · mild_bearish (mapped to bearish) · Blue Verified snapshot"
+      "notes": "STT 29 · mild_bearish (mapped to bearish) · Blue Verified snapshot · media→R2 via x-status",
+      "media": [
+        "https://pbs.twimg.com/media/HMv2rGCbwAAGycY.png?name=orig"
+      ],
+      "likes": 26,
+      "reposts": 1,
+      "replies": 21,
+      "views": 9108
     },
     {
       "id": "p_2074477185424031770",
       "handle": "tuannguyen_6789",
       "url": "https://x.com/tuannguyen_6789/status/2074477185424031770",
-      "text": "Review sau 1 tuần: giao diện + thanh khoản còn yếu, ra sớm để FOMO.",
-      "postedAt": "2026-07-07T12:54:37.584Z",
+      "text": "Sau 1 tuần trải nghiệm sàn Việt Nam SCEX mọi người thấy sao?\n\nMình nghĩ do là phiên bản thử nghiệm, nên còn nhiều điều chưa tốt: \n\nVề giao diện\nThanh khoản\n\nSàn ra sản phẩm cảm giác cố ra sớm cho kịp 1/7 để cộng đồng FOMO",
+      "postedAt": "2026-07-07T12:54:37.000Z",
       "sentiment": "bearish",
       "hidden": false,
-      "notes": "STT 27 · mild_bearish (mapped to bearish) · Blue Verified snapshot"
+      "notes": "STT 27 · mild_bearish (mapped to bearish) · Blue Verified snapshot · media→R2 via x-status",
+      "media": [
+        "https://pbs.twimg.com/media/HMoF_6qbEAAwPMA.jpg?name=orig",
+        "https://pbs.twimg.com/media/HMoF_6maAAAMFG8.jpg?name=orig"
+      ],
+      "likes": 10,
+      "reposts": 0,
+      "replies": 5,
+      "views": 3692
     },
     {
       "id": "p_2074366299153826243",
       "handle": "tuannguyen_6789",
       "url": "https://x.com/tuannguyen_6789/status/2074366299153826243",
-      "text": "Dữ liệu: TRON (STRX) volume cao nhất trên demo SCEX.",
-      "postedAt": "2026-07-07T05:34:00.237Z",
+      "text": "Không phải $BTC hay $ETH\n\nTRON mới là tài sản được yêu thích và giao dịch nhiều nhất trên sàn thí điểm của Việt Nam\n\nDữ liệu giao dịch mô phỏng trên SCEX đã ghi nhận trong 24h\n\nKhối lượng $STRX đạt 269 tỷ\n\nVượt XRP, ETH\n\nVà gấp đôi Bitcoin\n\nKeep Going @justinsuntron  👏👏",
+      "postedAt": "2026-07-07T05:34:00.000Z",
       "sentiment": "neutral",
       "hidden": false,
-      "notes": "STT 26 · Blue Verified mention · 23/06–23/07/2026"
+      "notes": "STT 26 · Blue Verified mention · 23/06–23/07/2026 · media→R2 via x-status",
+      "media": [
+        "https://pbs.twimg.com/media/HMmULpWaIAA334W.jpg?name=orig"
+      ],
+      "likes": 17,
+      "reposts": 0,
+      "replies": 16,
+      "views": 35263
     },
     {
       "id": "p_2074321258721013892",
       "handle": "vninvestblogger",
       "url": "https://x.com/vninvestblogger/status/2074321258721013892",
-      "text": "Trade demo lãi 6 triệu, khuyến khích ĐK để tìm hiểu + giúp sàn xử lý lỗi.",
-      "postedAt": "2026-07-07T02:35:01.761Z",
+      "text": "Mấy nay trade với @scexofficial !\nKết quả thế này : đang có lợi nhuận 6tri (VNĐ)  [Ảo thôi nhé];\nVới kinh nghiệm đã từng trade các sàn quốc tế, hãy đăng ký trade với sàn này vừa tìm hiểu và giúp sàn xử lý lổi trước khi vận hành chính thức mà lại có giải thưởng hấp dẫn dành cho trader !\n👉Link đăng ký học thử : https://phocaptaisanso.com/r/p5gDoiVMp2ZPX5ZN?utm_source=x&utm_medium=social&utm_campaign=pdav2-scex-2026&utm_content=profile_referral_x",
+      "postedAt": "2026-07-07T02:35:01.000Z",
       "sentiment": "bullish",
       "hidden": false,
-      "notes": "STT 18 · Blue Verified mention · 23/06–23/07/2026"
+      "notes": "STT 18 · Blue Verified mention · 23/06–23/07/2026 · media→R2 via x-status",
+      "media": [
+        "https://pbs.twimg.com/media/HMl3Hs5aYAARAi3.jpg?name=orig"
+      ],
+      "likes": 1,
+      "reposts": 0,
+      "replies": 0,
+      "views": 24
     },
     {
       "id": "p_2072731736027586808",
       "handle": "lucasng990",
       "url": "https://x.com/lucasng990/status/2072731736027586808",
-      "text": "Chúc mừng sàn, đùa “lên tích vàng”.",
-      "postedAt": "2026-07-02T17:18:50.019Z",
+      "text": "@scexofficial Chúc mừng sàn nhe\n\nLên tích vàng cho đẹp nào kk",
+      "postedAt": "2026-07-02T17:18:50.000Z",
       "sentiment": "bullish",
       "hidden": false,
-      "notes": "STT 16 · Blue Verified mention · 23/06–23/07/2026"
+      "notes": "STT 16 · Blue Verified mention · 23/06–23/07/2026 · media→R2 via x-status",
+      "media": [],
+      "likes": 0,
+      "reposts": 0,
+      "replies": 0,
+      "views": 121
     },
     {
       "id": "p_2072709557101777347",
       "handle": "pigrichh",
       "url": "https://x.com/pigrichh/status/2072709557101777347",
-      "text": "Ghi nhận thuế 0.1% khi bán demo.",
-      "postedAt": "2026-07-02T15:50:42.151Z",
+      "text": "@shuigvn Bán 1 tỷ trên SCEX có thuế 0.1%, chỉ tính 1 triệu thôi.",
+      "postedAt": "2026-07-02T15:50:42.000Z",
       "sentiment": "neutral",
       "hidden": false,
-      "notes": "STT 15 · Blue Verified mention · 23/06–23/07/2026"
+      "notes": "STT 15 · Blue Verified mention · 23/06–23/07/2026 · media→R2 via x-status",
+      "media": [],
+      "likes": 0,
+      "reposts": 0,
+      "replies": 0,
+      "views": 51
     },
     {
       "id": "p_2072554006246051847",
       "handle": "pigrichh",
       "url": "https://x.com/pigrichh/status/2072554006246051847",
-      "text": "Đăng ký thử demo 1 tỷ + share link.",
-      "postedAt": "2026-07-02T05:32:35.937Z",
+      "text": "Thôi thì cũng theo dòng sự kiện. \n\nĐăng ký thử sàn Scex của Việt Nam xem sao. \n\nĐược demo 1 tỷ tha hồ trade. \n\nLink tải ở dưới cmt ạ.",
+      "postedAt": "2026-07-02T05:32:35.000Z",
       "sentiment": "bullish",
       "hidden": false,
-      "notes": "STT 14 · Blue Verified mention · 23/06–23/07/2026"
+      "notes": "STT 14 · Blue Verified mention · 23/06–23/07/2026 · media→R2 via x-status",
+      "media": [
+        "https://pbs.twimg.com/media/HMMw4SKa0AENWeV.jpg?name=orig"
+      ],
+      "likes": 99,
+      "reposts": 2,
+      "replies": 95,
+      "views": 1622
     },
     {
       "id": "p_2072457985352417316",
       "handle": "0xkeng",
       "url": "https://x.com/0xkeng/status/2072457985352417316",
-      "text": "Khen chương trình đào tạo + trải nghiệm của SCEX.",
-      "postedAt": "2026-07-01T23:11:02.772Z",
+      "text": "@Elnino_CG Chương trình đào tạo kết hợp trải nghiệm giao dịch của SCEX sẽ mang đến cơ hội tốt cho người tham gia.",
+      "postedAt": "2026-07-01T23:11:02.000Z",
       "sentiment": "bullish",
       "hidden": false,
-      "notes": "STT 20 · Blue Verified mention · 23/06–23/07/2026"
+      "notes": "STT 20 · Blue Verified mention · 23/06–23/07/2026 · media→R2 via x-status",
+      "media": [],
+      "likes": 0,
+      "reposts": 0,
+      "replies": 0,
+      "views": 16
     },
     {
       "id": "p_2072428015989207507",
       "handle": "saintlee04",
       "url": "https://x.com/saintlee04/status/2072428015989207507",
-      "text": "Nghe hấp dẫn, sẽ thử với giải lớn.",
-      "postedAt": "2026-07-01T21:11:57.519Z",
+      "text": "@Thienthien1305 nghe hấp dẫn đấy, để mình thử sàn SCEX với giải 1.3 tỷ",
+      "postedAt": "2026-07-01T21:11:57.000Z",
       "sentiment": "bullish",
       "hidden": false,
-      "notes": "STT 21 · Blue Verified mention · 23/06–23/07/2026"
+      "notes": "STT 21 · Blue Verified mention · 23/06–23/07/2026 · media→R2 via x-status",
+      "media": [],
+      "likes": 0,
+      "reposts": 0,
+      "replies": 0,
+      "views": 93
     },
     {
       "id": "p_2072191217132285965",
       "handle": "qwarm1990",
       "url": "https://x.com/qwarm1990/status/2072191217132285965",
-      "text": "Share link ĐK + app Simulator + mã ref.",
-      "postedAt": "2026-07-01T05:31:00.272Z",
+      "text": "Trải nghiệm thử sàn SCEX đi anh em\n\nCó 1 tỷ VNĐ để trade thử \n\n-  Đăng kí tài khoản để tham gia: https://phocaptaisanso.com/r/DcMwZnAP18cmVytG \nCHỉ cần đăng nhập email thôi\n\nỞ đây thấy có nhiều khoá học anh em trải nghiệm nhận phần thưởng anh em nha\n\nTải app sàn SCEX \n\n- IOS: https://apps.apple.com/vn/app/scex-trading-simulator/id6763202537 \n\n- Android: https://play.google.com/store/apps/details?id=vn.com.scex.prod&pcampaignid=web_share \n\n- Website SCEX: https://trading.scex.com.vn/home\n\nAnh em ủng hộ mình thì mã giới thiệu 54125519",
+      "postedAt": "2026-07-01T05:31:00.000Z",
       "sentiment": "bullish",
       "hidden": false,
-      "notes": "STT 12 · Blue Verified mention · 23/06–23/07/2026"
+      "notes": "STT 12 · Blue Verified mention · 23/06–23/07/2026 · media→R2 via x-status",
+      "media": [
+        "https://pbs.twimg.com/media/HMHbPojasAAEjaF.jpg?name=orig"
+      ],
+      "likes": 31,
+      "reposts": 0,
+      "replies": 26,
+      "views": 989
     },
     {
       "id": "p_2072105402142195773",
       "handle": "petertran_ct",
       "url": "https://x.com/petertran_ct/status/2072105402142195773",
-      "text": "Promo chương trình Simulator + giải thưởng lớn.",
-      "postedAt": "2026-06-30T23:50:00.384Z",
+      "text": "Nơi đâu cũng là tiền, cày airdrop dự án nước ngoài hay Nội địa cũng là cày.\n\nChương trình thực hành giao dịch mô phỏng #SCEX Simulator với phần thưởng hơn 1 tỏi... Việt Nam Đồng đang diễn ra🤣\n\nCơ cấu phần thưởng: \n- Top 1: 200M \n- Top 2: 150M\n- Top 4 - 10: 20M/user\n- Top 11 - 100: 5M/user\n\n👉Tham gia: http://phocaptaisanso.com/r/IlWhyt95qu7e0OYi\n\n#Airdrop #SCEX",
+      "postedAt": "2026-06-30T23:50:00.000Z",
       "sentiment": "bullish",
       "hidden": false,
-      "notes": "STT 30 · Blue Verified mention · 23/06–23/07/2026"
+      "notes": "STT 30 · Blue Verified mention · 23/06–23/07/2026 · media→R2 via x-status",
+      "media": [
+        "https://pbs.twimg.com/media/HME-jIYbcAAectd.jpg?name=orig"
+      ],
+      "likes": 41,
+      "reposts": 2,
+      "replies": 26,
+      "views": 6287
     },
     {
       "id": "p_2072092552732561637",
       "handle": "udjat19",
       "url": "https://x.com/udjat19/status/2072092552732561637",
-      "text": "Phê bình demo chỉ cho BUY (không short/futures) → mất linh hoạt.",
-      "postedAt": "2026-06-30T22:58:56.846Z",
+      "text": "Mình vừa xem qua demo của SCEX tại Việt Nam.\n\nĐiểm mình chú ý nhất:\n\nHiện tại chưa hỗ trợ giao dịch phái sinh.\n\nĐiều đó có nghĩa là người dùng chỉ có thể tham gia theo một cách duy nhất:\n\nBUY.\n\nNhưng thị trường vốn không vận động theo một chiều.\n\nCó những giai đoạn:\n\nXu hướng tăng → ưu tiên Long Xu hướng giảm → ưu tiên Short Xu hướng chưa rõ → đứng ngoài quan sát\nNếu hệ thống chỉ cho phép mua…\nThì trader đang mất đi khả năng phản ứng linh hoạt trước trạng thái thật sự của market.\nMình luôn nghĩ:\nKhông quan trọng market tăng hay giảm.\n\nQuan trọng là chúng ta có thể đứng đúng phía của dòng tiền hay không ⚡📈",
+      "postedAt": "2026-06-30T22:58:56.000Z",
       "sentiment": "bearish",
       "hidden": false,
-      "notes": "STT 34 · mild_bearish (mapped to bearish) · Blue Verified snapshot"
+      "notes": "STT 34 · mild_bearish (mapped to bearish) · Blue Verified snapshot · media→R2 via x-status",
+      "media": [
+        "https://pbs.twimg.com/media/HMGNL3_bIAAPWYf.jpg?name=orig"
+      ],
+      "likes": 8,
+      "reposts": 0,
+      "replies": 6,
+      "views": 364
     },
     {
       "id": "p_2071987860664889738",
       "handle": "sangbtcethxau",
       "url": "https://x.com/sangbtcethxau/status/2071987860664889738",
-      "text": "Test OTP không về, chê công nghệ chưa ổn.",
-      "postedAt": "2026-06-30T16:02:56.312Z",
+      "text": "SCEX có bác nào đăng kí được sàn chưa? \n\nChứ mình test thì thấy không ra gì rồi. Mỗi cái OTP qua tin nhắn mà không gửi về nổi. \n\nCông nghệ v sao kham nổi thị trường nghìn tỏi này🤣",
+      "postedAt": "2026-06-30T16:02:56.000Z",
       "sentiment": "bearish",
       "hidden": false,
-      "notes": "STT 33 · Blue Verified mention · 23/06–23/07/2026"
+      "notes": "STT 33 · Blue Verified mention · 23/06–23/07/2026 · media→R2 via x-status",
+      "media": [
+        "https://pbs.twimg.com/media/HMEt-eLaoAAY0bQ.jpg?name=orig"
+      ],
+      "likes": 16,
+      "reposts": 0,
+      "replies": 20,
+      "views": 4421
     },
     {
       "id": "p_2071973046374854807",
       "handle": "tuannguyen_6789",
       "url": "https://x.com/tuannguyen_6789/status/2071973046374854807",
-      "text": "Tải app nhận 1 tỷ demo + đua top pool gần 2 tỷ.",
-      "postedAt": "2026-06-30T15:04:04.310Z",
+      "text": "Tải app trải Scex và nhận ngay 1 tỷ\n\nDemo 🤣\n\nGiao dịch trải nghiệm và tham gia đua top nhận ngay pool thưởng gần 2 tỷ tiền thật\n\n👉 Thể lệ và cơ chế tham gia http://phocaptaisanso.com/r/Dciad6DGrIGHa5ov",
+      "postedAt": "2026-06-30T15:04:04.000Z",
       "sentiment": "bullish",
       "hidden": false,
-      "notes": "STT 25 · Blue Verified mention · 23/06–23/07/2026"
+      "notes": "STT 25 · Blue Verified mention · 23/06–23/07/2026 · media→R2 via x-status",
+      "media": [
+        "https://pbs.twimg.com/media/HMEgf0_XkAA6TO0.jpg?name=orig",
+        "https://pbs.twimg.com/media/HMEgf1GWMAA_ItK.jpg?name=orig"
+      ],
+      "likes": 13,
+      "reposts": 1,
+      "replies": 11,
+      "views": 16321
     },
     {
       "id": "p_2071962351012868261",
       "handle": "gf_capital",
       "url": "https://x.com/gf_capital/status/2071962351012868261",
-      "text": "Hướng dẫn chi tiết tham gia pool 1.6 tỷ + ref.",
-      "postedAt": "2026-06-30T14:21:34.337Z",
+      "text": "TRẢI NGHIỆM GIAO DỊCH CÙNG SÀN VN SCEX CHIA POOL LÊN TỚI 1.6 TỶ ĐỒNG \n\n💬 Tham gia cực đơn giản:\n\nBước 1: Đăng ký tài khoản \"Phổ Cập Tài Sản Số\": https://phocaptaisanso.com/r/bS1k6t7jkE2ejAAO\nBước 2: Tải app trải nghiệm sàn SCEX & tích điểm thực hành giao dịch\nLink website: https://trading.scex.com.vn/home\nLink tải cho IOS: https://apps.apple.com/.../scex-trading.../id6763202537\nLink tải cho Android: https://play.google.com/store/apps/details...\n\n💵 Mỗi người tham gia sẽ được cấp 1 TỶ VNĐ vốn ảo để trải nghiệm giao dịch. Điểm xếp hạng được tính dựa trên:\n✔️  Hiệu quả giao dịch (PNL)\n✔️ Khối lượng giao dịch (Volume)\n✔️  Số lượng lệnh được khớp\n\n 🔥 PHẦN THƯỞNG HẤP DẪN:\nĐiểm tích lũy có thể dùng để đổi voucher hoặc cạnh tranh trên bảng xếp hạng:\nTop 1: 200 triệu đồng\n Top 2: 150 triệu đồng\n Top 3: 100 triệu đồng\n Top 4 - 10: 20 triệu đồng/người\n Top 11 - 100: 5 triệu đồng/người\n📌 LƯU Ý QUAN TRỌNG:\n✔️ Bắt buộc phải tạo tài khoản \"Phổ Cập Tài Sản Số\" để tạo trang tính điểm.\n✔️ Email đăng ký trên SCEX phải trùng với email đăng ký \"Phổ Cập Tài Sản Số\" để hệ thống ghi nhận điểm.\n✔️ Một số nhiệm vụ sẽ yêu cầu nhập UID tài khoản SCEX để xác minh tham gia.\n✔️  Mọi thắc mắc hoặc hỗ trợ ae liên hệ admin để được giải đáp",
+      "postedAt": "2026-06-30T14:21:34.000Z",
       "sentiment": "bullish",
       "hidden": false,
-      "notes": "STT 32 · Blue Verified mention · 23/06–23/07/2026"
+      "notes": "STT 32 · Blue Verified mention · 23/06–23/07/2026 · media→R2 via x-status",
+      "media": [
+        "https://pbs.twimg.com/media/HMEWr0IWIAAAmmu.jpg?name=orig",
+        "https://pbs.twimg.com/media/HMEWxMSWQAAF-TC.jpg?name=orig"
+      ],
+      "likes": 71,
+      "reposts": 2,
+      "replies": 74,
+      "views": 11093
     },
     {
       "id": "p_2071959652829708353",
       "handle": "0xpain__",
       "url": "https://x.com/0xpain__/status/2071959652829708353",
-      "text": "Promo chương trình 1 tỷ ảo + giải >1.6 tỷ.",
-      "postedAt": "2026-06-30T14:10:51.040Z",
+      "text": "HOT: Sàn SCEX vừa ra mắt một chương trình hay dành cho những ai muốn trải nghiệm sàn nội địa mới 🔥\n\nBạn sẽ được cấp 1 tỷ VNĐ vốn ảo để trải nghiệm giao dịch trên nền tảng SCEX, vừa học vừa trải nghiệm, đồng thời tích điểm để leo BXH.\n\nĐiểm được tính dựa trên hiệu quả giao dịch (PnL), khối lượng giao dịch và số lượng lệnh khớp.\n\nĐiều hấp dẫn nhất là tổng giải thưởng lên đến hơn 1,6 tỷ VNĐ, với giải Nhất trị giá 200 triệu đồng.\n\nBước 1: Đăng ký tài khoản \"Phổ Cập Tài Sản Số\": https://phocaptaisanso.com/r/7u5MXovAXDv6if3y\n\nBước 2: Tải app trải nghiệm sàn SCEX: \n\n- Link website: https://trading.scex.com.vn/home\n- Link tải cho IOS: https://apps.apple.com/.../scex-trading.../id6763202537\n- Link tải cho Android: https://play.google.com/store/apps/details...",
+      "postedAt": "2026-06-30T14:10:51.000Z",
       "sentiment": "bullish",
       "hidden": false,
-      "notes": "STT 36 · Blue Verified mention · 23/06–23/07/2026"
+      "notes": "STT 36 · Blue Verified mention · 23/06–23/07/2026 · media→R2 via x-status",
+      "media": [
+        "https://pbs.twimg.com/media/HMEUH2rXYAAgWzD.jpg?name=orig"
+      ],
+      "likes": 6,
+      "reposts": 0,
+      "replies": 1,
+      "views": 690
     },
     {
       "id": "p_2071952371316654177",
       "handle": "bigknivess",
       "url": "https://x.com/bigknivess/status/2071952371316654177",
-      "text": "Giới thiệu chương trình đào tạo + giải thưởng.",
-      "postedAt": "2026-06-30T13:41:54.992Z",
+      "text": "SCEX khởi động chương trình đào tạo kết hợp trải nghiệm ứng dụng giao dịch, người tham gia vừa học, vừa thực hành, vừa tích điểm trên bảng xếp hạng để chinh phục các giải thưởng với tổng giá trị hơn 1,6 TỶ VNĐ.\n\n- Mỗi người tham gia sẽ được cấp 1 TỶ VNĐ vốn ảo để trải nghiệm giao dịch. Điểm xếp hạng được tính dựa trên:\n• Hiệu quả giao dịch (PNL)\n• Khối lượng giao dịch (Volume)\n• Số lượng lệnh được khớp\n\n- PHẦN THƯỞNG HẤP DẪN:\n\nĐiểm tích lũy có thể dùng để đổi voucher hoặc cạnh tranh trên bảng xếp hạng:\n- Top 1: 200 triệu đồng\n- Top 2: 150 triệu đồng\n- Top 3: 100 triệu đồng\n- Top 4 - 10: 20 triệu đồng/người\n- Top 11 - 100: 5 triệu đồng/người",
+      "postedAt": "2026-06-30T13:41:54.000Z",
       "sentiment": "bullish",
       "hidden": false,
-      "notes": "STT 37 · Blue Verified mention · 23/06–23/07/2026"
+      "notes": "STT 37 · Blue Verified mention · 23/06–23/07/2026 · media→R2 via x-status",
+      "media": [
+        "https://pbs.twimg.com/media/HMEMuGbX0AAybjO.jpg?name=orig"
+      ],
+      "likes": 5,
+      "reposts": 0,
+      "replies": 3,
+      "views": 99
     },
     {
       "id": "p_2071951890745602141",
       "handle": "tuannguyen_6789",
       "url": "https://x.com/tuannguyen_6789/status/2071951890745602141",
-      "text": "Hướng dẫn chi tiết trải nghiệm SCEX + giải thưởng lớn (ref).",
-      "postedAt": "2026-06-30T13:40:00.415Z",
+      "text": "🔥 CỰC HOT: Hướng dẫn trải nghiệm sớm sàn được cấp phép SCEX, và nhận giải thưởng lên tới 500 triệu đồng\n\nSàn Tài Sản Mã Hóa #SCEX được hậu thuẫn bởi 2 ngân hàng Sacombank & LPBank\n\n📌 CÁC BƯỚC THAM GIA:\n\nBước 1: Đăng ký tài khoản https://phocaptaisanso.com/r/Dciad6DGrIGHa5ov\n\n-> Tạo tài khoản, học tập, làm nhiệm vụ cộng đồng, đóng góp ý kiến để kiếm để đổi thưởng.\n\nBước 2: Tải app trải nghiệm sàn SCEX & tích điểm thực hành giao dịch\n\nĐiểm tích lũy có thể dùng để đổi voucher hoặc cạnh tranh trên bảng xếp hạng:\n\n🥇 Top 1: 200 triệu đồng\n🥈 Top 2: 150 triệu đồng\n🥉 Top 3: 100 triệu đồng\n🏅 Top 4 - 10: 20 triệu đồng/người\n🏅 Top 11 - 100: 5 triệu đồng/người",
+      "postedAt": "2026-06-30T13:40:00.000Z",
       "sentiment": "bullish",
       "hidden": false,
-      "notes": "STT 24 · Blue Verified mention · 23/06–23/07/2026"
+      "notes": "STT 24 · Blue Verified mention · 23/06–23/07/2026 · media→R2 via x-status",
+      "media": [
+        "https://pbs.twimg.com/media/HMEIj0LWMAAGako.jpg?name=orig"
+      ],
+      "likes": 39,
+      "reposts": 9,
+      "replies": 16,
+      "views": 28984
     },
     {
       "id": "p_2071949178893402619",
       "handle": "quanm2831",
       "url": "https://x.com/quanm2831/status/2071949178893402619",
-      "text": "HOT trải nghiệm giả lập SCEX free 1 tỷ VND.",
-      "postedAt": "2026-06-30T13:29:13.859Z",
+      "text": "HOT: Trải Nghiệm Sớm Bản Giả Lập Sàn SCEX (Sàn Giao dịch Tài sản Mã hóa Sacom)\n\nĐược free 1 Tỷ VND Trade thử, niêm yết với VND không quen lắm 😂\n\nHướng dẫn trải nghiệm 👇",
+      "postedAt": "2026-06-30T13:29:13.000Z",
       "sentiment": "bullish",
       "hidden": false,
-      "notes": "STT 38 · Blue Verified mention · 23/06–23/07/2026"
+      "notes": "STT 38 · Blue Verified mention · 23/06–23/07/2026 · media→R2 via x-status",
+      "media": [
+        "https://pbs.twimg.com/media/HMEKyyeXwAAUIHx.jpg?name=orig"
+      ],
+      "likes": 32,
+      "reposts": 3,
+      "replies": 17,
+      "views": 15775
     }
   ]
 }

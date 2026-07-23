@@ -285,11 +285,12 @@ async function hydrateViaApi(postUrl) {
     ...(Array.isArray(p.mediaCached) ? p.mediaCached : []),
     ...(Array.isArray(p.media) ? p.media : []),
   ].filter(Boolean)
-  // Prefer R2 URLs only
+  // Prefer R2 URLs; fall back to any https image if cache missed
   const r2Only = media.filter(isR2MediaUrl)
+  const anyMedia = Array.from(new Set(media)).slice(0, 4)
   return {
     ok: true,
-    media: r2Only.length ? Array.from(new Set(r2Only)).slice(0, 4) : [],
+    media: r2Only.length ? Array.from(new Set(r2Only)).slice(0, 4) : anyMedia,
     likes: p.likes,
     reposts: p.reposts,
     replies: p.replies,
@@ -306,12 +307,17 @@ async function main() {
   const posts = Array.isArray(dataset.posts) ? dataset.posts : []
   let targets = posts.filter((p) => p && p.url && !p.hidden)
   if (!force) {
-    targets = targets.filter(
-      (p) =>
-        !Array.isArray(p.media) ||
-        p.media.length === 0 ||
-        !p.media.some(isR2MediaUrl),
-    )
+    // Need hydrate if missing R2 media OR placeholder / empty text
+    targets = targets.filter((p) => {
+      const hasR2 =
+        Array.isArray(p.media) && p.media.length > 0 && p.media.some(isR2MediaUrl)
+      const text = String(p.text || '')
+      const placeholder =
+        !text.trim() ||
+        /export gốc|mention SCEX \(export/i.test(text) ||
+        text.length < 12
+      return !hasR2 || placeholder
+    })
   }
   if (limit > 0) targets = targets.slice(0, limit)
 
@@ -362,25 +368,24 @@ async function main() {
           continue
         }
         const cur = byId.get(p.id) || p
-        cur.media = r.media || []
+        // Keep previous R2 media if new fetch returned empty
+        if (r.media?.length) cur.media = r.media
+        else if (!Array.isArray(cur.media)) cur.media = []
         if (r.likes != null) cur.likes = Number(r.likes) || 0
         if (r.reposts != null) cur.reposts = Number(r.reposts) || 0
         if (r.replies != null) cur.replies = Number(r.replies) || 0
         if (r.views != null) cur.views = Number(r.views) || 0
-        if (
-          r.text &&
-          String(r.text).trim().length > String(cur.text || '').trim().length + 8
-        ) {
+        // Always prefer live tweet text when present
+        if (r.text && String(r.text).trim()) {
           cur.text = String(r.text).trim()
         }
         if (r.createdAt) {
           const t = new Date(r.createdAt).getTime()
           if (!Number.isNaN(t)) cur.postedAt = new Date(t).toISOString()
         }
-        cur.notes = [cur.notes || '', 'media→R2']
+        cur.notes = [String(cur.notes || '').replace(/\s*·\s*media→R2/g, ''), 'media→R2']
           .filter(Boolean)
           .join(' · ')
-          .replace(/( · media→R2)+/g, ' · media→R2')
         byId.set(p.id, cur)
         ok++
         if (cur.media.length) withMedia++

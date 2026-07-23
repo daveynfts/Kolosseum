@@ -7,14 +7,18 @@ import {
   actorMatrixPos,
   actorPassesThresholds,
   actorSizeValue,
+  actorVolumeMetric,
   createEmptyActor,
   createEmptyPost,
+  defaultScexScoring,
   recomputeScexActors,
+  recomputeScexScores,
   type ScexActor,
   type ScexConfig,
   type ScexDataset,
   type ScexPost,
   type ScexQuadrant,
+  type ScexScoringConfig,
   type ScexSentiment,
 } from '../data/scexTracking'
 import {
@@ -25,8 +29,10 @@ import {
   saveScexToServer,
   seedScexDataset,
 } from '../lib/scexStore'
+import { loadKolsWithSource } from '../lib/kolStore'
 import { getAdminToken, setAdminToken } from '../lib/feedStore'
 import { XProfileAvatar } from '../components/XProfileAvatar'
+import { getKolRank } from '../types'
 
 interface Props {
   onToast: (msg: string) => void
@@ -85,6 +91,99 @@ export function AdminScexEditor({ onToast }: Props) {
     setDirty(true)
   }
 
+  const patchScoring = (patch: Partial<ScexScoringConfig>) => {
+    setDataset((prev) => {
+      const base = defaultScexScoring()
+      const cur = { ...base, ...(prev.config.scoring || {}) }
+      const next: ScexScoringConfig = {
+        ...cur,
+        ...patch,
+        mapTierScores: {
+          ...base.mapTierScores,
+          ...cur.mapTierScores,
+          ...(patch.mapTierScores || {}),
+        },
+        sentimentScores: {
+          ...base.sentimentScores,
+          ...cur.sentimentScores,
+          ...(patch.sentimentScores || {}),
+        },
+      }
+      return recomputeScexActors({
+        ...prev,
+        config: { ...prev.config, scoring: next },
+      })
+    })
+    setDirty(true)
+  }
+
+  const recomputeScores = async () => {
+    try {
+      const { kols } = await loadKolsWithSource()
+      const mapInputs = kols.map((k) => ({
+        handle: k.handle,
+        rank: getKolRank(k),
+        tier: k.tier,
+        score: k.score,
+      }))
+      setDataset((prev) => {
+        const scoringCfg = {
+          ...defaultScexScoring(),
+          ...(prev.config.scoring || {}),
+          mapTierScores: {
+            ...defaultScexScoring().mapTierScores,
+            ...(prev.config.scoring?.mapTierScores || {}),
+          },
+          sentimentScores: {
+            ...defaultScexScoring().sentimentScores,
+            ...(prev.config.scoring?.sentimentScores || {}),
+          },
+        }
+        const ds = recomputeScexScores(
+          {
+            ...prev,
+            config: {
+              ...prev.config,
+              scoring: scoringCfg,
+              volumeAxis: {
+                min: 0,
+                max: 100,
+                label:
+                  prev.config.volumeAxis?.label ||
+                  'Điểm tần suất (log activity)',
+              },
+              qualityAxis: {
+                min: 0,
+                max: 100,
+                label:
+                  prev.config.qualityAxis?.label ||
+                  'Điểm chất lượng (tier + signal)',
+              },
+              volumeSplit:
+                prev.config.volumeSplit > 20 ? prev.config.volumeSplit : 42,
+              qualitySplit: prev.config.qualitySplit ?? 55,
+            },
+          },
+          mapInputs,
+        )
+        return ds
+      })
+      setDirty(true)
+      onToast(
+        `Đã recompute scores (${kols.length} map KOLs). Save R2 để public nhận.`,
+      )
+    } catch (e) {
+      onToast(
+        `Recompute lỗi: ${e instanceof Error ? e.message : String(e)}`,
+      )
+    }
+  }
+
+  const scoring = {
+    ...defaultScexScoring(),
+    ...(config.scoring || {}),
+  }
+
   const selectedActor = useMemo(
     () => dataset.actors.find((a) => a.id === selectedActorId) || null,
     [dataset.actors, selectedActorId],
@@ -108,7 +207,9 @@ export function AdminScexEditor({ onToast }: Props) {
       )
     }
     return [...list].sort(
-      (a, b) => b.qualityScore - a.qualityScore || b.postsVolume - a.postsVolume,
+      (a, b) =>
+        b.qualityScore - a.qualityScore ||
+        (b.volumeScore ?? b.postsVolume) - (a.volumeScore ?? a.postsVolume),
     )
   }, [dataset.actors, actorQuery])
 
@@ -470,7 +571,11 @@ export function AdminScexEditor({ onToast }: Props) {
           </section>
 
           <section className="admin-ts-section">
-            <h3>Matrix axes & splits</h3>
+            <h3>Matrix axes & splits (0–100)</h3>
+            <p className="admin-ts-hint" style={{ opacity: 0.7, fontSize: 13 }}>
+              X = volumeScore (log activity). Y = qualityScore. Split chia 4
+              vùng TRỌNG ĐIỂM / TIỀM NĂNG / CẦN RÀ SOÁT / TÍN HIỆU YẾU.
+            </p>
             <div className="admin-ts-fields">
               <label>
                 Volume axis label
@@ -496,17 +601,18 @@ export function AdminScexEditor({ onToast }: Props) {
                     patchConfig({
                       volumeAxis: {
                         ...config.volumeAxis,
-                        max: Number(e.target.value) || 20,
+                        max: Number(e.target.value) || 100,
                       },
                     })
                   }
                 />
               </label>
               <label>
-                Volume split (X mid)
+                Volume split (X mid, 0–100)
                 <input
                   type="number"
                   min={0}
+                  max={100}
                   value={config.volumeSplit}
                   onChange={(e) =>
                     patchConfig({
@@ -558,6 +664,192 @@ export function AdminScexEditor({ onToast }: Props) {
                   <option value="reach7d">Reach 7d</option>
                 </select>
               </label>
+            </div>
+          </section>
+
+          <section className="admin-ts-section">
+            <h3>Scoring formula (matrix)</h3>
+            <p className="admin-ts-hint" style={{ opacity: 0.7, fontSize: 13 }}>
+              Volume = log(gốc × wGoc + reply × wReply). Quality = map tier +
+              sentiment + depth + mild engagement. Map-verified KOLs get higher
+              tier scores. Click <strong>Recompute scores</strong> after
+              changing weights.
+            </p>
+            <div className="admin-ts-fields">
+              <label>
+                Vol: gốc weight
+                <input
+                  type="number"
+                  step={0.05}
+                  min={0}
+                  value={scoring.volGocWeight}
+                  onChange={(e) =>
+                    patchScoring({
+                      volGocWeight: Number(e.target.value) || 0,
+                    })
+                  }
+                />
+              </label>
+              <label>
+                Vol: reply weight
+                <input
+                  type="number"
+                  step={0.05}
+                  min={0}
+                  value={scoring.volReplyWeight}
+                  onChange={(e) =>
+                    patchScoring({
+                      volReplyWeight: Number(e.target.value) || 0,
+                    })
+                  }
+                />
+              </label>
+              <label>
+                Vol: log cap
+                <input
+                  type="number"
+                  min={1}
+                  value={scoring.volLogCap}
+                  onChange={(e) =>
+                    patchScoring({
+                      volLogCap: Number(e.target.value) || 14,
+                    })
+                  }
+                />
+              </label>
+              <label>
+                Vol: views soft weight
+                <input
+                  type="number"
+                  step={0.01}
+                  min={0}
+                  value={scoring.volViewsSoftWeight}
+                  onChange={(e) =>
+                    patchScoring({
+                      volViewsSoftWeight: Number(e.target.value) || 0,
+                    })
+                  }
+                />
+              </label>
+              <label>
+                Vol: map boost
+                <input
+                  type="number"
+                  min={0}
+                  max={20}
+                  value={scoring.volMapBoost}
+                  onChange={(e) =>
+                    patchScoring({
+                      volMapBoost: Number(e.target.value) || 0,
+                    })
+                  }
+                />
+              </label>
+              <label>
+                Q weight: map tier
+                <input
+                  type="number"
+                  step={0.01}
+                  min={0}
+                  max={1}
+                  value={scoring.wMapTier}
+                  onChange={(e) =>
+                    patchScoring({ wMapTier: Number(e.target.value) || 0 })
+                  }
+                />
+              </label>
+              <label>
+                Q weight: sentiment
+                <input
+                  type="number"
+                  step={0.01}
+                  min={0}
+                  max={1}
+                  value={scoring.wSentiment}
+                  onChange={(e) =>
+                    patchScoring({ wSentiment: Number(e.target.value) || 0 })
+                  }
+                />
+              </label>
+              <label>
+                Q weight: depth (gốc)
+                <input
+                  type="number"
+                  step={0.01}
+                  min={0}
+                  max={1}
+                  value={scoring.wDepth}
+                  onChange={(e) =>
+                    patchScoring({ wDepth: Number(e.target.value) || 0 })
+                  }
+                />
+              </label>
+              <label>
+                Q weight: engagement (views)
+                <input
+                  type="number"
+                  step={0.01}
+                  min={0}
+                  max={1}
+                  value={scoring.wEngagement}
+                  onChange={(e) =>
+                    patchScoring({ wEngagement: Number(e.target.value) || 0 })
+                  }
+                />
+              </label>
+              <label>
+                Use volumeScore on X
+                <input
+                  type="checkbox"
+                  checked={scoring.useVolumeScore !== false}
+                  onChange={(e) =>
+                    patchScoring({ useVolumeScore: e.target.checked })
+                  }
+                />
+              </label>
+            </div>
+            <h4 style={{ marginTop: 12, marginBottom: 8 }}>Map tier scores</h4>
+            <div className="admin-ts-fields">
+              {(
+                [
+                  'challenger',
+                  'master',
+                  'diamond',
+                  'platinum',
+                  'gold',
+                  'none',
+                ] as const
+              ).map((k) => (
+                <label key={k}>
+                  {k}
+                  <input
+                    type="number"
+                    min={0}
+                    max={100}
+                    value={scoring.mapTierScores[k]}
+                    onChange={(e) =>
+                      patchScoring({
+                        mapTierScores: {
+                          ...scoring.mapTierScores,
+                          [k]: Number(e.target.value) || 0,
+                        },
+                      })
+                    }
+                  />
+                </label>
+              ))}
+            </div>
+            <div style={{ marginTop: 12, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+              <button
+                type="button"
+                className="admin-btn admin-btn--primary"
+                onClick={() => void recomputeScores()}
+              >
+                Recompute scores (map ranks)
+              </button>
+              <span style={{ fontSize: 12, opacity: 0.65, alignSelf: 'center' }}>
+                Ghi scoreLog trên từng actor · nhớ Save R2
+              </span>
             </div>
           </section>
 
@@ -721,8 +1013,10 @@ export function AdminScexEditor({ onToast }: Props) {
                           {!pass ? ' · hidden' : ''}
                         </strong>
                         <small>
-                          @{acc.handle} · {acc.kind} · Q{acc.qualityScore} · V
-                          {acc.postsVolume}
+                          @{acc.handle} · {acc.kind} · V
+                          {Math.round(actorVolumeMetric(acc, config))} · Q
+                          {Math.round(acc.qualityScore)}
+                          {acc.mapRank ? ` · map:${acc.mapRank}` : ''}
                           {acc.quadrant ? ` · ${acc.quadrant}` : ''}
                         </small>
                       </span>
@@ -840,7 +1134,7 @@ export function AdminScexEditor({ onToast }: Props) {
                       />
                     </label>
                     <label>
-                      Posts volume (X)
+                      Raw activity (gốc+reply)
                       <input
                         type="number"
                         value={selectedActor.postsVolume}
@@ -852,17 +1146,72 @@ export function AdminScexEditor({ onToast }: Props) {
                       />
                     </label>
                     <label>
+                      Volume score 0–100 (X)
+                      <input
+                        type="number"
+                        min={0}
+                        max={100}
+                        step={0.1}
+                        value={selectedActor.volumeScore ?? ''}
+                        onChange={(e) =>
+                          patchActor(selectedActor.id, {
+                            volumeScore: Number(e.target.value) || 0,
+                          })
+                        }
+                      />
+                    </label>
+                    <label>
                       Quality score 0–100 (Y)
                       <input
                         type="number"
                         min={0}
                         max={100}
+                        step={0.1}
                         value={selectedActor.qualityScore}
                         onChange={(e) =>
                           patchActor(selectedActor.id, {
                             qualityScore: Number(e.target.value) || 0,
                           })
                         }
+                      />
+                    </label>
+                    <label>
+                      Gốc / Reply
+                      <div style={{ display: 'flex', gap: 6 }}>
+                        <input
+                          type="number"
+                          min={0}
+                          placeholder="gốc"
+                          value={selectedActor.gocPosts ?? ''}
+                          onChange={(e) =>
+                            patchActor(selectedActor.id, {
+                              gocPosts: Number(e.target.value) || 0,
+                            })
+                          }
+                        />
+                        <input
+                          type="number"
+                          min={0}
+                          placeholder="reply"
+                          value={selectedActor.replyPosts ?? ''}
+                          onChange={(e) =>
+                            patchActor(selectedActor.id, {
+                              replyPosts: Number(e.target.value) || 0,
+                            })
+                          }
+                        />
+                      </div>
+                    </label>
+                    <label>
+                      Map rank
+                      <input
+                        value={selectedActor.mapRank || ''}
+                        onChange={(e) =>
+                          patchActor(selectedActor.id, {
+                            mapRank: e.target.value || undefined,
+                          })
+                        }
+                        placeholder="challenger|master|…|none"
                       />
                     </label>
                     <label>
@@ -1184,7 +1533,7 @@ function ScexPreviewPanel({
                   height: sz,
                   borderColor: ring,
                 }}
-                title={`@${a.handle} V${a.postsVolume} Q${a.qualityScore} ${a.quadrant}`}
+                title={`@${a.handle} V${Math.round(actorVolumeMetric(a, config))} Q${Math.round(a.qualityScore)} ${a.quadrant}${a.mapRank ? ` map:${a.mapRank}` : ''}${a.scoreLog ? `\n${a.scoreLog}` : ''}`}
               >
                 <XProfileAvatar
                   handle={a.handle}

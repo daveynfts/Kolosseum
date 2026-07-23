@@ -4,7 +4,11 @@
  */
 import { useLayoutEffect, useMemo, useRef, useState } from 'react'
 import type { ScexActor, ScexConfig } from '../data/scexTracking'
-import { actorMatrixPos, actorSizeValue } from '../data/scexTracking'
+import {
+  actorMatrixPos,
+  actorSizeValue,
+  actorVolumeMetric,
+} from '../data/scexTracking'
 import { XProfileAvatar } from './XProfileAvatar'
 
 export type ScexMatrix2DProps = {
@@ -220,7 +224,7 @@ export function ScexMatrix2D({
                       ['--depth' as string]: String(b.depth),
                       ['--ring' as string]: ring,
                     }}
-                    title={`@${a.handle} · V${a.postsVolume} · Q${a.qualityScore} · ${formatCompact(a.followers)}${onMap ? ' · Map' : ''}`}
+                    title={`@${a.handle} · V${Math.round(actorVolumeMetric(a, config))} · Q${Math.round(a.qualityScore)} · raw ${a.postsVolume} · ${formatCompact(a.followers)}${a.mapRank ? ` · ${a.mapRank}` : onMap ? ' · Map' : ''}`}
                     onClick={() =>
                       onSelect(selectedId === a.id ? null : a)
                     }

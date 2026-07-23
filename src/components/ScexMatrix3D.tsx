@@ -8,7 +8,11 @@ import { Html, OrbitControls, Billboard, Stars } from '@react-three/drei'
 import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib'
 import * as THREE from 'three'
 import type { ScexActor, ScexConfig } from '../data/scexTracking'
-import { actorMatrixPos, actorSizeValue } from '../data/scexTracking'
+import {
+  actorMatrixPos,
+  actorSizeValue,
+  actorVolumeMetric,
+} from '../data/scexTracking'
 import { XProfileAvatar } from './XProfileAvatar'
 
 export type ScexMatrix3DProps = {
@@ -253,8 +257,13 @@ function ActorBubble3D({
               <small>
                 @{actor.handle}
                 <br />
-                V{actor.postsVolume} · Q{actor.qualityScore}
-                {onMap ? ' · Map' : ''}
+                V{Math.round(actorVolumeMetric(actor, config))} · Q
+                {Math.round(actor.qualityScore)}
+                {actor.mapRank
+                  ? ` · ${actor.mapRank}`
+                  : onMap
+                    ? ' · Map'
+                    : ''}
               </small>
             </span>
           )}

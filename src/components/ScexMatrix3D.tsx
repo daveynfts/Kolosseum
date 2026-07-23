@@ -179,17 +179,17 @@ function ActorBubble3D({
     group.current.scale.setScalar(s + (target - s) * Math.min(1, dt * 12))
   })
 
-  const pxSize = Math.round(Math.max(40, Math.min(76, radius * 56)))
+  const pxSize = Math.round(Math.max(44, Math.min(80, radius * 58)))
 
   return (
     <group ref={group} position={position}>
       <Billboard follow lockZ={false}>
         <mesh position={[0, 0, -0.03]}>
-          <circleGeometry args={[radius * (focus ? 1.38 : 1.26), 40]} />
+          <circleGeometry args={[radius * (focus ? 1.4 : 1.24), 40]} />
           <meshBasicMaterial
             color={ring}
             transparent
-            opacity={focus ? 0.42 : onMap ? 0.22 : 0.12}
+            opacity={focus ? 0.45 : onMap ? 0.24 : 0.12}
             depthWrite={false}
           />
         </mesh>
@@ -215,10 +215,10 @@ function ActorBubble3D({
 
       <Html
         center
-        distanceFactor={10.5}
+        distanceFactor={10.2}
         position={[0, 0, 0.04]}
         style={{ pointerEvents: 'none' }}
-        zIndexRange={[50, 0]}
+        zIndexRange={[focus || selected ? 120 : 40, 0]}
         occlude={false}
       >
         <div
@@ -241,7 +241,7 @@ function ActorBubble3D({
             <XProfileAvatar
               handle={actor.handle}
               name={actor.displayName}
-              size={Math.max(30, pxSize - 10)}
+              size={Math.max(32, pxSize - 10)}
             />
           </span>
           {onMap && (
@@ -251,7 +251,9 @@ function ActorBubble3D({
             <span className="scex3d-bubble__tip">
               <em>{actor.displayName}</em>
               <small>
-                @{actor.handle} · V{actor.postsVolume} · Q{actor.qualityScore}
+                @{actor.handle}
+                <br />
+                V{actor.postsVolume} · Q{actor.qualityScore}
                 {onMap ? ' · Map' : ''}
               </small>
             </span>
@@ -326,52 +328,100 @@ function SceneInner({
 
 export function ScexMatrix3D(props: ScexMatrix3DProps) {
   const q = props.config.quadrantLabels
+  const quads = [
+    {
+      key: 'stars',
+      title: q.stars?.title || 'TRỌNG ĐIỂM',
+      sub: q.stars?.subtitle || '',
+      tone: 'stars' as const,
+    },
+    {
+      key: 'nurture',
+      title: q.nurture?.title || 'TIỀM NĂNG',
+      sub: q.nurture?.subtitle || '',
+      tone: 'nurture' as const,
+    },
+    {
+      key: 'noise',
+      title: q.noise?.title || 'CẦN RÀ SOÁT',
+      sub: q.noise?.subtitle || '',
+      tone: 'noise' as const,
+    },
+    {
+      key: 'ignore',
+      title: q.ignore?.title || 'TÍN HIỆU YẾU',
+      sub: q.ignore?.subtitle || '',
+      tone: 'ignore' as const,
+    },
+  ]
+
   return (
-    <div className="scex3d-canvas-wrap">
-      {/* CSS quadrant chrome — stable, no 3D label clutter */}
-      <div className="scex3d-overlay" aria-hidden>
-        <div className="scex3d-overlay__quad scex3d-overlay__quad--nurture">
-          <strong>{q.nurture?.title || 'TIỀM NĂNG'}</strong>
-          <small>{q.nurture?.subtitle}</small>
+    <div className="scex3d-root">
+      {/* Corner badges only (title) — full copy lives below to avoid overlap */}
+      <div className="scex3d-stage">
+        <div className="scex3d-corner scex3d-corner--tl" aria-hidden>
+          <span className="scex3d-corner__tag scex3d-corner__tag--nurture">
+            {q.nurture?.title || 'TIỀM NĂNG'}
+          </span>
         </div>
-        <div className="scex3d-overlay__quad scex3d-overlay__quad--stars">
-          <strong>{q.stars?.title || 'TRỌNG ĐIỂM'}</strong>
-          <small>{q.stars?.subtitle}</small>
+        <div className="scex3d-corner scex3d-corner--tr" aria-hidden>
+          <span className="scex3d-corner__tag scex3d-corner__tag--stars">
+            {q.stars?.title || 'TRỌNG ĐIỂM'}
+          </span>
         </div>
-        <div className="scex3d-overlay__quad scex3d-overlay__quad--ignore">
-          <strong>{q.ignore?.title || 'TÍN HIỆU YẾU'}</strong>
-          <small>{q.ignore?.subtitle}</small>
+        <div className="scex3d-corner scex3d-corner--bl" aria-hidden>
+          <span className="scex3d-corner__tag scex3d-corner__tag--ignore">
+            {q.ignore?.title || 'TÍN HIỆU YẾU'}
+          </span>
         </div>
-        <div className="scex3d-overlay__quad scex3d-overlay__quad--noise">
-          <strong>{q.noise?.title || 'CẦN RÀ SOÁT'}</strong>
-          <small>{q.noise?.subtitle}</small>
+        <div className="scex3d-corner scex3d-corner--br" aria-hidden>
+          <span className="scex3d-corner__tag scex3d-corner__tag--noise">
+            {q.noise?.title || 'CẦN RÀ SOÁT'}
+          </span>
         </div>
-        <span className="scex3d-overlay__axis-y">
-          ↑ {props.config.qualityAxis.label || 'Chất lượng'}
-        </span>
-        <span className="scex3d-overlay__axis-x">
-          {props.config.volumeAxis.label || 'Số lần nhắc'} →
-        </span>
+
+        <div className="scex3d-canvas-wrap">
+          <Canvas
+            camera={{ position: [0, 1.4, 15.2], fov: 40, near: 0.1, far: 90 }}
+            dpr={[1, 1.75]}
+            gl={{
+              antialias: true,
+              alpha: false,
+              powerPreference: 'high-performance',
+            }}
+            onCreated={({ gl }) => {
+              gl.setClearColor(0x04080f, 1)
+            }}
+            onPointerMissed={() => props.onSelect(null)}
+          >
+            <SceneInner {...props} />
+          </Canvas>
+        </div>
+
+        <div className="scex3d-axis-bar" aria-hidden>
+          <span className="scex3d-axis-bar__y">
+            ↑ {props.config.qualityAxis.label || 'Điểm chất lượng'}
+          </span>
+          <span className="scex3d-axis-bar__hint">
+            Kéo để xoay · Cuộn để zoom · Chấm xanh = có trên map
+          </span>
+          <span className="scex3d-axis-bar__x">
+            {props.config.volumeAxis.label || 'Tần suất mention'} →
+          </span>
+        </div>
       </div>
 
-      <Canvas
-        camera={{ position: [0, 1.6, 15.5], fov: 40, near: 0.1, far: 90 }}
-        dpr={[1, 1.75]}
-        gl={{
-          antialias: true,
-          alpha: false,
-          powerPreference: 'high-performance',
-        }}
-        onCreated={({ gl }) => {
-          gl.setClearColor(0x04080f, 1)
-        }}
-        onPointerMissed={() => props.onSelect(null)}
-      >
-        <SceneInner {...props} />
-      </Canvas>
-      <div className="scex3d-hint">
-        Kéo xoay · Cuộn zoom · Hover xem tên · Chấm xanh = có trên map
-      </div>
+      <ul className="scex3d-quad-legend">
+        {quads.map((item) => (
+          <li
+            key={item.key}
+            className={`scex3d-quad-legend__item scex3d-quad-legend__item--${item.tone}`}
+          >
+            <strong>{item.title}</strong>
+            {item.sub ? <span>{item.sub}</span> : null}
+          </li>
+        ))}
+      </ul>
     </div>
   )
 }

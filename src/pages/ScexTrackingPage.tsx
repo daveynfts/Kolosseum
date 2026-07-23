@@ -218,8 +218,8 @@ export function ScexTrackingPage() {
             <div>
               <h2>{viMatrixTitle(config.matrixTitle)}</h2>
               <p>
-                Trục ngang: số lần nhắc · Trục dọc: chất lượng · Kích thước:
-                followers · {onMapCount}/{visible.length} KOL trên map
+                Trục ngang: tần suất mention · Trục dọc: chất lượng · Kích
+                thước: followers · {onMapCount}/{visible.length} KOL trên map
               </p>
             </div>
             <div className="scex-matrix__toolbar">

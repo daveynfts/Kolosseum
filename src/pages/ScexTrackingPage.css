@@ -912,13 +912,139 @@
 .scex-feed {
   display: flex;
   flex-direction: column;
-  max-height: min(72vh, 640px);
+  max-height: min(78vh, 720px);
+}
+
+.scex-feed__filters {
+  padding: 0 14px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  margin-bottom: 4px;
+}
+
+.scex-feed__filter-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.scex-feed__chip {
+  appearance: none;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.04);
+  color: rgba(226, 232, 240, 0.7);
+  font: inherit;
+  font-size: 0.74rem;
+  font-weight: 650;
+  padding: 5px 11px;
+  border-radius: 999px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.scex-feed__chip.is-active {
+  background: rgba(56, 189, 248, 0.16);
+  border-color: rgba(56, 189, 248, 0.4);
+  color: #7dd3fc;
+}
+
+.scex-feed__chip.is-clear {
+  background: rgba(34, 197, 94, 0.12);
+  border-color: rgba(34, 197, 94, 0.35);
+  color: #4ade80;
+}
+
+.scex-feed__search {
+  flex: 1;
+  min-width: 120px;
+  appearance: none;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(0, 0, 0, 0.25);
+  color: #f1f5f9;
+  font: inherit;
+  font-size: 0.8rem;
+  padding: 6px 12px;
+  border-radius: 10px;
+  outline: none;
+}
+
+.scex-feed__search::placeholder {
+  color: rgba(148, 163, 184, 0.55);
+}
+
+.scex-feed__search:focus {
+  border-color: rgba(56, 189, 248, 0.45);
+  box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.12);
+}
+
+.scex-feed__kol-scroll {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(148, 163, 184, 0.3) transparent;
+}
+
+.scex-feed__kol-chip {
+  appearance: none;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.03);
+  color: rgba(226, 232, 240, 0.78);
+  font: inherit;
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 4px 10px 4px 4px;
+  border-radius: 999px;
+  cursor: pointer;
+  max-width: 180px;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.scex-feed__kol-chip:hover {
+  border-color: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.scex-feed__kol-chip.is-active {
+  border-color: rgba(56, 189, 248, 0.45);
+  background: rgba(56, 189, 248, 0.14);
+  color: #e0f2fe;
+}
+
+.scex-feed__kol-chip-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100px;
+}
+
+.scex-feed__kol-chip-count {
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: rgba(148, 163, 184, 0.85);
+  background: rgba(0, 0, 0, 0.25);
+  padding: 1px 6px;
+  border-radius: 999px;
+  font-variant-numeric: tabular-nums;
+}
+
+.scex-feed__kol-chip.is-active .scex-feed__kol-chip-count {
+  color: #7dd3fc;
+  background: rgba(56, 189, 248, 0.15);
 }
 
 .scex-feed__list {
   list-style: none;
   margin: 0;
-  padding: 0 12px 16px;
+  padding: 8px 12px 16px;
   overflow: auto;
   display: flex;
   flex-direction: column;

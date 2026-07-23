@@ -70,6 +70,9 @@ export function ScexTrackingPage() {
   const [selectedActor, setSelectedActor] = useState<ScexActor | null>(null)
   const [autoRotate, setAutoRotate] = useState(true)
   const [matrixView, setMatrixView] = useState<MatrixView>(() => readView())
+  /** Livefeed filter: null = all, or lowercase handle */
+  const [feedFilter, setFeedFilter] = useState<string | null>(null)
+  const [feedQuery, setFeedQuery] = useState('')
 
   useEffect(() => {
     let cancelled = false
@@ -144,6 +147,58 @@ export function ScexTrackingPage() {
     [visible, mapHandles],
   )
 
+  const allPosts = useMemo(() => {
+    if (!dataset) return [] as ScexPost[]
+    return dataset.posts.filter((p) => !p.hidden)
+  }, [dataset])
+
+  /** Handles that actually have feed posts (for filter chips) */
+  const feedKolOptions = useMemo(() => {
+    if (!dataset) return [] as ScexActor[]
+    const counts = new Map<string, number>()
+    for (const p of allPosts) {
+      const h = p.handle.toLowerCase()
+      counts.set(h, (counts.get(h) || 0) + 1)
+    }
+    return dataset.actors
+      .filter((a) => counts.has(a.handle.toLowerCase()))
+      .sort((a, b) => {
+        const ca = counts.get(a.handle.toLowerCase()) || 0
+        const cb = counts.get(b.handle.toLowerCase()) || 0
+        if (cb !== ca) return cb - ca
+        return b.followers - a.followers
+      })
+  }, [dataset, allPosts])
+
+  const filteredPosts = useMemo(() => {
+    let list = allPosts
+    if (feedFilter) {
+      list = list.filter((p) => p.handle.toLowerCase() === feedFilter)
+    }
+    const q = feedQuery.trim().toLowerCase()
+    if (q) {
+      list = list.filter(
+        (p) =>
+          p.handle.toLowerCase().includes(q) ||
+          p.text.toLowerCase().includes(q) ||
+          (dataset?.actors.find((a) => a.handle === p.handle)?.displayName || '')
+            .toLowerCase()
+            .includes(q),
+      )
+    }
+    return list.slice(0, 80)
+  }, [allPosts, feedFilter, feedQuery, dataset?.actors])
+
+  const onSelectActor = (actor: ScexActor | null) => {
+    setSelectedActor(actor)
+    // Sync livefeed filter when picking from matrix
+    if (actor) {
+      const h = actor.handle.toLowerCase()
+      const hasPosts = allPosts.some((p) => p.handle.toLowerCase() === h)
+      if (hasPosts) setFeedFilter(h)
+    }
+  }
+
   if (!dataset) {
     return (
       <div className="scex-loading">
@@ -166,7 +221,6 @@ export function ScexTrackingPage() {
     )
   }
 
-  const posts = dataset.posts.filter((p) => !p.hidden).slice(0, 50)
   const totalFollowers = visible.reduce((s, a) => s + (a.followers || 0), 0)
   const handle = config.brandHandle?.replace(/^@/, '') || 'scexofficial'
   const selectedMapKol = selectedActor
@@ -198,7 +252,7 @@ export function ScexTrackingPage() {
             <span>Tài khoản</span>
           </div>
           <div className="scex-stat">
-            <em>{posts.length}</em>
+            <em>{allPosts.length}</em>
             <span>Bài viết</span>
           </div>
           <div className="scex-stat">
@@ -261,7 +315,7 @@ export function ScexTrackingPage() {
                 selectedId={selectedActor?.id ?? null}
                 mapHandles={mapHandles}
                 autoRotate={autoRotate}
-                onSelect={setSelectedActor}
+                onSelect={onSelectActor}
               />
             ) : (
               <ScexMatrix2D
@@ -269,7 +323,7 @@ export function ScexTrackingPage() {
                 config={config}
                 selectedId={selectedActor?.id ?? null}
                 mapHandles={mapHandles}
-                onSelect={setSelectedActor}
+                onSelect={onSelectActor}
               />
             )}
             <div className="scex-matrix__legend">
@@ -287,14 +341,83 @@ export function ScexTrackingPage() {
 
         <section className="scex-card scex-feed">
           <div className="scex-card__head">
-            <h2>{viFeedTitle(config.feedTitle)}</h2>
-            <p>
-              {posts.length} bài gần đây ·{' '}
-              {posts.filter((p) => p.media?.length).length} có ảnh (R2)
-            </p>
+            <div>
+              <h2>{viFeedTitle(config.feedTitle)}</h2>
+              <p>
+                {filteredPosts.length}
+                {feedFilter || feedQuery
+                  ? ` / ${allPosts.length}`
+                  : ''}{' '}
+                bài
+                {feedFilter ? ` · @${feedFilter}` : ''} ·{' '}
+                {allPosts.filter((p) => p.media?.length).length} có ảnh (R2)
+              </p>
+            </div>
           </div>
+
+          <div className="scex-feed__filters">
+            <div className="scex-feed__filter-row">
+              <button
+                type="button"
+                className={`scex-feed__chip ${!feedFilter ? 'is-active' : ''}`}
+                onClick={() => setFeedFilter(null)}
+              >
+                Tất cả KOL
+              </button>
+              {feedFilter && (
+                <button
+                  type="button"
+                  className="scex-feed__chip is-active is-clear"
+                  onClick={() => setFeedFilter(null)}
+                  title="Bỏ lọc"
+                >
+                  @{feedFilter} ×
+                </button>
+              )}
+              <input
+                className="scex-feed__search"
+                type="search"
+                placeholder="Tìm handle / nội dung…"
+                value={feedQuery}
+                onChange={(e) => setFeedQuery(e.target.value)}
+                aria-label="Tìm trong livefeed"
+              />
+            </div>
+            <div className="scex-feed__kol-scroll" role="listbox" aria-label="Lọc theo KOL">
+              {feedKolOptions.map((a) => {
+                const h = a.handle.toLowerCase()
+                const n = allPosts.filter((p) => p.handle.toLowerCase() === h)
+                  .length
+                const active = feedFilter === h
+                return (
+                  <button
+                    key={a.id}
+                    type="button"
+                    role="option"
+                    aria-selected={active}
+                    className={`scex-feed__kol-chip ${active ? 'is-active' : ''}`}
+                    onClick={() =>
+                      setFeedFilter((prev) => (prev === h ? null : h))
+                    }
+                    title={`@${a.handle} · ${n} bài · ${a.followers.toLocaleString()} followers`}
+                  >
+                    <XProfileAvatar
+                      handle={a.handle}
+                      name={a.displayName}
+                      size={22}
+                    />
+                    <span className="scex-feed__kol-chip-name">
+                      {a.displayName}
+                    </span>
+                    <span className="scex-feed__kol-chip-count">{n}</span>
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+
           <ul className="scex-feed__list">
-            {posts.map((p, index) => (
+            {filteredPosts.map((p, index) => (
               <ScexFeedCard
                 key={p.id}
                 post={p}
@@ -309,13 +432,17 @@ export function ScexTrackingPage() {
                   const a = dataset.actors.find(
                     (x) => x.handle === p.handle,
                   )
-                  if (a) setSelectedActor(a)
+                  if (a) onSelectActor(a)
                 }}
                 index={index}
               />
             ))}
-            {!posts.length && (
-              <li className="scex-empty">Chưa có bài trong cửa sổ này.</li>
+            {!filteredPosts.length && (
+              <li className="scex-empty">
+                {feedFilter || feedQuery
+                  ? 'Không có bài khớp bộ lọc.'
+                  : 'Chưa có bài trong cửa sổ này.'}
+              </li>
             )}
           </ul>
         </section>

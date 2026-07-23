@@ -25,7 +25,8 @@ export async function cacheRemoteImage(
   if (!sourceUrl || !/^https?:\/\//i.test(sourceUrl)) {
     return { cachedUrl: sourceUrl, id: null, cached: false, error: 'invalid_url' }
   }
-  if (sourceUrl.includes('/api/media') || sourceUrl.includes('/media/')) {
+  // Already our cached media (proxy or R2). Do NOT match pbs.twimg.com/media/…
+  if (isOurMediaUrl(sourceUrl)) {
     return { cachedUrl: sourceUrl, id: null, cached: true }
   }
 
@@ -102,4 +103,25 @@ function guessType(url: string): string | null {
   if (u.includes('.gif')) return 'image/gif'
   if (u.includes('.jpg') || u.includes('.jpeg')) return 'image/jpeg'
   return null
+}
+
+/** True only for our R2/proxy media URLs — not Twitter pbs.twimg.com/media/… */
+export function isOurMediaUrl(sourceUrl: string): boolean {
+  if (!sourceUrl) return false
+  // Same-origin API proxy
+  if (/\/api\/media\?id=/i.test(sourceUrl)) return true
+  // Known third-party hosts that are NOT ours
+  if (/pbs\.twimg\.com|twimg\.com|video\.twimg\.com/i.test(sourceUrl)) {
+    return false
+  }
+  try {
+    const u = new URL(sourceUrl, 'https://local.invalid')
+    // R2 public: …/media/{sha24hex} (optional extension)
+    if (/^\/media\/[a-f0-9]{16,}(?:\.[a-z0-9]+)?$/i.test(u.pathname)) return true
+    // Relative /api/media?id=
+    if (u.pathname === '/api/media' && u.searchParams.has('id')) return true
+  } catch {
+    /* ignore */
+  }
+  return false
 }

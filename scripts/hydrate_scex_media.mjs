@@ -1,18 +1,20 @@
 /**
- * Cache SCEX livefeed tweet media to R2 (same pipeline as map feed /api/x-status).
- * Writes media[] + engagement onto scex-tracking seed, optional PUT R2 tracking JSON.
+ * Cache SCEX livefeed tweet media to R2 (same idea as map feed).
+ *
+ * Default: local pipeline (fxtwitter → download → R2 media/{hash}) using
+ * R2_* from .env — no browser/runtime X calls later.
  *
  *   node scripts/hydrate_scex_media.mjs
  *   node scripts/hydrate_scex_media.mjs --put
- *   node scripts/hydrate_scex_media.mjs --force   # re-fetch even if media[] already set
+ *   node scripts/hydrate_scex_media.mjs --force
+ *   node scripts/hydrate_scex_media.mjs --via-api   # use production /api/x-status
  *   node scripts/hydrate_scex_media.mjs --limit 10
- *
- * Uses GET /api/x-status?url=… which downloads images → media/{hash} on R2.
- * Public page then serves only stored URLs — no live X calls in the browser.
  */
 import fs from 'fs'
 import path from 'path'
+import crypto from 'crypto'
 import { fileURLToPath } from 'url'
+import { S3Client, HeadObjectCommand, PutObjectCommand } from '@aws-sdk/client-s3'
 
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..')
 
@@ -37,13 +39,20 @@ function loadEnv(file) {
 loadEnv('.env.local')
 loadEnv('.env.production.local')
 
-const token = (process.env.FEED_ADMIN_TOKEN || '').trim()
-const base = (process.env.RADAR_API_BASE || 'https://radar.daveynfts.com').replace(
+function env(k) {
+  const v = process.env[k]
+  if (!v) return ''
+  return v.trim().replace(/^["']|["']$/g, '')
+}
+
+const token = env('FEED_ADMIN_TOKEN')
+const base = (env('RADAR_API_BASE') || 'https://radar.daveynfts.com').replace(
   /\/$/,
   '',
 )
 const doPut = process.argv.includes('--put')
 const force = process.argv.includes('--force')
+const viaApi = process.argv.includes('--via-api')
 
 function argVal(name, fallback) {
   const i = process.argv.indexOf(name)
@@ -63,37 +72,204 @@ const seedPaths = [
   path.join(ROOT, 'data/internal/scex-tracking.json'),
 ]
 
-function loadDataset() {
-  return JSON.parse(fs.readFileSync(seedPaths[0], 'utf8'))
-}
+const MAX_BYTES = 2_000_000
 
 function isR2MediaUrl(u) {
   if (!u || typeof u !== 'string') return false
+  if (/pbs\.twimg\.com|twimg\.com|video\.twimg\.com/i.test(u)) return false
   return (
-    u.includes('/api/media') ||
-    u.includes('/media/') ||
-    u.includes('r2.dev/media') ||
-    /media\/[a-f0-9]{8,}/i.test(u)
+    /\/api\/media\?id=/i.test(u) ||
+    /r2\.dev\/media\//i.test(u) ||
+    /\/media\/[a-f0-9]{16,}/i.test(u)
   )
 }
 
-function pickMedia(post) {
-  const cached = Array.isArray(post.mediaCached)
-    ? post.mediaCached.filter(Boolean)
-    : []
-  const all = Array.isArray(post.media) ? post.media.filter(Boolean) : []
-  // Prefer R2-backed URLs from x-status cache
-  const r2 = [...cached, ...all].filter(isR2MediaUrl)
-  if (r2.length) return Array.from(new Set(r2)).slice(0, 4)
-  return Array.from(new Set(all)).slice(0, 4)
+function hashUrl(url) {
+  return crypto.createHash('sha256').update(url).digest('hex').slice(0, 24)
 }
 
 function sleep(ms) {
   return new Promise((r) => setTimeout(r, ms))
 }
 
-async function fetchStatus(url) {
-  const api = `${base}/api/x-status?url=${encodeURIComponent(url)}`
+function r2Client() {
+  const accountId = env('R2_ACCOUNT_ID')
+  const accessKeyId = env('R2_ACCESS_KEY_ID')
+  const secretAccessKey = env('R2_SECRET_ACCESS_KEY')
+  const bucket = env('R2_BUCKET_NAME')
+  if (!accountId || !accessKeyId || !secretAccessKey || !bucket) return null
+  return {
+    client: new S3Client({
+      region: 'auto',
+      endpoint: `https://${accountId}.r2.cloudflarestorage.com`,
+      credentials: { accessKeyId, secretAccessKey },
+    }),
+    bucket,
+    publicBase: (env('R2_PUBLIC_BASE_URL') || env('R2_PUBLIC_URL')).replace(
+      /\/$/,
+      '',
+    ),
+  }
+}
+
+function mediaPublicUrl(id, publicBase) {
+  if (publicBase) return `${publicBase}/media/${id}`
+  return `/api/media?id=${encodeURIComponent(id)}`
+}
+
+async function cacheImageToR2(r2, sourceUrl) {
+  if (!sourceUrl || !/^https?:\/\//i.test(sourceUrl)) {
+    return { cachedUrl: sourceUrl, cached: false, error: 'invalid' }
+  }
+  if (isR2MediaUrl(sourceUrl)) {
+    return { cachedUrl: sourceUrl, cached: true }
+  }
+  const id = hashUrl(sourceUrl)
+  const key = `media/${id}`
+  try {
+    await r2.client.send(
+      new HeadObjectCommand({ Bucket: r2.bucket, Key: key }),
+    )
+    return { cachedUrl: mediaPublicUrl(id, r2.publicBase), cached: true, id }
+  } catch {
+    /* not exists */
+  }
+  try {
+    const res = await fetch(sourceUrl, {
+      headers: {
+        'User-Agent':
+          'Mozilla/5.0 (compatible; VNKolMap/1.0; +https://github.com/daveynfts/VietNamKOLsRadar)',
+        Accept: 'image/*,*/*',
+      },
+    })
+    if (!res.ok) {
+      return { cachedUrl: sourceUrl, cached: false, error: `fetch_${res.status}` }
+    }
+    const buf = Buffer.from(await res.arrayBuffer())
+    if (!buf.byteLength || buf.byteLength > MAX_BYTES) {
+      return {
+        cachedUrl: sourceUrl,
+        cached: false,
+        error: buf.byteLength ? 'too_large' : 'empty',
+      }
+    }
+    let contentType =
+      res.headers.get('content-type')?.split(';')[0]?.trim() || 'image/jpeg'
+    if (!contentType.startsWith('image/')) {
+      return { cachedUrl: sourceUrl, cached: false, error: `not_image_${contentType}` }
+    }
+    await r2.client.send(
+      new PutObjectCommand({
+        Bucket: r2.bucket,
+        Key: key,
+        Body: buf,
+        ContentType: contentType,
+        CacheControl: 'public, max-age=31536000, immutable',
+      }),
+    )
+    return { cachedUrl: mediaPublicUrl(id, r2.publicBase), cached: true, id }
+  } catch (e) {
+    return {
+      cachedUrl: sourceUrl,
+      cached: false,
+      error: e instanceof Error ? e.message : 'fail',
+    }
+  }
+}
+
+function extractMediaUrls(tweet) {
+  const urls = []
+  const media = tweet.media
+  if (media?.photos) {
+    for (const p of media.photos) {
+      if (p?.url) urls.push(p.url)
+    }
+  }
+  if (media?.all) {
+    for (const m of media.all) {
+      if (m?.url && (m.type === 'photo' || !m.type)) urls.push(m.url)
+      if (m?.thumbnail_url) urls.push(m.thumbnail_url)
+    }
+  }
+  const entities = tweet.entities
+  if (entities?.media) {
+    for (const m of entities.media) {
+      if (m.media_url_https) urls.push(m.media_url_https)
+    }
+  }
+  return Array.from(new Set(urls.filter(Boolean)))
+}
+
+function parseStatusId(url) {
+  const m = String(url).match(/status(?:es)?\/(\d{5,25})/i)
+  return m ? m[1] : null
+}
+
+async function fetchTweetLocal(url) {
+  const id = parseStatusId(url)
+  if (!id) return { ok: false, error: 'bad_url' }
+  const handleMatch = String(url).match(
+    /(?:x|twitter)\.com\/([^/]+)\/status/i,
+  )
+  const handle = handleMatch?.[1]
+  const endpoints = [
+    `https://api.fxtwitter.com/status/${id}`,
+    handle ? `https://api.fxtwitter.com/${handle}/status/${id}` : null,
+    `https://api.vxtwitter.com/Twitter/status/${id}`,
+  ].filter(Boolean)
+
+  for (const ep of endpoints) {
+    try {
+      const r = await fetch(ep, {
+        headers: {
+          Accept: 'application/json',
+          'User-Agent':
+            'Mozilla/5.0 (compatible; VNKolMap/1.0; +https://github.com/daveynfts/VietNamKOLsRadar)',
+        },
+      })
+      if (!r.ok) continue
+      const data = await r.json()
+      const t = data.tweet || data
+      if (t && (t.text || t.full_text || t.id || t.tweetID)) {
+        return { ok: true, tweet: t, source: ep }
+      }
+    } catch {
+      /* try next */
+    }
+  }
+  return { ok: false, error: 'fetch_failed' }
+}
+
+async function hydrateLocal(r2, postUrl) {
+  const got = await fetchTweetLocal(postUrl)
+  if (!got.ok) return { ok: false, error: got.error }
+  const tweet = got.tweet
+  const original = extractMediaUrls(tweet)
+  const media = []
+  for (const m of original.slice(0, 4)) {
+    const c = await cacheImageToR2(r2, m)
+    media.push(c.cachedUrl)
+  }
+  const num = (v) => {
+    const n = Number(v)
+    return Number.isFinite(n) ? n : 0
+  }
+  return {
+    ok: true,
+    media,
+    likes: num(tweet.likes ?? tweet.favorite_count ?? tweet.favourites),
+    reposts: num(tweet.retweets ?? tweet.retweet_count ?? tweet.reposts),
+    replies: num(tweet.replies ?? tweet.reply_count),
+    views: num(tweet.views ?? tweet.view_count),
+    text: String(tweet.text || tweet.full_text || tweet.content || ''),
+    createdAt: tweet.created_at || tweet.createdAt || tweet.date,
+    originalCount: original.length,
+    r2Count: media.filter(isR2MediaUrl).length,
+  }
+}
+
+async function hydrateViaApi(postUrl) {
+  const api = `${base}/api/x-status?url=${encodeURIComponent(postUrl)}`
   const headers = { Accept: 'application/json' }
   if (token) headers.Authorization = `Bearer ${token}`
   const res = await fetch(api, { headers })
@@ -101,32 +277,56 @@ async function fetchStatus(url) {
   if (!res.ok || !body.post) {
     return {
       ok: false,
-      status: res.status,
       error: body.message || body.error || `HTTP ${res.status}`,
     }
   }
+  const p = body.post
+  const media = [
+    ...(Array.isArray(p.mediaCached) ? p.mediaCached : []),
+    ...(Array.isArray(p.media) ? p.media : []),
+  ].filter(Boolean)
+  // Prefer R2 URLs only
+  const r2Only = media.filter(isR2MediaUrl)
   return {
     ok: true,
-    post: body.post,
-    cache: body.cache,
+    media: r2Only.length ? Array.from(new Set(r2Only)).slice(0, 4) : [],
+    likes: p.likes,
+    reposts: p.reposts,
+    replies: p.replies,
+    views: p.views,
+    text: p.text,
+    createdAt: p.createdAt,
+    originalCount: (p.mediaOriginal || p.media || []).length,
+    r2Count: r2Only.length,
   }
 }
 
 async function main() {
-  const dataset = loadDataset()
+  const dataset = JSON.parse(fs.readFileSync(seedPaths[0], 'utf8'))
   const posts = Array.isArray(dataset.posts) ? dataset.posts : []
   let targets = posts.filter((p) => p && p.url && !p.hidden)
   if (!force) {
     targets = targets.filter(
-      (p) => !Array.isArray(p.media) || p.media.length === 0 || !p.media.some(isR2MediaUrl),
+      (p) =>
+        !Array.isArray(p.media) ||
+        p.media.length === 0 ||
+        !p.media.some(isR2MediaUrl),
     )
   }
   if (limit > 0) targets = targets.slice(0, limit)
 
+  const r2 = viaApi ? null : r2Client()
+  if (!viaApi && !r2) {
+    console.error('R2 credentials missing — set R2_* in .env.local or use --via-api')
+    process.exit(1)
+  }
+
   console.log(
     JSON.stringify(
       {
+        mode: viaApi ? 'via-api' : 'local-r2',
         base,
+        publicBase: r2?.publicBase || null,
         totalPosts: posts.length,
         toHydrate: targets.length,
         force,
@@ -152,52 +352,53 @@ async function main() {
         `[${idx + 1}/${targets.length}] ${p.handle} ${p.id} … `,
       )
       try {
-        const r = await fetchStatus(p.url)
+        const r = viaApi
+          ? await hydrateViaApi(p.url)
+          : await hydrateLocal(r2, p.url)
         if (!r.ok) {
           fail++
-          console.log('FAIL', r.status, r.error)
-          await sleep(400)
+          console.log('FAIL', r.error)
+          await sleep(300)
           continue
         }
-        const media = pickMedia(r.post)
         const cur = byId.get(p.id) || p
-        cur.media = media
-        if (r.post.likes != null) cur.likes = Number(r.post.likes) || 0
-        if (r.post.reposts != null) cur.reposts = Number(r.post.reposts) || 0
-        if (r.post.replies != null) cur.replies = Number(r.post.replies) || 0
-        if (r.post.views != null) cur.views = Number(r.post.views) || 0
-        // Prefer fuller live text when summary was short
+        cur.media = r.media || []
+        if (r.likes != null) cur.likes = Number(r.likes) || 0
+        if (r.reposts != null) cur.reposts = Number(r.reposts) || 0
+        if (r.replies != null) cur.replies = Number(r.replies) || 0
+        if (r.views != null) cur.views = Number(r.views) || 0
         if (
-          r.post.text &&
-          String(r.post.text).trim().length >
-            String(cur.text || '').trim().length + 8
+          r.text &&
+          String(r.text).trim().length > String(cur.text || '').trim().length + 8
         ) {
-          cur.text = String(r.post.text).trim()
+          cur.text = String(r.text).trim()
         }
-        if (r.post.createdAt) {
-          const t = new Date(r.post.createdAt).getTime()
+        if (r.createdAt) {
+          const t = new Date(r.createdAt).getTime()
           if (!Number.isNaN(t)) cur.postedAt = new Date(t).toISOString()
         }
-        const noteBits = [cur.notes || '', 'media→R2 via x-status']
+        cur.notes = [cur.notes || '', 'media→R2']
           .filter(Boolean)
           .join(' · ')
-        cur.notes = noteBits
+          .replace(/( · media→R2)+/g, ' · media→R2')
         byId.set(p.id, cur)
         ok++
-        if (media.length) withMedia++
+        if (cur.media.length) withMedia++
         console.log(
           'ok',
-          `media=${media.length}`,
-          media[0] ? (isR2MediaUrl(media[0]) ? 'R2' : 'remote') : 'none',
-          r.cache
-            ? `cached=${r.cache.imagesCached}/${r.cache.imagesTotal}`
-            : '',
+          `media=${cur.media.length}`,
+          cur.media[0]
+            ? isR2MediaUrl(cur.media[0])
+              ? 'R2'
+              : 'remote'
+            : 'none',
+          `orig=${r.originalCount} r2=${r.r2Count}`,
         )
       } catch (e) {
         fail++
         console.log('ERR', e instanceof Error ? e.message : e)
       }
-      await sleep(350)
+      await sleep(280)
     }
   }
 
@@ -205,13 +406,18 @@ async function main() {
 
   dataset.posts = posts.map((p) => byId.get(p.id) || p)
   dataset.updatedAt = new Date().toISOString()
+  const r2Posts = dataset.posts.filter((p) =>
+    (p.media || []).some(isR2MediaUrl),
+  ).length
   dataset.note = [
-    String(dataset.note || '').replace(/\s*·\s*Media hydrated[^.]*\.?/i, ''),
-    `Media hydrated to R2 (${withMedia}/${posts.length} posts with images, ${ok} fetched).`,
+    String(dataset.note || '')
+      .replace(/\s*Media hydrated[^.]*\.?/gi, '')
+      .replace(/\s*·\s*media→R2/gi, '')
+      .trim(),
+    `Media on R2: ${r2Posts}/${dataset.posts.length} posts (hydrate_scex_media).`,
   ]
     .filter(Boolean)
     .join(' ')
-    .trim()
 
   const json = JSON.stringify(dataset, null, 2) + '\n'
   for (const p of seedPaths) {
@@ -222,7 +428,13 @@ async function main() {
 
   console.log(
     JSON.stringify(
-      { ok, fail, withMedia, posts: posts.length, r2MediaPosts: posts.filter((p) => (p.media || []).some(isR2MediaUrl)).length },
+      {
+        ok,
+        fail,
+        withMedia,
+        r2MediaPosts: r2Posts,
+        sample: dataset.posts.find((p) => p.media?.length)?.media?.[0] || null,
+      },
       null,
       2,
     ),
@@ -248,11 +460,14 @@ async function main() {
     else {
       const getRes = await fetch(`${base}/api/scex-tracking?t=${Date.now()}`)
       const got = await getRes.json()
-      const mediaN = (got.posts || []).filter((p) => p.media?.length).length
+      const mediaN = (got.posts || []).filter((p) =>
+        (p.media || []).some(isR2MediaUrl),
+      ).length
       console.log('GET verify', {
         status: getRes.status,
         posts: got.posts?.length,
-        withMedia: mediaN,
+        r2MediaPosts: mediaN,
+        sample: got.posts?.find((p) => p.media?.length)?.media?.[0],
       })
     }
   }

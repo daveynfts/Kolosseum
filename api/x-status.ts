@@ -241,9 +241,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     views,
     media,
     mediaOriginal,
-    mediaCached: mediaCached.filter(
-      (u) => u.includes('/api/media') || u.includes('/media/'),
-    ),
+    mediaCached: mediaCached.filter((u) => {
+      // Count only R2/proxy URLs — not raw pbs.twimg.com/media/…
+      if (!u) return false
+      if (/pbs\.twimg\.com|twimg\.com/i.test(u)) return false
+      return (
+        u.includes('/api/media') ||
+        /\/media\/[a-f0-9]{16,}/i.test(u)
+      )
+    }),
     isReply,
     url,
     avatarLocal: `/avatars/${handle}.jpg`,

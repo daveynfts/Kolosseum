@@ -75,32 +75,33 @@ function mapTone(tone) {
 }
 
 const BATCH = [
-  { handle: 'vangemxin1', displayName: 'vangemxin1', followers: 2224, goc: 1, reply: 0, views: 1393, tone: 'Trung lập', links: 'https://x.com/vangemxin1/status/2072604652722630891' },
-  { handle: 'tranninh9', displayName: 'TranNinh9', followers: 438, goc: 1, reply: 0, views: 1263, tone: 'Bullish', links: 'https://x.com/TranNinh9/status/2074466305353408841' },
-  { handle: 'crypto181199', displayName: 'Crypto181199', followers: 8169, goc: 1, reply: 0, views: 1164, tone: 'Trung lập', links: 'https://x.com/Crypto181199/status/2074807677331587391' },
-  { handle: 'v_3394', displayName: 'v_3394', followers: 9950, goc: 1, reply: 0, views: 1154, tone: 'Trung lập', links: 'https://x.com/v_3394/status/2073352996805812314' },
-  { handle: 'ghostxwriterx', displayName: 'GhostxWriterx', followers: 5404, goc: 1, reply: 0, views: 1040, tone: 'Hỗn hợp', links: 'https://x.com/GhostxWriterx/status/2072146301345784074' },
-  { handle: 'maybach_eth', displayName: 'maybach_eth', followers: 19800, goc: 1, reply: 0, views: 1027, tone: 'Hỗn hợp', links: 'https://x.com/maybach_eth/status/2074683102811861021' },
-  { handle: 'charlotte951231', displayName: 'Charlotte951231', followers: 2625, goc: 1, reply: 0, views: 993, tone: 'Bullish', links: 'https://x.com/Charlotte951231/status/2075116644394029555' },
-  { handle: 'sushi1426', displayName: 'sushi1426', followers: 6373, goc: 1, reply: 0, views: 937, tone: 'Trung lập', links: 'https://x.com/sushi1426/status/2073426948823683121' },
-  { handle: 'tuongvi_vn', displayName: 'TuongVi_VN', followers: 5198, goc: 1, reply: 0, views: 895, tone: 'Bullish', links: 'https://x.com/TuongVi_VN/status/2071942971591934410' },
-  { handle: 'tesnguyeneth', displayName: 'tesnguyeneth', followers: 9402, goc: 1, reply: 0, views: 873, tone: 'Bullish', links: 'https://x.com/tesnguyeneth/status/2072655783700168889' },
-  { handle: 'mr_mmon', displayName: 'mr_mmon', followers: 2914, goc: 1, reply: 0, views: 855, tone: 'Hỗn hợp', links: 'https://x.com/mr_mmon/status/2073990513179709634' },
-  { handle: 'cuong2591442657', displayName: 'Cuong2591442657', followers: 3503, goc: 1, reply: 0, views: 788, tone: 'Bullish', links: 'https://x.com/Cuong2591442657/status/2072137706407350468' },
-  { handle: '0xpain__', displayName: '0xPain', followers: 7235, goc: 1, reply: 0, views: 690, tone: 'Bullish', links: 'https://x.com/0xPain__/status/2071959652829708353' },
-  { handle: 'thinhcrt', displayName: 'ThinhCrt', followers: 3082, goc: 1, reply: 0, views: 674, tone: 'Trung lập', links: 'https://x.com/ThinhCrt/status/2073798975929631134' },
-  { handle: 'trungdino90', displayName: 'Trungdino90', followers: 9558, goc: 1, reply: 0, views: 662, tone: 'Bullish', links: 'https://x.com/Trungdino90/status/2072227547824459961' },
-  { handle: 'dntthi', displayName: 'DntThi', followers: 7201, goc: 1, reply: 0, views: 582, tone: 'Bullish', links: 'https://x.com/DntThi/status/2075221511494119671' },
-  { handle: 'ptginking', displayName: 'PTGinKing', followers: 17800, goc: 1, reply: 0, views: 564, tone: 'Trung lập', links: 'https://x.com/PTGinKing/status/2078742025227436536' },
-  { handle: 'realfrontierx', displayName: 'RealFrontierX', followers: 3026, goc: 1, reply: 0, views: 552, tone: 'Trung lập', links: 'https://x.com/RealFrontierX/status/2072261079405568223' },
-  { handle: 'cavana_eth', displayName: 'Cavana_eth', followers: 5087, goc: 1, reply: 0, views: 509, tone: 'Trung lập', links: 'https://x.com/Cavana_eth/status/2072912336890057210' },
-  { handle: 'thangha19931991', displayName: 'thangha19931991', followers: 7731, goc: 1, reply: 0, views: 410, tone: 'Trung lập', links: 'https://x.com/thangha19931991/status/2073045804710047832' },
-  { handle: 'vietnamvba', displayName: 'VietnamVBA', followers: 1240, goc: 1, reply: 0, views: 332, tone: 'Trung lập', links: 'https://x.com/VietnamVBA/status/2075818065187774734' },
-  { handle: 'gynis_tao', displayName: 'Noat', followers: 7568, goc: 1, reply: 0, views: 327, tone: 'Bullish', links: 'https://x.com/Gynis_TAO/status/2072288704979464552' },
-  { handle: 'trong_ga29814', displayName: 'trong_ga29814', followers: 3126, goc: 1, reply: 0, views: 274, tone: 'Hỗn hợp', links: 'https://x.com/trong_ga29814/status/2072238540365451348' },
-  { handle: 'bem1102', displayName: 'bem1102', followers: 1093, goc: 1, reply: 0, views: 272, tone: 'Bullish', links: 'https://x.com/bem1102/status/2072326886840250611' },
-  { handle: 'cocoteamvnn', displayName: 'COCOteamvnn', followers: 1203, goc: 1, reply: 0, views: 243, tone: 'Bullish', links: 'https://x.com/COCOteamvnn/status/2072239163202846951' },
-  { handle: 'deekay_btc', displayName: 'deekay_btc', followers: 7176, goc: 1, reply: 0, views: 243, tone: 'Bullish', links: 'https://x.com/deekay_btc/status/2072229508107907434' },
+  { handle: 'tungthuocno', displayName: 'Tungthuocno', followers: 1769, goc: 1, reply: 0, views: 238, tone: 'Bullish', links: 'https://x.com/Tungthuocno/status/2072274516282409059' },
+  { handle: 'anhvu193', displayName: 'anhvu193', followers: 4344, goc: 1, reply: 0, views: 215, tone: 'Bullish', links: 'https://x.com/anhvu193/status/2072571086374580232' },
+  { handle: 'vietnambackcom', displayName: 'Vietnambackcom', followers: 92, goc: 1, reply: 0, views: 210, tone: 'Bullish', links: 'https://x.com/Vietnambackcom/status/2073442040281727306' },
+  { handle: 'anhdii72', displayName: 'Anhdii72', followers: 2979, goc: 1, reply: 0, views: 209, tone: 'Bullish', links: 'https://x.com/Anhdii72/status/2073646506524225537' },
+  { handle: 'jasonblockchain', displayName: 'jasonblockchain', followers: 5518, goc: 1, reply: 0, views: 209, tone: 'Trung lập', links: 'https://x.com/jasonblockchain/status/2078429303486959646' },
+  { handle: 'phwquynh01', displayName: 'PhwQuynh01', followers: 1730, goc: 1, reply: 0, views: 205, tone: 'Trung lập', links: 'https://x.com/PhwQuynh01/status/2072614052086624422' },
+  { handle: 'hungtinh1993', displayName: 'HungTinh1993', followers: 9057, goc: 1, reply: 0, views: 203, tone: 'Bullish', links: 'https://x.com/HungTinh1993/status/2072569716351385716' },
+  { handle: 'alancipher43', displayName: 'alancipher43', followers: 1646, goc: 1, reply: 0, views: 191, tone: 'Trung lập', links: 'https://x.com/alancipher43/status/2075938003663691891' },
+  { handle: 'tannnnnnn2022', displayName: 'Tannnnnnn2022', followers: 12400, goc: 1, reply: 0, views: 172, tone: 'Trung lập', links: 'https://x.com/Tannnnnnn2022/status/2072638917212303793' },
+  { handle: 'digittrad2407', displayName: 'DigitTrad2407', followers: 17100, goc: 1, reply: 0, views: 151, tone: 'Trung lập', links: 'https://x.com/DigitTrad2407/status/2072513387670688149' },
+  { handle: 'daveynftsai', displayName: 'DaveyNFTsAI', followers: 2500, goc: 1, reply: 0, views: 148, tone: 'Bullish', links: 'https://x.com/DaveyNFTsAI/status/2072250811556749710' },
+  { handle: 'nick_htlc', displayName: 'Nick_HTLC', followers: 4400, goc: 1, reply: 0, views: 135, tone: 'Trung lập', links: 'https://x.com/Nick_HTLC/status/2072504366532362529' },
+  { handle: 'luugian95257476', displayName: 'LuuGian95257476', followers: 3056, goc: 1, reply: 0, views: 123, tone: 'Bullish', links: 'https://x.com/LuuGian95257476/status/2072857465012859257' },
+  { handle: 'vninvestblogger', displayName: 'Brian Truong', followers: 4332, goc: 1, reply: 0, views: 116, tone: 'Bullish', links: 'https://x.com/VnInvestBlogger/status/2072664551439634649' },
+  { handle: 'valuespreading', displayName: 'valuespreading', followers: 1706, goc: 1, reply: 0, views: 115, tone: 'Bullish', links: 'https://x.com/valuespreading/status/2072297532676558851' },
+  { handle: 'datmindchart', displayName: 'datmindchart', followers: 1525, goc: 1, reply: 0, views: 113, tone: 'Bullish', links: 'https://x.com/datmindchart/status/2072647126849606002' },
+  { handle: 'wendyr9_', displayName: 'wendyr9_', followers: 6018, goc: 1, reply: 0, views: 111, tone: 'Bullish', links: 'https://x.com/wendyr9_/status/2072270237924479113' },
+  { handle: 'bigknivess', displayName: 'Bigknives', followers: 1302, goc: 1, reply: 0, views: 99, tone: 'Bullish', links: 'https://x.com/Bigknivess/status/2071952371316654177' },
+  { handle: 'sna2499', displayName: 'Sna2499', followers: 1580, goc: 1, reply: 0, views: 93, tone: 'Trung lập', links: 'https://x.com/Sna2499/status/2072964597389369376' },
+  { handle: 'nguyent17504220', displayName: 'NguyenT17504220', followers: 1928, goc: 1, reply: 0, views: 89, tone: 'Bullish', links: 'https://x.com/NguyenT17504220/status/2072686168131727373' },
+  { handle: 'bovabi38', displayName: 'BovaBi38', followers: 4406, goc: 1, reply: 0, views: 80, tone: 'Bullish', links: 'https://x.com/BovaBi38/status/2072557392630620279' },
+  { handle: 'hang1856', displayName: 'hang1856', followers: 965, goc: 1, reply: 0, views: 68, tone: 'Bearish', links: 'https://x.com/hang1856/status/2072693759859679316' },
+  { handle: 'chikoevm', displayName: 'chikoevm', followers: 5661, goc: 1, reply: 0, views: 63, tone: 'Hỗn hợp', links: 'https://x.com/chikoevm/status/2074034504407355453' },
+  { handle: 'heanutie', displayName: 'heanutie', followers: 2556, goc: 1, reply: 0, views: 52, tone: 'Bullish', links: 'https://x.com/heanutie/status/2071570170552914397' },
+  { handle: 'validator247', displayName: 'Validator247', followers: 1666, goc: 1, reply: 0, views: 52, tone: 'Bullish', links: 'https://x.com/Validator247/status/2072122684822233255' },
+  { handle: 'gaming1_nh', displayName: 'gaming1_nh', followers: 1655, goc: 1, reply: 0, views: 50, tone: 'Bullish', links: 'https://x.com/gaming1_nh/status/2077041426576322954' },
+  { handle: 'phanxuanthang5', displayName: 'PhanXuanThang5', followers: 1616, goc: 1, reply: 0, views: 48, tone: 'Trung lập', links: 'https://x.com/PhanXuanThang5/status/2074482573238304879' },
 ]
 
 const seedPaths = [
@@ -129,6 +130,14 @@ for (const row of BATCH) {
   const totalVol = row.goc + row.reply
 
   let actor = actors.find((a) => a.handle.toLowerCase() === h)
+  // also match panxuanthang5 typo from older export
+  if (!actor && h === 'phanxuanthang5') {
+    actor = actors.find((a) => a.handle.toLowerCase() === 'panxuanthang5')
+    if (actor) {
+      actor.handle = 'phanxuanthang5'
+      actor.id = 'a_phanxuanthang5'
+    }
+  }
   if (!actor) {
     actor = {
       id: `a_${h}`,
@@ -176,7 +185,9 @@ for (const row of BATCH) {
     byHandleAdded[h]++
   }
 
-  const handlePosts = posts.filter((p) => p.handle === h)
+  const handlePosts = posts.filter(
+    (p) => p.handle === h || p.handle === actor.handle,
+  )
   if (handlePosts.length) {
     handlePosts.sort(
       (a, b) => new Date(b.postedAt) - new Date(a.postedAt),
@@ -193,7 +204,7 @@ dataset.actors = actors
 dataset.updatedAt = new Date().toISOString()
 dataset.note = [
   String(dataset.note || '').replace(/\s*· Batch posts[^.]*\.?/gi, ''),
-  `Batch posts +${added} (vangemxin1, TranNinh9, maybach, PTGinKing, …).`,
+  `Batch posts +${added} (Tungthuocno, DaveyNFTsAI, VnInvestBlogger, hang1856, …).`,
 ]
   .filter(Boolean)
   .join(' ')

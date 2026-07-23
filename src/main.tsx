@@ -4,6 +4,7 @@ import './index.css'
 import App from './App.tsx'
 import { AdminDashboard } from './pages/AdminDashboard.tsx'
 import { ScexTrackingPage } from './pages/ScexTrackingPage.tsx'
+import { ScexEventBanner } from './components/ScexEventBanner.tsx'
 
 function getRoute(): 'map' | 'admin' | 'scex' {
   const h = window.location.hash.replace(/^#\/?/, '').toLowerCase()
@@ -25,9 +26,15 @@ function Root() {
     return () => window.removeEventListener('hashchange', onHash)
   }, [])
 
+  // Admin stays clean (no promo chrome)
   if (route === 'admin') return <AdminDashboard />
-  if (route === 'scex') return <ScexTrackingPage />
-  return <App />
+
+  return (
+    <div className="app-shell">
+      <ScexEventBanner />
+      {route === 'scex' ? <ScexTrackingPage /> : <App />}
+    </div>
+  )
 }
 
 createRoot(document.getElementById('root')!).render(

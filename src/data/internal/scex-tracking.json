@@ -2,8 +2,8 @@
   "version": 1,
   "kind": "scex-tracking",
   "asOf": "2026-07-23T12:00:00.000Z",
-  "updatedAt": "2026-07-23T04:26:30.040Z",
-  "note": "Expanded Blue Verified snapshot @scexofficial / SCEX / “sàn SCEX” (23/06–23/07/2026). 38 posts · 20 KOL actors (brand posts in feed only). ~70% bullish / mixed mild critique. Not 100% of all mentions — representative high-engagement set. Mild Bearish mapped to bearish + notes. Media hydrated to R2 (30/38 posts with images, 38 fetched).",
+  "updatedAt": "2026-07-23T04:31:19.458Z",
+  "note": "Expanded Blue Verified snapshot @scexofficial / SCEX / “sàn SCEX” (23/06–23/07/2026). 38 posts · 20 KOL actors (brand posts in feed only). ~70% bullish / mixed mild critique. Not 100% of all mentions — representative high-engagement set. Mild Bearish mapped to bearish + notes. Media on R2: 30/38 posts (hydrate_scex_media).",
   "config": {
     "brandName": "SCEX",
     "brandHandle": "scexofficial",
@@ -451,7 +451,7 @@
       "postedAt": "2026-07-23T02:55:26.000Z",
       "sentiment": "bullish",
       "hidden": false,
-      "notes": "STT 13 · Blue Verified mention · 23/06–23/07/2026 · media→R2 via x-status",
+      "notes": "STT 13 · Blue Verified mention · 23/06–23/07/2026 · media→R2 via x-status · media→R2",
       "media": [],
       "likes": 0,
       "reposts": 0,
@@ -466,14 +466,14 @@
       "postedAt": "2026-07-23T02:50:02.000Z",
       "sentiment": "bullish",
       "hidden": false,
-      "notes": "STT 1 · Official brand post (feed context) · media→R2 via x-status",
+      "notes": "STT 1 · Official brand post (feed context) · media→R2 via x-status · media→R2",
       "media": [
-        "https://pbs.twimg.com/media/HN4UgLVaUAAEusd.jpg?name=orig"
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/552549d074540c5eebef8745"
       ],
       "likes": 2,
       "reposts": 0,
       "replies": 1,
-      "views": 314
+      "views": 317
     },
     {
       "id": "p_2079764123051860016",
@@ -483,10 +483,10 @@
       "postedAt": "2026-07-22T03:03:01.000Z",
       "sentiment": "bullish",
       "hidden": false,
-      "notes": "STT 7 · Blue Verified mention · 23/06–23/07/2026 · media→R2 via x-status",
+      "notes": "STT 7 · Blue Verified mention · 23/06–23/07/2026 · media→R2 via x-status · media→R2",
       "media": [
-        "https://pbs.twimg.com/media/HNzORgMaYAABVCL.png?name=orig",
-        "https://pbs.twimg.com/media/HNzOSoFa0AArwKe.jpg?name=orig"
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/534301fa34bcecd808eb925a",
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/45cd4ef9ca836593bf6421dc"
       ],
       "likes": 45,
       "reposts": 1,
@@ -501,14 +501,14 @@
       "postedAt": "2026-07-21T13:14:06.000Z",
       "sentiment": "bullish",
       "hidden": false,
-      "notes": "STT 9 · Blue Verified mention · 23/06–23/07/2026 · media→R2 via x-status",
+      "notes": "STT 9 · Blue Verified mention · 23/06–23/07/2026 · media→R2 via x-status · media→R2",
       "media": [
-        "https://pbs.twimg.com/media/HNwQGA-boAEjH1z.jpg?name=orig"
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/7c014544a93fca60be190e1f"
       ],
       "likes": 15,
       "reposts": 1,
       "replies": 7,
-      "views": 1244
+      "views": 1246
     },
     {
       "id": "p_2079508007029981362",
@@ -518,9 +518,9 @@
       "postedAt": "2026-07-21T10:05:18.000Z",
       "sentiment": "bullish",
       "hidden": false,
-      "notes": "STT 2 · Official brand post (feed context) · media→R2 via x-status",
+      "notes": "STT 2 · Official brand post (feed context) · media→R2 via x-status · media→R2",
       "media": [
-        "https://pbs.twimg.com/media/HNvgU7TakAAM963.jpg?name=orig"
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/2b989653df537e14f3ca7b0b"
       ],
       "likes": 16,
       "reposts": 0,
@@ -535,9 +535,9 @@
       "postedAt": "2026-07-21T08:54:24.000Z",
       "sentiment": "neutral",
       "hidden": false,
-      "notes": "STT 35 · Blue Verified mention · 23/06–23/07/2026 · media→R2 via x-status",
+      "notes": "STT 35 · Blue Verified mention · 23/06–23/07/2026 · media→R2 via x-status · media→R2",
       "media": [
-        "https://pbs.twimg.com/media/HNvVR0sbEAAiZm8.jpg?name=orig"
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/092c82d3c90aeef601e09986"
       ],
       "likes": 11,
       "reposts": 0,
@@ -552,7 +552,7 @@
       "postedAt": "2026-07-21T07:10:59.000Z",
       "sentiment": "neutral",
       "hidden": false,
-      "notes": "STT 17 · Blue Verified mention · 23/06–23/07/2026 · media→R2 via x-status",
+      "notes": "STT 17 · Blue Verified mention · 23/06–23/07/2026 · media→R2 via x-status · media→R2",
       "media": [],
       "likes": 0,
       "reposts": 0,
@@ -567,9 +567,9 @@
       "postedAt": "2026-07-20T08:31:00.000Z",
       "sentiment": "bullish",
       "hidden": false,
-      "notes": "STT 22 · Blue Verified mention · 23/06–23/07/2026 · media→R2 via x-status",
+      "notes": "STT 22 · Blue Verified mention · 23/06–23/07/2026 · media→R2 via x-status · media→R2",
       "media": [
-        "https://pbs.twimg.com/media/HNplLCuboAA8jzV.png?name=orig"
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/809d5f30a264711290c71edb"
       ],
       "likes": 24,
       "reposts": 1,
@@ -584,9 +584,9 @@
       "postedAt": "2026-07-20T08:09:59.000Z",
       "sentiment": "bullish",
       "hidden": false,
-      "notes": "STT 10 · Blue Verified mention · 23/06–23/07/2026 · media→R2 via x-status",
+      "notes": "STT 10 · Blue Verified mention · 23/06–23/07/2026 · media→R2 via x-status · media→R2",
       "media": [
-        "https://pbs.twimg.com/media/HNqBDVAWAAAy9aN.jpg?name=orig"
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/16d943df907376e4707d5d93"
       ],
       "likes": 24,
       "reposts": 0,
@@ -601,9 +601,9 @@
       "postedAt": "2026-07-20T03:27:47.000Z",
       "sentiment": "bullish",
       "hidden": false,
-      "notes": "STT 3 · Official brand post (feed context) · media→R2 via x-status",
+      "notes": "STT 3 · Official brand post (feed context) · media→R2 via x-status · media→R2",
       "media": [
-        "https://pbs.twimg.com/media/HNpAy65bYAAGGnx.jpg?name=orig"
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/d5b48a30b7a302211f1080ef"
       ],
       "likes": 15,
       "reposts": 0,
@@ -618,14 +618,14 @@
       "postedAt": "2026-07-20T03:03:58.000Z",
       "sentiment": "neutral",
       "hidden": false,
-      "notes": "STT 23 · Blue Verified mention · 23/06–23/07/2026 · media→R2 via x-status",
+      "notes": "STT 23 · Blue Verified mention · 23/06–23/07/2026 · media→R2 via x-status · media→R2",
       "media": [
-        "https://pbs.twimg.com/media/HNo7LaObAAAZltt.jpg?name=orig"
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/a18c5a990549955b1af36937"
       ],
       "likes": 108,
       "reposts": 2,
       "replies": 106,
-      "views": 22060
+      "views": 22061
     },
     {
       "id": "p_2078775666984800456",
@@ -635,9 +635,9 @@
       "postedAt": "2026-07-19T09:35:15.000Z",
       "sentiment": "bullish",
       "hidden": false,
-      "notes": "STT 6 · Official brand post (feed context) · media→R2 via x-status",
+      "notes": "STT 6 · Official brand post (feed context) · media→R2 via x-status · media→R2",
       "media": [
-        "https://pbs.twimg.com/media/HNlLTJ7aIAAesCG.jpg?name=orig"
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/d853d23926c32120d52c2082"
       ],
       "likes": 18,
       "reposts": 2,
@@ -652,14 +652,14 @@
       "postedAt": "2026-07-19T02:12:17.000Z",
       "sentiment": "bullish",
       "hidden": false,
-      "notes": "STT 5 · Official brand post (feed context) · media→R2 via x-status",
+      "notes": "STT 5 · Official brand post (feed context) · media→R2 via x-status · media→R2",
       "media": [
-        "https://pbs.twimg.com/media/HNjl9RaaIAAamum.jpg?name=orig"
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/a41730c7a15a9e36b47a4e7d"
       ],
       "likes": 43,
       "reposts": 4,
       "replies": 8,
-      "views": 4827
+      "views": 4833
     },
     {
       "id": "p_2078468333889065087",
@@ -669,7 +669,7 @@
       "postedAt": "2026-07-18T13:14:01.000Z",
       "sentiment": "neutral",
       "hidden": false,
-      "notes": "STT 19 · Blue Verified mention · 23/06–23/07/2026 · media→R2 via x-status",
+      "notes": "STT 19 · Blue Verified mention · 23/06–23/07/2026 · media→R2 via x-status · media→R2",
       "media": [],
       "likes": 0,
       "reposts": 0,
@@ -684,7 +684,7 @@
       "postedAt": "2026-07-18T08:37:13.000Z",
       "sentiment": "bullish",
       "hidden": false,
-      "notes": "STT 31 · Blue Verified mention · 23/06–23/07/2026 · media→R2 via x-status",
+      "notes": "STT 31 · Blue Verified mention · 23/06–23/07/2026 · media→R2 via x-status · media→R2",
       "media": [],
       "likes": 1,
       "reposts": 0,
@@ -699,9 +699,9 @@
       "postedAt": "2026-07-18T04:44:33.000Z",
       "sentiment": "bullish",
       "hidden": false,
-      "notes": "STT 8 · Blue Verified mention · 23/06–23/07/2026 · media→R2 via x-status",
+      "notes": "STT 8 · Blue Verified mention · 23/06–23/07/2026 · media→R2 via x-status · media→R2",
       "media": [
-        "https://pbs.twimg.com/media/HNe_NlxaYAAhimT.jpg?name=orig"
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/b6860c2fb7a6cd33977955c2"
       ],
       "likes": 50,
       "reposts": 1,
@@ -716,12 +716,12 @@
       "postedAt": "2026-07-18T04:25:35.000Z",
       "sentiment": "bullish",
       "hidden": false,
-      "notes": "STT 4 · Official brand post (feed context) · media→R2 via x-status",
+      "notes": "STT 4 · Official brand post (feed context) · media→R2 via x-status · media→R2",
       "media": [
-        "https://pbs.twimg.com/media/HNe6oT-aYAA24zC.jpg?name=orig",
-        "https://pbs.twimg.com/media/HNe6oT6aYAA5_Cb.jpg?name=orig",
-        "https://pbs.twimg.com/media/HNe6oT6aUAAk7x4.jpg?name=orig",
-        "https://pbs.twimg.com/media/HNe6oT8aMAADiZk.jpg?name=orig"
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/9c713cffd5a21df0e610bafc",
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/09493861f694b20651d2b608",
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/87f4d23adbe1bcb6a5696273",
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/8c0377e34f7f4e8d56f635b1"
       ],
       "likes": 47,
       "reposts": 1,
@@ -736,9 +736,9 @@
       "postedAt": "2026-07-16T12:01:00.000Z",
       "sentiment": "bullish",
       "hidden": false,
-      "notes": "STT 11 · Blue Verified mention · 23/06–23/07/2026 · media→R2 via x-status",
+      "notes": "STT 11 · Blue Verified mention · 23/06–23/07/2026 · media→R2 via x-status · media→R2",
       "media": [
-        "https://pbs.twimg.com/media/HNWBCxhbYAIZzNi.jpg?name=orig"
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/89493dae4f0f19d2a318a212"
       ],
       "likes": 27,
       "reposts": 1,
@@ -753,11 +753,11 @@
       "postedAt": "2026-07-14T06:21:23.000Z",
       "sentiment": "bearish",
       "hidden": false,
-      "notes": "STT 28 · mild_bearish (mapped to bearish) · Blue Verified snapshot · media→R2 via x-status",
+      "notes": "STT 28 · mild_bearish (mapped to bearish) · Blue Verified snapshot · media→R2 via x-status · media→R2",
       "media": [
-        "https://pbs.twimg.com/media/HNKupC_a8AA2q7a.png?name=orig",
-        "https://pbs.twimg.com/media/HNKusAEbkAAiFrY.png?name=orig",
-        "https://pbs.twimg.com/media/HNKutTsbEAAOlfH.jpg?name=orig"
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/5766bb838803fad7aa31337f",
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/061b9c1cdfc4747126aae59d",
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/57ca49cf20ba7ba55e4096f3"
       ],
       "likes": 17,
       "reposts": 0,
@@ -772,9 +772,9 @@
       "postedAt": "2026-07-09T04:06:00.000Z",
       "sentiment": "bearish",
       "hidden": false,
-      "notes": "STT 29 · mild_bearish (mapped to bearish) · Blue Verified snapshot · media→R2 via x-status",
+      "notes": "STT 29 · mild_bearish (mapped to bearish) · Blue Verified snapshot · media→R2 via x-status · media→R2",
       "media": [
-        "https://pbs.twimg.com/media/HMv2rGCbwAAGycY.png?name=orig"
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/3c54add65a1fea3dd8274ebb"
       ],
       "likes": 26,
       "reposts": 1,
@@ -789,10 +789,10 @@
       "postedAt": "2026-07-07T12:54:37.000Z",
       "sentiment": "bearish",
       "hidden": false,
-      "notes": "STT 27 · mild_bearish (mapped to bearish) · Blue Verified snapshot · media→R2 via x-status",
+      "notes": "STT 27 · mild_bearish (mapped to bearish) · Blue Verified snapshot · media→R2 via x-status · media→R2",
       "media": [
-        "https://pbs.twimg.com/media/HMoF_6qbEAAwPMA.jpg?name=orig",
-        "https://pbs.twimg.com/media/HMoF_6maAAAMFG8.jpg?name=orig"
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/2e1056b0facb5bafbcf473b3",
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/e73e1c833fe89b71b7baf518"
       ],
       "likes": 10,
       "reposts": 0,
@@ -807,9 +807,9 @@
       "postedAt": "2026-07-07T05:34:00.000Z",
       "sentiment": "neutral",
       "hidden": false,
-      "notes": "STT 26 · Blue Verified mention · 23/06–23/07/2026 · media→R2 via x-status",
+      "notes": "STT 26 · Blue Verified mention · 23/06–23/07/2026 · media→R2 via x-status · media→R2",
       "media": [
-        "https://pbs.twimg.com/media/HMmULpWaIAA334W.jpg?name=orig"
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/793e03c242eaa76bdce1de9b"
       ],
       "likes": 17,
       "reposts": 0,
@@ -824,9 +824,9 @@
       "postedAt": "2026-07-07T02:35:01.000Z",
       "sentiment": "bullish",
       "hidden": false,
-      "notes": "STT 18 · Blue Verified mention · 23/06–23/07/2026 · media→R2 via x-status",
+      "notes": "STT 18 · Blue Verified mention · 23/06–23/07/2026 · media→R2 via x-status · media→R2",
       "media": [
-        "https://pbs.twimg.com/media/HMl3Hs5aYAARAi3.jpg?name=orig"
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/b908fb7affcc66a51798ca00"
       ],
       "likes": 1,
       "reposts": 0,
@@ -841,7 +841,7 @@
       "postedAt": "2026-07-02T17:18:50.000Z",
       "sentiment": "bullish",
       "hidden": false,
-      "notes": "STT 16 · Blue Verified mention · 23/06–23/07/2026 · media→R2 via x-status",
+      "notes": "STT 16 · Blue Verified mention · 23/06–23/07/2026 · media→R2 via x-status · media→R2",
       "media": [],
       "likes": 0,
       "reposts": 0,
@@ -856,7 +856,7 @@
       "postedAt": "2026-07-02T15:50:42.000Z",
       "sentiment": "neutral",
       "hidden": false,
-      "notes": "STT 15 · Blue Verified mention · 23/06–23/07/2026 · media→R2 via x-status",
+      "notes": "STT 15 · Blue Verified mention · 23/06–23/07/2026 · media→R2 via x-status · media→R2",
       "media": [],
       "likes": 0,
       "reposts": 0,
@@ -871,9 +871,9 @@
       "postedAt": "2026-07-02T05:32:35.000Z",
       "sentiment": "bullish",
       "hidden": false,
-      "notes": "STT 14 · Blue Verified mention · 23/06–23/07/2026 · media→R2 via x-status",
+      "notes": "STT 14 · Blue Verified mention · 23/06–23/07/2026 · media→R2 via x-status · media→R2",
       "media": [
-        "https://pbs.twimg.com/media/HMMw4SKa0AENWeV.jpg?name=orig"
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/e43719fa7e38fe852c15d100"
       ],
       "likes": 99,
       "reposts": 2,
@@ -888,7 +888,7 @@
       "postedAt": "2026-07-01T23:11:02.000Z",
       "sentiment": "bullish",
       "hidden": false,
-      "notes": "STT 20 · Blue Verified mention · 23/06–23/07/2026 · media→R2 via x-status",
+      "notes": "STT 20 · Blue Verified mention · 23/06–23/07/2026 · media→R2 via x-status · media→R2",
       "media": [],
       "likes": 0,
       "reposts": 0,
@@ -903,7 +903,7 @@
       "postedAt": "2026-07-01T21:11:57.000Z",
       "sentiment": "bullish",
       "hidden": false,
-      "notes": "STT 21 · Blue Verified mention · 23/06–23/07/2026 · media→R2 via x-status",
+      "notes": "STT 21 · Blue Verified mention · 23/06–23/07/2026 · media→R2 via x-status · media→R2",
       "media": [],
       "likes": 0,
       "reposts": 0,
@@ -918,9 +918,9 @@
       "postedAt": "2026-07-01T05:31:00.000Z",
       "sentiment": "bullish",
       "hidden": false,
-      "notes": "STT 12 · Blue Verified mention · 23/06–23/07/2026 · media→R2 via x-status",
+      "notes": "STT 12 · Blue Verified mention · 23/06–23/07/2026 · media→R2 via x-status · media→R2",
       "media": [
-        "https://pbs.twimg.com/media/HMHbPojasAAEjaF.jpg?name=orig"
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/c08c6ca8204461f77ee3933d"
       ],
       "likes": 31,
       "reposts": 0,
@@ -935,9 +935,9 @@
       "postedAt": "2026-06-30T23:50:00.000Z",
       "sentiment": "bullish",
       "hidden": false,
-      "notes": "STT 30 · Blue Verified mention · 23/06–23/07/2026 · media→R2 via x-status",
+      "notes": "STT 30 · Blue Verified mention · 23/06–23/07/2026 · media→R2 via x-status · media→R2",
       "media": [
-        "https://pbs.twimg.com/media/HME-jIYbcAAectd.jpg?name=orig"
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/3b84a012516b532c886dd4a7"
       ],
       "likes": 41,
       "reposts": 2,
@@ -952,9 +952,9 @@
       "postedAt": "2026-06-30T22:58:56.000Z",
       "sentiment": "bearish",
       "hidden": false,
-      "notes": "STT 34 · mild_bearish (mapped to bearish) · Blue Verified snapshot · media→R2 via x-status",
+      "notes": "STT 34 · mild_bearish (mapped to bearish) · Blue Verified snapshot · media→R2 via x-status · media→R2",
       "media": [
-        "https://pbs.twimg.com/media/HMGNL3_bIAAPWYf.jpg?name=orig"
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/eeb5436de6eddfaf17c69871"
       ],
       "likes": 8,
       "reposts": 0,
@@ -969,9 +969,9 @@
       "postedAt": "2026-06-30T16:02:56.000Z",
       "sentiment": "bearish",
       "hidden": false,
-      "notes": "STT 33 · Blue Verified mention · 23/06–23/07/2026 · media→R2 via x-status",
+      "notes": "STT 33 · Blue Verified mention · 23/06–23/07/2026 · media→R2 via x-status · media→R2",
       "media": [
-        "https://pbs.twimg.com/media/HMEt-eLaoAAY0bQ.jpg?name=orig"
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/663fd64f9b3debc57565260a"
       ],
       "likes": 16,
       "reposts": 0,
@@ -986,10 +986,10 @@
       "postedAt": "2026-06-30T15:04:04.000Z",
       "sentiment": "bullish",
       "hidden": false,
-      "notes": "STT 25 · Blue Verified mention · 23/06–23/07/2026 · media→R2 via x-status",
+      "notes": "STT 25 · Blue Verified mention · 23/06–23/07/2026 · media→R2 via x-status · media→R2",
       "media": [
-        "https://pbs.twimg.com/media/HMEgf0_XkAA6TO0.jpg?name=orig",
-        "https://pbs.twimg.com/media/HMEgf1GWMAA_ItK.jpg?name=orig"
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/3f5705e96d3055f66f95383d",
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/6cc0af3902338f36e4a5980c"
       ],
       "likes": 13,
       "reposts": 1,
@@ -1004,10 +1004,10 @@
       "postedAt": "2026-06-30T14:21:34.000Z",
       "sentiment": "bullish",
       "hidden": false,
-      "notes": "STT 32 · Blue Verified mention · 23/06–23/07/2026 · media→R2 via x-status",
+      "notes": "STT 32 · Blue Verified mention · 23/06–23/07/2026 · media→R2 via x-status · media→R2",
       "media": [
-        "https://pbs.twimg.com/media/HMEWr0IWIAAAmmu.jpg?name=orig",
-        "https://pbs.twimg.com/media/HMEWxMSWQAAF-TC.jpg?name=orig"
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/e395602b4fc8ac2722992131",
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/a5289e6994fee22091a9d216"
       ],
       "likes": 71,
       "reposts": 2,
@@ -1022,9 +1022,9 @@
       "postedAt": "2026-06-30T14:10:51.000Z",
       "sentiment": "bullish",
       "hidden": false,
-      "notes": "STT 36 · Blue Verified mention · 23/06–23/07/2026 · media→R2 via x-status",
+      "notes": "STT 36 · Blue Verified mention · 23/06–23/07/2026 · media→R2 via x-status · media→R2",
       "media": [
-        "https://pbs.twimg.com/media/HMEUH2rXYAAgWzD.jpg?name=orig"
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/c475a569ffa2bc56ee2f3cbf"
       ],
       "likes": 6,
       "reposts": 0,
@@ -1039,9 +1039,9 @@
       "postedAt": "2026-06-30T13:41:54.000Z",
       "sentiment": "bullish",
       "hidden": false,
-      "notes": "STT 37 · Blue Verified mention · 23/06–23/07/2026 · media→R2 via x-status",
+      "notes": "STT 37 · Blue Verified mention · 23/06–23/07/2026 · media→R2 via x-status · media→R2",
       "media": [
-        "https://pbs.twimg.com/media/HMEMuGbX0AAybjO.jpg?name=orig"
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/87079bb97c394bddb218f57b"
       ],
       "likes": 5,
       "reposts": 0,
@@ -1056,9 +1056,9 @@
       "postedAt": "2026-06-30T13:40:00.000Z",
       "sentiment": "bullish",
       "hidden": false,
-      "notes": "STT 24 · Blue Verified mention · 23/06–23/07/2026 · media→R2 via x-status",
+      "notes": "STT 24 · Blue Verified mention · 23/06–23/07/2026 · media→R2 via x-status · media→R2",
       "media": [
-        "https://pbs.twimg.com/media/HMEIj0LWMAAGako.jpg?name=orig"
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/5e6448b9c475664aa48af5fc"
       ],
       "likes": 39,
       "reposts": 9,
@@ -1073,9 +1073,9 @@
       "postedAt": "2026-06-30T13:29:13.000Z",
       "sentiment": "bullish",
       "hidden": false,
-      "notes": "STT 38 · Blue Verified mention · 23/06–23/07/2026 · media→R2 via x-status",
+      "notes": "STT 38 · Blue Verified mention · 23/06–23/07/2026 · media→R2 via x-status · media→R2",
       "media": [
-        "https://pbs.twimg.com/media/HMEKyyeXwAAUIHx.jpg?name=orig"
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/18a200a5cbf94e90ffa54b73"
       ],
       "likes": 32,
       "reposts": 3,

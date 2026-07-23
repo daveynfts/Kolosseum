@@ -1,6 +1,6 @@
 /**
  * Merge a batch of original-post status URLs into SCEX tracking seed + optional PUT.
- * Does NOT hydrate media (run hydrate_scex_media.mjs after).
+ * Then run: node scripts/hydrate_scex_media.mjs --via-api --put
  *
  *   node scripts/merge_scex_post_batch.mjs
  *   node scripts/merge_scex_post_batch.mjs --put
@@ -77,149 +77,163 @@ function mapTone(tone) {
   return 'neutral'
 }
 
-/** Batch from user export */
+/** Latest export batch */
 const BATCH = [
   {
-    handle: 'kt_btc',
-    displayName: 'KT',
-    followers: 44100,
-    goc: 4,
-    reply: 11,
-    views: 53387,
-    tone: 'Hỗn hợp',
-    links: `
-https://x.com/KT_BTC/status/2072605824141467753
-https://x.com/KT_BTC/status/2073969461917548783
-https://x.com/KT_BTC/status/2077708403267502437
-https://x.com/KT_BTC/status/2079039587067064705
-`,
-  },
-  {
-    handle: 'shuigvn',
-    displayName: 'shuigvn',
-    followers: 18700,
-    goc: 4,
-    reply: 2,
-    views: 144206,
-    tone: 'Hỗn hợp',
-    links: `
-https://x.com/shuigvn/status/2072235957802488276
-https://x.com/shuigvn/status/2072601440502350178
-https://x.com/shuigvn/status/2073565019380289643
-https://x.com/shuigvn/status/2075110835660468636
-`,
-  },
-  {
-    handle: 'sucvat65111',
-    displayName: 'SucVat65111',
-    followers: 7028,
-    goc: 4,
-    reply: 0,
-    views: 36154,
-    tone: 'Hỗn hợp',
-    links: `
-https://x.com/SucVat65111/status/2072126480528908632
-https://x.com/SucVat65111/status/2072220315082703032
-https://x.com/SucVat65111/status/2072310411278655514
-https://x.com/SucVat65111/status/2072521259020374178
-`,
-  },
-  {
-    handle: 'bachkhoabnb',
-    displayName: 'bachkhoabnb',
-    followers: 47200,
-    goc: 3,
-    reply: 37,
-    views: 16994,
-    tone: 'Hỗn hợp',
-    links: `
-https://x.com/bachkhoabnb/status/2072159359023677844
-https://x.com/bachkhoabnb/status/2078303538137149895
-https://x.com/bachkhoabnb/status/2079059146385805449
-`,
-  },
-  {
-    handle: 'kiengold',
-    displayName: 'KienGold',
-    followers: 9005,
+    handle: 'khiembnb',
+    displayName: 'KhiemBNB',
+    followers: 5197,
     goc: 3,
     reply: 0,
-    views: 13759,
+    views: 1160,
     tone: 'Hỗn hợp',
     links: `
-https://x.com/KienGold/status/2072187013504365005
-https://x.com/KienGold/status/2072500850464043059
-https://x.com/KienGold/status/2074425414546772200
+https://x.com/KhiemBNB/status/2072520002138484947
+https://x.com/KhiemBNB/status/2073396777374675203
+https://x.com/KhiemBNB/status/2073396780906201097
 `,
   },
   {
-    handle: 'kieuphong78',
-    displayName: 'KieuPhong78',
-    followers: 8249,
-    goc: 3,
-    reply: 0,
-    views: 5655,
-    tone: 'Hỗn hợp',
+    handle: 'dinhthang97',
+    displayName: 'dinhthang97',
+    followers: 37700,
+    goc: 2,
+    reply: 18,
+    views: 4180,
+    tone: 'Trung lập',
     links: `
-https://x.com/KieuPhong78/status/2072878754830188596
-https://x.com/KieuPhong78/status/2073433775615397932
-https://x.com/KieuPhong78/status/2074701114667364844
+https://x.com/dinhthang97/status/2079116595818013109
+https://x.com/dinhthang97/status/2079555518297686171
 `,
   },
   {
-    handle: 'database52hz',
-    displayName: 'Database52Hz',
-    followers: 17500,
-    goc: 3,
-    reply: 0,
-    views: 5600,
+    handle: 'blockmedia_vn',
+    displayName: 'Blockmedia_vn',
+    followers: 30300,
+    goc: 2,
+    reply: 4,
+    views: 3945,
     tone: 'Hỗn hợp',
     links: `
-https://x.com/Database52Hz/status/2072315469441503611
-https://x.com/Database52Hz/status/2072523300094513235
-https://x.com/Database52Hz/status/2073302887179112885
+https://x.com/Blockmedia_vn/status/2072141094297755948
+https://x.com/Blockmedia_vn/status/2072583803785117944
 `,
   },
   {
-    handle: 'mrtrinhcrypto',
-    displayName: 'mrtrinhcrypto',
-    followers: 2455,
-    goc: 3,
-    reply: 0,
-    views: 3640,
+    handle: 'kaibgr',
+    displayName: 'KaiBGR',
+    followers: 18400,
+    goc: 2,
+    reply: 4,
+    views: 2806,
     tone: 'Bullish',
     links: `
-https://x.com/mrtrinhcrypto/status/2072188076722405429
-https://x.com/mrtrinhcrypto/status/2072333524061790301
-https://x.com/mrtrinhcrypto/status/2072708527760498792
+https://x.com/KaiBGR/status/2072296664237326359
+https://x.com/KaiBGR/status/2073638110504894879
 `,
   },
   {
-    handle: 'dungtudau',
-    displayName: 'Dungtudau',
-    followers: 7727,
-    goc: 3,
-    reply: 0,
-    views: 2771,
-    tone: 'Bullish',
-    links: `
-https://x.com/Dungtudau/status/2072231333167034648
-https://x.com/Dungtudau/status/2072564061028659289
-https://x.com/Dungtudau/status/2072852991212945829
-`,
-  },
-  {
-    handle: 'verathai11',
-    displayName: 'verathai11',
-    followers: 12500,
-    goc: 3,
-    reply: 0,
-    views: 1948,
+    handle: 'lensmoso',
+    displayName: 'Lens',
+    followers: 32000,
+    goc: 2,
+    reply: 4,
+    views: 1606,
     tone: 'Hỗn hợp',
     links: `
-https://x.com/verathai11/status/2072178054437515493
-https://x.com/verathai11/status/2072656404830367798
-https://x.com/verathai11/status/2073995952269205941
+https://x.com/LensMoso/status/2072270496658534625
+https://x.com/LensMoso/status/2079121884960940037
+`,
+  },
+  {
+    handle: '0xcut555',
+    displayName: '0xCut555',
+    followers: 25600,
+    goc: 2,
+    reply: 3,
+    views: 3428,
+    tone: 'Hỗn hợp',
+    links: `
+https://x.com/0xCut555/status/2071943222457499719
+https://x.com/0xCut555/status/2078366429703971294
+`,
+  },
+  {
+    handle: 'qwarm1990',
+    displayName: 'QWarm',
+    followers: 28300,
+    goc: 2,
+    reply: 3,
+    views: 2031,
+    tone: 'Bullish',
+    links: `
+https://x.com/QWarm1990/status/2072191217132285965
+https://x.com/QWarm1990/status/2077725183150788627
+`,
+  },
+  {
+    handle: 'aiadopthq',
+    displayName: 'AIAdoptHQ',
+    followers: 26800,
+    goc: 2,
+    reply: 0,
+    views: 20979,
+    tone: 'Bullish',
+    links: `
+https://x.com/AIAdoptHQ/status/2071882101092429864
+https://x.com/AIAdoptHQ/status/2072145610061591004
+`,
+  },
+  {
+    handle: 'kemphuyen',
+    displayName: 'Kemphuyen',
+    followers: 22300,
+    goc: 2,
+    reply: 0,
+    views: 20873,
+    tone: 'Hỗn hợp',
+    links: `
+https://x.com/Kemphuyen/status/2072607238527816134
+https://x.com/Kemphuyen/status/2074827392343007362
+`,
+  },
+  {
+    handle: 'quilix',
+    displayName: 'quilix',
+    followers: 21400,
+    goc: 2,
+    reply: 0,
+    views: 19028,
+    tone: 'Hỗn hợp',
+    links: `
+https://x.com/quilix/status/2072233496119329062
+https://x.com/quilix/status/2072965427052118095
+`,
+  },
+  {
+    handle: 'quanm2831',
+    displayName: 'quanm2831',
+    followers: 12600,
+    goc: 2,
+    reply: 0,
+    views: 17596,
+    tone: 'Bullish',
+    links: `
+https://x.com/quanm2831/status/2071949178893402619
+https://x.com/quanm2831/status/2071949187604959412
+`,
+  },
+  {
+    handle: 'sera_nie',
+    displayName: 'sera_nie',
+    followers: 3610,
+    goc: 2,
+    reply: 0,
+    views: 15449,
+    tone: 'Hỗn hợp',
+    links: `
+https://x.com/sera_nie/status/2072115468706443307
+https://x.com/sera_nie/status/2072538170386981057
 `,
   },
 ]
@@ -230,13 +244,13 @@ const seedPaths = [
 ]
 
 const dataset = JSON.parse(fs.readFileSync(seedPaths[0], 'utf8'))
-const posts = Array.isArray(dataset.posts) ? dataset.posts : []
-const actors = Array.isArray(dataset.actors) ? dataset.actors : []
+const posts = Array.isArray(dataset.posts) ? [...dataset.posts] : []
+const actors = Array.isArray(dataset.actors) ? [...dataset.actors] : []
 
 const existingIds = new Set()
 for (const p of posts) {
-  const m = String(p.url || p.id || '').match(/(\d{5,25})/)
-  if (m) existingIds.add(m[1])
+  const m = String(p.url || p.id || '').match(/(\d{5,25})/g)
+  if (m) m.forEach((id) => existingIds.add(id))
   const id = String(p.id || '').replace(/^p_/, '')
   if (/^\d{5,25}$/.test(id)) existingIds.add(id)
 }
@@ -249,7 +263,6 @@ for (const row of BATCH) {
   const sent = mapTone(row.tone)
   const totalVol = row.goc + row.reply
 
-  // Upsert actor metrics
   let actor = actors.find((a) => a.handle.toLowerCase() === h)
   if (!actor) {
     actor = {
@@ -270,10 +283,13 @@ for (const row of BATCH) {
     actor.reach7d = row.views
     actor.postsVolume = totalVol
     actor.sentiment = sent
+    actor.displayName = row.displayName || actor.displayName
     actor.notes = `Gốc ${row.goc} · Reply ${row.reply} · Views ${row.views} · Tone: ${row.tone}`
-    actor.tags = [`goc:${row.goc}`, `reply:${row.reply}`, row.tone === 'Hỗn hợp' ? 'mixed' : sent].join(
-      ',',
-    )
+    actor.tags = [
+      `goc:${row.goc}`,
+      `reply:${row.reply}`,
+      row.tone === 'Hỗn hợp' ? 'mixed' : sent,
+    ].join(',')
   }
 
   const links = parseStatusUrls(row.links)
@@ -295,7 +311,6 @@ for (const row of BATCH) {
     byHandleAdded[h]++
   }
 
-  // lastPostAt from newest post for handle
   const handlePosts = posts.filter((p) => p.handle === h)
   if (handlePosts.length) {
     handlePosts.sort(
@@ -312,8 +327,8 @@ dataset.posts = posts
 dataset.actors = actors
 dataset.updatedAt = new Date().toISOString()
 dataset.note = [
-  String(dataset.note || '').replace(/\s*· Batch posts[^.]*\.?/i, ''),
-  `Batch posts +${added} (KT, shuigvn, SucVat, bachkhoabnb, KienGold, …).`,
+  String(dataset.note || '').replace(/\s*· Batch posts[^.]*\.?/gi, ''),
+  `Batch posts +${added} (KhiemBNB, dinhthang97, Blockmedia, KaiBGR, Lens, …).`,
 ]
   .filter(Boolean)
   .join(' ')

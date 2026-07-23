@@ -1,0 +1,144 @@
+{
+  "version": 1,
+  "kind": "scex-tracking",
+  "asOf": "2026-07-17T00:00:00.000Z",
+  "updatedAt": "2026-07-17T00:00:00.000Z",
+  "note": "Seed SCEX tracking — edit in Admin → SCEX, then Save (R2).",
+  "config": {
+    "brandName": "SCEX",
+    "brandHandle": "scex",
+    "keywords": ["SCEX", "@scex", "scex.com", "scex.io"],
+    "timeWindowDays": 7,
+    "kolMinPosts": 1,
+    "userMinPosts": 3,
+    "userMinFollowers": 5000,
+    "userMinQuality": 40,
+    "volumeAxis": {
+      "min": 0,
+      "max": 20,
+      "label": "Posts mentioning SCEX (window)"
+    },
+    "qualityAxis": {
+      "min": 0,
+      "max": 100,
+      "label": "Quality engagement score"
+    },
+    "sizeMetric": "followers",
+    "volumeSplit": 5,
+    "qualitySplit": 50,
+    "quadrantLabels": {
+      "stars": {
+        "title": "STARS",
+        "subtitle": "High quality · high volume — priority boost"
+      },
+      "nurture": {
+        "title": "NURTURE",
+        "subtitle": "High quality · low volume — invite more posts"
+      },
+      "noise": {
+        "title": "NOISE",
+        "subtitle": "Low quality · high volume — rate-limit"
+      },
+      "ignore": {
+        "title": "IGNORE",
+        "subtitle": "Low quality · low volume — filter out"
+      }
+    },
+    "sentimentLabels": {
+      "bullish": { "label": "Bullish", "color": "#22c55e" },
+      "bearish": { "label": "Bearish", "color": "#ef4444" },
+      "shill": { "label": "Shill", "color": "#f59e0b" },
+      "scam": { "label": "Scam Alert", "color": "#dc2626" },
+      "neutral": { "label": "Neutral", "color": "#94a3b8" }
+    },
+    "matrixTitle": "SCEX mention matrix",
+    "feedTitle": "X livefeed · SCEX",
+    "enabled": true
+  },
+  "actors": [
+    {
+      "id": "a_demo_kol1",
+      "handle": "thuan_capital",
+      "displayName": "Thuan Capital",
+      "kind": "kol",
+      "tier": "Master",
+      "followers": 42000,
+      "reach7d": 180000,
+      "postsVolume": 8,
+      "qualityScore": 72,
+      "sentiment": "bullish",
+      "sentimentConfidence": 0.82,
+      "isWhitelisted": true,
+      "notes": "Demo KOL — replace with real tracking",
+      "lastPostAt": "2026-07-16T12:00:00.000Z"
+    },
+    {
+      "id": "a_demo_kol2",
+      "handle": "immrape",
+      "displayName": "immrape",
+      "kind": "kol",
+      "tier": "Diamond",
+      "followers": 95000,
+      "reach7d": 420000,
+      "postsVolume": 2,
+      "qualityScore": 81,
+      "sentiment": "bullish",
+      "sentimentConfidence": 0.75,
+      "isWhitelisted": true,
+      "lastPostAt": "2026-07-15T09:00:00.000Z"
+    },
+    {
+      "id": "a_demo_user1",
+      "handle": "scex_fan_demo",
+      "displayName": "SCEX Fan (demo)",
+      "kind": "user",
+      "followers": 12000,
+      "reach7d": 45000,
+      "postsVolume": 12,
+      "qualityScore": 28,
+      "sentiment": "shill",
+      "sentimentConfidence": 0.7,
+      "notes": "High volume low quality — NOISE quadrant demo",
+      "lastPostAt": "2026-07-16T18:00:00.000Z"
+    },
+    {
+      "id": "a_demo_user2",
+      "handle": "quality_trader_demo",
+      "displayName": "Quality Trader (demo)",
+      "kind": "user",
+      "followers": 8000,
+      "reach7d": 90000,
+      "postsVolume": 3,
+      "qualityScore": 68,
+      "sentiment": "bullish",
+      "sentimentConfidence": 0.6,
+      "lastPostAt": "2026-07-14T11:00:00.000Z"
+    }
+  ],
+  "posts": [
+    {
+      "id": "p_demo1",
+      "handle": "thuan_capital",
+      "url": "https://x.com/example/status/1",
+      "text": "Just deposited on SCEX — smooth UX. $SCEX",
+      "postedAt": "2026-07-16T12:00:00.000Z",
+      "sentiment": "bullish",
+      "likes": 120,
+      "replies": 18,
+      "reposts": 24,
+      "hidden": false
+    },
+    {
+      "id": "p_demo2",
+      "handle": "scex_fan_demo",
+      "url": "https://x.com/example/status/2",
+      "text": "USE MY REF CODE SCEX999 BEST EXCHANGE!!!",
+      "postedAt": "2026-07-16T18:00:00.000Z",
+      "sentiment": "shill",
+      "likes": 4,
+      "replies": 0,
+      "reposts": 1,
+      "hidden": false
+    }
+  ]
+}

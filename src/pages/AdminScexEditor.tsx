@@ -1,0 +1,1251 @@
+/**
+ * Admin: SCEX tracking config, actors, livefeed posts, matrix preview.
+ * All fields editable → Save R2 for partner-facing view.
+ */
+import { useEffect, useMemo, useState } from 'react'
+import {
+  actorMatrixPos,
+  actorPassesThresholds,
+  actorSizeValue,
+  createEmptyActor,
+  createEmptyPost,
+  recomputeScexActors,
+  type ScexActor,
+  type ScexConfig,
+  type ScexDataset,
+  type ScexPost,
+  type ScexQuadrant,
+  type ScexSentiment,
+} from '../data/scexTracking'
+import {
+  clearScexCache,
+  exportScexJson,
+  importScexJson,
+  loadScexWithSource,
+  saveScexToServer,
+  seedScexDataset,
+} from '../lib/scexStore'
+import { getAdminToken, setAdminToken } from '../lib/feedStore'
+import { XProfileAvatar } from '../components/XProfileAvatar'
+
+interface Props {
+  onToast: (msg: string) => void
+}
+
+type SubTab = 'settings' | 'actors' | 'posts' | 'preview'
+
+const SENTIMENTS: ScexSentiment[] = [
+  'bullish',
+  'bearish',
+  'shill',
+  'scam',
+  'neutral',
+]
+const QUADRANTS: ScexQuadrant[] = ['stars', 'nurture', 'noise', 'ignore']
+
+export function AdminScexEditor({ onToast }: Props) {
+  const [dataset, setDataset] = useState<ScexDataset>(() => seedScexDataset())
+  const [source, setSource] = useState<'server' | 'cache' | 'seed'>('seed')
+  const [sub, setSub] = useState<SubTab>('settings')
+  const [dirty, setDirty] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const [tokenInput, setTokenInput] = useState(() => getAdminToken())
+  const [selectedActorId, setSelectedActorId] = useState<string | null>(null)
+  const [selectedPostId, setSelectedPostId] = useState<string | null>(null)
+  const [actorQuery, setActorQuery] = useState('')
+
+  useEffect(() => {
+    let cancelled = false
+    void loadScexWithSource().then((r) => {
+      if (cancelled) return
+      setDataset(r.dataset)
+      setSource(r.source)
+      if (!selectedActorId && r.dataset.actors[0]) {
+        setSelectedActorId(r.dataset.actors[0].id)
+      }
+      if (!selectedPostId && r.dataset.posts[0]) {
+        setSelectedPostId(r.dataset.posts[0].id)
+      }
+    })
+    return () => {
+      cancelled = true
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  const config = dataset.config
+
+  const patchConfig = (patch: Partial<ScexConfig>) => {
+    setDataset((prev) =>
+      recomputeScexActors({
+        ...prev,
+        config: { ...prev.config, ...patch },
+      }),
+    )
+    setDirty(true)
+  }
+
+  const selectedActor = useMemo(
+    () => dataset.actors.find((a) => a.id === selectedActorId) || null,
+    [dataset.actors, selectedActorId],
+  )
+
+  const selectedPost = useMemo(
+    () => dataset.posts.find((p) => p.id === selectedPostId) || null,
+    [dataset.posts, selectedPostId],
+  )
+
+  const filteredActors = useMemo(() => {
+    const q = actorQuery.trim().toLowerCase()
+    let list = dataset.actors
+    if (q) {
+      list = list.filter(
+        (a) =>
+          a.handle.includes(q) ||
+          a.displayName.toLowerCase().includes(q) ||
+          (a.tier || '').toLowerCase().includes(q) ||
+          (a.notes || '').toLowerCase().includes(q),
+      )
+    }
+    return [...list].sort(
+      (a, b) => b.qualityScore - a.qualityScore || b.postsVolume - a.postsVolume,
+    )
+  }, [dataset.actors, actorQuery])
+
+  const patchActor = (id: string, patch: Partial<ScexActor>) => {
+    setDataset((prev) => {
+      const actors = prev.actors.map((a) => {
+        if (a.id !== id) return a
+        const next = { ...a, ...patch }
+        if (patch.handle != null) {
+          next.handle = String(patch.handle)
+            .replace(/^@/, '')
+            .trim()
+            .toLowerCase()
+        }
+        return next
+      })
+      return recomputeScexActors({ ...prev, actors })
+    })
+    setDirty(true)
+  }
+
+  const patchPost = (id: string, patch: Partial<ScexPost>) => {
+    setDataset((prev) => {
+      const posts = prev.posts.map((p) => {
+        if (p.id !== id) return p
+        const next = { ...p, ...patch }
+        if (patch.handle != null) {
+          next.handle = String(patch.handle)
+            .replace(/^@/, '')
+            .trim()
+            .toLowerCase()
+        }
+        return next
+      })
+      posts.sort(
+        (a, b) =>
+          new Date(b.postedAt).getTime() - new Date(a.postedAt).getTime(),
+      )
+      return { ...prev, posts }
+    })
+    setDirty(true)
+  }
+
+  const onSave = async () => {
+    setAdminToken(tokenInput)
+    setSaving(true)
+    const r = await saveScexToServer(dataset, dataset.note, tokenInput)
+    setSaving(false)
+    if (r.ok) {
+      setDataset(r.dataset)
+      setSource('server')
+      setDirty(false)
+      onToast(
+        `SCEX saved R2 · ${r.dataset.actors.length} actors · ${r.dataset.posts.length} posts`,
+      )
+    } else {
+      onToast(`Save failed: ${r.error}`)
+    }
+  }
+
+  const onReload = async () => {
+    clearScexCache()
+    const r = await loadScexWithSource()
+    setDataset(r.dataset)
+    setSource(r.source)
+    setDirty(false)
+    onToast(`Reloaded (${r.source})`)
+  }
+
+  const onResetSeed = () => {
+    if (!confirm('Reset SCEX data to seed? Unsaved R2 changes stay until Save.'))
+      return
+    setDataset(seedScexDataset())
+    setSource('seed')
+    setDirty(true)
+    onToast('Reset to seed — Save (R2) to publish')
+  }
+
+  const onExport = () => {
+    const blob = new Blob([exportScexJson(dataset)], {
+      type: 'application/json',
+    })
+    const a = document.createElement('a')
+    a.href = URL.createObjectURL(blob)
+    a.download = `scex-tracking-${new Date().toISOString().slice(0, 10)}.json`
+    a.click()
+    URL.revokeObjectURL(a.href)
+    onToast('Exported SCEX JSON')
+  }
+
+  const onImport = async (file: File) => {
+    try {
+      const imported = importScexJson(await file.text())
+      setDataset(imported)
+      setSource('seed')
+      setDirty(true)
+      onToast(
+        `Imported ${imported.actors.length} actors · ${imported.posts.length} posts`,
+      )
+    } catch (e) {
+      onToast(e instanceof Error ? e.message : 'Import failed')
+    }
+  }
+
+  const addActor = (kind: 'kol' | 'user') => {
+    const a = createEmptyActor(kind)
+    setDataset((prev) =>
+      recomputeScexActors({ ...prev, actors: [...prev.actors, a] }),
+    )
+    setSelectedActorId(a.id)
+    setDirty(true)
+    setSub('actors')
+  }
+
+  const removeActor = (id: string) => {
+    setDataset((prev) => ({
+      ...prev,
+      actors: prev.actors.filter((a) => a.id !== id),
+    }))
+    if (selectedActorId === id) setSelectedActorId(null)
+    setDirty(true)
+  }
+
+  const addPost = () => {
+    const p = createEmptyPost(selectedActor?.handle || '')
+    setDataset((prev) => ({ ...prev, posts: [p, ...prev.posts] }))
+    setSelectedPostId(p.id)
+    setDirty(true)
+    setSub('posts')
+  }
+
+  const removePost = (id: string) => {
+    setDataset((prev) => ({
+      ...prev,
+      posts: prev.posts.filter((p) => p.id !== id),
+    }))
+    if (selectedPostId === id) setSelectedPostId(null)
+    setDirty(true)
+  }
+
+  const visibleActors = useMemo(
+    () => dataset.actors.filter((a) => actorPassesThresholds(a, config)),
+    [dataset.actors, config],
+  )
+
+  const keywordsText = config.keywords.join(', ')
+
+  return (
+    <div className="admin-feed admin-scex-page">
+      <div className="admin-ai-banner glass" style={{ marginBottom: 12 }}>
+        <strong>SCEX Tracking · partner campaign monitor</strong>
+        <span>
+          Matrix 4 ô (volume × quality) + livefeed. Source:{' '}
+          <strong>{source}</strong>
+          {dirty ? ' · unsaved' : ''} · {dataset.actors.length} actors ·{' '}
+          {dataset.posts.length} posts · window {config.timeWindowDays}d.
+          R2 <code>scex/tracking/v1.json</code> · public preview{' '}
+          <a href="#/scex">#/scex</a>.
+        </span>
+        <label className="admin-token-row">
+          Token
+          <input
+            type="password"
+            value={tokenInput}
+            onChange={(e) => setTokenInput(e.target.value)}
+            placeholder="FEED_ADMIN_TOKEN"
+            autoComplete="off"
+          />
+        </label>
+      </div>
+
+      <div className="admin-feed-toolbar glass">
+        <button
+          type="button"
+          className="btn btn--primary"
+          onClick={() => void onSave()}
+          disabled={saving}
+        >
+          {saving ? 'Saving…' : 'Save (R2)'}
+        </button>
+        <button type="button" className="btn" onClick={() => void onReload()}>
+          Reload
+        </button>
+        <button type="button" className="btn" onClick={onExport}>
+          Export JSON
+        </button>
+        <label className="btn btn--file">
+          Import
+          <input
+            type="file"
+            accept="application/json,.json"
+            hidden
+            onChange={(e) => {
+              const f = e.target.files?.[0]
+              if (f) void onImport(f)
+              e.target.value = ''
+            }}
+          />
+        </label>
+        <button type="button" className="btn btn--danger" onClick={onResetSeed}>
+          Reset seed
+        </button>
+        <span className="admin-count" style={{ alignSelf: 'center' }}>
+          Visible on matrix: {visibleActors.length}/{dataset.actors.length}
+          {dirty ? ' · unsaved' : ''}
+        </span>
+      </div>
+
+      <div className="admin-tabs admin-scex-subtabs">
+        {(
+          [
+            ['settings', '⚙ Settings'],
+            ['actors', '◎ Actors'],
+            ['posts', '★ Livefeed posts'],
+            ['preview', '▣ Preview matrix'],
+          ] as [SubTab, string][]
+        ).map(([k, label]) => (
+          <button
+            key={k}
+            type="button"
+            className={`admin-tab ${sub === k ? 'is-active' : ''}`}
+            onClick={() => setSub(k)}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+
+      {sub === 'settings' && (
+        <div className="admin-scex-settings glass">
+          <section className="admin-ts-section">
+            <h3>Brand & keywords</h3>
+            <div className="admin-ts-fields">
+              <label>
+                Brand name
+                <input
+                  value={config.brandName}
+                  onChange={(e) => patchConfig({ brandName: e.target.value })}
+                />
+              </label>
+              <label>
+                Brand @handle
+                <input
+                  value={config.brandHandle}
+                  onChange={(e) =>
+                    patchConfig({
+                      brandHandle: e.target.value.replace(/^@/, ''),
+                    })
+                  }
+                />
+              </label>
+              <label className="admin-scex-span2">
+                Keywords (comma-separated)
+                <input
+                  value={keywordsText}
+                  onChange={(e) =>
+                    patchConfig({
+                      keywords: e.target.value
+                        .split(/[,;\n]/)
+                        .map((s) => s.trim())
+                        .filter(Boolean),
+                    })
+                  }
+                  placeholder="SCEX, @scex, scex.com"
+                />
+              </label>
+              <label>
+                Matrix title
+                <input
+                  value={config.matrixTitle}
+                  onChange={(e) => patchConfig({ matrixTitle: e.target.value })}
+                />
+              </label>
+              <label>
+                Feed title
+                <input
+                  value={config.feedTitle}
+                  onChange={(e) => patchConfig({ feedTitle: e.target.value })}
+                />
+              </label>
+              <label className="admin-scex-check">
+                <input
+                  type="checkbox"
+                  checked={config.enabled}
+                  onChange={(e) => patchConfig({ enabled: e.target.checked })}
+                />
+                Enabled (show on public #/scex)
+              </label>
+            </div>
+          </section>
+
+          <section className="admin-ts-section">
+            <h3>Time window & thresholds</h3>
+            <div className="admin-ts-fields">
+              <label>
+                Window (days)
+                <input
+                  type="number"
+                  min={1}
+                  max={90}
+                  value={config.timeWindowDays}
+                  onChange={(e) =>
+                    patchConfig({
+                      timeWindowDays: Number(e.target.value) || 7,
+                    })
+                  }
+                />
+              </label>
+              <label>
+                KOL min posts
+                <input
+                  type="number"
+                  min={1}
+                  value={config.kolMinPosts}
+                  onChange={(e) =>
+                    patchConfig({ kolMinPosts: Number(e.target.value) || 1 })
+                  }
+                />
+              </label>
+              <label>
+                User min posts
+                <input
+                  type="number"
+                  min={1}
+                  value={config.userMinPosts}
+                  onChange={(e) =>
+                    patchConfig({ userMinPosts: Number(e.target.value) || 3 })
+                  }
+                />
+              </label>
+              <label>
+                User min followers
+                <input
+                  type="number"
+                  min={0}
+                  value={config.userMinFollowers}
+                  onChange={(e) =>
+                    patchConfig({
+                      userMinFollowers: Number(e.target.value) || 0,
+                    })
+                  }
+                />
+              </label>
+              <label>
+                User min quality
+                <input
+                  type="number"
+                  min={0}
+                  max={100}
+                  value={config.userMinQuality}
+                  onChange={(e) =>
+                    patchConfig({
+                      userMinQuality: Number(e.target.value) || 0,
+                    })
+                  }
+                />
+              </label>
+            </div>
+          </section>
+
+          <section className="admin-ts-section">
+            <h3>Matrix axes & splits</h3>
+            <div className="admin-ts-fields">
+              <label>
+                Volume axis label
+                <input
+                  value={config.volumeAxis.label}
+                  onChange={(e) =>
+                    patchConfig({
+                      volumeAxis: {
+                        ...config.volumeAxis,
+                        label: e.target.value,
+                      },
+                    })
+                  }
+                />
+              </label>
+              <label>
+                Volume max (scale)
+                <input
+                  type="number"
+                  min={1}
+                  value={config.volumeAxis.max}
+                  onChange={(e) =>
+                    patchConfig({
+                      volumeAxis: {
+                        ...config.volumeAxis,
+                        max: Number(e.target.value) || 20,
+                      },
+                    })
+                  }
+                />
+              </label>
+              <label>
+                Volume split (X mid)
+                <input
+                  type="number"
+                  min={0}
+                  value={config.volumeSplit}
+                  onChange={(e) =>
+                    patchConfig({
+                      volumeSplit: Number(e.target.value) || 0,
+                    })
+                  }
+                />
+              </label>
+              <label>
+                Quality axis label
+                <input
+                  value={config.qualityAxis.label}
+                  onChange={(e) =>
+                    patchConfig({
+                      qualityAxis: {
+                        ...config.qualityAxis,
+                        label: e.target.value,
+                      },
+                    })
+                  }
+                />
+              </label>
+              <label>
+                Quality split (Y mid 0–100)
+                <input
+                  type="number"
+                  min={0}
+                  max={100}
+                  value={config.qualitySplit}
+                  onChange={(e) =>
+                    patchConfig({
+                      qualitySplit: Number(e.target.value) || 50,
+                    })
+                  }
+                />
+              </label>
+              <label>
+                Bubble size metric
+                <select
+                  value={config.sizeMetric}
+                  onChange={(e) =>
+                    patchConfig({
+                      sizeMetric:
+                        e.target.value === 'reach7d' ? 'reach7d' : 'followers',
+                    })
+                  }
+                >
+                  <option value="followers">Followers</option>
+                  <option value="reach7d">Reach 7d</option>
+                </select>
+              </label>
+            </div>
+          </section>
+
+          <section className="admin-ts-section">
+            <h3>Quadrant labels</h3>
+            <div className="admin-scex-quad-grid">
+              {QUADRANTS.map((q) => (
+                <div key={q} className="admin-scex-quad-card glass">
+                  <code>{q}</code>
+                  <label>
+                    Title
+                    <input
+                      value={config.quadrantLabels[q]?.title || ''}
+                      onChange={(e) =>
+                        patchConfig({
+                          quadrantLabels: {
+                            ...config.quadrantLabels,
+                            [q]: {
+                              ...config.quadrantLabels[q],
+                              title: e.target.value,
+                            },
+                          },
+                        })
+                      }
+                    />
+                  </label>
+                  <label>
+                    Subtitle
+                    <input
+                      value={config.quadrantLabels[q]?.subtitle || ''}
+                      onChange={(e) =>
+                        patchConfig({
+                          quadrantLabels: {
+                            ...config.quadrantLabels,
+                            [q]: {
+                              ...config.quadrantLabels[q],
+                              subtitle: e.target.value,
+                            },
+                          },
+                        })
+                      }
+                    />
+                  </label>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          <section className="admin-ts-section">
+            <h3>Sentiment badges</h3>
+            <div className="admin-scex-sent-grid">
+              {SENTIMENTS.map((s) => (
+                <div key={s} className="admin-scex-sent-row">
+                  <span
+                    className="admin-scex-sent-swatch"
+                    style={{
+                      background: config.sentimentLabels[s]?.color || '#888',
+                    }}
+                  />
+                  <code>{s}</code>
+                  <input
+                    value={config.sentimentLabels[s]?.label || ''}
+                    onChange={(e) =>
+                      patchConfig({
+                        sentimentLabels: {
+                          ...config.sentimentLabels,
+                          [s]: {
+                            ...config.sentimentLabels[s],
+                            label: e.target.value,
+                          },
+                        },
+                      })
+                    }
+                  />
+                  <input
+                    type="color"
+                    value={config.sentimentLabels[s]?.color || '#888888'}
+                    onChange={(e) =>
+                      patchConfig({
+                        sentimentLabels: {
+                          ...config.sentimentLabels,
+                          [s]: {
+                            ...config.sentimentLabels[s],
+                            color: e.target.value,
+                          },
+                        },
+                      })
+                    }
+                  />
+                </div>
+              ))}
+            </div>
+          </section>
+
+          <section className="admin-ts-section">
+            <h3>Internal note</h3>
+            <textarea
+              className="admin-scex-note"
+              rows={2}
+              value={dataset.note || ''}
+              onChange={(e) => {
+                setDataset((prev) => ({ ...prev, note: e.target.value }))
+                setDirty(true)
+              }}
+              placeholder="Ops notes for this partner dataset…"
+            />
+          </section>
+        </div>
+      )}
+
+      {sub === 'actors' && (
+        <div className="admin-edit-layout admin-ts-layout">
+          <div className="admin-edit-side glass admin-ts-list-col">
+            <div className="admin-side-list-head">
+              <strong>Actors ({filteredActors.length})</strong>
+            </div>
+            <div className="admin-toolbar" style={{ margin: '0 10px 4px', gap: 6 }}>
+              <button
+                type="button"
+                className="btn"
+                onClick={() => addActor('kol')}
+              >
+                + KOL
+              </button>
+              <button
+                type="button"
+                className="btn"
+                onClick={() => addActor('user')}
+              >
+                + User
+              </button>
+            </div>
+            <div className="admin-toolbar" style={{ margin: '0 10px 4px' }}>
+              <input
+                type="text"
+                className="admin-search"
+                value={actorQuery}
+                onChange={(e) => setActorQuery(e.target.value)}
+                placeholder="Search handle, name, tier…"
+              />
+            </div>
+            <ul className="admin-side-list admin-ts-list">
+              {filteredActors.map((acc) => {
+                const active = selectedActorId === acc.id
+                const pass = actorPassesThresholds(acc, config)
+                return (
+                  <li key={acc.id}>
+                    <button
+                      type="button"
+                      className={`admin-ts-list-item ${active ? 'is-active' : ''}`}
+                      onClick={() => setSelectedActorId(acc.id)}
+                    >
+                      <XProfileAvatar
+                        handle={acc.handle}
+                        name={acc.displayName}
+                        size={28}
+                      />
+                      <span className="admin-ts-row__meta">
+                        <strong>
+                          {acc.displayName}
+                          {!pass ? ' · hidden' : ''}
+                        </strong>
+                        <small>
+                          @{acc.handle} · {acc.kind} · Q{acc.qualityScore} · V
+                          {acc.postsVolume}
+                          {acc.quadrant ? ` · ${acc.quadrant}` : ''}
+                        </small>
+                      </span>
+                    </button>
+                  </li>
+                )
+              })}
+            </ul>
+          </div>
+
+          <div className="admin-edit-main glass admin-ts-detail">
+            {!selectedActor ? (
+              <p className="muted">Chọn actor bên trái hoặc + KOL / + User.</p>
+            ) : (
+              <>
+                <div className="admin-ts-detail__head">
+                  <XProfileAvatar
+                    handle={selectedActor.handle}
+                    name={selectedActor.displayName}
+                    size={48}
+                    liveFallback
+                  />
+                  <div>
+                    <h2>
+                      {selectedActor.displayName}{' '}
+                      <span className="muted">@{selectedActor.handle}</span>
+                    </h2>
+                    <p className="muted">
+                      {selectedActor.kind} · quadrant{' '}
+                      <strong>{selectedActor.quadrant || '—'}</strong>
+                      {selectedActor.tier ? ` · tier ${selectedActor.tier}` : ''}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    className="btn btn--danger"
+                    onClick={() => removeActor(selectedActor.id)}
+                  >
+                    Delete
+                  </button>
+                </div>
+                <section className="admin-ts-section">
+                  <h3>Identity & metrics</h3>
+                  <div className="admin-ts-fields">
+                    <label>
+                      Display name
+                      <input
+                        value={selectedActor.displayName}
+                        onChange={(e) =>
+                          patchActor(selectedActor.id, {
+                            displayName: e.target.value,
+                          })
+                        }
+                      />
+                    </label>
+                    <label>
+                      Handle
+                      <input
+                        value={selectedActor.handle}
+                        onChange={(e) =>
+                          patchActor(selectedActor.id, {
+                            handle: e.target.value,
+                          })
+                        }
+                      />
+                    </label>
+                    <label>
+                      Kind
+                      <select
+                        value={selectedActor.kind}
+                        onChange={(e) =>
+                          patchActor(selectedActor.id, {
+                            kind: e.target.value === 'user' ? 'user' : 'kol',
+                          })
+                        }
+                      >
+                        <option value="kol">KOL</option>
+                        <option value="user">User</option>
+                      </select>
+                    </label>
+                    <label>
+                      Tier (badge)
+                      <input
+                        value={selectedActor.tier || ''}
+                        onChange={(e) =>
+                          patchActor(selectedActor.id, {
+                            tier: e.target.value,
+                          })
+                        }
+                        placeholder="Master / Diamond / …"
+                      />
+                    </label>
+                    <label>
+                      Followers
+                      <input
+                        type="number"
+                        value={selectedActor.followers}
+                        onChange={(e) =>
+                          patchActor(selectedActor.id, {
+                            followers: Number(e.target.value) || 0,
+                          })
+                        }
+                      />
+                    </label>
+                    <label>
+                      Reach 7d
+                      <input
+                        type="number"
+                        value={selectedActor.reach7d ?? ''}
+                        onChange={(e) =>
+                          patchActor(selectedActor.id, {
+                            reach7d: Number(e.target.value) || 0,
+                          })
+                        }
+                      />
+                    </label>
+                    <label>
+                      Posts volume (X)
+                      <input
+                        type="number"
+                        value={selectedActor.postsVolume}
+                        onChange={(e) =>
+                          patchActor(selectedActor.id, {
+                            postsVolume: Number(e.target.value) || 0,
+                          })
+                        }
+                      />
+                    </label>
+                    <label>
+                      Quality score 0–100 (Y)
+                      <input
+                        type="number"
+                        min={0}
+                        max={100}
+                        value={selectedActor.qualityScore}
+                        onChange={(e) =>
+                          patchActor(selectedActor.id, {
+                            qualityScore: Number(e.target.value) || 0,
+                          })
+                        }
+                      />
+                    </label>
+                    <label>
+                      Sentiment
+                      <select
+                        value={selectedActor.sentiment}
+                        onChange={(e) =>
+                          patchActor(selectedActor.id, {
+                            sentiment: e.target.value as ScexSentiment,
+                          })
+                        }
+                      >
+                        {SENTIMENTS.map((s) => (
+                          <option key={s} value={s}>
+                            {config.sentimentLabels[s]?.label || s}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                    <label>
+                      Tracking code
+                      <input
+                        value={selectedActor.trackingCode || ''}
+                        onChange={(e) =>
+                          patchActor(selectedActor.id, {
+                            trackingCode: e.target.value,
+                          })
+                        }
+                      />
+                    </label>
+                    <label>
+                      Last post at (ISO)
+                      <input
+                        value={selectedActor.lastPostAt || ''}
+                        onChange={(e) =>
+                          patchActor(selectedActor.id, {
+                            lastPostAt: e.target.value,
+                          })
+                        }
+                      />
+                    </label>
+                    <label className="admin-scex-check">
+                      <input
+                        type="checkbox"
+                        checked={!!selectedActor.isWhitelisted}
+                        onChange={(e) =>
+                          patchActor(selectedActor.id, {
+                            isWhitelisted: e.target.checked,
+                          })
+                        }
+                      />
+                      Whitelist (always show)
+                    </label>
+                    <label className="admin-scex-check">
+                      <input
+                        type="checkbox"
+                        checked={!!selectedActor.isDenylisted}
+                        onChange={(e) =>
+                          patchActor(selectedActor.id, {
+                            isDenylisted: e.target.checked,
+                          })
+                        }
+                      />
+                      Denylist (hide)
+                    </label>
+                    <label className="admin-scex-span2">
+                      Notes
+                      <textarea
+                        rows={3}
+                        value={selectedActor.notes || ''}
+                        onChange={(e) =>
+                          patchActor(selectedActor.id, {
+                            notes: e.target.value,
+                          })
+                        }
+                      />
+                    </label>
+                  </div>
+                </section>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+
+      {sub === 'posts' && (
+        <div className="admin-edit-layout admin-ts-layout">
+          <div className="admin-edit-side glass admin-ts-list-col">
+            <div className="admin-side-list-head">
+              <strong>Posts ({dataset.posts.length})</strong>
+            </div>
+            <div className="admin-toolbar" style={{ margin: '0 10px 8px' }}>
+              <button type="button" className="btn" onClick={addPost}>
+                + Add post
+              </button>
+            </div>
+            <ul className="admin-side-list admin-ts-list">
+              {dataset.posts.map((p) => (
+                <li key={p.id}>
+                  <button
+                    type="button"
+                    className={`admin-ts-list-item ${selectedPostId === p.id ? 'is-active' : ''}`}
+                    onClick={() => setSelectedPostId(p.id)}
+                  >
+                    <span className="admin-ts-row__meta">
+                      <strong>
+                        @{p.handle}
+                        {p.hidden ? ' · hidden' : ''}
+                      </strong>
+                      <small>
+                        {p.sentiment} · {p.postedAt.slice(0, 16)} ·{' '}
+                        {(p.text || '').slice(0, 48)}
+                      </small>
+                    </span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div className="admin-edit-main glass admin-ts-detail">
+            {!selectedPost ? (
+              <p className="muted">Chọn post hoặc + Add post.</p>
+            ) : (
+              <>
+                <div className="admin-ts-detail__head">
+                  <h2>Post · @{selectedPost.handle}</h2>
+                  <button
+                    type="button"
+                    className="btn btn--danger"
+                    onClick={() => removePost(selectedPost.id)}
+                  >
+                    Delete
+                  </button>
+                </div>
+                <div className="admin-ts-fields">
+                  <label>
+                    Handle
+                    <input
+                      value={selectedPost.handle}
+                      onChange={(e) =>
+                        patchPost(selectedPost.id, { handle: e.target.value })
+                      }
+                    />
+                  </label>
+                  <label>
+                    Sentiment
+                    <select
+                      value={selectedPost.sentiment}
+                      onChange={(e) =>
+                        patchPost(selectedPost.id, {
+                          sentiment: e.target.value as ScexSentiment,
+                        })
+                      }
+                    >
+                      {SENTIMENTS.map((s) => (
+                        <option key={s} value={s}>
+                          {config.sentimentLabels[s]?.label || s}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <label className="admin-scex-span2">
+                    X URL
+                    <input
+                      value={selectedPost.url}
+                      onChange={(e) =>
+                        patchPost(selectedPost.id, { url: e.target.value })
+                      }
+                      placeholder="https://x.com/…/status/…"
+                    />
+                  </label>
+                  <label className="admin-scex-span2">
+                    Text
+                    <textarea
+                      rows={4}
+                      value={selectedPost.text}
+                      onChange={(e) =>
+                        patchPost(selectedPost.id, { text: e.target.value })
+                      }
+                    />
+                  </label>
+                  <label>
+                    Posted at
+                    <input
+                      value={selectedPost.postedAt}
+                      onChange={(e) =>
+                        patchPost(selectedPost.id, {
+                          postedAt: e.target.value,
+                        })
+                      }
+                    />
+                  </label>
+                  <label>
+                    Likes
+                    <input
+                      type="number"
+                      value={selectedPost.likes ?? ''}
+                      onChange={(e) =>
+                        patchPost(selectedPost.id, {
+                          likes: Number(e.target.value) || 0,
+                        })
+                      }
+                    />
+                  </label>
+                  <label>
+                    Replies
+                    <input
+                      type="number"
+                      value={selectedPost.replies ?? ''}
+                      onChange={(e) =>
+                        patchPost(selectedPost.id, {
+                          replies: Number(e.target.value) || 0,
+                        })
+                      }
+                    />
+                  </label>
+                  <label>
+                    Reposts
+                    <input
+                      type="number"
+                      value={selectedPost.reposts ?? ''}
+                      onChange={(e) =>
+                        patchPost(selectedPost.id, {
+                          reposts: Number(e.target.value) || 0,
+                        })
+                      }
+                    />
+                  </label>
+                  <label className="admin-scex-check">
+                    <input
+                      type="checkbox"
+                      checked={!!selectedPost.hidden}
+                      onChange={(e) =>
+                        patchPost(selectedPost.id, {
+                          hidden: e.target.checked,
+                        })
+                      }
+                    />
+                    Hidden from public feed
+                  </label>
+                  <label className="admin-scex-span2">
+                    Notes
+                    <textarea
+                      rows={2}
+                      value={selectedPost.notes || ''}
+                      onChange={(e) =>
+                        patchPost(selectedPost.id, { notes: e.target.value })
+                      }
+                    />
+                  </label>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+
+      {sub === 'preview' && (
+        <ScexPreviewPanel dataset={dataset} visibleActors={visibleActors} />
+      )}
+    </div>
+  )
+}
+
+function ScexPreviewPanel({
+  dataset,
+  visibleActors,
+}: {
+  dataset: ScexDataset
+  visibleActors: ScexActor[]
+}) {
+  const { config } = dataset
+  const sizes = visibleActors.map((a) => actorSizeValue(a, config))
+  const maxSize = Math.max(...sizes, 1)
+  const posts = dataset.posts.filter((p) => !p.hidden).slice(0, 40)
+
+  return (
+    <div className="admin-scex-preview">
+      <div className="admin-scex-matrix glass">
+        <header className="admin-scex-matrix__head">
+          <h3>{config.matrixTitle}</h3>
+          <p className="muted">
+            X: {config.volumeAxis.label} · Y: {config.qualityAxis.label} · size:{' '}
+            {config.sizeMetric} · {visibleActors.length} visible
+          </p>
+        </header>
+        <div className="admin-scex-matrix__plot">
+          <div className="admin-scex-matrix__quad admin-scex-matrix__quad--nurture">
+            <span>{config.quadrantLabels.nurture?.title}</span>
+            <small>{config.quadrantLabels.nurture?.subtitle}</small>
+          </div>
+          <div className="admin-scex-matrix__quad admin-scex-matrix__quad--stars">
+            <span>{config.quadrantLabels.stars?.title}</span>
+            <small>{config.quadrantLabels.stars?.subtitle}</small>
+          </div>
+          <div className="admin-scex-matrix__quad admin-scex-matrix__quad--ignore">
+            <span>{config.quadrantLabels.ignore?.title}</span>
+            <small>{config.quadrantLabels.ignore?.subtitle}</small>
+          </div>
+          <div className="admin-scex-matrix__quad admin-scex-matrix__quad--noise">
+            <span>{config.quadrantLabels.noise?.title}</span>
+            <small>{config.quadrantLabels.noise?.subtitle}</small>
+          </div>
+          <div className="admin-scex-matrix__cross-v" />
+          <div className="admin-scex-matrix__cross-h" />
+          {visibleActors.map((a) => {
+            const { x, y } = actorMatrixPos(a, config)
+            const sz = 18 + (actorSizeValue(a, config) / maxSize) * 36
+            const ring =
+              config.sentimentLabels[a.sentiment]?.color || '#94a3b8'
+            return (
+              <div
+                key={a.id}
+                className="admin-scex-bubble"
+                style={{
+                  left: `${x * 100}%`,
+                  bottom: `${y * 100}%`,
+                  width: sz,
+                  height: sz,
+                  borderColor: ring,
+                }}
+                title={`@${a.handle} V${a.postsVolume} Q${a.qualityScore} ${a.quadrant}`}
+              >
+                <XProfileAvatar
+                  handle={a.handle}
+                  name={a.displayName}
+                  size={Math.max(16, sz - 6)}
+                />
+              </div>
+            )
+          })}
+        </div>
+        <div className="admin-scex-matrix__axis-x">{config.volumeAxis.label} →</div>
+        <div className="admin-scex-matrix__axis-y">
+          ↑ {config.qualityAxis.label}
+        </div>
+      </div>
+
+      <div className="admin-scex-feed glass">
+        <header>
+          <h3>{config.feedTitle}</h3>
+          <p className="muted">{posts.length} recent posts (not hidden)</p>
+        </header>
+        <ul className="admin-scex-feed-list">
+          {posts.map((p) => {
+            const sent = config.sentimentLabels[p.sentiment]
+            const actor = dataset.actors.find((a) => a.handle === p.handle)
+            return (
+              <li key={p.id} className="admin-scex-feed-item">
+                <XProfileAvatar
+                  handle={p.handle}
+                  name={actor?.displayName || p.handle}
+                  size={36}
+                />
+                <div className="admin-scex-feed-item__body">
+                  <div className="admin-scex-feed-item__meta">
+                    <strong>@{p.handle}</strong>
+                    {actor?.tier && (
+                      <span className="admin-scex-tier">{actor.tier}</span>
+                    )}
+                    <span
+                      className="admin-scex-sent-badge"
+                      style={{ background: sent?.color || '#64748b' }}
+                    >
+                      {sent?.label || p.sentiment}
+                    </span>
+                    <time>{p.postedAt.slice(0, 16)}</time>
+                  </div>
+                  <p>{p.text || '—'}</p>
+                  {p.url && (
+                    <a href={p.url} target="_blank" rel="noreferrer">
+                      Open on X ↗
+                    </a>
+                  )}
+                </div>
+              </li>
+            )
+          })}
+          {!posts.length && (
+            <li className="muted">No posts yet — add in Livefeed posts tab.</li>
+          )}
+        </ul>
+      </div>
+    </div>
+  )
+}

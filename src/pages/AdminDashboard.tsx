@@ -41,13 +41,15 @@ import { AvatarImg } from '../components/AvatarImg'
 import { AdminFeedEditor } from './AdminFeedEditor'
 import { AdminRecentFollowersEditor } from './AdminRecentFollowersEditor'
 import { AdminTwitterScoreEditor } from './AdminTwitterScoreEditor'
+import { AdminScexEditor } from './AdminScexEditor'
 import './AdminDashboard.css'
 
-type Tab = 'list' | 'edit' | 'feed' | 'follows' | 'data' | 'legend'
+type Tab = 'list' | 'edit' | 'feed' | 'follows' | 'data' | 'scex' | 'legend'
 
 function tabFromHash(): Tab {
   const h = window.location.hash.replace(/^#\/?/, '').toLowerCase()
   // #/admin/feed or #/admin?tab=feed
+  if (h.includes('scex') || h.includes('campaign')) return 'scex'
   if (
     h.includes('twitterscore') ||
     h.includes('ts-data') ||
@@ -108,11 +110,13 @@ export function AdminDashboard() {
           ? '#/admin/follows'
           : t === 'data'
             ? '#/admin/data'
-            : t === 'legend'
-              ? '#/admin/legend'
-              : t === 'edit'
-                ? '#/admin/edit'
-                : '#/admin'
+            : t === 'scex'
+              ? '#/admin/scex'
+              : t === 'legend'
+                ? '#/admin/legend'
+                : t === 'edit'
+                  ? '#/admin/edit'
+                  : '#/admin'
     if (window.location.hash !== path) {
       window.location.hash = path
     }
@@ -481,12 +485,20 @@ export function AdminDashboard() {
 
       <div className="admin-tabs">
         {(
-          ['list', 'edit', 'feed', 'follows', 'data', 'legend'] as Tab[]
+          [
+            'list',
+            'edit',
+            'feed',
+            'follows',
+            'data',
+            'scex',
+            'legend',
+          ] as Tab[]
         ).map((t) => (
           <button
             key={t}
             type="button"
-            className={`admin-tab ${tab === t ? 'is-active' : ''} ${t === 'feed' || t === 'follows' || t === 'data' ? 'admin-tab--feed' : ''}`}
+            className={`admin-tab ${tab === t ? 'is-active' : ''} ${t === 'feed' || t === 'follows' || t === 'data' || t === 'scex' ? 'admin-tab--feed' : ''}`}
             onClick={() => goTab(t)}
           >
             {t === 'list'
@@ -499,7 +511,9 @@ export function AdminDashboard() {
                     ? 'Smart Followers'
                     : t === 'data'
                       ? '★ Data / TwitterScore'
-                      : 'AI field legend'}
+                      : t === 'scex'
+                        ? '★ SCEX Tracking'
+                        : 'AI field legend'}
           </button>
         ))}
       </div>
@@ -517,6 +531,8 @@ export function AdminDashboard() {
       )}
 
       {tab === 'data' && <AdminTwitterScoreEditor onToast={flash} />}
+
+      {tab === 'scex' && <AdminScexEditor onToast={flash} />}
 
       {tab === 'legend' && <FieldLegend />}
 

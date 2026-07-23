@@ -3,13 +3,17 @@ import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.tsx'
 import { AdminDashboard } from './pages/AdminDashboard.tsx'
+import { ScexTrackingPage } from './pages/ScexTrackingPage.tsx'
 
-function getRoute(): 'map' | 'admin' {
+function getRoute(): 'map' | 'admin' | 'scex' {
   const h = window.location.hash.replace(/^#\/?/, '').toLowerCase()
   // #/admin, #/admin/feed, #/admin/legend …
-  return h === 'admin' || h.startsWith('admin/') || h.startsWith('admin?')
-    ? 'admin'
-    : 'map'
+  if (h === 'admin' || h.startsWith('admin/') || h.startsWith('admin?'))
+    return 'admin'
+  // Public partner preview (not under admin)
+  if (h === 'scex' || h.startsWith('scex/') || h.startsWith('scex?'))
+    return 'scex'
+  return 'map'
 }
 
 function Root() {
@@ -21,7 +25,9 @@ function Root() {
     return () => window.removeEventListener('hashchange', onHash)
   }, [])
 
-  return route === 'admin' ? <AdminDashboard /> : <App />
+  if (route === 'admin') return <AdminDashboard />
+  if (route === 'scex') return <ScexTrackingPage />
+  return <App />
 }
 
 createRoot(document.getElementById('root')!).render(

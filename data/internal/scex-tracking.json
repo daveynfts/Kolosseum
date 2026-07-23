@@ -2,7 +2,7 @@
   "version": 1,
   "kind": "scex-tracking",
   "asOf": "2026-07-23T12:00:00.000Z",
-  "updatedAt": "2026-07-23T04:38:44.693Z",
+  "updatedAt": "2026-07-23T04:50:40.548Z",
   "note": "Expanded Blue Verified snapshot @scexofficial / SCEX / “sàn SCEX” (23/06–23/07/2026). 38 posts · 20 KOL actors (brand posts in feed only). ~70% bullish / mixed mild critique. Not 100% of all mentions — representative high-engagement set. Mild Bearish mapped to bearish + notes. Media on R2: 30/38 posts (hydrate_scex_media).",
   "config": {
     "brandName": "SCEX",
@@ -26,7 +26,7 @@
     "volumeAxis": {
       "min": 0,
       "max": 8,
-      "label": "Số lần nhắc (30 ngày)"
+      "label": "Tần suất mention"
     },
     "qualityAxis": {
       "min": 0,
@@ -38,20 +38,20 @@
     "qualitySplit": 50,
     "quadrantLabels": {
       "stars": {
-        "title": "NGÔI SAO",
-        "subtitle": "Nói nhiều · chất lượng cao — ưu tiên hợp tác"
+        "title": "TRỌNG ĐIỂM",
+        "subtitle": "Tần suất cao · chất lượng cao — ưu tiên theo dõi"
       },
       "nurture": {
-        "title": "CẦN NUÔI",
-        "subtitle": "Chất lượng cao · ít bài — mời đăng thêm"
+        "title": "TIỀM NĂNG",
+        "subtitle": "Chất lượng cao · tần suất thấp — khuyến khích tương tác"
       },
       "noise": {
-        "title": "ỒN ÀO",
-        "subtitle": "Nhiều bài · chất lượng thấp — cần lọc"
+        "title": "CẦN RÀ SOÁT",
+        "subtitle": "Tần suất cao · chất lượng thấp — lọc và đánh giá lại"
       },
       "ignore": {
-        "title": "THẤP",
-        "subtitle": "Ít tín hiệu — để sau / lưu trữ"
+        "title": "TÍN HIỆU YẾU",
+        "subtitle": "Tần suất thấp · chất lượng thấp — không ưu tiên"
       }
     },
     "sentimentLabels": {
@@ -77,7 +77,7 @@
       }
     },
     "matrixTitle": "Ma trận mention SCEX",
-    "feedTitle": "Bảng tin X · mention SCEX",
+    "feedTitle": "Bảng tin mention · SCEX",
     "enabled": true
   },
   "actors": [

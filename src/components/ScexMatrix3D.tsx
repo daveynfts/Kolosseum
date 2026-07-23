@@ -331,19 +331,19 @@ export function ScexMatrix3D(props: ScexMatrix3DProps) {
       {/* CSS quadrant chrome — stable, no 3D label clutter */}
       <div className="scex3d-overlay" aria-hidden>
         <div className="scex3d-overlay__quad scex3d-overlay__quad--nurture">
-          <strong>{q.nurture?.title || 'CẦN NUÔI'}</strong>
+          <strong>{q.nurture?.title || 'TIỀM NĂNG'}</strong>
           <small>{q.nurture?.subtitle}</small>
         </div>
         <div className="scex3d-overlay__quad scex3d-overlay__quad--stars">
-          <strong>{q.stars?.title || 'NGÔI SAO'}</strong>
+          <strong>{q.stars?.title || 'TRỌNG ĐIỂM'}</strong>
           <small>{q.stars?.subtitle}</small>
         </div>
         <div className="scex3d-overlay__quad scex3d-overlay__quad--ignore">
-          <strong>{q.ignore?.title || 'THẤP'}</strong>
+          <strong>{q.ignore?.title || 'TÍN HIỆU YẾU'}</strong>
           <small>{q.ignore?.subtitle}</small>
         </div>
         <div className="scex3d-overlay__quad scex3d-overlay__quad--noise">
-          <strong>{q.noise?.title || 'ỒN ÀO'}</strong>
+          <strong>{q.noise?.title || 'CẦN RÀ SOÁT'}</strong>
           <small>{q.noise?.subtitle}</small>
         </div>
         <span className="scex3d-overlay__axis-y">

@@ -122,20 +122,20 @@ const DEFAULT_SENTIMENT: Record<ScexSentiment, ScexSentimentLabel> = {
 
 const DEFAULT_QUAD: Record<ScexQuadrant, ScexQuadrantLabel> = {
   stars: {
-    title: 'NGÔI SAO',
-    subtitle: 'Nói nhiều · chất lượng cao — ưu tiên hợp tác',
+    title: 'TRỌNG ĐIỂM',
+    subtitle: 'Tần suất cao · chất lượng cao — ưu tiên theo dõi',
   },
   nurture: {
-    title: 'CẦN NUÔI',
-    subtitle: 'Chất lượng cao · ít bài — mời đăng thêm',
+    title: 'TIỀM NĂNG',
+    subtitle: 'Chất lượng cao · tần suất thấp — khuyến khích tương tác',
   },
   noise: {
-    title: 'ỒN ÀO',
-    subtitle: 'Nhiều bài · chất lượng thấp — cần lọc',
+    title: 'CẦN RÀ SOÁT',
+    subtitle: 'Tần suất cao · chất lượng thấp — lọc và đánh giá lại',
   },
   ignore: {
-    title: 'THẤP',
-    subtitle: 'Ít tín hiệu — để sau / lưu trữ',
+    title: 'TÍN HIỆU YẾU',
+    subtitle: 'Tần suất thấp · chất lượng thấp — không ưu tiên',
   },
 }
 
@@ -149,7 +149,7 @@ export function defaultScexConfig(): ScexConfig {
     userMinPosts: 3,
     userMinFollowers: 5000,
     userMinQuality: 40,
-    volumeAxis: { min: 0, max: 20, label: 'Số lần nhắc' },
+    volumeAxis: { min: 0, max: 20, label: 'Tần suất mention' },
     qualityAxis: { min: 0, max: 100, label: 'Điểm chất lượng' },
     sizeMetric: 'followers',
     volumeSplit: 5,
@@ -157,7 +157,7 @@ export function defaultScexConfig(): ScexConfig {
     quadrantLabels: { ...DEFAULT_QUAD },
     sentimentLabels: { ...DEFAULT_SENTIMENT },
     matrixTitle: 'Ma trận mention SCEX',
-    feedTitle: 'Bảng tin X · SCEX',
+    feedTitle: 'Bảng tin mention · SCEX',
     enabled: true,
   }
 }

@@ -139,7 +139,7 @@
 
 .scex-card__head h2 {
   margin: 0;
-  font-size: 1.05rem;
+  font-size: 1.12rem;
   font-weight: 600;
   letter-spacing: -0.02em;
 }
@@ -149,10 +149,6 @@
   font-size: 0.84rem;
   line-height: 1.4;
   color: rgba(226, 232, 240, 0.55);
-}
-
-.scex-card__head h2 {
-  font-size: 1.12rem;
 }
 
 /* ── Matrix 3D ───────────────────────────────────────── */

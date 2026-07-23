@@ -1,17 +1,19 @@
 /**
- * Public partner view — SCEX mention matrix (2.5D packed) + livefeed (FeedPanel-style).
+ * Public partner view — SCEX 3D mention matrix + livefeed (VI).
  */
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import {
-  actorMatrixPos,
   actorPassesThresholds,
-  actorSizeValue,
   type ScexActor,
   type ScexDataset,
   type ScexPost,
 } from '../data/scexTracking'
 import { loadScexWithSource } from '../lib/scexStore'
+import { loadKolsWithSource } from '../lib/kolStore'
+import type { Kol } from '../types'
 import { XProfileAvatar } from '../components/XProfileAvatar'
+import { ScexMatrix3D } from '../components/ScexMatrix3D'
+import { ScexKolDetail } from '../components/ScexKolDetail'
 import { resolveMediaUrl } from '../lib/avatar'
 import './ScexTrackingPage.css'
 
@@ -25,7 +27,7 @@ function formatTime(iso: string): string {
   try {
     const d = new Date(iso)
     if (Number.isNaN(d.getTime())) return iso.slice(0, 16)
-    return d.toLocaleString(undefined, {
+    return d.toLocaleString('vi-VN', {
       month: 'short',
       day: 'numeric',
       hour: '2-digit',
@@ -36,111 +38,32 @@ function formatTime(iso: string): string {
   }
 }
 
-type BubbleLayout = {
-  id: string
-  x: number
-  y: number
-  r: number
-  z: number
-  depth: number
+/** Prefer Vietnamese labels even if seed still has English. */
+function viMatrixTitle(raw: string): string {
+  if (!raw || /mention matrix|matrix/i.test(raw)) return 'Ma trận mention SCEX'
+  return raw
 }
-
-/**
- * Place bubbles by volume×quality, then resolve overlaps with repulsion
- * so the matrix reads like the 2.5D map cloud (no stacked avatars).
- */
-function packBubbles(
-  actors: ScexActor[],
-  config: ScexDataset['config'],
-  width: number,
-  height: number,
-  maxSize: number,
-): BubbleLayout[] {
-  if (!actors.length || width < 40 || height < 40) return []
-
-  const pad = 10
-  const items = actors.map((a) => {
-    const { x, y } = actorMatrixPos(a, config)
-    const r = 16 + (actorSizeValue(a, config) / maxSize) * 26
-    // Map data coords → pixels (y up in data, CSS down)
-    const px = pad + r + x * Math.max(1, width - 2 * pad - 2 * r)
-    const py = pad + r + (1 - y) * Math.max(1, height - 2 * pad - 2 * r)
-    return {
-      id: a.id,
-      x: px,
-      y: py,
-      r,
-      // Larger / higher quality → “closer” (higher z + stronger shadow)
-      depth: actorSizeValue(a, config) / maxSize,
-      followers: a.followers || 0,
-      quality: a.qualityScore || 0,
-    }
-  })
-
-  const iterations = 48
-  for (let iter = 0; iter < iterations; iter++) {
-    const strength = 0.55 * (1 - iter / iterations) + 0.12
-    for (let i = 0; i < items.length; i++) {
-      for (let j = i + 1; j < items.length; j++) {
-        const a = items[i]
-        const b = items[j]
-        const dx = b.x - a.x
-        const dy = b.y - a.y
-        const dist = Math.hypot(dx, dy) || 0.01
-        const minDist = a.r + b.r + 10
-        if (dist < minDist) {
-          const push = ((minDist - dist) / 2) * strength
-          const ux = dx / dist
-          const uy = dy / dist
-          // Heavier (more followers) moves less
-          const wa = 1 / (1 + Math.log10((a.followers || 1) + 1))
-          const wb = 1 / (1 + Math.log10((b.followers || 1) + 1))
-          const sum = wa + wb
-          a.x -= ux * push * (wb / sum)
-          a.y -= uy * push * (wb / sum)
-          b.x += ux * push * (wa / sum)
-          b.y += uy * push * (wa / sum)
-        }
-      }
-    }
-    // Soft pull back to data anchors + clamp
-    for (let i = 0; i < items.length; i++) {
-      const a = actors[i]
-      const { x, y } = actorMatrixPos(a, config)
-      const r = items[i].r
-      const ax = pad + r + x * Math.max(1, width - 2 * pad - 2 * r)
-      const ay = pad + r + (1 - y) * Math.max(1, height - 2 * pad - 2 * r)
-      items[i].x += (ax - items[i].x) * 0.04
-      items[i].y += (ay - items[i].y) * 0.04
-      items[i].x = Math.min(width - r - pad, Math.max(r + pad, items[i].x))
-      items[i].y = Math.min(height - r - pad, Math.max(r + pad, items[i].y))
-    }
-  }
-
-  return items
-    .map((it) => ({
-      id: it.id,
-      x: it.x,
-      y: it.y,
-      r: it.r,
-      depth: it.depth,
-      z: Math.round(10 + it.depth * 40 + it.quality * 0.15),
-    }))
-    .sort((a, b) => a.z - b.z)
+function viFeedTitle(raw: string): string {
+  if (!raw || /livefeed/i.test(raw)) return 'Bảng tin X · mention SCEX'
+  return raw
 }
 
 export function ScexTrackingPage() {
   const [dataset, setDataset] = useState<ScexDataset | null>(null)
-  const [plotSize, setPlotSize] = useState({ w: 0, h: 0 })
+  const [mapKols, setMapKols] = useState<Kol[]>([])
   const [expanded, setExpanded] = useState<Record<string, boolean>>({})
-  const [selectedId, setSelectedId] = useState<string | null>(null)
-  const plotRef = useRef<HTMLDivElement>(null)
+  const [selectedActor, setSelectedActor] = useState<ScexActor | null>(null)
+  const [autoRotate, setAutoRotate] = useState(true)
 
   useEffect(() => {
     let cancelled = false
     void loadScexWithSource().then((r) => {
       if (cancelled) return
       setDataset(r.dataset)
+    })
+    void loadKolsWithSource().then((r) => {
+      if (cancelled) return
+      setMapKols(r.kols || [])
     })
     return () => {
       cancelled = true
@@ -154,24 +77,28 @@ export function ScexTrackingPage() {
     )
   }, [dataset])
 
-  // Measure matrix plot for pixel packing
-  useLayoutEffect(() => {
-    const el = plotRef.current
-    if (!el) return
-    const measure = () => {
-      const rect = el.getBoundingClientRect()
-      setPlotSize({ w: rect.width, h: rect.height })
+  const mapByHandle = useMemo(() => {
+    const m = new Map<string, Kol>()
+    for (const k of mapKols) {
+      m.set(k.handle.replace(/^@/, '').toLowerCase(), k)
     }
-    measure()
-    const ro = new ResizeObserver(measure)
-    ro.observe(el)
-    return () => ro.disconnect()
-  }, [dataset?.config.enabled])
+    return m
+  }, [mapKols])
+
+  const mapHandles = useMemo(
+    () => new Set(mapByHandle.keys()),
+    [mapByHandle],
+  )
+
+  const onMapCount = useMemo(
+    () => visible.filter((a) => mapHandles.has(a.handle.toLowerCase())).length,
+    [visible, mapHandles],
+  )
 
   if (!dataset) {
     return (
       <div className="scex-loading">
-        <p>Loading…</p>
+        <p>Đang tải…</p>
       </div>
     )
   }
@@ -183,22 +110,19 @@ export function ScexTrackingPage() {
         <div className="scex-card">
           <h1>{config.brandName || 'SCEX'}</h1>
           <p className="scex-empty" style={{ padding: 0 }}>
-            Tracking is currently offline.
+            Tracking đang tạm tắt.
           </p>
         </div>
       </div>
     )
   }
 
-  const sizes = visible.map((a) => actorSizeValue(a, config))
-  const maxSize = Math.max(...sizes, 1)
   const posts = dataset.posts.filter((p) => !p.hidden).slice(0, 50)
   const totalFollowers = visible.reduce((s, a) => s + (a.followers || 0), 0)
   const handle = config.brandHandle?.replace(/^@/, '') || 'scexofficial'
-
-  const packed = packBubbles(visible, config, plotSize.w, plotSize.h, maxSize)
-  const packedById = new Map(packed.map((b) => [b.id, b]))
-  const actorById = new Map(visible.map((a) => [a.id, a]))
+  const selectedMapKol = selectedActor
+    ? mapByHandle.get(selectedActor.handle.toLowerCase()) || null
+    : null
 
   return (
     <div className="scex-page">
@@ -215,22 +139,26 @@ export function ScexTrackingPage() {
           <div>
             <h1 className="scex-page__title">{config.brandName}</h1>
             <p className="scex-page__subtitle">
-              @{handle} · {config.timeWindowDays}d window · mention radar
+              @{handle} · cửa sổ {config.timeWindowDays} ngày · radar mention
             </p>
           </div>
         </div>
         <div className="scex-page__stats">
           <div className="scex-stat">
             <em>{visible.length}</em>
-            <span>Accounts</span>
+            <span>Tài khoản</span>
           </div>
           <div className="scex-stat">
             <em>{posts.length}</em>
-            <span>Posts</span>
+            <span>Bài viết</span>
+          </div>
+          <div className="scex-stat">
+            <em>{onMapCount}</em>
+            <span>Có trên map</span>
           </div>
           <div className="scex-stat">
             <em>{formatCompact(totalFollowers)}</em>
-            <span>Followers Σ</span>
+            <span>Tổng followers</span>
           </div>
         </div>
       </header>
@@ -238,110 +166,52 @@ export function ScexTrackingPage() {
       <div className="scex-page__grid">
         <section className="scex-card scex-matrix">
           <div className="scex-card__head">
-            <h2>{config.matrixTitle}</h2>
-            <p>
-              Volume × quality · 2.5D pack · size by{' '}
-              {config.sizeMetric === 'reach7d' ? 'reach' : 'followers'}
-            </p>
+            <div>
+              <h2>{viMatrixTitle(config.matrixTitle)}</h2>
+              <p>
+                Trục ngang: số lần nhắc · Trục dọc: chất lượng · Kích thước:
+                followers ·{' '}
+                {onMapCount}/{visible.length} KOL có trên map (bấm xem chi tiết /
+                Surf)
+              </p>
+            </div>
+            <button
+              type="button"
+              className={`scex-rotate-btn ${autoRotate ? 'is-on' : ''}`}
+              onClick={() => setAutoRotate((v) => !v)}
+              title="Tự xoay đám mây 3D"
+            >
+              {autoRotate ? '⏸ Tạm dừng xoay' : '▶ Tự xoay'}
+            </button>
           </div>
-          <div className="scex-matrix__body">
-            <div className="scex-matrix__plot" ref={plotRef}>
-              <div className="scex-matrix__quad scex-matrix__quad--nurture">
-                <strong>{config.quadrantLabels.nurture?.title}</strong>
-                <small>{config.quadrantLabels.nurture?.subtitle}</small>
-              </div>
-              <div className="scex-matrix__quad scex-matrix__quad--stars">
-                <strong>{config.quadrantLabels.stars?.title}</strong>
-                <small>{config.quadrantLabels.stars?.subtitle}</small>
-              </div>
-              <div className="scex-matrix__quad scex-matrix__quad--ignore">
-                <strong>{config.quadrantLabels.ignore?.title}</strong>
-                <small>{config.quadrantLabels.ignore?.subtitle}</small>
-              </div>
-              <div className="scex-matrix__quad scex-matrix__quad--noise">
-                <strong>{config.quadrantLabels.noise?.title}</strong>
-                <small>{config.quadrantLabels.noise?.subtitle}</small>
-              </div>
-
-              <div className="scex-matrix__stage" aria-hidden={false}>
-                {packed.map((b) => {
-                  const a = actorById.get(b.id)
-                  if (!a) return null
-                  const ring =
-                    config.sentimentLabels[a.sentiment]?.color || '#94a3b8'
-                  const diam = b.r * 2
-                  const selected = selectedId === a.id
-                  return (
-                    <button
-                      key={a.id}
-                      type="button"
-                      className={`scex-bubble ${selected ? 'is-selected' : ''}`}
-                      style={{
-                        left: b.x,
-                        top: b.y,
-                        width: diam,
-                        height: diam,
-                        borderColor: ring,
-                        zIndex: selected ? 80 : b.z,
-                        ['--depth' as string]: String(b.depth),
-                        ['--ring' as string]: ring,
-                      }}
-                      title={`@${a.handle} · V${a.postsVolume} · Q${a.qualityScore} · ${formatCompact(a.followers)}`}
-                      onClick={() =>
-                        setSelectedId((prev) => (prev === a.id ? null : a.id))
-                      }
-                    >
-                      <span className="scex-bubble__glow" aria-hidden />
-                      <span className="scex-bubble__disc">
-                        <XProfileAvatar
-                          handle={a.handle}
-                          name={a.displayName}
-                          size={Math.max(24, Math.round(diam - 6))}
-                        />
-                      </span>
-                      <span className="scex-bubble__label">
-                        @{a.handle.length > 10 ? `${a.handle.slice(0, 9)}…` : a.handle}
-                      </span>
-                    </button>
-                  )
-                })}
-              </div>
+          <div className="scex-matrix__body scex-matrix__body--3d">
+            <ScexMatrix3D
+              actors={visible}
+              config={config}
+              selectedId={selectedActor?.id ?? null}
+              mapHandles={mapHandles}
+              autoRotate={autoRotate}
+              onSelect={setSelectedActor}
+            />
+            <div className="scex-matrix__legend">
+              <span>
+                <i className="scex-matrix__legend-dot scex-matrix__legend-dot--map" />
+                Có trên map Radar — bấm xem hồ sơ &amp; Surf
+              </span>
+              <span>
+                <i className="scex-matrix__legend-dot" />
+                Chỉ mention SCEX — bấm xem thống kê
+              </span>
             </div>
-            <div className="scex-matrix__axis-x">
-              {config.volumeAxis.label} →
-            </div>
-            <div className="scex-matrix__axis-y">
-              ↑ {config.qualityAxis.label}
-            </div>
-            {selectedId && packedById.has(selectedId) && (
-              <div className="scex-matrix__tip">
-                {(() => {
-                  const a = actorById.get(selectedId)
-                  if (!a) return null
-                  return (
-                    <>
-                      <strong>
-                        {a.displayName}{' '}
-                        <span>@{a.handle}</span>
-                      </strong>
-                      <span>
-                        V{a.postsVolume} · Q{a.qualityScore} ·{' '}
-                        {formatCompact(a.followers)} followers · {a.sentiment}
-                      </span>
-                    </>
-                  )
-                })()}
-              </div>
-            )}
           </div>
         </section>
 
         <section className="scex-card scex-feed">
           <div className="scex-card__head">
-            <h2>{config.feedTitle}</h2>
+            <h2>{viFeedTitle(config.feedTitle)}</h2>
             <p>
-              {posts.length} recent ·{' '}
-              {posts.filter((p) => p.media?.length).length} with media (R2)
+              {posts.length} bài gần đây ·{' '}
+              {posts.filter((p) => p.media?.length).length} có ảnh (R2)
             </p>
           </div>
           <ul className="scex-feed__list">
@@ -351,19 +221,35 @@ export function ScexTrackingPage() {
                 post={p}
                 actor={dataset.actors.find((a) => a.handle === p.handle)}
                 sentimentLabel={config.sentimentLabels[p.sentiment]}
+                onMap={mapHandles.has(p.handle.toLowerCase())}
                 expanded={!!expanded[p.id]}
                 onToggleExpand={() =>
                   setExpanded((prev) => ({ ...prev, [p.id]: !prev[p.id] }))
                 }
+                onOpenActor={() => {
+                  const a = dataset.actors.find(
+                    (x) => x.handle === p.handle,
+                  )
+                  if (a) setSelectedActor(a)
+                }}
                 index={index}
               />
             ))}
             {!posts.length && (
-              <li className="scex-empty">No posts in this window yet.</li>
+              <li className="scex-empty">Chưa có bài trong cửa sổ này.</li>
             )}
           </ul>
         </section>
       </div>
+
+      {selectedActor && (
+        <ScexKolDetail
+          actor={selectedActor}
+          mapKol={selectedMapKol}
+          config={config}
+          onClose={() => setSelectedActor(null)}
+        />
+      )}
     </div>
   )
 }
@@ -372,18 +258,21 @@ function ScexFeedCard({
   post,
   actor,
   sentimentLabel,
+  onMap,
   expanded,
   onToggleExpand,
+  onOpenActor,
   index,
 }: {
   post: ScexPost
   actor?: ScexActor
   sentimentLabel?: { label: string; color: string }
+  onMap: boolean
   expanded: boolean
   onToggleExpand: () => void
+  onOpenActor: () => void
   index: number
 }) {
-  // Media is pre-cached to R2 by scripts/hydrate_scex_media.mjs (no runtime X API)
   const media = post.media || []
   const likes = post.likes
   const replies = post.replies
@@ -406,7 +295,12 @@ function ScexFeedCard({
         aria-hidden
       />
       <div className="scex-feed-card__top">
-        <div className="scex-feed-card__author">
+        <button
+          type="button"
+          className="scex-feed-card__author"
+          onClick={onOpenActor}
+          title={onMap ? 'Xem chi tiết KOL trên map' : 'Xem thống kê SCEX'}
+        >
           <div
             className="scex-feed-card__av"
             style={{ boxShadow: `0 0 0 2px ${sentColor}55` }}
@@ -420,6 +314,9 @@ function ScexFeedCard({
           <div className="scex-feed-card__meta">
             <div className="scex-feed-card__name">
               <strong>{actor?.displayName || post.handle}</strong>
+              {onMap && (
+                <span className="scex-pill scex-pill--map">Map</span>
+              )}
               {actor?.tier && (
                 <span className="scex-pill scex-pill--tier">{actor.tier}</span>
               )}
@@ -439,7 +336,7 @@ function ScexFeedCard({
               <time dateTime={post.postedAt}>{formatTime(post.postedAt)}</time>
             </span>
           </div>
-        </div>
+        </button>
         {post.url && (
           <a
             className="scex-feed-card__open"

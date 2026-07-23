@@ -2,7 +2,7 @@
   "version": 1,
   "kind": "scex-tracking",
   "asOf": "2026-07-23T12:00:00.000Z",
-  "updatedAt": "2026-07-23T04:31:19.458Z",
+  "updatedAt": "2026-07-23T04:38:44.687Z",
   "note": "Expanded Blue Verified snapshot @scexofficial / SCEX / “sàn SCEX” (23/06–23/07/2026). 38 posts · 20 KOL actors (brand posts in feed only). ~70% bullish / mixed mild critique. Not 100% of all mentions — representative high-engagement set. Mild Bearish mapped to bearish + notes. Media on R2: 30/38 posts (hydrate_scex_media).",
   "config": {
     "brandName": "SCEX",
@@ -26,41 +26,41 @@
     "volumeAxis": {
       "min": 0,
       "max": 8,
-      "label": "Mentions @scexofficial (30d snapshot)"
+      "label": "Số lần nhắc (30 ngày)"
     },
     "qualityAxis": {
       "min": 0,
       "max": 100,
-      "label": "Quality engagement score"
+      "label": "Điểm chất lượng"
     },
     "sizeMetric": "followers",
     "volumeSplit": 2,
     "qualitySplit": 50,
     "quadrantLabels": {
       "stars": {
-        "title": "STARS",
-        "subtitle": "High quality · active mentions — priority"
+        "title": "NGÔI SAO",
+        "subtitle": "Nói nhiều · chất lượng cao — ưu tiên hợp tác"
       },
       "nurture": {
-        "title": "NURTURE",
-        "subtitle": "High quality · low volume — invite more"
+        "title": "CẦN NUÔI",
+        "subtitle": "Chất lượng cao · ít bài — mời đăng thêm"
       },
       "noise": {
-        "title": "NOISE",
-        "subtitle": "Low quality · high volume — filter"
+        "title": "ỒN ÀO",
+        "subtitle": "Nhiều bài · chất lượng thấp — cần lọc"
       },
       "ignore": {
-        "title": "IGNORE",
-        "subtitle": "Low signal — archive"
+        "title": "THẤP",
+        "subtitle": "Ít tín hiệu — để sau / lưu trữ"
       }
     },
     "sentimentLabels": {
       "bullish": {
-        "label": "Bullish",
+        "label": "Tích cực",
         "color": "#22c55e"
       },
       "bearish": {
-        "label": "Bearish",
+        "label": "Tiêu cực",
         "color": "#ef4444"
       },
       "shill": {
@@ -68,16 +68,16 @@
         "color": "#f59e0b"
       },
       "scam": {
-        "label": "Scam Alert",
+        "label": "Cảnh báo scam",
         "color": "#dc2626"
       },
       "neutral": {
-        "label": "Neutral",
+        "label": "Trung lập",
         "color": "#94a3b8"
       }
     },
-    "matrixTitle": "SCEX · Blue Verified mentions (30d)",
-    "feedTitle": "X livefeed · @scexofficial mentions",
+    "matrixTitle": "Ma trận mention SCEX",
+    "feedTitle": "Bảng tin X · mention SCEX",
     "enabled": true
   },
   "actors": [

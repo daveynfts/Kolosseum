@@ -113,29 +113,29 @@ export interface ScexDataset {
 }
 
 const DEFAULT_SENTIMENT: Record<ScexSentiment, ScexSentimentLabel> = {
-  bullish: { label: 'Bullish', color: '#22c55e' },
-  bearish: { label: 'Bearish', color: '#ef4444' },
+  bullish: { label: 'Tích cực', color: '#22c55e' },
+  bearish: { label: 'Tiêu cực', color: '#ef4444' },
   shill: { label: 'Shill', color: '#f59e0b' },
-  scam: { label: 'Scam Alert', color: '#dc2626' },
-  neutral: { label: 'Neutral', color: '#94a3b8' },
+  scam: { label: 'Cảnh báo scam', color: '#dc2626' },
+  neutral: { label: 'Trung lập', color: '#94a3b8' },
 }
 
 const DEFAULT_QUAD: Record<ScexQuadrant, ScexQuadrantLabel> = {
   stars: {
-    title: 'STARS',
-    subtitle: 'High quality · high volume',
+    title: 'NGÔI SAO',
+    subtitle: 'Nói nhiều · chất lượng cao — ưu tiên hợp tác',
   },
   nurture: {
-    title: 'NURTURE',
-    subtitle: 'High quality · low volume',
+    title: 'CẦN NUÔI',
+    subtitle: 'Chất lượng cao · ít bài — mời đăng thêm',
   },
   noise: {
-    title: 'NOISE',
-    subtitle: 'Low quality · high volume',
+    title: 'ỒN ÀO',
+    subtitle: 'Nhiều bài · chất lượng thấp — cần lọc',
   },
   ignore: {
-    title: 'IGNORE',
-    subtitle: 'Low quality · low volume',
+    title: 'THẤP',
+    subtitle: 'Ít tín hiệu — để sau / lưu trữ',
   },
 }
 
@@ -149,15 +149,15 @@ export function defaultScexConfig(): ScexConfig {
     userMinPosts: 3,
     userMinFollowers: 5000,
     userMinQuality: 40,
-    volumeAxis: { min: 0, max: 20, label: 'Posts (window)' },
-    qualityAxis: { min: 0, max: 100, label: 'Quality score' },
+    volumeAxis: { min: 0, max: 20, label: 'Số lần nhắc' },
+    qualityAxis: { min: 0, max: 100, label: 'Điểm chất lượng' },
     sizeMetric: 'followers',
     volumeSplit: 5,
     qualitySplit: 50,
     quadrantLabels: { ...DEFAULT_QUAD },
     sentimentLabels: { ...DEFAULT_SENTIMENT },
-    matrixTitle: 'SCEX mention matrix',
-    feedTitle: 'X livefeed · SCEX',
+    matrixTitle: 'Ma trận mention SCEX',
+    feedTitle: 'Bảng tin X · SCEX',
     enabled: true,
   }
 }

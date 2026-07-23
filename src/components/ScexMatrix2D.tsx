@@ -1,5 +1,6 @@
 /**
  * SCEX mention matrix — 2D packed plot (volume × quality).
+ * Quadrant labels sit in a frame OUTSIDE the avatar plot (no overlap).
  */
 import { useLayoutEffect, useMemo, useRef, useState } from 'react'
 import type { ScexActor, ScexConfig } from '../data/scexTracking'
@@ -37,7 +38,8 @@ function packBubbles(
   maxSize: number,
 ): BubbleLayout[] {
   if (!actors.length || width < 40 || height < 40) return []
-  const pad = 14
+  // Generous pad so avatars stay clear of plot edges
+  const pad = 22
   const items = actors.map((a) => {
     const { x, y } = actorMatrixPos(a, config)
     const r = 18 + (actorSizeValue(a, config) / maxSize) * 24
@@ -140,87 +142,141 @@ export function ScexMatrix2D({
   )
   const q = config.quadrantLabels
 
+  const quads = [
+    {
+      key: 'stars',
+      title: q.stars?.title || 'TRỌNG ĐIỂM',
+      sub: q.stars?.subtitle || '',
+      tone: 'stars' as const,
+    },
+    {
+      key: 'nurture',
+      title: q.nurture?.title || 'TIỀM NĂNG',
+      sub: q.nurture?.subtitle || '',
+      tone: 'nurture' as const,
+    },
+    {
+      key: 'noise',
+      title: q.noise?.title || 'CẦN RÀ SOÁT',
+      sub: q.noise?.subtitle || '',
+      tone: 'noise' as const,
+    },
+    {
+      key: 'ignore',
+      title: q.ignore?.title || 'TÍN HIỆU YẾU',
+      sub: q.ignore?.subtitle || '',
+      tone: 'ignore' as const,
+    },
+  ]
+
   return (
-    <div className="scex2d-wrap">
-      <div className="scex-matrix__plot scex2d-plot" ref={plotRef}>
-        <div className="scex-matrix__quad scex-matrix__quad--nurture">
-          <strong>{q.nurture?.title}</strong>
-          <small>{q.nurture?.subtitle}</small>
-        </div>
-        <div className="scex-matrix__quad scex-matrix__quad--stars">
-          <strong>{q.stars?.title}</strong>
-          <small>{q.stars?.subtitle}</small>
-        </div>
-        <div className="scex-matrix__quad scex-matrix__quad--ignore">
-          <strong>{q.ignore?.title}</strong>
-          <small>{q.ignore?.subtitle}</small>
-        </div>
-        <div className="scex-matrix__quad scex-matrix__quad--noise">
-          <strong>{q.noise?.title}</strong>
-          <small>{q.noise?.subtitle}</small>
+    <div className="scex2d-root">
+      <div className="scex2d-stage">
+        <div className="scex-frame-row scex-frame-row--top" aria-hidden>
+          <span className="scex-frame-chip scex-frame-chip--nurture">
+            {q.nurture?.title || 'TIỀM NĂNG'}
+          </span>
+          <span className="scex-frame-chip scex-frame-chip--stars">
+            {q.stars?.title || 'TRỌNG ĐIỂM'}
+          </span>
         </div>
 
-        <div className="scex-matrix__stage">
-          {packed.map((b) => {
-            const a = actorById.get(b.id)
-            if (!a) return null
-            const ring =
-              config.sentimentLabels[a.sentiment]?.color || '#94a3b8'
-            const diam = b.r * 2
-            const selected = selectedId === a.id
-            const onMap = mapHandles.has(a.handle.toLowerCase())
-            return (
-              <button
-                key={a.id}
-                type="button"
-                className={[
-                  'scex-bubble',
-                  selected ? 'is-selected' : '',
-                  onMap ? 'is-on-map' : '',
-                ]
-                  .filter(Boolean)
-                  .join(' ')}
-                style={{
-                  left: b.x,
-                  top: b.y,
-                  width: diam,
-                  height: diam,
-                  borderColor: ring,
-                  zIndex: selected ? 80 : b.z,
-                  ['--depth' as string]: String(b.depth),
-                  ['--ring' as string]: ring,
-                }}
-                title={`@${a.handle} · V${a.postsVolume} · Q${a.qualityScore} · ${formatCompact(a.followers)}${onMap ? ' · Map' : ''}`}
-                onClick={() =>
-                  onSelect(selectedId === a.id ? null : a)
-                }
-              >
-                <span className="scex-bubble__glow" aria-hidden />
-                <span className="scex-bubble__disc">
-                  <XProfileAvatar
-                    handle={a.handle}
-                    name={a.displayName}
-                    size={Math.max(24, Math.round(diam - 8))}
-                  />
-                </span>
-                {onMap && <span className="scex-bubble__map-dot" />}
-                <span className="scex-bubble__label">
-                  @
-                  {a.handle.length > 10
-                    ? `${a.handle.slice(0, 9)}…`
-                    : a.handle}
-                </span>
-              </button>
-            )
-          })}
+        <div className="scex2d-plot-shell">
+          <div className="scex-matrix__plot scex2d-plot" ref={plotRef}>
+            {/* Soft quadrant wash only — no text inside plot */}
+            <div className="scex2d-wash scex2d-wash--nurture" aria-hidden />
+            <div className="scex2d-wash scex2d-wash--stars" aria-hidden />
+            <div className="scex2d-wash scex2d-wash--ignore" aria-hidden />
+            <div className="scex2d-wash scex2d-wash--noise" aria-hidden />
+            <div className="scex2d-crosshair" aria-hidden />
+
+            <div className="scex-matrix__stage">
+              {packed.map((b) => {
+                const a = actorById.get(b.id)
+                if (!a) return null
+                const ring =
+                  config.sentimentLabels[a.sentiment]?.color || '#94a3b8'
+                const diam = b.r * 2
+                const selected = selectedId === a.id
+                const onMap = mapHandles.has(a.handle.toLowerCase())
+                return (
+                  <button
+                    key={a.id}
+                    type="button"
+                    className={[
+                      'scex-bubble',
+                      selected ? 'is-selected' : '',
+                      onMap ? 'is-on-map' : '',
+                    ]
+                      .filter(Boolean)
+                      .join(' ')}
+                    style={{
+                      left: b.x,
+                      top: b.y,
+                      width: diam,
+                      height: diam,
+                      borderColor: ring,
+                      zIndex: selected ? 80 : b.z,
+                      ['--depth' as string]: String(b.depth),
+                      ['--ring' as string]: ring,
+                    }}
+                    title={`@${a.handle} · V${a.postsVolume} · Q${a.qualityScore} · ${formatCompact(a.followers)}${onMap ? ' · Map' : ''}`}
+                    onClick={() =>
+                      onSelect(selectedId === a.id ? null : a)
+                    }
+                  >
+                    <span className="scex-bubble__glow" aria-hidden />
+                    <span className="scex-bubble__disc">
+                      <XProfileAvatar
+                        handle={a.handle}
+                        name={a.displayName}
+                        size={Math.max(24, Math.round(diam - 8))}
+                      />
+                    </span>
+                    {onMap && <span className="scex-bubble__map-dot" />}
+                    <span className="scex-bubble__label">
+                      @
+                      {a.handle.length > 10
+                        ? `${a.handle.slice(0, 9)}…`
+                        : a.handle}
+                    </span>
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+        </div>
+
+        <div className="scex-frame-row scex-frame-row--bottom" aria-hidden>
+          <span className="scex-frame-chip scex-frame-chip--ignore">
+            {q.ignore?.title || 'TÍN HIỆU YẾU'}
+          </span>
+          <span className="scex-frame-chip scex-frame-chip--noise">
+            {q.noise?.title || 'CẦN RÀ SOÁT'}
+          </span>
+        </div>
+
+        <div className="scex2d-axis-bar">
+          <span className="scex2d-axis-bar__y">
+            ↑ {config.qualityAxis.label || 'Điểm chất lượng'}
+          </span>
+          <span className="scex2d-axis-bar__x">
+            {config.volumeAxis.label || 'Tần suất mention'} →
+          </span>
         </div>
       </div>
-      <div className="scex-matrix__axis-x">
-        {config.volumeAxis.label || 'Số lần nhắc'} →
-      </div>
-      <div className="scex-matrix__axis-y">
-        ↑ {config.qualityAxis.label || 'Chất lượng'}
-      </div>
+
+      <ul className="scex3d-quad-legend">
+        {quads.map((item) => (
+          <li
+            key={item.key}
+            className={`scex3d-quad-legend__item scex3d-quad-legend__item--${item.tone}`}
+          >
+            <strong>{item.title}</strong>
+            {item.sub ? <span>{item.sub}</span> : null}
+          </li>
+        ))}
+      </ul>
     </div>
   )
 }

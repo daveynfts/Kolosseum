@@ -357,26 +357,17 @@ export function ScexMatrix3D(props: ScexMatrix3DProps) {
 
   return (
     <div className="scex3d-root">
-      {/* Corner badges only (title) — full copy lives below to avoid overlap */}
+      {/*
+        Frame labels OUTSIDE the canvas — avatars never cover quadrant names.
+        Spatial map: top = high quality, bottom = low; left = low volume, right = high.
+      */}
       <div className="scex3d-stage">
-        <div className="scex3d-corner scex3d-corner--tl" aria-hidden>
-          <span className="scex3d-corner__tag scex3d-corner__tag--nurture">
+        <div className="scex-frame-row scex-frame-row--top" aria-hidden>
+          <span className="scex-frame-chip scex-frame-chip--nurture">
             {q.nurture?.title || 'TIỀM NĂNG'}
           </span>
-        </div>
-        <div className="scex3d-corner scex3d-corner--tr" aria-hidden>
-          <span className="scex3d-corner__tag scex3d-corner__tag--stars">
+          <span className="scex-frame-chip scex-frame-chip--stars">
             {q.stars?.title || 'TRỌNG ĐIỂM'}
-          </span>
-        </div>
-        <div className="scex3d-corner scex3d-corner--bl" aria-hidden>
-          <span className="scex3d-corner__tag scex3d-corner__tag--ignore">
-            {q.ignore?.title || 'TÍN HIỆU YẾU'}
-          </span>
-        </div>
-        <div className="scex3d-corner scex3d-corner--br" aria-hidden>
-          <span className="scex3d-corner__tag scex3d-corner__tag--noise">
-            {q.noise?.title || 'CẦN RÀ SOÁT'}
           </span>
         </div>
 
@@ -398,7 +389,16 @@ export function ScexMatrix3D(props: ScexMatrix3DProps) {
           </Canvas>
         </div>
 
-        <div className="scex3d-axis-bar" aria-hidden>
+        <div className="scex-frame-row scex-frame-row--bottom" aria-hidden>
+          <span className="scex-frame-chip scex-frame-chip--ignore">
+            {q.ignore?.title || 'TÍN HIỆU YẾU'}
+          </span>
+          <span className="scex-frame-chip scex-frame-chip--noise">
+            {q.noise?.title || 'CẦN RÀ SOÁT'}
+          </span>
+        </div>
+
+        <div className="scex3d-axis-bar">
           <span className="scex3d-axis-bar__y">
             ↑ {props.config.qualityAxis.label || 'Điểm chất lượng'}
           </span>

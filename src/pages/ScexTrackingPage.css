@@ -228,6 +228,77 @@
   border-color: rgba(255, 255, 255, 0.28);
 }
 
+/* ── Shared quadrant frame (labels OUTSIDE avatar area) ─ */
+.scex-frame-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  padding: 10px 12px;
+  flex-shrink: 0;
+}
+
+.scex-frame-row--top {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.04) 0%,
+    transparent 100%
+  );
+}
+
+.scex-frame-row--bottom {
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  background: linear-gradient(
+    0deg,
+    rgba(255, 255, 255, 0.03) 0%,
+    transparent 100%
+  );
+}
+
+.scex-frame-chip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 34px;
+  padding: 7px 12px;
+  border-radius: 10px;
+  font-size: 0.8rem;
+  font-weight: 750;
+  letter-spacing: 0.055em;
+  text-transform: uppercase;
+  text-align: center;
+  line-height: 1.2;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(8, 12, 22, 0.75);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.scex-frame-chip--nurture {
+  color: #7dd3fc;
+  border-color: rgba(56, 189, 248, 0.4);
+  background: rgba(8, 28, 48, 0.9);
+  box-shadow: inset 0 0 0 1px rgba(56, 189, 248, 0.08);
+}
+.scex-frame-chip--stars {
+  color: #4ade80;
+  border-color: rgba(34, 197, 94, 0.4);
+  background: rgba(8, 32, 20, 0.9);
+  box-shadow: inset 0 0 0 1px rgba(34, 197, 94, 0.08);
+}
+.scex-frame-chip--ignore {
+  color: #e2e8f0;
+  border-color: rgba(148, 163, 184, 0.35);
+  background: rgba(18, 24, 36, 0.9);
+}
+.scex-frame-chip--noise {
+  color: #fbbf24;
+  border-color: rgba(245, 158, 11, 0.4);
+  background: rgba(36, 26, 8, 0.9);
+  box-shadow: inset 0 0 0 1px rgba(245, 158, 11, 0.08);
+}
+
 /* ── 3D stage ────────────────────────────────────────── */
 .scex3d-root {
   display: flex;
@@ -236,7 +307,8 @@
 }
 
 .scex3d-stage {
-  position: relative;
+  display: flex;
+  flex-direction: column;
   border-radius: 18px;
   overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.12);
@@ -251,65 +323,17 @@
 
 .scex3d-canvas-wrap {
   position: relative;
-  height: min(52vh, 460px);
-  min-height: 320px;
+  height: min(48vh, 420px);
+  min-height: 300px;
   touch-action: none;
+  /* No absolute labels over this layer */
+  z-index: 1;
 }
 
 .scex3d-canvas-wrap canvas {
   display: block;
   width: 100% !important;
   height: 100% !important;
-}
-
-/* Corner title chips — short only, no long subtitle on canvas */
-.scex3d-corner {
-  position: absolute;
-  z-index: 6;
-  pointer-events: none;
-  padding: 12px 14px;
-}
-
-.scex3d-corner--tl { top: 0; left: 0; }
-.scex3d-corner--tr { top: 0; right: 0; }
-.scex3d-corner--bl { bottom: 36px; left: 0; }
-.scex3d-corner--br { bottom: 36px; right: 0; }
-
-.scex3d-corner__tag {
-  display: inline-block;
-  font-size: 0.78rem;
-  font-weight: 750;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  padding: 6px 11px;
-  border-radius: 9px;
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  background: rgba(6, 10, 18, 0.82);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
-  line-height: 1.2;
-}
-
-.scex3d-corner__tag--nurture {
-  color: #7dd3fc;
-  border-color: rgba(56, 189, 248, 0.35);
-  background: rgba(8, 24, 40, 0.88);
-}
-.scex3d-corner__tag--stars {
-  color: #4ade80;
-  border-color: rgba(34, 197, 94, 0.35);
-  background: rgba(8, 28, 18, 0.88);
-}
-.scex3d-corner__tag--ignore {
-  color: #cbd5e1;
-  border-color: rgba(148, 163, 184, 0.3);
-  background: rgba(15, 20, 30, 0.88);
-}
-.scex3d-corner__tag--noise {
-  color: #fbbf24;
-  border-color: rgba(245, 158, 11, 0.35);
-  background: rgba(30, 22, 8, 0.88);
 }
 
 /* Axis + hint row under canvas (never over avatars) */
@@ -320,7 +344,7 @@
   gap: 8px 12px;
   padding: 8px 14px 10px;
   border-top: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(0, 0, 0, 0.28);
+  background: rgba(0, 0, 0, 0.32);
   font-size: 0.78rem;
   font-weight: 600;
   color: rgba(226, 232, 240, 0.72);
@@ -484,9 +508,114 @@
 }
 
 /* ── 2D plot ─────────────────────────────────────────── */
-.scex2d-wrap {
+.scex2d-root {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.scex2d-stage {
+  display: flex;
+  flex-direction: column;
+  border-radius: 18px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(2, 6, 16, 0.55);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    0 12px 36px rgba(0, 0, 0, 0.22);
+}
+
+.scex2d-plot-shell {
+  padding: 0 10px;
+}
+
+.scex2d-plot {
   position: relative;
-  padding: 0 0 4px 28px;
+  height: min(48vh, 420px);
+  min-height: 300px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+  /* Override legacy 4-cell label grid — pure avatar surface */
+  display: block !important;
+  background:
+    radial-gradient(ellipse 70% 60% at 75% 25%, rgba(34, 197, 94, 0.08), transparent 55%),
+    radial-gradient(ellipse 60% 50% at 25% 75%, rgba(100, 116, 139, 0.07), transparent 50%),
+    radial-gradient(ellipse 50% 40% at 75% 75%, rgba(245, 158, 11, 0.06), transparent 50%),
+    radial-gradient(ellipse 50% 40% at 25% 25%, rgba(56, 189, 248, 0.08), transparent 50%),
+    rgba(2, 6, 23, 0.6);
+}
+
+.scex2d-wash {
+  position: absolute;
+  width: 50%;
+  height: 50%;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.55;
+}
+.scex2d-wash--nurture {
+  top: 0;
+  left: 0;
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.1), transparent 70%);
+}
+.scex2d-wash--stars {
+  top: 0;
+  right: 0;
+  background: linear-gradient(225deg, rgba(34, 197, 94, 0.12), transparent 70%);
+}
+.scex2d-wash--ignore {
+  bottom: 0;
+  left: 0;
+  background: linear-gradient(45deg, rgba(100, 116, 139, 0.1), transparent 70%);
+}
+.scex2d-wash--noise {
+  bottom: 0;
+  right: 0;
+  background: linear-gradient(315deg, rgba(245, 158, 11, 0.1), transparent 70%);
+}
+
+.scex2d-crosshair {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background:
+    linear-gradient(
+      90deg,
+      transparent calc(50% - 0.5px),
+      rgba(255, 255, 255, 0.1) calc(50% - 0.5px),
+      rgba(255, 255, 255, 0.1) calc(50% + 0.5px),
+      transparent calc(50% + 0.5px)
+    ),
+    linear-gradient(
+      0deg,
+      transparent calc(50% - 0.5px),
+      rgba(255, 255, 255, 0.1) calc(50% - 0.5px),
+      rgba(255, 255, 255, 0.1) calc(50% + 0.5px),
+      transparent calc(50% + 0.5px)
+    );
+}
+
+.scex2d-axis-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 14px 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(0, 0, 0, 0.28);
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.scex2d-axis-bar__y {
+  color: #7dd3fc;
+}
+
+.scex2d-axis-bar__x {
+  color: #86efac;
 }
 
 .scex-bubble.is-on-map {
@@ -1318,13 +1447,16 @@
     max-height: min(68vh, 520px);
     border-radius: 18px 18px 0 0;
   }
-  .scex3d-canvas-wrap {
-    min-height: 280px;
-    height: min(44vh, 360px);
+  .scex3d-canvas-wrap,
+  .scex2d-plot {
+    min-height: 260px;
+    height: min(42vh, 340px);
   }
-  .scex3d-corner__tag {
+  .scex-frame-chip {
     font-size: 0.7rem;
-    padding: 5px 9px;
+    min-height: 30px;
+    padding: 6px 8px;
+    letter-spacing: 0.04em;
   }
   .scex3d-quad-legend {
     grid-template-columns: 1fr;
@@ -1338,10 +1470,6 @@
   .scex-matrix__toolbar {
     width: 100%;
     justify-content: flex-end;
-  }
-  .scex-matrix__quad small {
-    font-size: 0.7rem;
-    max-width: 120px;
   }
 }
 

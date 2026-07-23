@@ -2,8 +2,8 @@
   "version": 1,
   "kind": "scex-tracking",
   "asOf": "2026-07-23T18:00:00.000Z",
-  "updatedAt": "2026-07-23T09:26:57.602Z",
-  "note": "SCEX mention export sync · 133 accounts · 82 original posts linked · matrix volume = gốc+reply · views → reach7d. Livefeed filter by KOL. Tone Hỗn hợp/Trung lập → neutral. Media on R2: 74/82 posts (hydrate_scex_media). Batch posts +32 (KT, shuigvn, SucVat, bachkhoabnb, KienGold, …). Media on R2: 102/114 posts (hydrate_scex_media). Batch posts +19 (KhiemBNB, dinhthang97, Blockmedia, KaiBGR, Lens, …). Media on R2: 118/133 posts (hydrate_scex_media). Batch posts +27 (PeterTran, htp96, RiceFarmer, Liquid100x, …). Media on R2: 140/160 posts (hydrate_scex_media). Batch posts +28 (tdcrypto, NickyPham, BiCanTho, GF_Capital, …). Media on R2: 168/188 posts (hydrate_scex_media).",
+  "updatedAt": "2026-07-23T10:11:49.339Z",
+  "note": "SCEX mention export sync · 133 accounts · 82 original posts linked · matrix volume = gốc+reply · views → reach7d. Livefeed filter by KOL. Tone Hỗn hợp/Trung lập → neutral. Media on R2: 74/82 posts (hydrate_scex_media). Batch posts +32 (KT, shuigvn, SucVat, bachkhoabnb, KienGold, …). Media on R2: 102/114 posts (hydrate_scex_media). Batch posts +19 (KhiemBNB, dinhthang97, Blockmedia, KaiBGR, Lens, …). Media on R2: 118/133 posts (hydrate_scex_media). Batch posts +27 (PeterTran, htp96, RiceFarmer, Liquid100x, …). Media on R2: 140/160 posts (hydrate_scex_media). Batch posts +28 (tdcrypto, NickyPham, BiCanTho, GF_Capital, …). Media on R2: 168/188 posts (hydrate_scex_media). Batch posts +25 (vangemxin1, TranNinh9, maybach, PTGinKing, …). Media on R2: 192/213 posts (hydrate_scex_media).",
   "config": {
     "brandName": "SCEX",
     "brandHandle": "scexofficial",
@@ -1300,8 +1300,9 @@
       "sentimentConfidence": 0.55,
       "quadrant": "nurture",
       "isWhitelisted": true,
-      "notes": "Gốc 1 · Reply 0 · Views 1,027 · Tone: Hỗn hợp",
-      "tags": "goc:1,reply:0,mixed"
+      "notes": "Gốc 1 · Reply 0 · Views 1027 · Tone: Hỗn hợp",
+      "tags": "goc:1,reply:0,mixed",
+      "lastPostAt": "2026-07-08T02:32:52.115Z"
     },
     {
       "id": "a_sangbtcethxau",
@@ -1328,15 +1329,16 @@
       "kind": "kol",
       "tier": "Platinum",
       "followers": 17800,
-      "reach7d": 563,
+      "reach7d": 564,
       "postsVolume": 1,
       "qualityScore": 68,
       "sentiment": "neutral",
       "sentimentConfidence": 0.65,
       "quadrant": "nurture",
       "isWhitelisted": true,
-      "notes": "Gốc 1 · Reply 0 · Views 563 · Tone: Trung lập",
-      "tags": "goc:1,reply:0,neutral"
+      "notes": "Gốc 1 · Reply 0 · Views 564 · Tone: Trung lập",
+      "tags": "goc:1,reply:0,neutral",
+      "lastPostAt": "2026-07-19T07:21:34.630Z"
     },
     {
       "id": "a_chanhdoro",
@@ -1450,7 +1452,7 @@
       "displayName": "v_3394",
       "kind": "kol",
       "tier": "Challenger",
-      "followers": 9948,
+      "followers": 9950,
       "reach7d": 1154,
       "postsVolume": 1,
       "qualityScore": 77,
@@ -1458,8 +1460,9 @@
       "sentimentConfidence": 0.65,
       "quadrant": "nurture",
       "isWhitelisted": false,
-      "notes": "Gốc 1 · Reply 0 · Views 1,154 · Tone: Trung lập",
-      "tags": "goc:1,reply:0,neutral"
+      "notes": "Gốc 1 · Reply 0 · Views 1154 · Tone: Trung lập",
+      "tags": "goc:1,reply:0,neutral",
+      "lastPostAt": "2026-07-04T10:27:30.131Z"
     },
     {
       "id": "a_trungdino90",
@@ -1476,7 +1479,8 @@
       "quadrant": "nurture",
       "isWhitelisted": false,
       "notes": "Gốc 1 · Reply 0 · Views 662 · Tone: Bullish",
-      "tags": "goc:1,reply:0,bullish"
+      "tags": "goc:1,reply:0,bullish",
+      "lastPostAt": "2026-07-01T07:55:22.184Z"
     },
     {
       "id": "a_tesnguyeneth",
@@ -1493,7 +1497,8 @@
       "quadrant": "nurture",
       "isWhitelisted": false,
       "notes": "Gốc 1 · Reply 0 · Views 873 · Tone: Bullish",
-      "tags": "goc:1,reply:0,bullish"
+      "tags": "goc:1,reply:0,bullish",
+      "lastPostAt": "2026-07-02T12:17:01.573Z"
     },
     {
       "id": "a_hungtinh1993",
@@ -1526,8 +1531,9 @@
       "sentimentConfidence": 0.65,
       "quadrant": "nurture",
       "isWhitelisted": false,
-      "notes": "Gốc 1 · Reply 0 · Views 1,164 · Tone: Trung lập",
-      "tags": "goc:1,reply:0,neutral"
+      "notes": "Gốc 1 · Reply 0 · Views 1164 · Tone: Trung lập",
+      "tags": "goc:1,reply:0,neutral",
+      "lastPostAt": "2026-07-08T10:47:52.995Z"
     },
     {
       "id": "a_thangha19931991",
@@ -1544,7 +1550,8 @@
       "quadrant": "nurture",
       "isWhitelisted": false,
       "notes": "Gốc 1 · Reply 0 · Views 410 · Tone: Trung lập",
-      "tags": "goc:1,reply:0,neutral"
+      "tags": "goc:1,reply:0,neutral",
+      "lastPostAt": "2026-07-03T14:06:49.828Z"
     },
     {
       "id": "a_gynis_tao",
@@ -1624,7 +1631,7 @@
       "displayName": "DntThi",
       "kind": "kol",
       "tier": "Challenger",
-      "followers": 7200,
+      "followers": 7201,
       "reach7d": 582,
       "postsVolume": 1,
       "qualityScore": 71,
@@ -1633,7 +1640,8 @@
       "quadrant": "nurture",
       "isWhitelisted": false,
       "notes": "Gốc 1 · Reply 0 · Views 582 · Tone: Bullish",
-      "tags": "goc:1,reply:0,bullish"
+      "tags": "goc:1,reply:0,bullish",
+      "lastPostAt": "2026-07-09T14:12:18.748Z"
     },
     {
       "id": "a_deekay_btc",
@@ -1650,7 +1658,8 @@
       "quadrant": "nurture",
       "isWhitelisted": false,
       "notes": "Gốc 1 · Reply 0 · Views 243 · Tone: Bullish",
-      "tags": "goc:1,reply:0,bullish"
+      "tags": "goc:1,reply:0,bullish",
+      "lastPostAt": "2026-07-01T08:03:09.552Z"
     },
     {
       "id": "a_sushi1426",
@@ -1667,7 +1676,8 @@
       "quadrant": "nurture",
       "isWhitelisted": false,
       "notes": "Gốc 1 · Reply 0 · Views 937 · Tone: Trung lập",
-      "tags": "goc:1,reply:0,neutral"
+      "tags": "goc:1,reply:0,neutral",
+      "lastPostAt": "2026-07-04T15:21:21.666Z"
     },
     {
       "id": "a_wendyr9_",
@@ -1752,8 +1762,9 @@
       "sentimentConfidence": 0.55,
       "quadrant": "nurture",
       "isWhitelisted": false,
-      "notes": "Gốc 1 · Reply 0 · Views 1,040 · Tone: Hỗn hợp",
-      "tags": "goc:1,reply:0,mixed"
+      "notes": "Gốc 1 · Reply 0 · Views 1040 · Tone: Hỗn hợp",
+      "tags": "goc:1,reply:0,mixed",
+      "lastPostAt": "2026-07-01T02:32:31.514Z"
     },
     {
       "id": "a_tuongvi_vn",
@@ -1770,7 +1781,8 @@
       "quadrant": "nurture",
       "isWhitelisted": false,
       "notes": "Gốc 1 · Reply 0 · Views 895 · Tone: Bullish",
-      "tags": "goc:1,reply:0,bullish"
+      "tags": "goc:1,reply:0,bullish",
+      "lastPostAt": "2026-06-30T13:04:33.923Z"
     },
     {
       "id": "a_cavana_eth",
@@ -1787,7 +1799,8 @@
       "quadrant": "nurture",
       "isWhitelisted": false,
       "notes": "Gốc 1 · Reply 0 · Views 509 · Tone: Trung lập",
-      "tags": "goc:1,reply:0,neutral"
+      "tags": "goc:1,reply:0,neutral",
+      "lastPostAt": "2026-07-03T05:16:28.620Z"
     },
     {
       "id": "a_hongmyresearch",
@@ -1909,7 +1922,8 @@
       "quadrant": "nurture",
       "isWhitelisted": false,
       "notes": "Gốc 1 · Reply 0 · Views 788 · Tone: Bullish",
-      "tags": "goc:1,reply:0,bullish"
+      "tags": "goc:1,reply:0,bullish",
+      "lastPostAt": "2026-07-01T01:58:22.321Z"
     },
     {
       "id": "a_trong_ga29814",
@@ -1926,7 +1940,8 @@
       "quadrant": "nurture",
       "isWhitelisted": false,
       "notes": "Gốc 1 · Reply 0 · Views 274 · Tone: Hỗn hợp",
-      "tags": "goc:1,reply:0,mixed"
+      "tags": "goc:1,reply:0,mixed",
+      "lastPostAt": "2026-07-01T08:39:03.010Z"
     },
     {
       "id": "a_thinhcrt",
@@ -1943,7 +1958,8 @@
       "quadrant": "nurture",
       "isWhitelisted": false,
       "notes": "Gốc 1 · Reply 0 · Views 674 · Tone: Trung lập",
-      "tags": "goc:1,reply:0,neutral"
+      "tags": "goc:1,reply:0,neutral",
+      "lastPostAt": "2026-07-05T15:59:39.840Z"
     },
     {
       "id": "a_luugian95257476",
@@ -1995,7 +2011,8 @@
       "quadrant": "nurture",
       "isWhitelisted": false,
       "notes": "Gốc 1 · Reply 0 · Views 552 · Tone: Trung lập",
-      "tags": "goc:1,reply:0,neutral"
+      "tags": "goc:1,reply:0,neutral",
+      "lastPostAt": "2026-07-01T10:08:36.736Z"
     },
     {
       "id": "a_anhdii72",
@@ -2029,7 +2046,8 @@
       "quadrant": "nurture",
       "isWhitelisted": false,
       "notes": "Gốc 1 · Reply 0 · Views 855 · Tone: Hỗn hợp",
-      "tags": "goc:1,reply:0,mixed"
+      "tags": "goc:1,reply:0,mixed",
+      "lastPostAt": "2026-07-06T04:40:45.879Z"
     },
     {
       "id": "a_charlotte951231",
@@ -2046,7 +2064,8 @@
       "quadrant": "nurture",
       "isWhitelisted": false,
       "notes": "Gốc 1 · Reply 0 · Views 993 · Tone: Bullish",
-      "tags": "goc:1,reply:0,bullish"
+      "tags": "goc:1,reply:0,bullish",
+      "lastPostAt": "2026-07-09T07:15:36.483Z"
     },
     {
       "id": "a_heanutie",
@@ -2096,8 +2115,9 @@
       "sentimentConfidence": 0.65,
       "quadrant": "nurture",
       "isWhitelisted": false,
-      "notes": "Gốc 1 · Reply 0 · Views 1,393 · Tone: Trung lập",
-      "tags": "goc:1,reply:0,neutral"
+      "notes": "Gốc 1 · Reply 0 · Views 1393 · Tone: Trung lập",
+      "tags": "goc:1,reply:0,neutral",
+      "lastPostAt": "2026-07-02T08:53:50.998Z"
     },
     {
       "id": "a_nguyent17504220",
@@ -2320,7 +2340,8 @@
       "quadrant": "nurture",
       "isWhitelisted": false,
       "notes": "Gốc 1 · Reply 0 · Views 332 · Tone: Trung lập",
-      "tags": "goc:1,reply:0,neutral"
+      "tags": "goc:1,reply:0,neutral",
+      "lastPostAt": "2026-07-11T05:42:48.232Z"
     },
     {
       "id": "a_cocoteamvnn",
@@ -2337,7 +2358,8 @@
       "quadrant": "nurture",
       "isWhitelisted": false,
       "notes": "Gốc 1 · Reply 0 · Views 243 · Tone: Bullish",
-      "tags": "goc:1,reply:0,bullish"
+      "tags": "goc:1,reply:0,bullish",
+      "lastPostAt": "2026-07-01T08:41:31.506Z"
     },
     {
       "id": "a_bem1102",
@@ -2354,7 +2376,8 @@
       "quadrant": "nurture",
       "isWhitelisted": false,
       "notes": "Gốc 1 · Reply 0 · Views 272 · Tone: Bullish",
-      "tags": "goc:1,reply:0,bullish"
+      "tags": "goc:1,reply:0,bullish",
+      "lastPostAt": "2026-07-01T14:30:06.451Z"
     },
     {
       "id": "a_hang1856",
@@ -2404,8 +2427,9 @@
       "sentimentConfidence": 0.8,
       "quadrant": "nurture",
       "isWhitelisted": false,
-      "notes": "Gốc 1 · Reply 0 · Views 1,263 · Tone: Bullish",
-      "tags": "goc:1,reply:0,bullish"
+      "notes": "Gốc 1 · Reply 0 · Views 1263 · Tone: Bullish",
+      "tags": "goc:1,reply:0,bullish",
+      "lastPostAt": "2026-07-07T12:11:23.573Z"
     },
     {
       "id": "a_vietnambackcom",
@@ -2439,7 +2463,7 @@
       "likes": 0,
       "reposts": 0,
       "replies": 0,
-      "views": 30
+      "views": 31
     },
     {
       "id": "p_2080123242954850748",
@@ -2660,6 +2684,23 @@
       "reposts": 2,
       "replies": 6,
       "views": 1431
+    },
+    {
+      "id": "p_2078742025227436536",
+      "handle": "ptginking",
+      "url": "https://x.com/PTGinKing/status/2078742025227436536",
+      "text": "SCEX - Công ty Cổ phần Sàn giao dịch Tài sản mã hoá SACOM.\n\nSàn đang trong quá trình nộp hồ sơ cấp phép và xét duyệt từ Bộ Tài Chính, tuân thủ pháp luật Việt Nam và Nghị quyết 05/2025/NQ-CP.\nAnh em trader khỏi lo nhé",
+      "postedAt": "2026-07-19T07:21:34.000Z",
+      "sentiment": "neutral",
+      "hidden": false,
+      "notes": "export batch · Trung lập · media→R2",
+      "media": [
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/6481bfce79f6291810c9ece2"
+      ],
+      "likes": 24,
+      "reposts": 0,
+      "replies": 26,
+      "views": 582
     },
     {
       "id": "p_2078702720379466131",
@@ -2937,6 +2978,23 @@
       "views": 773
     },
     {
+      "id": "p_2075818065187774734",
+      "handle": "vietnamvba",
+      "url": "https://x.com/VietnamVBA/status/2075818065187774734",
+      "text": "SCEX - Gold sponsor of #VietnamRWASummit 2026\nSacom Crypto Exchange Joint Stock Company (SCEX) is a technology company specializing in digital assets and blockchain, committed to building a secure and transparent platform for the trading of tokenized assets. In March 2026, SCEX was one of five enterprises whose applications were deemed complete and valid by Vietnam's Ministry of Finance under Resolution No. 05/2025/NQ-CP, making the company eligible for consideration to obtain a license to operate a tokenized asset trading market.\n\nWith asset security at the core of its development strategy, SCEX has completed its technology infrastructure in compliance with Level 4 Information Security Standards, integrating a core trading system, risk management framework, and talent development programs to meet international operational standards. These efforts contribute to the development of a modern, secure, and sustainable digital asset market in Vietnam.\n\nAs a Gold sponsor of Vietnam RWA Summit 2026, SCEX brings practical insights from a domestic digital asset exchange operator, contributing to discussions on market infrastructure, technology, and the operational requirements for Vietnam's pilot-stage tokenized asset market.\n\n📍 Vietnam RWA Summit 2026 \n- Date: July 18-19, 2026 \n- Venue: International Convention Center, 11 Le Hong Phong, Hanoi\n- Register now: https://forms.gle/gkrHp2UuELNkN3jH9",
+      "postedAt": "2026-07-11T05:42:48.000Z",
+      "sentiment": "neutral",
+      "hidden": false,
+      "notes": "export batch · Trung lập · media→R2",
+      "media": [
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/7f1f3b19ac084672f6786d93"
+      ],
+      "likes": 4,
+      "reposts": 1,
+      "replies": 2,
+      "views": 333
+    },
+    {
       "id": "p_2075811781868720238",
       "handle": "thienbtcrypto",
       "url": "https://x.com/thienbtcrypto/status/2075811781868720238",
@@ -3005,6 +3063,23 @@
       "views": 343
     },
     {
+      "id": "p_2075221511494119671",
+      "handle": "dntthi",
+      "url": "https://x.com/DntThi/status/2075221511494119671",
+      "text": "Mọi người tham khảo nhé, thấy mệt tới nơi ôi \n\nTheo Nghị quyết 05/2025/NQ-CP, Việt Nam sẽ cấp phép cho các tổ chức cung cấp dịch vụ tài sản mã hóa (VASP) và từng bước đưa thị trường vào khuôn khổ pháp lý. Tuy nhiên, quy định bắt buộc nhà đầu tư trong nước phải giao dịch qua sàn được Bộ Tài Chính cấp phép chưa có hiệu lực ngay.\n\n✨ Cụ thể: chỉ sau 6 tháng kể từ khi VASP đầu tiên được cấp phép hoạt động, nhà đầu tư mới bắt buộc giao dịch qua các nền tảng được cấp phép tại Việt Nam. Sau mốc này, việc tiếp tục giao dịch trên nền tảng không được cấp phép có thể bị xử phạt hành chính, hoặc truy cứu trách nhiệm hình sự tùy tính chất và mức độ vi phạm.\n\n✨ Điểm mấu chốt: mốc 6 tháng vẫn chưa bắt đầu đếm. Bộ Tài chính hiện mới xác nhận 5 doanh nghiệp đủ điều kiện hồ sơ để xem xét cấp phép: VIXEX, SCEX, CAEX, TCEX và Công ty Cổ phần Tài sản số Việt Nam.\n\nNếu sàn đầu tiên được cấp phép và vận hành đúng kế hoạch trong quý III/2026, quy định bắt buộc dự kiến chỉ bắt đầu có hiệu lực từ khoảng đầu năm 2027.\n\n👉 Vì vậy, điều nhà đầu tư cần theo dõi không phải tin đồn \"Binance bị cấm\", mà là thời điểm VASP đầu tiên chính thức được cấp phép, đó mới là mốc khởi động thời hạn 6 tháng.",
+      "postedAt": "2026-07-09T14:12:18.000Z",
+      "sentiment": "bullish",
+      "hidden": false,
+      "notes": "export batch · Bullish · media→R2",
+      "media": [
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/11029d6cffabd9ba0fbb8953"
+      ],
+      "likes": 6,
+      "reposts": 0,
+      "replies": 6,
+      "views": 582
+    },
+    {
       "id": "p_2075133334234317283",
       "handle": "jupxeno",
       "url": "https://x.com/JupXeno/status/2075133334234317283",
@@ -3039,6 +3114,24 @@
       "views": 6407
     },
     {
+      "id": "p_2075116644394029555",
+      "handle": "charlotte951231",
+      "url": "https://x.com/Charlotte951231/status/2075116644394029555",
+      "text": "Sàn giao dịch SCEX\n\nTui đăng ký lần 1 thì 2 tuần rồi ko nhận được otp. Nay đăng ký lại xem sao thì sđt vẫn ko nhận được otp 🤣🤣🤣\n\nCó bác nào đky thử thành công chưa?",
+      "postedAt": "2026-07-09T07:15:36.000Z",
+      "sentiment": "bullish",
+      "hidden": false,
+      "notes": "export batch · Bullish · media→R2",
+      "media": [
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/b076120f01c15521d34057a1",
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/376cb43ce51505ae84a807fd"
+      ],
+      "likes": 57,
+      "reposts": 1,
+      "replies": 56,
+      "views": 993
+    },
+    {
       "id": "p_2075110835660468636",
       "handle": "shuigvn",
       "url": "https://x.com/shuigvn/status/2075110835660468636",
@@ -3051,7 +3144,7 @@
       "likes": 115,
       "reposts": 4,
       "replies": 117,
-      "views": 136275
+      "views": 136310
     },
     {
       "id": "p_2075068928771129848",
@@ -3088,6 +3181,23 @@
       "views": 15401
     },
     {
+      "id": "p_2074807677331587391",
+      "handle": "crypto181199",
+      "url": "https://x.com/Crypto181199/status/2074807677331587391",
+      "text": "Sau mấy ngày giao dịch thử nghiệm trên sàn tiền ảo SCEX thuần Việt thì hiện tại đang lỗ 23tr ae ạ. Trade demo mà còn lỗ thì nói gì trade thật.\nĐánh giá ban đầu vê SCEX thì: giống bên giao dịch chứng khoán, không có nhiều trò như các sàn quốc tế #binance hay #bitget. Nếu mà thật tế cũng như thế này thì nói thật là không thể thu hút được user, sàn lập ra cũng chỉ nhằm mục đích giúp cash ra VNĐ cho đúng luật mà thôi. Hi vọng, SCEX có thể tham khảo mô hình của các sàn quốc tế hiện tại để bonus thêm các chương trình khác.",
+      "postedAt": "2026-07-08T10:47:52.000Z",
+      "sentiment": "neutral",
+      "hidden": false,
+      "notes": "export batch · Trung lập · media→R2",
+      "media": [
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/2a79ec05bdad49dcebd9671f"
+      ],
+      "likes": 13,
+      "reposts": 1,
+      "replies": 10,
+      "views": 1164
+    },
+    {
       "id": "p_2074701114667364844",
       "handle": "kieuphong78",
       "url": "https://x.com/KieuPhong78/status/2074701114667364844",
@@ -3120,6 +3230,23 @@
       "reposts": 2,
       "replies": 36,
       "views": 2888
+    },
+    {
+      "id": "p_2074683102811861021",
+      "handle": "maybach_eth",
+      "url": "https://x.com/maybach_eth/status/2074683102811861021",
+      "text": "Hiện tại sau 1/7 mình note được một vài ý như sau: \n\n1. Tổ chức cung cấp dịch vụ tài sản mã hóa (VASP) sẽ tự thu thuế 0.1% trên giao dịch của anh em!  \n\n2. Các giao dịch mua/bán phải thực hiện qua VASP sau 6 tháng kể từ khi VASP đầu tiên được cấp phép hoạt động  \n\nHiện tại chưa có VASP nào chính thức ra mắt, chỉ có SCEX mới ra bản demo thôi anh em nên còn lâu.\n\n3. Vẫn cất coin ở ví cá nhân được! \n\n4. VÙNG XÁM?  \n\nHiện tại Futures, DEX vẫn là vùng xám vì chưa có hướng dẫn cụ thể nào nhắc đến. \n\nTuy nhiên để bó cẩn anh em cứ note lại lịch sử giao dịch là chắc nhất.\n\nSource: vietnamfinance",
+      "postedAt": "2026-07-08T02:32:52.000Z",
+      "sentiment": "neutral",
+      "hidden": false,
+      "notes": "export batch · Hỗn hợp · media→R2",
+      "media": [
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/0769e1d9dae727d8cb8c811c"
+      ],
+      "likes": 15,
+      "reposts": 1,
+      "replies": 15,
+      "views": 1027
     },
     {
       "id": "p_2074540746032677102",
@@ -3189,6 +3316,23 @@
       "reposts": 0,
       "replies": 3,
       "views": 237
+    },
+    {
+      "id": "p_2074466305353408841",
+      "handle": "tranninh9",
+      "url": "https://x.com/TranNinh9/status/2074466305353408841",
+      "text": "Mấy bác giao dịch sàn #SCEX được phát triển bởi  ngân hàng Sacombank và LPbank  mới này thế nào , thấy nhanh ko có ổn ko mấy bác . \nMình thấy trải nghiệm cũng thấy cũng khá ổn nhỉ",
+      "postedAt": "2026-07-07T12:11:23.000Z",
+      "sentiment": "bullish",
+      "hidden": false,
+      "notes": "export batch · Bullish · media→R2",
+      "media": [
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/b5fa11901d9570e71373b33b"
+      ],
+      "likes": 4,
+      "reposts": 0,
+      "replies": 2,
+      "views": 1263
     },
     {
       "id": "p_2074425414546772200",
@@ -3328,6 +3472,24 @@
       "views": 990
     },
     {
+      "id": "p_2073990513179709634",
+      "handle": "mr_mmon",
+      "url": "https://x.com/mr_mmon/status/2073990513179709634",
+      "text": "Bực mình với con hàng SCEX Việt Nam 😡😡\n\nĐến cái mã OTP cũng không gửi về cho user (đã thử lại rất nhiều lần)\n\nCó ai quen mấy con vợ dev SCEX hú mấy ông fix cái",
+      "postedAt": "2026-07-06T04:40:45.000Z",
+      "sentiment": "neutral",
+      "hidden": false,
+      "notes": "export batch · Hỗn hợp · media→R2",
+      "media": [
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/5ad26e9fcc6e89dba8e87a75",
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/4c89c86ba0e1d1b338eb6963"
+      ],
+      "likes": 26,
+      "reposts": 0,
+      "replies": 28,
+      "views": 855
+    },
+    {
       "id": "p_2073984878610423862",
       "handle": "tcvncommunity",
       "url": "https://x.com/TCVNcommunity/status/2073984878610423862",
@@ -3394,6 +3556,23 @@
       "reposts": 7,
       "replies": 19,
       "views": 7412
+    },
+    {
+      "id": "p_2073798975929631134",
+      "handle": "thinhcrt",
+      "url": "https://x.com/ThinhCrt/status/2073798975929631134",
+      "text": "🆘 Cho mình hỏi một síu các bạn thuộc Việt Nam . \n👉 Dự án SCEX của Việt Nam đã bạn nào đăng ký thành công chưa ? \n👉 Đăng ký bằng số điện thoại nó gửi mã OTP bằng tin nhắn hay gọi điện . \n🆘 Mình đăng ký bằng số điện thoại xong nó gọi đến bằng đầu số 02 mình sợ bị lừa không dám nghe . Ai có kinh nghiệm chia sẻ cho mình với nha .",
+      "postedAt": "2026-07-05T15:59:39.000Z",
+      "sentiment": "neutral",
+      "hidden": false,
+      "notes": "export batch · Trung lập · media→R2",
+      "media": [
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/8711ecefe896c73b0b30e84a"
+      ],
+      "likes": 4,
+      "reposts": 0,
+      "replies": 6,
+      "views": 674
     },
     {
       "id": "p_2073672495316730363",
@@ -3513,6 +3692,23 @@
       "views": 2293
     },
     {
+      "id": "p_2073426948823683121",
+      "handle": "sushi1426",
+      "url": "https://x.com/sushi1426/status/2073426948823683121",
+      "text": "Chơi thật mà em mạnh tay thế này thì có phải giàu rồi không.. \n\nSCEX tiền nó chạy mà nhiều khi k hiểu kiểu gì 😂",
+      "postedAt": "2026-07-04T15:21:21.000Z",
+      "sentiment": "neutral",
+      "hidden": false,
+      "notes": "export batch · Trung lập · media→R2",
+      "media": [
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/171e7068b03301e3bd5d0106"
+      ],
+      "likes": 22,
+      "reposts": 0,
+      "replies": 23,
+      "views": 937
+    },
+    {
       "id": "p_2073415354584305935",
       "handle": "0xkyliekim",
       "url": "https://x.com/0xkyliekim/status/2073415354584305935",
@@ -3578,6 +3774,23 @@
       "reposts": 1,
       "replies": 22,
       "views": 1889
+    },
+    {
+      "id": "p_2073352996805812314",
+      "handle": "v_3394",
+      "url": "https://x.com/v_3394/status/2073352996805812314",
+      "text": "Công nhận trade Demo trên SCEX bớt nhát tay thật :)))\nHôm nào quen nạp vốn vào tự tin ngay",
+      "postedAt": "2026-07-04T10:27:30.000Z",
+      "sentiment": "neutral",
+      "hidden": false,
+      "notes": "export batch · Trung lập · media→R2",
+      "media": [
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/60b10d55af18bb2c48128637"
+      ],
+      "likes": 53,
+      "reposts": 0,
+      "replies": 50,
+      "views": 1154
     },
     {
       "id": "p_2073348126912733218",
@@ -3731,6 +3944,23 @@
       "views": 7641
     },
     {
+      "id": "p_2073045804710047832",
+      "handle": "thangha19931991",
+      "url": "https://x.com/thangha19931991/status/2073045804710047832",
+      "text": "Mọi người có ai đăng kí sàn việt SCEX có bị giống mình không? \n\nChỉ gửi mã về Mail không gửi về số điện thoại nhỉ.",
+      "postedAt": "2026-07-03T14:06:49.000Z",
+      "sentiment": "neutral",
+      "hidden": false,
+      "notes": "export batch · Trung lập · media→R2",
+      "media": [
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/8cbacd6f72efb9f39126cb74"
+      ],
+      "likes": 10,
+      "reposts": 0,
+      "replies": 9,
+      "views": 410
+    },
+    {
       "id": "p_2072997251639652770",
       "handle": "aliba_79",
       "url": "https://x.com/Aliba_79/status/2072997251639652770",
@@ -3795,6 +4025,23 @@
       "reposts": 0,
       "replies": 31,
       "views": 986
+    },
+    {
+      "id": "p_2072912336890057210",
+      "handle": "cavana_eth",
+      "url": "https://x.com/Cavana_eth/status/2072912336890057210",
+      "text": "Chính thức là Sàn sẽ trực tiếp thu thuế trên Sàn luôn\n\nMọi người nhìn ở phần lịch sử bán của sàn Scex là rõ khi “ Bán “ mới xuất hiện phần thuế \n\n👉 Thuế 0.1% sẽ tự động khớp trên sàn mọi người không cần kê khai thuế cá nhân như các tin đồn nữa",
+      "postedAt": "2026-07-03T05:16:28.000Z",
+      "sentiment": "neutral",
+      "hidden": false,
+      "notes": "export batch · Trung lập · media→R2",
+      "media": [
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/736e6e6489ef468cd8cecba5"
+      ],
+      "likes": 7,
+      "reposts": 0,
+      "replies": 4,
+      "views": 509
     },
     {
       "id": "p_2072903893781291517",
@@ -4051,6 +4298,23 @@
       "views": 496
     },
     {
+      "id": "p_2072655783700168889",
+      "handle": "tesnguyeneth",
+      "url": "https://x.com/tesnguyeneth/status/2072655783700168889",
+      "text": "Trade mà cứ như mô phỏng thì thích nhì 🤣\n\nLãi hơn 100 củ rồi.\nKỉ niệm $SOL trở lại $80, bán 100 $SOL vậy.\n\nCứ bán dần thôi. Vòng xuống thì mua lại. Xem chung cuộc vào top mấy. Húp 200 củ tiền thật thì toẹt vời 😎\n\n> Tham gia Đấu Trường: https://phocaptaisanso.com/r/Sy49oLoXYpKYSqyN\n\n> Đăng ký SCEX: https://trading.scex.com.vn/\nMã mời: 02010301",
+      "postedAt": "2026-07-02T12:17:01.000Z",
+      "sentiment": "bullish",
+      "hidden": false,
+      "notes": "export batch · Bullish · media→R2",
+      "media": [
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/5c44e6b9d0d145fc73772716"
+      ],
+      "likes": 4,
+      "reposts": 0,
+      "replies": 2,
+      "views": 873
+    },
+    {
       "id": "p_2072645882835816800",
       "handle": "lucasng990",
       "url": "https://x.com/lucasng990/status/2072645882835816800",
@@ -4221,6 +4485,24 @@
       "reposts": 2,
       "replies": 47,
       "views": 8576
+    },
+    {
+      "id": "p_2072604652722630891",
+      "handle": "vangemxin1",
+      "url": "https://x.com/vangemxin1/status/2072604652722630891",
+      "text": "Test thử mua bán trên SCEX.\n\n1 trong 5 sàn được cấp phép tại Việt Nam.\n\nMua chưa thấy tính phí, bán đang chịu 0.1% thuế trên mỗi lệnh. \n\nSắp tới ACE mình còn chơi coin sắp phải dùng sàn hàng Việt rồi 😄",
+      "postedAt": "2026-07-02T08:53:50.000Z",
+      "sentiment": "neutral",
+      "hidden": false,
+      "notes": "export batch · Trung lập · media→R2",
+      "media": [
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/0285feb7581ddad9cbe4920c",
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/3d2aad97b4261664c777dd3d"
+      ],
+      "likes": 18,
+      "reposts": 0,
+      "replies": 18,
+      "views": 1393
     },
     {
       "id": "p_2072601440502350178",
@@ -4525,6 +4807,23 @@
       "views": 866
     },
     {
+      "id": "p_2072326886840250611",
+      "handle": "bem1102",
+      "url": "https://x.com/bem1102/status/2072326886840250611",
+      "text": "🔥🔥🔥 TIN NÓNG HỔI ACE ƠIIIIII \nSÀN GIAO DỊCH TÀI SẢN MÃ HOÁ ĐẦU TIỀN CỦA VIỆT NAM \n\nSCEX - Công ty Cổ phần Sàn giao dịch tài sản mã hoá SACOM.\nSàn đang trong quá trình nộp hồ sơ cấp phép và xét duyệt từ Bộ Tài Chính, tuân thủ pháp luật Việt Nam và Nghị quyết 05/2025/NQ-CP\n\nđối tác\nSACOMBANK\nLPBANK\nLPBANK SECURITIES\nTHAIGROUP\nREMITANO\nGFI RESEARCH\nCHAINALYSIS\n\ntham gia\nhttps://trading.scex.com.vn/\ncode: 68686279\n\nhiện đang có sự kiện \"Đấu trường Tài sản mã hoá\"\n\nđăng ký\nhttps://phocaptaisanso.com/r/gsxi2ARw3wLovEAo\n\nxem tiếp bên dưới nhé ACE",
+      "postedAt": "2026-07-01T14:30:06.000Z",
+      "sentiment": "bullish",
+      "hidden": false,
+      "notes": "export batch · Bullish · media→R2",
+      "media": [
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/206676a25802777fe7cb66a5"
+      ],
+      "likes": 11,
+      "reposts": 1,
+      "replies": 8,
+      "views": 272
+    },
+    {
       "id": "p_2072325647100428595",
       "handle": "luong4101992",
       "url": "https://x.com/luong4101992/status/2072325647100428595",
@@ -4609,6 +4908,23 @@
       "views": 1649
     },
     {
+      "id": "p_2072288704979464552",
+      "handle": "gynis_tao",
+      "url": "https://x.com/Gynis_TAO/status/2072288704979464552",
+      "text": "Sao hôm nay 1/7 mà không ngóng ra tin gì về sàn crypto VN vậy ta\n\nNgoài ra hình như sàn Scex này real phải không mấy síp\n\nEm có đang bỏ lỡ gì không đây",
+      "postedAt": "2026-07-01T11:58:23.000Z",
+      "sentiment": "bullish",
+      "hidden": false,
+      "notes": "export batch · Bullish · media→R2",
+      "media": [
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/2cb1f88d70f1e5ad938976e2"
+      ],
+      "likes": 12,
+      "reposts": 1,
+      "replies": 14,
+      "views": 327
+    },
+    {
       "id": "p_2072286064648356293",
       "handle": "petertran_ct",
       "url": "https://x.com/PeterTran_CT/status/2072286064648356293",
@@ -4641,6 +4957,25 @@
       "reposts": 1,
       "replies": 16,
       "views": 719
+    },
+    {
+      "id": "p_2072261079405568223",
+      "handle": "realfrontierx",
+      "url": "https://x.com/RealFrontierX/status/2072261079405568223",
+      "text": "Có vẻ như SCEX đang chạy đua chiến dịch truyền thông sau CAEX.\nThấy các Kols lớn đồng loạt đăng bài.\nBiết là có sự hợp tác, nhưng cá nhân tui đánh giá giao diện sàn chán quá, nhìn như AI ấy.\nQuan điểm cá nhân thui nhé 😬",
+      "postedAt": "2026-07-01T10:08:36.000Z",
+      "sentiment": "neutral",
+      "hidden": false,
+      "notes": "export batch · Trung lập · media→R2",
+      "media": [
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/99e957cdec94ab1a24dd32dd",
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/0404930de5f714373ec8be77",
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/281e58f2d3873bd28cc389ec"
+      ],
+      "likes": 7,
+      "reposts": 0,
+      "replies": 8,
+      "views": 552
     },
     {
       "id": "p_2072256370859299195",
@@ -4727,6 +5062,38 @@
       "views": 1798
     },
     {
+      "id": "p_2072239163202846951",
+      "handle": "cocoteamvnn",
+      "url": "https://x.com/COCOteamvnn/status/2072239163202846951",
+      "text": "🚀Mọi người trải nghiệm sàn giao dịch SCEX nhé\n\n🎉 Có 1 tỷ vốn ảo để trade, lại còn có cơ hội nhận thưởng? SCEX đang mở chương trình này!\n\nNếu bạn muốn trải nghiệm giao dịch mà chưa sẵn sàng dùng tiền thật, thì đây là chương trình khá đáng để thử.\n\nSCEX đang triển khai chương trình Học & Trải nghiệm giao dịch, mỗi tài khoản sẽ được cấp 1 tỷ đồng vốn ảo để thực hành, xây dựng chiến lược và cạnh tranh trên bảng xếp hạng. Tổng giá trị giải thưởng của chương trình lên đến hơn 1,6 tỷ đồng.\n\n📍 Cách tham gia:\n✅ Đăng ký tài khoản Phổ Cập Tài Sản Số\nhttps://phocaptaisanso.com/r/HDmhNq0hJaR8S52c\n✅ Truy cập SCEX để bắt đầu giao dịch\n💻 https://trading.scex.com.vn/home\n🔑 Mã giới thiệu: 26081408\n\nHệ thống sẽ xếp hạng dựa trên:\n📈 Hiệu quả giao dịch (PnL)\n🔄 Tổng khối lượng giao dịch (Volume)\n|\nNgoài việc được trải nghiệm thị trường với nguồn vốn ảo, người tham gia còn có cơ hội nhận nhiều phần thưởng giá trị nếu đạt thứ hạng cao.\n\nLưu ý: Hãy sử dụng cùng một email khi đăng ký SCEX và tài khoản Phổ Cập Tài Sản Số để hệ thống ghi nhận kết quả. Một số nhiệm vụ cũng sẽ yêu cầu nhập UID SCEX để xác minh\n\n#SCEX",
+      "postedAt": "2026-07-01T08:41:31.000Z",
+      "sentiment": "bullish",
+      "hidden": false,
+      "notes": "export batch · Bullish · media→R2",
+      "media": [
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/aa9a6d9832cecd1589cae36a"
+      ],
+      "likes": 5,
+      "reposts": 1,
+      "replies": 2,
+      "views": 243
+    },
+    {
+      "id": "p_2072238540365451348",
+      "handle": "trong_ga29814",
+      "url": "https://x.com/trong_ga29814/status/2072238540365451348",
+      "text": "Ae đã thử qua @SCEX chưa? Đây là 1 trong 5 sàn được Bộ Tài chính xem xét cấp phép theo NQ05. Sàn gắn với hệ sinh thái của bầu Thụy bên Sacombank, với vốn điều lệ hiện tại ~360 tỷ đồng.\n\nHiện tại chỉ là giao diện demo thôi, các tính năng cũng chưa có gì nhiều nhưng đang có cuộc thi trải nghiệm nên được chú ý. \n-> Thể lệ là học bài, trade demo tích điểm để quy ra voucher, AE trong TOP 100 điểm thì được chia thưởng 1,6 tỷ VNĐ.\n\nNghe bảo sim Viettel chưa nhận được OTP, các AE Vina thử thì nhận ngay. Háo hức phết nhỉ.",
+      "postedAt": "2026-07-01T08:39:03.000Z",
+      "sentiment": "neutral",
+      "hidden": false,
+      "notes": "export batch · Hỗn hợp · media→R2",
+      "media": [],
+      "likes": 9,
+      "reposts": 0,
+      "replies": 7,
+      "views": 274
+    },
+    {
       "id": "p_2072235957802488276",
       "handle": "shuigvn",
       "url": "https://x.com/shuigvn/status/2072235957802488276",
@@ -4811,6 +5178,40 @@
       "reposts": 0,
       "replies": 15,
       "views": 7112
+    },
+    {
+      "id": "p_2072229508107907434",
+      "handle": "deekay_btc",
+      "url": "https://x.com/deekay_btc/status/2072229508107907434",
+      "text": "SCEX đã mở đăng ký nhé. Có sẵn 1 tỷ tiền demo cho mọi người test thử tính năng trước khi sàn chính thức hoạt động.\n\n👉Đăng ký tại: https://trading.scex.com.vn \n👉Ref code: 71226094 (Mọi ng ủng hộ mình cảm ơn nhiều)\n\nLưu ý là hiện tại chỉ chơi được spot thôi.",
+      "postedAt": "2026-07-01T08:03:09.000Z",
+      "sentiment": "bullish",
+      "hidden": false,
+      "notes": "export batch · Bullish · media→R2",
+      "media": [
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/26bfc726742f2a10c9c0c88d"
+      ],
+      "likes": 7,
+      "reposts": 1,
+      "replies": 6,
+      "views": 243
+    },
+    {
+      "id": "p_2072227547824459961",
+      "handle": "trungdino90",
+      "url": "https://x.com/Trungdino90/status/2072227547824459961",
+      "text": "Có anh em nào vào trải nghiệm thử sàn SCEX này chưa ?\n\nMình vào đăng ký test thử mà đợi cái mã OTP mãi ko thấy đâu \n\nSàn mà như này thì lúc đông người vào thì kham sao nổi 😅",
+      "postedAt": "2026-07-01T07:55:22.000Z",
+      "sentiment": "bullish",
+      "hidden": false,
+      "notes": "export batch · Bullish · media→R2",
+      "media": [
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/e61242f1f867b39329c9af4e"
+      ],
+      "likes": 26,
+      "reposts": 0,
+      "replies": 23,
+      "views": 662
     },
     {
       "id": "p_2072224498972234238",
@@ -5100,6 +5501,23 @@
       "views": 8644
     },
     {
+      "id": "p_2072146301345784074",
+      "handle": "ghostxwriterx",
+      "url": "https://x.com/GhostxWriterx/status/2072146301345784074",
+      "text": "Thấy ae fomo app SCEX demo nhưng đây là trải nghiệm thực tế nha =))\n\nCó ai không nhận được OTP giống Ghost không?\n\nChờ app của @officialcaex vậy",
+      "postedAt": "2026-07-01T02:32:31.000Z",
+      "sentiment": "neutral",
+      "hidden": false,
+      "notes": "export batch · Hỗn hợp · media→R2",
+      "media": [
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/410b5db6de3b70b2abfae543"
+      ],
+      "likes": 6,
+      "reposts": 0,
+      "replies": 4,
+      "views": 1040
+    },
+    {
       "id": "p_2072145610061591004",
       "handle": "aiadopthq",
       "url": "https://x.com/AIAdoptHQ/status/2072145610061591004",
@@ -5151,6 +5569,23 @@
       "reposts": 10,
       "replies": 67,
       "views": 15821
+    },
+    {
+      "id": "p_2072137706407350468",
+      "handle": "cuong2591442657",
+      "url": "https://x.com/Cuong2591442657/status/2072137706407350468",
+      "text": "📢Phổ cập Tài sản số - Đấu trường Tài sản mã hóa”  là chương trình đào tạo cộng đồng kết hợp đấu trường giao dịch mô phỏng giúp người Việt tiếp cận thị trường tài sản mã hoá một cách hiểu biết, an toàn và tuân thủ pháp lý trước khi tham gia thị trường thật.\n\nChương trình đào tạo cộng đồng kết hợp giao dịch mô phỏng, giúp người Việt tiếp cận thị trường tài sản mã hóa theo hướng hiểu biết hơn, an toàn hơn và tuân thủ pháp lý trước khi tham gia giao dịch thực tế.\n\n🏆 Cách tính điểm\nNgười tham gia tích lũy điểm từ 2 nhóm nhiệm vụ:\n\n• Nhiệm vụ tích lũy (tính một lần, áp dụng toàn chương trình): Học tập – Mời bạn – Feedback – Social.\n\n• Nhiệm vụ thực hành (reset mỗi tuần): Giao dịch mô phỏng trên ứng dụng SCEX Trading Simulator.\n\n💰 Cơ cấu giải thưởng – Tổng giá trị 1,645 tỷ VNĐ\n(Gồm tiền mặt và voucher – voucher không quy đổi tiền mặt, giải thưởng không chuyển nhượng)\n\n🎯 Giải thưởng tuần\nDành cho Top BXH mỗi tuần:\n🥇 Giải Nhất: 15 triệu VNĐ\n🥈 Giải Nhì: 13 triệu VNĐ\n🥉 Giải Ba: 11 triệu VNĐ\n\n➡️ Tổng thưởng mỗi tuần: 39 triệu VNĐ\n\n🏅 Giải chung cuộc (Top tích lũy toàn chương trình)\n🥇 Hạng 1: 200 triệu VNĐ\n🥈 Hạng 2: 150 triệu VNĐ\n🥉 Hạng 3: 100 triệu VNĐ\n🎖️ Hạng 4–10: 15 triệu VNĐ/người\n🎁 Hạng 11–100: 5 triệu VNĐ/người\n\n➡️ Tổng quỹ giải chung cuộc: 1,6 tỷ VNĐ",
+      "postedAt": "2026-07-01T01:58:22.000Z",
+      "sentiment": "bullish",
+      "hidden": false,
+      "notes": "export batch · Bullish · media→R2",
+      "media": [
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/925d29faa854a5b3b8564c2a"
+      ],
+      "likes": 16,
+      "reposts": 0,
+      "replies": 12,
+      "views": 788
     },
     {
       "id": "p_2072136234206699939",
@@ -5528,6 +5963,23 @@
       "reposts": 1,
       "replies": 25,
       "views": 1775
+    },
+    {
+      "id": "p_2071942971591934410",
+      "handle": "tuongvi_vn",
+      "url": "https://x.com/TuongVi_VN/status/2071942971591934410",
+      "text": "SCEX khởi động chương trình đào tạo kết hợp trải nghiệm ứng dụng giao dịch, người tham gia vừa học, vừa thực hành, vừa tích điểm trên bảng xếp hạng để chinh phục các giải thưởng với tổng giá trị hơn 1,6 TỶ VNĐ.\n \nCÁC BƯỚC THAM GIA:\nBước 1: Đăng ký tài khoản \"Phổ Cập Tài Sản Số\": https://phocaptaisanso.com/r/fT53ZmNzQuWJLMY3\nBước 2: Tải app trải nghiệm sàn SCEX & tích điểm thực hành giao dịch\n\nLink website: https://trading.scex.com.vn/home\nLink tải cho IOS: https://apps.apple.com/.../scex-trading.../id6763202537\nLink tải cho Android: https://play.google.com/store/apps/details...\n \nMỗi người tham gia sẽ được cấp 1 TỶ VNĐ vốn ảo để trải nghiệm giao dịch. Điểm xếp hạng được tính dựa trên:\n• Hiệu quả giao dịch (PNL)\n• Khối lượng giao dịch (Volume)\n• Số lượng lệnh được khớp\n \nPHẦN THƯỞNG HẤP DẪN: Điểm tích lũy có thể dùng để đổi voucher hoặc cạnh tranh trên bảng xếp hạng:\n Top 1: 200 triệu đồng\n Top 2: 150 triệu đồng\n Top 3: 100 triệu đồng\n Top 4 - 10: 20 triệu đồng/người\n Top 11 - 100: 5 triệu đồng/người\n \nLƯU Ý QUAN TRỌNG:\n• Bắt buộc phải tạo tài khoản \"Phổ Cập Tài Sản Số\" để tạo trang tính điểm.\n• Email đăng ký trên SCEX phải trùng với email đăng ký \"Phổ Cập Tài Sản Số\" để hệ thống ghi nhận điểm.\n• Một số nhiệm vụ sẽ yêu cầu nhập UID tài khoản SCEX để xác minh tham gia.\n• Mọi thắc mắc hoặc hỗ trợ ae liên hệ admin để được giải đáp",
+      "postedAt": "2026-06-30T13:04:33.000Z",
+      "sentiment": "bullish",
+      "hidden": false,
+      "notes": "export batch · Bullish · media→R2",
+      "media": [
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/136f7e148378ad1f4a4ac9a0"
+      ],
+      "likes": 32,
+      "reposts": 1,
+      "replies": 16,
+      "views": 895
     },
     {
       "id": "p_2071897215489192216",

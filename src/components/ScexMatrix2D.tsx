@@ -18,8 +18,6 @@ import {
   actorMatrixPos,
   actorSizeValue,
   actorVolumeMetric,
-  viQualityAxisLabel,
-  viVolumeAxisLabel,
 } from '../data/scexTracking'
 import { XProfileAvatar } from './XProfileAvatar'
 import { DaveysRadarLink } from './DaveysRadarLink'
@@ -518,8 +516,8 @@ export function ScexMatrix2D({
           <div className="scex2d-story-tip__body">
             <strong>Cách đọc nhanh</strong>
             <p>
-              Góc <em>trên-phải</em> = ưu tiên cao. Cuộn chuột để zoom (avatar
-              to hơn khi phóng). Bấm avatar để xem KOL.
+              <em>12h</em> uy tín cao · <em>3h</em> nhiều bài · <em>6h</em> uy
+              tín thấp · <em>9h</em> ít bài. Bấm avatar để xem KOL.
             </p>
           </div>
           <button
@@ -531,13 +529,6 @@ export function ScexMatrix2D({
           </button>
         </div>
       )}
-
-      <div className="scex2d-story-read" aria-hidden>
-        <span className="scex2d-story-read__y">↑ Chất lượng cao hơn</span>
-        <span className="scex2d-story-read__x">
-          ← Ít mention &nbsp;·&nbsp; Nhiều mention →
-        </span>
-      </div>
 
       <div className="scex2d-stage scex2d-stage--story">
         <div className="scex2d-plot-shell">
@@ -551,6 +542,26 @@ export function ScexMatrix2D({
             onPointerCancel={endDrag}
             onDoubleClick={() => goZoom(DEFAULT_ZOOM_I)}
           >
+            {/* Clock-face compass: 12 / 3 / 6 / 9 — how to read the matrix */}
+            <div className="scex2d-compass" aria-hidden>
+              <div className="scex2d-compass__item scex2d-compass__item--n">
+                <span className="scex2d-compass__clock">12h</span>
+                <strong>Uy tín cao nhất</strong>
+              </div>
+              <div className="scex2d-compass__item scex2d-compass__item--e">
+                <span className="scex2d-compass__clock">3h</span>
+                <strong>Nhiều bài đăng nhất</strong>
+              </div>
+              <div className="scex2d-compass__item scex2d-compass__item--s">
+                <span className="scex2d-compass__clock">6h</span>
+                <strong>Uy tín thấp nhất</strong>
+              </div>
+              <div className="scex2d-compass__item scex2d-compass__item--w">
+                <span className="scex2d-compass__clock">9h</span>
+                <strong>Ít bài đăng nhất</strong>
+              </div>
+            </div>
+
             {zones.map((z) => (
               <div
                 key={z.key}
@@ -703,13 +714,13 @@ export function ScexMatrix2D({
 
         <div className="scex2d-story-axes">
           <span className="scex2d-story-axes__y">
-            ↑ {viQualityAxisLabel(config.qualityAxis.label)}
+            ↑ Uy tín (12h cao · 6h thấp)
           </span>
           <span className="scex2d-story-axes__track" aria-hidden>
             <i />
           </span>
           <span className="scex2d-story-axes__x">
-            {viVolumeAxisLabel(config.volumeAxis.label)} →
+            Bài đăng (9h ít · 3h nhiều) →
           </span>
         </div>
       </div>

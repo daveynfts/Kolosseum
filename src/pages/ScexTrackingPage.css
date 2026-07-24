@@ -1274,24 +1274,96 @@
   color: #fff;
 }
 
-.scex2d-story-read {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 6px 14px;
-  padding: 2px 4px 0;
-  font-size: 0.72rem;
-  font-weight: 650;
-  letter-spacing: 0.01em;
-  color: rgba(226, 232, 240, 0.55);
-  flex-shrink: 0;
+/* Clock-face compass on matrix edges (12 / 3 / 6 / 9) */
+.scex2d-compass {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  pointer-events: none;
 }
-.scex2d-story-read__y {
+.scex2d-compass__item {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 5px 10px;
+  border-radius: 10px;
+  background: rgba(4, 10, 20, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+  max-width: min(46%, 200px);
+  text-align: center;
+}
+.scex2d-compass__clock {
+  font-size: 0.58rem;
+  font-weight: 750;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(148, 163, 184, 0.85);
+  line-height: 1;
+}
+.scex2d-compass__item strong {
+  font-size: 0.72rem;
+  font-weight: 750;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+  color: #f1f5f9;
+}
+.scex2d-compass__item--n {
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-color: rgba(125, 211, 252, 0.35);
+}
+.scex2d-compass__item--n strong {
   color: #7dd3fc;
 }
-.scex2d-story-read__x {
+.scex2d-compass__item--s {
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-color: rgba(148, 163, 184, 0.3);
+}
+.scex2d-compass__item--s strong {
+  color: #cbd5e1;
+}
+.scex2d-compass__item--e {
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  border-color: rgba(134, 239, 172, 0.35);
+}
+.scex2d-compass__item--e strong {
   color: #86efac;
+}
+.scex2d-compass__item--w {
+  left: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  border-color: rgba(251, 191, 36, 0.3);
+}
+.scex2d-compass__item--w strong {
+  color: #fde68a;
+}
+
+@media (max-width: 720px) {
+  .scex2d-compass__item {
+    padding: 4px 7px;
+    max-width: min(42%, 140px);
+  }
+  .scex2d-compass__item strong {
+    font-size: 0.62rem;
+  }
+  .scex2d-compass__clock {
+    font-size: 0.52rem;
+  }
+  /* Corners already crowded — soft fade zone titles on small screens */
+  .scex2d-zone span {
+    display: none;
+  }
 }
 
 .scex2d-stage--story {
@@ -1313,6 +1385,8 @@
   border: 1px solid rgba(255, 255, 255, 0.08);
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
+  /* Sit slightly inward so compass mid-edge labels read first */
+  opacity: 0.88;
 }
 .scex2d-zone strong {
   display: block;

@@ -158,9 +158,20 @@
 
 .scex-page__grid {
   display: grid;
-  grid-template-columns: 1.28fr 1fr;
+  grid-template-columns: minmax(0, 1.32fr) minmax(0, 1fr);
   gap: 22px;
   align-items: stretch;
+  /* Equal column height — no orphan empty frame on the right */
+  min-height: min(78vh, 780px);
+}
+
+.scex-page__grid > .scex-matrix,
+.scex-page__grid > .scex-feed {
+  min-height: 0;
+  height: 100%;
+  max-height: none;
+  display: flex;
+  flex-direction: column;
 }
 
 @media (max-width: 980px) {
@@ -172,6 +183,12 @@
   }
   .scex-page__grid {
     grid-template-columns: 1fr;
+    min-height: 0;
+  }
+  .scex-page__grid > .scex-matrix,
+  .scex-page__grid > .scex-feed {
+    height: auto;
+    min-height: min(70vh, 640px);
   }
 }
 
@@ -219,10 +236,26 @@
   max-width: 42rem;
 }
 
-/* ── Matrix 3D ───────────────────────────────────────── */
+/* ── Matrix body grows to fill column ─────────────────── */
+.scex-matrix {
+  min-height: 0;
+}
+.scex-matrix > .scex-card__head,
+.scex-matrix > .scex-matrix__filters {
+  flex-shrink: 0;
+}
 .scex-matrix__body {
   padding: 4px 18px 18px;
   position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+.scex-matrix__body--2d .scex2d-root,
+.scex-matrix__body--3d .scex3d-root {
+  flex: 1;
+  min-height: 0;
 }
 
 .scex-matrix__body--3d {
@@ -1320,7 +1353,14 @@
 .scex-feed {
   display: flex;
   flex-direction: column;
-  max-height: min(78vh, 720px);
+  min-height: 0;
+  /* Fill grid cell — match matrix column height */
+  height: 100%;
+  max-height: none;
+}
+
+.scex-feed > .scex-card__head {
+  flex-shrink: 0;
 }
 
 .scex-feed__filters {
@@ -1330,6 +1370,7 @@
   gap: 8px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
   margin-bottom: 4px;
+  flex-shrink: 0;
 }
 
 .scex-feed__filter-row {
@@ -1450,6 +1491,11 @@
 }
 
 .scex-feed__list {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+
   list-style: none;
   margin: 0;
   padding: 8px 12px 16px;
@@ -1697,11 +1743,10 @@
   color: #7dd3fc;
 }
 
-/* ── KOL detail drawer (below event banner) ──────────── */
+/* ── KOL detail — near-fullscreen panel ─────────────── */
 .scex-detail-scrim {
   position: fixed;
-  /* Start under banner so banner stays clickable & not covered */
-  top: var(--scex-banner-h, 120px);
+  top: var(--scex-banner-h, 0px);
   left: 0;
   right: 0;
   bottom: 0;
@@ -1709,98 +1754,307 @@
   border: 0;
   padding: 0;
   margin: 0;
-  background: rgba(2, 6, 14, 0.45);
-  backdrop-filter: blur(2px);
+  background: rgba(2, 6, 14, 0.62);
+  backdrop-filter: blur(6px);
   cursor: pointer;
   animation: scex-feed-in 0.2s ease both;
 }
 
 .scex-detail {
   position: fixed;
-  /* Sit fully below banner — never cover promo strip */
-  top: calc(var(--scex-banner-h, 120px) + 12px);
-  right: max(12px, env(safe-area-inset-right));
-  bottom: max(12px, env(safe-area-inset-bottom));
-  width: min(400px, calc(100vw - 24px));
-  max-height: calc(100dvh - var(--scex-banner-h, 120px) - 24px);
-  z-index: 150; /* below banner (200), above page content */
-  border-radius: 18px;
+  z-index: 150;
+  top: calc(var(--scex-banner-h, 0px) + 2.5vh);
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(920px, calc(100vw - 20px));
+  height: calc(100dvh - var(--scex-banner-h, 0px) - 5vh);
+  max-height: calc(100dvh - var(--scex-banner-h, 0px) - 5vh);
+  border-radius: 20px;
   border: 1px solid rgba(255, 255, 255, 0.14);
   background:
+    radial-gradient(ellipse 80% 40% at 50% 0%, rgba(56, 189, 248, 0.1), transparent 55%),
     linear-gradient(
       165deg,
       rgba(255, 255, 255, 0.1) 0%,
-      rgba(12, 16, 28, 0.94) 40%
+      rgba(10, 14, 26, 0.97) 38%
     ),
-    rgba(8, 12, 22, 0.96);
-  backdrop-filter: blur(24px) saturate(160%);
-  -webkit-backdrop-filter: blur(24px) saturate(160%);
-  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
-  overflow: auto;
-  padding: 18px 16px 24px;
+    rgba(6, 10, 18, 0.98);
+  backdrop-filter: blur(28px) saturate(160%);
+  -webkit-backdrop-filter: blur(28px) saturate(160%);
+  box-shadow: 0 28px 80px rgba(0, 0, 0, 0.6);
+  overflow: hidden;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
   animation: scex-feed-in 0.28s ease both;
 }
 
 .scex-detail__close {
   position: absolute;
-  top: 10px;
-  right: 10px;
-  width: 32px;
-  height: 32px;
-  border-radius: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(255, 255, 255, 0.05);
-  color: rgba(255, 255, 255, 0.7);
-  font-size: 1.2rem;
+  top: 12px;
+  right: 12px;
+  z-index: 5;
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 1.25rem;
   line-height: 1;
   cursor: pointer;
 }
 
 .scex-detail__close:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.12);
   color: #fff;
 }
 
 .scex-detail__accent {
   position: absolute;
   left: 0;
-  top: 16px;
-  bottom: 16px;
+  top: 20px;
+  bottom: 20px;
   width: 3px;
   border-radius: 0 3px 3px 0;
+  z-index: 2;
 }
 
 .scex-detail__head {
   display: flex;
-  gap: 12px;
+  gap: 14px;
   align-items: flex-start;
-  padding-right: 28px;
-  margin-bottom: 14px;
+  padding: 20px 52px 12px 20px;
+  flex-shrink: 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.scex-detail__head-text {
+  min-width: 0;
+  flex: 1;
 }
 
 .scex-detail__avatar {
-  width: 52px;
-  height: 52px;
-  border-radius: 14px;
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
   overflow: hidden;
   flex-shrink: 0;
   background: rgba(15, 23, 42, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.12);
 }
 
 .scex-detail__head h2 {
   margin: 0;
-  font-size: 1.1rem;
-  font-weight: 650;
-  letter-spacing: -0.02em;
+  font-size: 1.28rem;
+  font-weight: 700;
+  letter-spacing: -0.03em;
   line-height: 1.2;
 }
 
 .scex-detail__handle {
   display: inline-block;
-  margin-top: 3px;
-  font-size: 0.84rem;
+  margin-top: 4px;
+  font-size: 0.88rem;
   color: #7dd3fc;
   text-decoration: none;
+}
+
+.scex-detail__head-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.scex-detail__quick {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
+  padding: 12px 18px 10px;
+  flex-shrink: 0;
+}
+
+.scex-detail__quick > div {
+  padding: 8px 10px;
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.22);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  text-align: center;
+}
+
+.scex-detail__quick span {
+  display: block;
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: rgba(255, 255, 255, 0.42);
+  margin-bottom: 2px;
+}
+
+.scex-detail__quick strong {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #e0f2fe;
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 640px) {
+  .scex-detail__quick {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .scex-detail {
+    top: calc(var(--scex-banner-h, 0px) + 8px);
+    width: calc(100vw - 12px);
+    height: calc(100dvh - var(--scex-banner-h, 0px) - 16px);
+    max-height: none;
+    border-radius: 16px;
+  }
+}
+
+.scex-detail__scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 0 18px 24px;
+}
+
+.scex-detail__tab-n {
+  font-style: normal;
+  font-size: 0.65rem;
+  font-weight: 700;
+  margin-left: 5px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: rgba(56, 189, 248, 0.18);
+  color: #7dd3fc;
+}
+
+.scex-detail__feed-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  margin: 16px 0 10px;
+}
+
+.scex-detail__feed-head h3 {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+  color: #f1f5f9;
+}
+
+.scex-detail__feed-head span {
+  font-size: 0.72rem;
+  color: rgba(226, 232, 240, 0.45);
+  font-weight: 600;
+}
+
+.scex-detail__feed-empty {
+  margin: 0;
+  padding: 16px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px dashed rgba(255, 255, 255, 0.1);
+  color: rgba(226, 232, 240, 0.5);
+  font-size: 0.84rem;
+  line-height: 1.45;
+}
+
+.scex-detail__feed {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.scex-detail__post {
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.035);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+}
+
+.scex-detail__post-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  align-items: center;
+  margin-bottom: 6px;
+  font-size: 0.72rem;
+  color: rgba(226, 232, 240, 0.45);
+}
+
+.scex-detail__post-sent {
+  font-weight: 650;
+}
+
+.scex-detail__post-text {
+  margin: 0;
+  font-size: 0.88rem;
+  line-height: 1.5;
+  color: rgba(241, 245, 249, 0.9);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.scex-detail__post-more {
+  appearance: none;
+  border: 0;
+  background: none;
+  color: #7dd3fc;
+  font: inherit;
+  font-size: 0.75rem;
+  font-weight: 650;
+  padding: 4px 0 0;
+  cursor: pointer;
+}
+
+.scex-detail__post-media {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.scex-detail__post-media a {
+  display: block;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  max-width: 140px;
+}
+
+.scex-detail__post-media img {
+  display: block;
+  width: 100%;
+  height: 90px;
+  object-fit: cover;
+}
+
+.scex-detail__post-foot {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 8px;
+  font-size: 0.72rem;
+  color: rgba(226, 232, 240, 0.42);
+}
+
+.scex-detail__post-foot a {
+  color: #7dd3fc;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.scex-detail__post-foot a:hover {
+  text-decoration: underline;
 }
 
 .scex-detail__handle:hover {
@@ -1828,8 +2082,11 @@
 .scex-detail__tabs {
   display: flex;
   gap: 6px;
-  margin-bottom: 12px;
+  margin: 0;
+  padding: 0 18px 10px;
   flex-wrap: wrap;
+  flex-shrink: 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 .scex-detail__tab {
@@ -1838,11 +2095,13 @@
   background: rgba(255, 255, 255, 0.04);
   color: rgba(255, 255, 255, 0.55);
   font: inherit;
-  font-size: 0.74rem;
-  font-weight: 600;
-  padding: 6px 12px;
+  font-size: 0.76rem;
+  font-weight: 650;
+  padding: 7px 14px;
   border-radius: 999px;
   cursor: pointer;
+  display: inline-flex;
+  align-items: center;
 }
 
 .scex-detail__tab.is-active {
@@ -1853,6 +2112,7 @@
 
 .scex-detail__body {
   font-size: 0.88rem;
+  padding-top: 12px;
 }
 
 .scex-detail__label {

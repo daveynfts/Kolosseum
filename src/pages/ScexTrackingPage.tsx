@@ -798,6 +798,11 @@ export function ScexTrackingPage() {
             actor={selectedActor}
             mapKol={selectedMapKol}
             config={config}
+            posts={allPosts.filter(
+              (p) =>
+                p.handle.toLowerCase() ===
+                selectedActor.handle.toLowerCase(),
+            )}
             onClose={() => setSelectedActor(null)}
           />
         </>

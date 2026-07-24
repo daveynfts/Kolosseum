@@ -1,6 +1,6 @@
 /**
  * SCEX mention matrix — Story 2D (volume × quality).
- * Compact floating zoom + density clustering; pan when zoomed.
+ * Floating zoom FAB; zoom-in spreads bubbles apart (no group-clusters).
  */
 import {
   useCallback,
@@ -22,7 +22,6 @@ import { XProfileAvatar } from './XProfileAvatar'
 
 const STORY_TIP_KEY = 'scex-story-tip-v1'
 
-/** Action-first zone names (Story matrix) */
 const STORY_ZONE: Record<
   ScexQuadrant,
   { title: string; hint: string; corner: 'tl' | 'tr' | 'bl' | 'br' }
@@ -77,24 +76,16 @@ export type ScexMatrix2DProps = {
   selectedId: string | null
   mapHandles: Set<string>
   onSelect: (actor: ScexActor | null) => void
-  /** @deprecated FAB is always visible; kept for API compat */
+  /** @deprecated FAB is always visible */
   showZoomControls?: boolean
 }
 
-type PlacedActor = {
-  actor: ScexActor
-  x: number
-  y: number
-  r: number
-  depth: number
-  followers: number
-  quality: number
-}
-
-type SingleNode = {
-  kind: 'single'
+type BubbleLayout = {
   id: string
-  actor: ScexActor
+  /** Base layout position (zoom=1, before spread) */
+  bx: number
+  by: number
+  /** Screen position after zoom spread + pan */
   x: number
   y: number
   r: number
@@ -102,22 +93,7 @@ type SingleNode = {
   depth: number
 }
 
-type ClusterNode = {
-  kind: 'cluster'
-  id: string
-  members: ScexActor[]
-  x: number
-  y: number
-  r: number
-  z: number
-  /** Top members for stacked faces (by followers) */
-  faces: ScexActor[]
-  onMapCount: number
-}
-
-type LayoutNode = SingleNode | ClusterNode
-
-/** Discrete zoom steps */
+/** Discrete zoom steps — higher = more spread */
 const ZOOM_STEPS = [0.75, 1, 1.35, 1.75, 2.25] as const
 const DEFAULT_ZOOM_I = 1 // 100%
 
@@ -131,22 +107,35 @@ function clamp(n: number, lo: number, hi: number) {
   return Math.min(hi, Math.max(lo, n))
 }
 
-function placeActors(
+/**
+ * Place bubbles at matrix positions then push apart so they don't stack.
+ * `gapBoost` grows with zoom so zoom-in leaves more air between avatars.
+ */
+function packBubbles(
   actors: ScexActor[],
   config: ScexConfig,
   width: number,
   height: number,
   maxSize: number,
-): PlacedActor[] {
+  gapBoost = 1,
+): Array<{
+  id: string
+  x: number
+  y: number
+  r: number
+  depth: number
+  followers: number
+  quality: number
+}> {
   if (!actors.length || width < 40 || height < 40) return []
-  const pad = 28
-  return actors.map((a) => {
+  const pad = 24
+  const items = actors.map((a) => {
     const { x, y } = actorMatrixPos(a, config)
     const r = 16 + (actorSizeValue(a, config) / maxSize) * 22
     const px = pad + r + x * Math.max(1, width - 2 * pad - 2 * r)
     const py = pad + r + (1 - y) * Math.max(1, height - 2 * pad - 2 * r)
     return {
-      actor: a,
+      id: a.id,
       x: px,
       y: py,
       r,
@@ -155,36 +144,20 @@ function placeActors(
       quality: a.qualityScore || 0,
     }
   })
-}
 
-/**
- * Cell size in layout px — larger when zoomed out → more clustering;
- * shrinks when zoomed in → more individuals.
- */
-function clusterCellSize(zoom: number, actorCount: number): number {
-  const densityBoost = actorCount > 40 ? 1.15 : actorCount > 24 ? 1.05 : 1
-  // zoom 0.75 → ~88px, 1 → ~64px, 1.35 → ~48px, 1.75 → ~38px, 2.25 → ~30px
-  const base = 64 / Math.pow(zoom, 0.85)
-  return clamp(base * densityBoost, 28, 100)
-}
+  const gap = 8 + 10 * Math.max(0, gapBoost - 1)
+  const iters = Math.round(40 + 20 * Math.min(gapBoost, 2.5))
 
-function separateNodes(
-  nodes: Array<{ x: number; y: number; r: number; followers: number }>,
-  width: number,
-  height: number,
-  pad: number,
-  iterations = 36,
-) {
-  for (let iter = 0; iter < iterations; iter++) {
-    const strength = 0.5 * (1 - iter / iterations) + 0.12
-    for (let i = 0; i < nodes.length; i++) {
-      for (let j = i + 1; j < nodes.length; j++) {
-        const a = nodes[i]
-        const b = nodes[j]
+  for (let iter = 0; iter < iters; iter++) {
+    const strength = 0.55 * (1 - iter / iters) + 0.12
+    for (let i = 0; i < items.length; i++) {
+      for (let j = i + 1; j < items.length; j++) {
+        const a = items[i]
+        const b = items[j]
         const dx = b.x - a.x
         const dy = b.y - a.y
         const dist = Math.hypot(dx, dy) || 0.01
-        const minDist = a.r + b.r + 10
+        const minDist = a.r + b.r + gap
         if (dist < minDist) {
           const push = ((minDist - dist) / 2) * strength
           const ux = dx / dist
@@ -199,133 +172,104 @@ function separateNodes(
         }
       }
     }
-    for (const n of nodes) {
-      n.x = clamp(n.x, n.r + pad, width - n.r - pad)
-      n.y = clamp(n.y, n.r + pad, height - n.r - pad)
+    // Soft pull back to true matrix anchor so spread doesn't destroy meaning
+    const anchorPull = 0.035 / Math.sqrt(gapBoost)
+    for (let i = 0; i < items.length; i++) {
+      const a = actors[i]
+      const { x, y } = actorMatrixPos(a, config)
+      const r = items[i].r
+      const ax = pad + r + x * Math.max(1, width - 2 * pad - 2 * r)
+      const ay = pad + r + (1 - y) * Math.max(1, height - 2 * pad - 2 * r)
+      items[i].x += (ax - items[i].x) * anchorPull
+      items[i].y += (ay - items[i].y) * anchorPull
+      items[i].x = clamp(items[i].x, r + pad, width - r - pad)
+      items[i].y = clamp(items[i].y, r + pad, height - r - pad)
     }
   }
+
+  return items
 }
 
 /**
- * Build layout with zoom-aware clustering.
- * `expandedActorIds` forces those members to stay as individuals after open.
+ * Spread base positions from plot center by zoom, then separate again in
+ * screen space so avatars open up when zooming in (size stays ~constant).
  */
-function buildLayout(
-  actors: ScexActor[],
-  config: ScexConfig,
+function layoutWithZoom(
+  packed: ReturnType<typeof packBubbles>,
   width: number,
   height: number,
-  maxSize: number,
   zoom: number,
-  mapHandles: Set<string>,
-  expandedActorIds: Set<string>,
-): LayoutNode[] {
-  const placed = placeActors(actors, config, width, height, maxSize)
-  if (!placed.length) return []
+  pan: { x: number; y: number },
+): BubbleLayout[] {
+  if (!packed.length || width < 1 || height < 1) return []
+  const cx = width / 2
+  const cy = height / 2
 
-  const cell = clusterCellSize(zoom, actors.length)
-  const buckets = new Map<string, PlacedActor[]>()
-
-  for (const p of placed) {
-    // Expanded actors always solo — never re-bucket into a cluster
-    if (expandedActorIds.has(p.actor.id)) continue
-    const cx = Math.floor(p.x / cell)
-    const cy = Math.floor(p.y / cell)
-    const key = `${cx}:${cy}`
-    const list = buckets.get(key)
-    if (list) list.push(p)
-    else buckets.set(key, [p])
-  }
-
-  const layout: LayoutNode[] = []
-  const singles: PlacedActor[] = []
-
-  // Force-expanded first
-  for (const p of placed) {
-    if (expandedActorIds.has(p.actor.id)) singles.push(p)
-  }
-
-  for (const [key, group] of buckets) {
-    const clusterId = `c_${key}`
-
-    if (group.length === 1) {
-      singles.push(group[0])
-      continue
+  const items = packed.map((p) => {
+    // Zoom expands positions from center; pan shifts view. Radii NOT scaled.
+    const x = cx + (p.x - cx) * zoom + pan.x
+    const y = cy + (p.y - cy) * zoom + pan.y
+    return {
+      id: p.id,
+      bx: p.x,
+      by: p.y,
+      x,
+      y,
+      r: p.r,
+      depth: p.depth,
+      quality: p.quality,
+      followers: p.followers,
     }
+  })
 
-    // High zoom: pairs that are already apart stay individual
-    if (zoom >= 1.7 && group.length === 2) {
-      const d = Math.hypot(group[0].x - group[1].x, group[0].y - group[1].y)
-      if (d > group[0].r + group[1].r + 8) {
-        singles.push(group[0], group[1])
-        continue
+  // Screen-space de-overlap — stronger when zoomed in
+  const gap = 6 + 14 * Math.max(0, zoom - 1)
+  const iters = Math.round(24 + 18 * Math.max(0, zoom - 0.75))
+  for (let iter = 0; iter < iters; iter++) {
+    const strength = 0.5 * (1 - iter / iters) + 0.1
+    for (let i = 0; i < items.length; i++) {
+      for (let j = i + 1; j < items.length; j++) {
+        const a = items[i]
+        const b = items[j]
+        const dx = b.x - a.x
+        const dy = b.y - a.y
+        const dist = Math.hypot(dx, dy) || 0.01
+        const minDist = a.r + b.r + gap
+        if (dist < minDist) {
+          const push = ((minDist - dist) / 2) * strength
+          const ux = dx / dist
+          const uy = dy / dist
+          const wa = 1 / (1 + Math.log10((a.followers || 1) + 1))
+          const wb = 1 / (1 + Math.log10((b.followers || 1) + 1))
+          const sum = wa + wb
+          a.x -= ux * push * (wb / sum)
+          a.y -= uy * push * (wb / sum)
+          b.x += ux * push * (wa / sum)
+          b.y += uy * push * (wa / sum)
+        }
       }
     }
-
-    const sorted = [...group].sort((a, b) => b.followers - a.followers)
-    const cx = group.reduce((s, g) => s + g.x, 0) / group.length
-    const cy = group.reduce((s, g) => s + g.y, 0) / group.length
-    const r = clamp(22 + Math.sqrt(group.length) * 7, 26, 48)
-    const faces = sorted.slice(0, 3).map((g) => g.actor)
-    const onMapCount = group.filter((g) =>
-      mapHandles.has(g.actor.handle.toLowerCase()),
-    ).length
-    const depth = sorted[0].depth
-    layout.push({
-      kind: 'cluster',
-      id: clusterId,
-      members: sorted.map((g) => g.actor),
-      x: cx,
-      y: cy,
-      r,
-      z: Math.round(20 + depth * 40 + group.length),
-      faces,
-      onMapCount,
-    })
   }
 
-  // Separate singles so they don't stack
-  const sep = singles.map((s) => ({
-    x: s.x,
-    y: s.y,
-    r: s.r,
-    followers: s.followers,
-    src: s,
-  }))
-  separateNodes(sep, width, height, 22, 40)
-
-  for (const s of sep) {
-    const a = s.src.actor
-    layout.push({
-      kind: 'single',
-      id: a.id,
-      actor: a,
-      x: s.x,
-      y: s.y,
-      r: s.r,
-      depth: s.src.depth,
-      z: Math.round(10 + s.src.depth * 40 + s.src.quality * 0.15),
-    })
+  // Soft clamp: allow slightly outside when zoomed (pan reveals)
+  const margin = zoom > 1 ? 80 * (zoom - 1) : 0
+  for (const it of items) {
+    it.x = clamp(it.x, it.r - margin, width - it.r + margin)
+    it.y = clamp(it.y, it.r - margin, height - it.r + margin)
   }
 
-  // Light separation between clusters and singles
-  const all = layout.map((n) => ({
-    x: n.x,
-    y: n.y,
-    r: n.r,
-    followers:
-      n.kind === 'cluster'
-        ? n.members.reduce((s, m) => s + (m.followers || 0), 0)
-        : n.actor.followers || 0,
-    node: n,
-  }))
-  separateNodes(all, width, height, 18, 20)
-  for (const item of all) {
-    item.node.x = item.x
-    item.node.y = item.y
-  }
-
-  return layout.sort((a, b) => a.z - b.z)
+  return items
+    .map((it) => ({
+      id: it.id,
+      bx: it.bx,
+      by: it.by,
+      x: it.x,
+      y: it.y,
+      r: it.r,
+      depth: it.depth,
+      z: Math.round(10 + it.depth * 40 + it.quality * 0.15),
+    }))
+    .sort((a, b) => a.z - b.z)
 }
 
 export function ScexMatrix2D({
@@ -341,10 +285,6 @@ export function ScexMatrix2D({
   const [pan, setPan] = useState({ x: 0, y: 0 })
   const [hoverId, setHoverId] = useState<string | null>(null)
   const [showStoryTip, setShowStoryTip] = useState(false)
-  /** Actor ids kept un-clustered after user opened a group */
-  const [expandedActorIds, setExpandedActorIds] = useState<Set<string>>(
-    () => new Set(),
-  )
   const zoom = ZOOM_STEPS[zoomI]
   const panRef = useRef(pan)
   const zoomRef = useRef(zoom)
@@ -398,8 +338,9 @@ export function ScexMatrix2D({
   const clampPanTo = useCallback(
     (px: number, py: number, z: number, w: number, h: number) => {
       if (z <= 1 || w < 1 || h < 1) return { x: 0, y: 0 }
-      const maxX = ((z - 1) * w) / 2
-      const maxY = ((z - 1) * h) / 2
+      // Spread content extends ~ (z-1)/2 * size from center
+      const maxX = ((z - 1) * w) / 2 + 40
+      const maxY = ((z - 1) * h) / 2 + 40
       return {
         x: clamp(px, -maxX, maxX),
         y: clamp(py, -maxY, maxY),
@@ -418,11 +359,6 @@ export function ScexMatrix2D({
       const newZ = ZOOM_STEPS[i]
       const oldPan = panRef.current
 
-      // Zooming out past 100% clears manual expansions (re-cluster cleanly)
-      if (newZ <= 1) {
-        setExpandedActorIds(new Set())
-      }
-
       if (newZ === 1) {
         setZoomI(i)
         setPan({ x: 0, y: 0 })
@@ -430,6 +366,7 @@ export function ScexMatrix2D({
       }
 
       if (focus && w > 0 && h > 0 && oldZ > 0) {
+        // Keep point under focus roughly stable while spreading
         const cx = focus.x - w / 2
         const cy = focus.y - h / 2
         const contentX = (cx - oldPan.x) / oldZ
@@ -446,32 +383,10 @@ export function ScexMatrix2D({
     [clampPanTo, plotSize.w, plotSize.h],
   )
 
-  /** Zoom in toward a layout point (cluster center) */
-  const zoomTowardLayoutPoint = useCallback(
-    (lx: number, ly: number) => {
-      const el = plotRef.current
-      if (!el) {
-        goZoom(zoomI + 1)
-        return
-      }
-      const w = el.clientWidth
-      const h = el.clientHeight
-      const z = zoomRef.current
-      const pan = panRef.current
-      // layout (lx,ly) → screen coords in plot
-      const screenX = w / 2 + (lx - w / 2) * z + pan.x
-      const screenY = h / 2 + (ly - h / 2) * z + pan.y
-      goZoom(zoomI + 1, { x: screenX, y: screenY })
-    },
-    [goZoom, zoomI],
-  )
-
   const onPointerDown = (e: ReactPointerEvent) => {
     if (e.button !== 0) return
     if (
-      (e.target as HTMLElement).closest(
-        '.scex-bubble, .scex-cluster, .scex2d-zoom-fab',
-      )
+      (e.target as HTMLElement).closest('.scex-bubble, .scex2d-zoom-fab')
     )
       return
     if (zoomRef.current <= 1) return
@@ -517,33 +432,21 @@ export function ScexMatrix2D({
     1,
   )
 
-  const layout = useMemo(
+  // Base pack at 1× with mild gap; zoom spread happens in layoutWithZoom
+  const packed = useMemo(
     () =>
-      buildLayout(
-        actors,
-        config,
-        plotSize.w,
-        plotSize.h,
-        maxSize,
-        zoom,
-        mapHandles,
-        expandedActorIds,
-      ),
-    [
-      actors,
-      config,
-      plotSize.w,
-      plotSize.h,
-      maxSize,
-      zoom,
-      mapHandles,
-      expandedActorIds,
-    ],
+      packBubbles(actors, config, plotSize.w, plotSize.h, maxSize, 1),
+    [actors, config, plotSize.w, plotSize.h, maxSize],
   )
 
-  const clusterCount = useMemo(
-    () => layout.filter((n) => n.kind === 'cluster').length,
-    [layout],
+  const layout = useMemo(
+    () => layoutWithZoom(packed, plotSize.w, plotSize.h, zoom, pan),
+    [packed, plotSize.w, plotSize.h, zoom, pan],
+  )
+
+  const actorById = useMemo(
+    () => new Map(actors.map((a) => [a.id, a])),
+    [actors],
   )
 
   const vmax = Math.max(config.volumeAxis.max, 1)
@@ -578,8 +481,8 @@ export function ScexMatrix2D({
           <div className="scex2d-story-tip__body">
             <strong>Cách đọc nhanh</strong>
             <p>
-              Góc <em>trên-phải</em> = ưu tiên cao. Nhóm avatar = cluster (bấm
-              để mở rộng / zoom gần). Dùng nút ± góc phải để phóng.
+              Góc <em>trên-phải</em> = ưu tiên cao. Phóng to (+) để giãn bubble
+              ra cho dễ bấm. Bấm avatar để xem KOL.
             </p>
           </div>
           <button
@@ -608,10 +511,7 @@ export function ScexMatrix2D({
             onPointerMove={onPointerMove}
             onPointerUp={endDrag}
             onPointerCancel={endDrag}
-            onDoubleClick={() => {
-              goZoom(DEFAULT_ZOOM_I)
-              setExpandedActorIds(new Set())
-            }}
+            onDoubleClick={() => goZoom(DEFAULT_ZOOM_I)}
           >
             {zones.map((z) => (
               <div
@@ -624,16 +524,18 @@ export function ScexMatrix2D({
               </div>
             ))}
 
+            {/* Background follows zoom spread (axes context) */}
             <div
-              className="scex2d-zoom-layer"
+              className="scex2d-zoom-layer scex2d-zoom-layer--bg"
               style={{
                 transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
               }}
+              aria-hidden
             >
-              <div className="scex2d-wash scex2d-wash--nurture" aria-hidden />
-              <div className="scex2d-wash scex2d-wash--stars" aria-hidden />
-              <div className="scex2d-wash scex2d-wash--ignore" aria-hidden />
-              <div className="scex2d-wash scex2d-wash--noise" aria-hidden />
+              <div className="scex2d-wash scex2d-wash--nurture" />
+              <div className="scex2d-wash scex2d-wash--stars" />
+              <div className="scex2d-wash scex2d-wash--ignore" />
+              <div className="scex2d-wash scex2d-wash--noise" />
               <div
                 className="scex2d-crosshair scex2d-crosshair--split"
                 style={
@@ -642,195 +544,108 @@ export function ScexMatrix2D({
                     ['--split-y' as string]: `${splitYFromTopPct}%`,
                   } as CSSProperties
                 }
-                aria-hidden
               />
-
-              <div className="scex-matrix__stage">
-                {layout.map((node) => {
-                  if (node.kind === 'cluster') {
-                    const diam = node.r * 2
-                    const showTip = hoverId === node.id
-                    const top = node.members[0]
-                    return (
-                      <button
-                        key={node.id}
-                        type="button"
-                        className={`scex-cluster ${showTip ? 'is-tip' : ''}`}
-                        style={{
-                          left: node.x,
-                          top: node.y,
-                          width: diam,
-                          height: diam,
-                          zIndex: showTip ? 85 : node.z,
-                        }}
-                        aria-label={`Nhóm ${node.members.length} KOL`}
-                        title={`${node.members.length} KOL gần nhau — bấm để mở`}
-                        onMouseEnter={() => setHoverId(node.id)}
-                        onMouseLeave={() =>
-                          setHoverId((id) => (id === node.id ? null : id))
-                        }
-                        onClick={(ev) => {
-                          ev.stopPropagation()
-                          if (suppressClickRef.current) {
-                            suppressClickRef.current = false
-                            return
-                          }
-                          // Keep members as individuals, then zoom toward group
-                          setExpandedActorIds((prev) => {
-                            const next = new Set(prev)
-                            for (const m of node.members) next.add(m.id)
-                            return next
-                          })
-                          if (canZoomIn) {
-                            zoomTowardLayoutPoint(node.x, node.y)
-                          }
-                        }}
-                        onPointerDown={(ev) => ev.stopPropagation()}
-                      >
-                        <span className="scex-cluster__stack" aria-hidden>
-                          {node.faces.map((f, i) => (
-                            <span
-                              key={f.id}
-                              className="scex-cluster__face"
-                              style={{
-                                zIndex: 3 - i,
-                                transform: `translate(${i * 7 - (node.faces.length - 1) * 3.5}px, ${i * 2}px)`,
-                              }}
-                            >
-                              <XProfileAvatar
-                                handle={f.handle}
-                                name={f.displayName}
-                                size={Math.max(
-                                  22,
-                                  Math.round(diam * 0.42),
-                                )}
-                              />
-                            </span>
-                          ))}
-                        </span>
-                        <span className="scex-cluster__badge">
-                          {node.members.length}
-                        </span>
-                        {node.onMapCount > 0 && (
-                          <span className="scex-cluster__map">
-                            {node.onMapCount}
-                          </span>
-                        )}
-                        {showTip && (
-                          <span className="scex-bubble__tip" role="tooltip">
-                            <em>{node.members.length} KOL gần nhau</em>
-                            <small>
-                              Bấm để tách nhóm
-                              {canZoomIn ? ' + phóng gần' : ''}
-                            </small>
-                            {top && (
-                              <small>
-                                Top: {top.displayName || top.handle}
-                              </small>
-                            )}
-                          </span>
-                        )}
-                      </button>
-                    )
-                  }
-
-                  const a = node.actor
-                  const ring =
-                    config.sentimentLabels[a.sentiment]?.color || '#94a3b8'
-                  const diam = node.r * 2
-                  const selected = selectedId === a.id
-                  const onMap = mapHandles.has(a.handle.toLowerCase())
-                  const showTip = hoverId === a.id || selected
-                  const sentLabel =
-                    config.sentimentLabels[a.sentiment]?.label || a.sentiment
-                  const vol = actorVolumeMetric(a, config)
-                  const volPhrase = storyVolumePhrase(vol, config.volumeSplit)
-                  const qualPhrase = storyQualityPhrase(
-                    a.qualityScore,
-                    config.qualitySplit,
-                  )
-                  const zoneKey = (a.quadrant || 'ignore') as ScexQuadrant
-                  const zoneLabel = zoneTitle(zoneKey, config)
-                  return (
-                    <button
-                      key={a.id}
-                      type="button"
-                      className={[
-                        'scex-bubble',
-                        selected ? 'is-selected' : '',
-                        onMap ? 'is-on-map' : '',
-                        showTip ? 'is-tip' : '',
-                      ]
-                        .filter(Boolean)
-                        .join(' ')}
-                      style={{
-                        left: node.x,
-                        top: node.y,
-                        width: diam,
-                        height: diam,
-                        borderColor: ring,
-                        zIndex: selected || showTip ? 80 : node.z,
-                        ['--depth' as string]: String(node.depth),
-                        ['--ring' as string]: ring,
-                      }}
-                      aria-label={`${a.displayName || a.handle}, ${zoneLabel}, ${volPhrase}, ${qualPhrase}`}
-                      onMouseEnter={() => setHoverId(a.id)}
-                      onMouseLeave={() =>
-                        setHoverId((id) => (id === a.id ? null : id))
-                      }
-                      onFocus={() => setHoverId(a.id)}
-                      onBlur={() =>
-                        setHoverId((id) => (id === a.id ? null : id))
-                      }
-                      onClick={(ev) => {
-                        ev.stopPropagation()
-                        if (suppressClickRef.current) {
-                          suppressClickRef.current = false
-                          return
-                        }
-                        onSelect(selectedId === a.id ? null : a)
-                      }}
-                      onPointerDown={(ev) => ev.stopPropagation()}
-                    >
-                      <span className="scex-bubble__glow" aria-hidden />
-                      <span className="scex-bubble__disc">
-                        <XProfileAvatar
-                          handle={a.handle}
-                          name={a.displayName}
-                          size={Math.max(24, Math.round(diam - 8))}
-                        />
-                      </span>
-                      {onMap && <span className="scex-bubble__map-dot" />}
-                      <span className="scex-bubble__label">
-                        @
-                        {a.handle.length > 10
-                          ? `${a.handle.slice(0, 9)}…`
-                          : a.handle}
-                      </span>
-                      {showTip && (
-                        <span className="scex-bubble__tip" role="tooltip">
-                          <em>{a.displayName || a.handle}</em>
-                          <small className="scex-bubble__tip-zone">
-                            {zoneLabel}
-                          </small>
-                          <small>
-                            {volPhrase} · {qualPhrase}
-                          </small>
-                          <small>
-                            {formatCompact(a.followers)} followers
-                            {onMap ? ' · Có trên map' : ''}
-                            {a.mapRank ? ` · ${a.mapRank}` : ''}
-                            {sentLabel ? ` · ${sentLabel}` : ''}
-                          </small>
-                        </span>
-                      )}
-                    </button>
-                  )
-                })}
-              </div>
             </div>
 
-            {/* Compact floating zoom — overlay, no layout height */}
+            {/* Bubbles: spread positions in JS (not CSS-scaled) so they open up */}
+            <div className="scex-matrix__stage scex-matrix__stage--spread">
+              {layout.map((b) => {
+                const a = actorById.get(b.id)
+                if (!a) return null
+                const ring =
+                  config.sentimentLabels[a.sentiment]?.color || '#94a3b8'
+                const diam = b.r * 2
+                const selected = selectedId === a.id
+                const onMap = mapHandles.has(a.handle.toLowerCase())
+                const showTip = hoverId === a.id || selected
+                const sentLabel =
+                  config.sentimentLabels[a.sentiment]?.label || a.sentiment
+                const vol = actorVolumeMetric(a, config)
+                const volPhrase = storyVolumePhrase(vol, config.volumeSplit)
+                const qualPhrase = storyQualityPhrase(
+                  a.qualityScore,
+                  config.qualitySplit,
+                )
+                const zoneKey = (a.quadrant || 'ignore') as ScexQuadrant
+                const zoneLabel = zoneTitle(zoneKey, config)
+                return (
+                  <button
+                    key={a.id}
+                    type="button"
+                    className={[
+                      'scex-bubble',
+                      selected ? 'is-selected' : '',
+                      onMap ? 'is-on-map' : '',
+                      showTip ? 'is-tip' : '',
+                    ]
+                      .filter(Boolean)
+                      .join(' ')}
+                    style={{
+                      left: b.x,
+                      top: b.y,
+                      width: diam,
+                      height: diam,
+                      borderColor: ring,
+                      zIndex: selected || showTip ? 80 : b.z,
+                      ['--depth' as string]: String(b.depth),
+                      ['--ring' as string]: ring,
+                    }}
+                    aria-label={`${a.displayName || a.handle}, ${zoneLabel}, ${volPhrase}, ${qualPhrase}`}
+                    onMouseEnter={() => setHoverId(a.id)}
+                    onMouseLeave={() =>
+                      setHoverId((id) => (id === a.id ? null : id))
+                    }
+                    onFocus={() => setHoverId(a.id)}
+                    onBlur={() =>
+                      setHoverId((id) => (id === a.id ? null : id))
+                    }
+                    onClick={(ev) => {
+                      ev.stopPropagation()
+                      if (suppressClickRef.current) {
+                        suppressClickRef.current = false
+                        return
+                      }
+                      onSelect(selectedId === a.id ? null : a)
+                    }}
+                    onPointerDown={(ev) => ev.stopPropagation()}
+                  >
+                    <span className="scex-bubble__glow" aria-hidden />
+                    <span className="scex-bubble__disc">
+                      <XProfileAvatar
+                        handle={a.handle}
+                        name={a.displayName}
+                        size={Math.max(24, Math.round(diam - 8))}
+                      />
+                    </span>
+                    {onMap && <span className="scex-bubble__map-dot" />}
+                    <span className="scex-bubble__label">
+                      @
+                      {a.handle.length > 10
+                        ? `${a.handle.slice(0, 9)}…`
+                        : a.handle}
+                    </span>
+                    {showTip && (
+                      <span className="scex-bubble__tip" role="tooltip">
+                        <em>{a.displayName || a.handle}</em>
+                        <small className="scex-bubble__tip-zone">
+                          {zoneLabel}
+                        </small>
+                        <small>
+                          {volPhrase} · {qualPhrase}
+                        </small>
+                        <small>
+                          {formatCompact(a.followers)} followers
+                          {onMap ? ' · Có trên map' : ''}
+                          {a.mapRank ? ` · ${a.mapRank}` : ''}
+                          {sentLabel ? ` · ${sentLabel}` : ''}
+                        </small>
+                      </span>
+                    )}
+                  </button>
+                )
+              })}
+            </div>
+
             <div
               className="scex2d-zoom-fab"
               role="toolbar"
@@ -839,7 +654,7 @@ export function ScexMatrix2D({
               <button
                 type="button"
                 className="scex2d-zoom-fab__btn"
-                title="Phóng to"
+                title="Phóng to — giãn bubble"
                 disabled={!canZoomIn}
                 onClick={(e) => {
                   e.stopPropagation()
@@ -865,7 +680,6 @@ export function ScexMatrix2D({
                 onClick={(e) => {
                   e.stopPropagation()
                   goZoom(DEFAULT_ZOOM_I)
-                  setExpandedActorIds(new Set())
                 }}
               >
                 {zoomPct}%
@@ -926,13 +740,9 @@ export function ScexMatrix2D({
           <i className="scex2d-encode__map" aria-hidden />
           Chấm xanh = trên map
         </span>
-        {clusterCount > 0 && (
-          <span className="scex2d-encode__cluster">
-            <i className="scex2d-encode__cluster-icon" aria-hidden />
-            {clusterCount} nhóm — bấm để tách
-          </span>
-        )}
-        <span className="scex2d-encode__hint">± phóng · kéo nền khi &gt;100%</span>
+        <span className="scex2d-encode__hint">
+          + giãn bubble · kéo nền khi &gt;100%
+        </span>
       </div>
     </div>
   )

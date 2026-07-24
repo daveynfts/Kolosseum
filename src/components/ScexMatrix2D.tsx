@@ -65,7 +65,11 @@ function storyQualityPhrase(q: number, split: number): string {
 }
 
 function zoneTitle(key: ScexQuadrant, config: ScexConfig): string {
-  const raw = config.quadrantLabels[key]?.title || ''
+  const raw = (config.quadrantLabels[key]?.title || '').trim()
+  // Partner-friendly remap (old config / R2 may still say “Nuôi dưỡng”)
+  if (key === 'nurture' && /nuôi dưỡng|tiềm năng/i.test(raw)) {
+    return STORY_ZONE.nurture.title
+  }
   if (raw && !/^(TRỌNG ĐIỂM|TIỀM NĂNG|CẦN RÀ SOÁT|TÍN HIỆU YẾU)$/i.test(raw)) {
     return raw
   }

@@ -18,6 +18,7 @@ import {
   actorMatrixPos,
   actorSizeValue,
   actorVolumeMetric,
+  computeQuadrant,
 } from '../data/scexTracking'
 import { XProfileAvatar } from './XProfileAvatar'
 import { DaveysRadarLink } from './DaveysRadarLink'
@@ -64,16 +65,55 @@ function storyQualityPhrase(q: number, split: number): string {
   return 'Chất lượng thấp'
 }
 
-function zoneTitle(key: ScexQuadrant, config: ScexConfig): string {
-  const raw = (config.quadrantLabels[key]?.title || '').trim()
-  // Partner-friendly remap (old config / R2 may still say “Nuôi dưỡng”)
-  if (key === 'nurture' && /nuôi dưỡng|tiềm năng/i.test(raw)) {
-    return STORY_ZONE.nurture.title
-  }
-  if (raw && !/^(TRỌNG ĐIỂM|TIỀM NĂNG|CẦN RÀ SOÁT|TÍN HIỆU YẾU)$/i.test(raw)) {
-    return raw
-  }
-  return STORY_ZONE[key].title
+/** Partner-facing zone title (stable, never use stale/jargon config copy). */
+function partnerZoneTitle(key: ScexQuadrant): string {
+  return STORY_ZONE[key]?.title || key
+}
+
+/**
+ * Zone from metrics (volume × quality splits) — source of truth for matrix.
+ */
+function zoneFromMetrics(
+  actor: ScexActor,
+  config: ScexConfig,
+): ScexQuadrant {
+  return computeQuadrant(
+    actorVolumeMetric(actor, config),
+    actor.qualityScore,
+    config.volumeSplit,
+    config.qualitySplit,
+  )
+}
+
+/**
+ * Zone from packed pixel position vs crosshair — matches what the eye sees
+ * after collision packing (may differ slightly from stored actor.quadrant).
+ */
+function zoneFromPixel(
+  px: number,
+  py: number,
+  w: number,
+  h: number,
+  splitXPct: number,
+  splitYFromTopPct: number,
+): ScexQuadrant {
+  if (w < 1 || h < 1) return 'ignore'
+  const highVol = px >= (splitXPct / 100) * w
+  const highQ = py <= (splitYFromTopPct / 100) * h
+  if (highVol && highQ) return 'stars'
+  if (!highVol && highQ) return 'nurture'
+  if (highVol && !highQ) return 'noise'
+  return 'ignore'
+}
+
+function normalizeSentimentLabel(raw: string): string {
+  const s = (raw || '').toLowerCase()
+  if (/bull|tích cực|positive/i.test(s)) return 'Tích cực'
+  if (/bear|tiêu cực|negative/i.test(s)) return 'Tiêu cực'
+  if (/neutral|trung lập|mixed|hỗn/i.test(s)) return 'Trung lập'
+  if (/shill/i.test(s)) return 'Shill'
+  if (/scam/i.test(s)) return 'Cảnh báo'
+  return raw || '—'
 }
 
 export type ScexMatrix2DProps = {
@@ -505,7 +545,7 @@ export function ScexMatrix2D({
   const zones = (['nurture', 'stars', 'ignore', 'noise'] as const).map(
     (key) => ({
       key,
-      title: zoneTitle(key, config),
+      title: partnerZoneTitle(key),
       hint: STORY_ZONE[key].hint,
       corner: STORY_ZONE[key].corner,
     }),
@@ -608,16 +648,31 @@ export function ScexMatrix2D({
                 const selected = selectedId === a.id
                 const onMap = mapHandles.has(a.handle.toLowerCase())
                 const showTip = hoverId === a.id || selected
-                const sentLabel =
-                  config.sentimentLabels[a.sentiment]?.label || a.sentiment
+                const sentLabel = normalizeSentimentLabel(
+                  config.sentimentLabels[a.sentiment]?.label ||
+                    a.sentiment ||
+                    '',
+                )
                 const vol = actorVolumeMetric(a, config)
                 const volPhrase = storyVolumePhrase(vol, config.volumeSplit)
                 const qualPhrase = storyQualityPhrase(
                   a.qualityScore,
                   config.qualitySplit,
                 )
-                const zoneKey = (a.quadrant || 'ignore') as ScexQuadrant
-                const zoneLabel = zoneTitle(zoneKey, config)
+                // Prefer visual quadrant (matches crosshair after packing);
+                // fall back to metric quadrant if plot not measured yet.
+                const zoneKey =
+                  plotSize.w > 40 && plotSize.h > 40
+                    ? zoneFromPixel(
+                        b.bx,
+                        b.by,
+                        plotSize.w,
+                        plotSize.h,
+                        splitXPct,
+                        splitYFromTopPct,
+                      )
+                    : zoneFromMetrics(a, config)
+                const zoneLabel = partnerZoneTitle(zoneKey)
                 // Flip tip below for bottom zones so overflow:hidden doesn't clip it
                 const tipBelow = b.y > plotSize.h * 0.52
                 const tipX =
@@ -626,6 +681,22 @@ export function ScexMatrix2D({
                     : b.x > plotSize.w * 0.78
                       ? 'left'
                       : 'center'
+                const tipRows: Array<[string, string]> = [
+                  ['Vùng', zoneLabel],
+                  ['Tần suất', volPhrase],
+                  ['Uy tín', qualPhrase],
+                  ['Góc nhìn', sentLabel],
+                  [
+                    'Reach',
+                    [
+                      `${formatCompact(a.followers)} followers`,
+                      onMap ? "Davey's Radar" : null,
+                      a.mapRank || null,
+                    ]
+                      .filter(Boolean)
+                      .join(' · '),
+                  ],
+                ]
                 return (
                   <button
                     key={a.id}
@@ -651,7 +722,7 @@ export function ScexMatrix2D({
                       ['--depth' as string]: String(b.depth),
                       ['--ring' as string]: ring,
                     }}
-                    aria-label={`${a.displayName || a.handle}, ${zoneLabel}, ${volPhrase}, ${qualPhrase}`}
+                    aria-label={`${a.displayName || a.handle}, ${zoneLabel}, ${volPhrase}, ${qualPhrase}, ${sentLabel}`}
                     onMouseEnter={() => setHoverId(a.id)}
                     onMouseLeave={() =>
                       setHoverId((id) => (id === a.id ? null : id))
@@ -691,27 +762,16 @@ export function ScexMatrix2D({
                         <span className="scex-bubble__tip-handle">
                           @{a.handle}
                         </span>
-                        <ul className="scex-bubble__tip-list">
-                          <li>
-                            <span>Vùng</span> {zoneLabel}
-                          </li>
-                          <li>
-                            <span>Tần suất</span> {volPhrase}
-                          </li>
-                          <li>
-                            <span>Uy tín</span> {qualPhrase}
-                          </li>
-                          <li>
-                            <span>Góc nhìn</span>{' '}
-                            {sentLabel || a.sentiment || '—'}
-                          </li>
-                          <li>
-                            <span>Reach</span>{' '}
-                            {formatCompact(a.followers)} followers
-                            {onMap ? " · Davey's Radar" : ''}
-                            {a.mapRank ? ` · ${a.mapRank}` : ''}
-                          </li>
-                        </ul>
+                        <table className="scex-bubble__tip-table">
+                          <tbody>
+                            {tipRows.map(([k, v]) => (
+                              <tr key={k}>
+                                <th scope="row">{k}</th>
+                                <td>{v}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
                       </span>
                     )}
                   </button>

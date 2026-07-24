@@ -1950,50 +1950,54 @@
 .scex-bubble__tip-handle {
   display: block;
   margin-top: 1px;
-  margin-bottom: 6px;
-  font-size: 0.68rem;
+  margin-bottom: 7px;
+  font-size: 0.7rem;
   font-weight: 550;
   color: rgba(125, 211, 252, 0.85);
   line-height: 1.2;
+  font-family: inherit;
 }
-.scex-bubble__tip-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-.scex-bubble__tip-list li {
-  position: relative;
-  margin: 0;
-  padding: 0 0 0 11px;
+/* Even two-column table for hover facts */
+.scex-bubble__tip-table {
+  width: 100%;
+  border-collapse: collapse;
+  border-spacing: 0;
+  font-family: inherit;
   font-size: 0.7rem;
-  line-height: 1.35;
-  color: rgba(226, 232, 240, 0.82);
-  font-weight: 500;
+  line-height: 1.4;
+  table-layout: fixed;
 }
-.scex-bubble__tip-list li::before {
-  content: '•';
-  position: absolute;
-  left: 0;
-  top: 0;
-  color: rgba(125, 211, 252, 0.75);
-  font-weight: 700;
+.scex-bubble__tip-table th,
+.scex-bubble__tip-table td {
+  padding: 3px 0;
+  vertical-align: top;
+  font-size: 0.7rem;
+  font-weight: 550;
+  line-height: 1.4;
+  font-family: inherit;
+  letter-spacing: -0.01em;
+  border: 0;
 }
-.scex-bubble__tip-list li span {
-  display: inline-block;
-  min-width: 4.4em;
-  margin-right: 4px;
-  color: rgba(148, 163, 184, 0.9);
+.scex-bubble__tip-table th {
+  width: 38%;
+  padding-right: 10px;
+  color: rgba(148, 163, 184, 0.95);
   font-weight: 650;
-  font-size: 0.64rem;
-  letter-spacing: 0.02em;
-  text-transform: uppercase;
+  text-align: left;
+  white-space: nowrap;
 }
-.scex-bubble__tip-zone {
-  color: #7dd3fc !important;
-  font-weight: 650 !important;
+.scex-bubble__tip-table td {
+  width: 62%;
+  color: rgba(241, 245, 249, 0.92);
+  font-weight: 550;
+  text-align: left;
+  word-break: break-word;
+}
+.scex-bubble__tip-table tr + tr th,
+.scex-bubble__tip-table tr + tr td {
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  padding-top: 5px;
+  margin-top: 0;
 }
 
 .scex-matrix__axis-x {

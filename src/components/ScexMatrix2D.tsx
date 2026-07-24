@@ -1,6 +1,6 @@
 /**
  * SCEX mention matrix — Story 2D (volume × quality).
- * Floating zoom FAB; zoom-in spreads bubbles apart (no group-clusters).
+ * Scroll-to-zoom; transient % HUD; zoom spreads + enlarges bubbles.
  */
 import {
   useCallback,
@@ -11,6 +11,7 @@ import {
   useState,
   type CSSProperties,
   type PointerEvent as ReactPointerEvent,
+  type WheelEvent as ReactWheelEvent,
 } from 'react'
 import type { ScexActor, ScexConfig, ScexQuadrant } from '../data/scexTracking'
 import {
@@ -286,6 +287,8 @@ export function ScexMatrix2D({
   const [pan, setPan] = useState({ x: 0, y: 0 })
   const [hoverId, setHoverId] = useState<string | null>(null)
   const [showStoryTip, setShowStoryTip] = useState(false)
+  /** Brief zoom % toast (auto-hide ~2s) */
+  const [zoomHudVisible, setZoomHudVisible] = useState(false)
   const zoom = ZOOM_STEPS[zoomI]
   const panRef = useRef(pan)
   const zoomRef = useRef(zoom)
@@ -301,6 +304,22 @@ export function ScexMatrix2D({
     moved: boolean
   } | null>(null)
   const suppressClickRef = useRef(false)
+  const zoomHudTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const flashZoomHud = useCallback(() => {
+    setZoomHudVisible(true)
+    if (zoomHudTimerRef.current) clearTimeout(zoomHudTimerRef.current)
+    zoomHudTimerRef.current = setTimeout(() => {
+      setZoomHudVisible(false)
+      zoomHudTimerRef.current = null
+    }, 2000)
+  }, [])
+
+  useEffect(() => {
+    return () => {
+      if (zoomHudTimerRef.current) clearTimeout(zoomHudTimerRef.current)
+    }
+  }, [])
 
   useEffect(() => {
     try {
@@ -353,6 +372,10 @@ export function ScexMatrix2D({
   const goZoom = useCallback(
     (nextI: number, focus?: { x: number; y: number }) => {
       const i = clamp(nextI, 0, ZOOM_STEPS.length - 1)
+      if (i === zoomI && !focus) {
+        flashZoomHud()
+        return
+      }
       const el = plotRef.current
       const w = el?.clientWidth || plotSize.w
       const h = el?.clientHeight || plotSize.h
@@ -363,11 +386,12 @@ export function ScexMatrix2D({
       if (newZ === 1) {
         setZoomI(i)
         setPan({ x: 0, y: 0 })
+        flashZoomHud()
         return
       }
 
       if (focus && w > 0 && h > 0 && oldZ > 0) {
-        // Keep point under focus roughly stable while spreading
+        // Keep point under cursor roughly stable while spreading
         const cx = focus.x - w / 2
         const cy = focus.y - h / 2
         const contentX = (cx - oldPan.x) / oldZ
@@ -380,16 +404,28 @@ export function ScexMatrix2D({
         setZoomI(i)
         setPan((p) => clampPanTo(p.x, p.y, newZ, w, h))
       }
+      flashZoomHud()
     },
-    [clampPanTo, plotSize.w, plotSize.h],
+    [clampPanTo, plotSize.w, plotSize.h, zoomI, flashZoomHud],
   )
+
+  const onWheel = (e: ReactWheelEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    const el = plotRef.current
+    if (!el) return
+    const rect = el.getBoundingClientRect()
+    const focus = {
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top,
+    }
+    const dir = e.deltaY > 0 ? -1 : 1
+    goZoom(zoomI + dir, focus)
+  }
 
   const onPointerDown = (e: ReactPointerEvent) => {
     if (e.button !== 0) return
-    if (
-      (e.target as HTMLElement).closest('.scex-bubble, .scex2d-zoom-fab')
-    )
-      return
+    if ((e.target as HTMLElement).closest('.scex-bubble')) return
     if (zoomRef.current <= 1) return
     const el = plotRef.current
     if (!el) return
@@ -471,9 +507,6 @@ export function ScexMatrix2D({
   )
 
   const zoomPct = Math.round(zoom * 100)
-  const canZoomOut = zoomI > 0
-  const canZoomIn = zoomI < ZOOM_STEPS.length - 1
-  const isDefaultZoom = zoomI === DEFAULT_ZOOM_I && pan.x === 0 && pan.y === 0
 
   return (
     <div className="scex2d-root scex2d-root--story">
@@ -482,8 +515,8 @@ export function ScexMatrix2D({
           <div className="scex2d-story-tip__body">
             <strong>Cách đọc nhanh</strong>
             <p>
-              Góc <em>trên-phải</em> = ưu tiên cao. Phóng to (+) để avatar to
-              và rõ hơn. Bấm avatar để xem KOL.
+              Góc <em>trên-phải</em> = ưu tiên cao. Cuộn chuột để zoom (avatar
+              to hơn khi phóng). Bấm avatar để xem KOL.
             </p>
           </div>
           <button
@@ -508,6 +541,7 @@ export function ScexMatrix2D({
           <div
             className={`scex-matrix__plot scex2d-plot scex2d-plot--story ${zoom > 1 ? 'is-zoomed' : ''}`}
             ref={plotRef}
+            onWheel={onWheel}
             onPointerDown={onPointerDown}
             onPointerMove={onPointerMove}
             onPointerUp={endDrag}
@@ -525,11 +559,17 @@ export function ScexMatrix2D({
               </div>
             ))}
 
-            {/* Background follows zoom spread (axes context) */}
+            {/*
+              Background: never shrink below 1× (fixes empty corners at 75%).
+              Only expand + pan when zoomed in so washes still fill the plot.
+            */}
             <div
               className="scex2d-zoom-layer scex2d-zoom-layer--bg"
               style={{
-                transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
+                transform:
+                  zoom >= 1
+                    ? `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`
+                    : 'none',
               }}
               aria-hidden
             >
@@ -647,70 +687,13 @@ export function ScexMatrix2D({
               })}
             </div>
 
+            {/* Transient zoom % — 2s then fade (does not block UI) */}
             <div
-              className="scex2d-zoom-fab"
-              role="toolbar"
-              aria-label="Zoom ma trận"
+              className={`scex2d-zoom-hud ${zoomHudVisible ? 'is-on' : ''}`}
+              aria-live="polite"
+              aria-hidden={!zoomHudVisible}
             >
-              <button
-                type="button"
-                className="scex2d-zoom-fab__btn"
-                title="Phóng to — avatar to và rõ hơn"
-                disabled={!canZoomIn}
-                onClick={(e) => {
-                  e.stopPropagation()
-                  const el = plotRef.current
-                  if (el) {
-                    goZoom(zoomI + 1, {
-                      x: el.clientWidth / 2,
-                      y: el.clientHeight / 2,
-                    })
-                  } else goZoom(zoomI + 1)
-                }}
-              >
-                +
-              </button>
-              <button
-                type="button"
-                className={`scex2d-zoom-fab__level ${!isDefaultZoom ? 'is-active' : ''}`}
-                title={
-                  isDefaultZoom
-                    ? 'Mức zoom hiện tại'
-                    : 'Về 100% (hoặc double-click nền)'
-                }
-                onClick={(e) => {
-                  e.stopPropagation()
-                  goZoom(DEFAULT_ZOOM_I)
-                }}
-              >
-                {zoomPct}%
-              </button>
-              <button
-                type="button"
-                className="scex2d-zoom-fab__btn"
-                title="Thu nhỏ"
-                disabled={!canZoomOut}
-                onClick={(e) => {
-                  e.stopPropagation()
-                  goZoom(zoomI - 1)
-                }}
-              >
-                −
-              </button>
-              <div className="scex2d-zoom-fab__rail" aria-hidden>
-                {ZOOM_STEPS.map((z, i) => (
-                  <button
-                    key={z}
-                    type="button"
-                    className={`scex2d-zoom-fab__tick ${i === zoomI ? 'is-on' : ''}`}
-                    title={`${Math.round(z * 100)}%`}
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      goZoom(i)
-                    }}
-                  />
-                ))}
-              </div>
+              {zoomPct}%
             </div>
           </div>
         </div>
@@ -742,7 +725,7 @@ export function ScexMatrix2D({
           Chấm xanh = trên map
         </span>
         <span className="scex2d-encode__hint">
-          + phóng to avatar · kéo nền khi &gt;100%
+          Cuộn = zoom · kéo nền khi &gt;100%
         </span>
       </div>
     </div>

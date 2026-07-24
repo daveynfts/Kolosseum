@@ -480,10 +480,7 @@
   flex-direction: column;
   gap: 6px;
 }
-.scex-matrix.is-fullscreen .scex2d-zoom-fab {
-  right: 16px;
-  bottom: 16px;
-}
+
 .scex-matrix.is-fullscreen .scex2d-stage,
 .scex-matrix.is-fullscreen .scex3d-stage {
   flex: 1 1 auto !important;
@@ -980,105 +977,37 @@
   gap: 10px;
 }
 
-/* Compact floating zoom FAB — overlay inside plot, zero layout height */
-.scex2d-zoom-fab {
+/* Transient zoom % — center, auto-hide, does not cover controls long-term */
+.scex2d-zoom-hud {
   position: absolute;
-  right: 10px;
-  bottom: 10px;
-  z-index: 30;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 3px;
-  padding: 5px;
-  border-radius: 14px;
-  background: rgba(6, 10, 20, 0.82);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  box-shadow:
-    0 10px 28px rgba(0, 0, 0, 0.45),
-    inset 0 1px 0 rgba(255, 255, 255, 0.06);
-  backdrop-filter: blur(12px) saturate(140%);
-  -webkit-backdrop-filter: blur(12px) saturate(140%);
-  pointer-events: auto;
-}
-
-.scex2d-zoom-fab__btn {
-  appearance: none;
-  width: 32px;
-  height: 32px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(255, 255, 255, 0.06);
-  color: #e2e8f0;
-  font: inherit;
-  font-size: 1.15rem;
-  font-weight: 600;
-  line-height: 1;
-  cursor: pointer;
-  transition: background 0.15s, border-color 0.15s, color 0.15s;
-}
-.scex2d-zoom-fab__btn:hover:not(:disabled) {
-  border-color: rgba(125, 211, 252, 0.45);
-  background: rgba(56, 189, 248, 0.16);
-  color: #fff;
-}
-.scex2d-zoom-fab__btn:disabled {
-  opacity: 0.3;
-  cursor: not-allowed;
-}
-
-.scex2d-zoom-fab__level {
-  appearance: none;
-  min-width: 32px;
-  height: 22px;
-  padding: 0 4px;
-  border: 0;
-  border-radius: 6px;
-  background: transparent;
-  color: rgba(148, 163, 184, 0.95);
-  font: inherit;
-  font-size: 0.62rem;
+  left: 50%;
+  top: 50%;
+  z-index: 25;
+  transform: translate(-50%, -50%) scale(0.92);
+  min-width: 56px;
+  padding: 8px 14px;
+  border-radius: 12px;
+  background: rgba(6, 10, 20, 0.78);
+  border: 1px solid rgba(125, 211, 252, 0.28);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.4);
+  color: #e0f2fe;
+  font-size: 0.95rem;
   font-weight: 750;
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.02em;
-  cursor: pointer;
-  transition: color 0.15s, background 0.15s;
+  text-align: center;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity 0.28s ease,
+    visibility 0.28s ease,
+    transform 0.28s ease;
 }
-.scex2d-zoom-fab__level.is-active {
-  color: #7dd3fc;
-  background: rgba(56, 189, 248, 0.12);
-}
-.scex2d-zoom-fab__level:hover {
-  color: #e0f2fe;
-}
-
-.scex2d-zoom-fab__rail {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 3px;
-  padding: 2px 0 1px;
-}
-.scex2d-zoom-fab__tick {
-  appearance: none;
-  width: 6px;
-  height: 6px;
-  padding: 0;
-  border-radius: 50%;
-  border: 1px solid rgba(148, 163, 184, 0.35);
-  background: transparent;
-  cursor: pointer;
-}
-.scex2d-zoom-fab__tick.is-on {
-  background: #38bdf8;
-  border-color: #7dd3fc;
-  box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.25);
-}
-.scex2d-zoom-fab__tick:hover {
-  border-color: #7dd3fc;
+.scex2d-zoom-hud.is-on {
+  opacity: 1;
+  visibility: visible;
+  transform: translate(-50%, -50%) scale(1);
 }
 
 .scex2d-stage {
@@ -1176,6 +1105,10 @@
 .scex2d-zoom-layer--bg {
   z-index: 0;
   pointer-events: none;
+  /* Always cover plot; scale only expands when zoom ≥ 1 (JS) */
+  inset: 0;
+  width: 100%;
+  height: 100%;
 }
 
 .scex2d-wash {

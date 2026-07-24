@@ -281,7 +281,7 @@ export function ScexTrackingPage() {
     }
   }, [])
 
-  // Matrix fullscreen: Esc exit + lock body scroll
+  // Matrix fullscreen: Esc exit + lock body scroll (don't steal Esc from KOL detail)
   useEffect(() => {
     if (!matrixFullscreen) return
     const prev = document.body.style.overflow
@@ -289,13 +289,19 @@ export function ScexTrackingPage() {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         e.preventDefault()
+        e.stopPropagation()
         setMatrixFullscreen(false)
       }
     }
-    window.addEventListener('keydown', onKey)
+    window.addEventListener('keydown', onKey, true)
+    // Force a resize so 2D plot ResizeObserver remeasures after flex settles
+    const t = window.setTimeout(() => {
+      window.dispatchEvent(new Event('resize'))
+    }, 80)
     return () => {
       document.body.style.overflow = prev
-      window.removeEventListener('keydown', onKey)
+      window.removeEventListener('keydown', onKey, true)
+      window.clearTimeout(t)
     }
   }, [matrixFullscreen])
 

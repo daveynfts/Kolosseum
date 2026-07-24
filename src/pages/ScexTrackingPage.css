@@ -889,19 +889,22 @@
 
 .scex3d-bubble__face {
   display: block;
-  width: calc(100% - 6px);
-  height: calc(100% - 6px);
+  width: 100%;
+  height: 100%;
   border-radius: 50%;
   overflow: hidden;
 }
 
 .scex3d-bubble__face img,
 .scex3d-bubble__face .avatar-fallback,
+.scex3d-bubble__face .x-profile-avatar-wrap,
+.scex3d-bubble__face .x-profile-avatar,
 .scex3d-bubble__face > * {
   width: 100% !important;
   height: 100% !important;
-  border-radius: 50%;
-  object-fit: cover;
+  border-radius: 50% !important;
+  object-fit: cover !important;
+  object-position: center !important;
 }
 
 .scex3d-bubble__map-dot {
@@ -1686,22 +1689,29 @@
 .scex-bubble__disc {
   position: relative;
   z-index: 1;
-  width: calc(100% - 6px);
-  height: calc(100% - 6px);
+  /* Full circle face — ring is bubble border, logo fills the disc */
+  width: 100%;
+  height: 100%;
   border-radius: 50%;
   overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
+  background: rgba(8, 12, 24, 0.95);
 }
 
 .scex-bubble__disc img,
 .scex-bubble__disc .avatar-fallback,
+.scex-bubble__disc .x-profile-avatar-wrap,
+.scex-bubble__disc .x-profile-avatar,
 .scex-bubble__disc > * {
   width: 100% !important;
   height: 100% !important;
-  border-radius: 50%;
-  object-fit: cover;
+  max-width: none !important;
+  max-height: none !important;
+  border-radius: 50% !important;
+  object-fit: cover !important;
+  object-position: center !important;
 }
 
 .scex-bubble__label {
@@ -2118,6 +2128,16 @@
   flex-shrink: 0;
   background: rgba(15, 23, 42, 0.8);
 }
+.scex-feed-card__av img,
+.scex-feed-card__av .x-profile-avatar-wrap,
+.scex-feed-card__av .x-profile-avatar,
+.scex-feed-card__av > * {
+  width: 100% !important;
+  height: 100% !important;
+  border-radius: 50% !important;
+  object-fit: cover !important;
+  object-position: center !important;
+}
 
 .scex-feed-card__meta {
   min-width: 0;
@@ -2388,11 +2408,21 @@
 .scex-detail__avatar {
   width: 56px;
   height: 56px;
-  border-radius: 16px;
+  border-radius: 50%;
   overflow: hidden;
   flex-shrink: 0;
   background: rgba(15, 23, 42, 0.8);
   border: 1px solid rgba(255, 255, 255, 0.12);
+}
+.scex-detail__avatar img,
+.scex-detail__avatar .x-profile-avatar-wrap,
+.scex-detail__avatar .x-profile-avatar,
+.scex-detail__avatar > * {
+  width: 100% !important;
+  height: 100% !important;
+  border-radius: 50% !important;
+  object-fit: cover !important;
+  object-position: center !important;
 }
 
 .scex-detail__head h2 {

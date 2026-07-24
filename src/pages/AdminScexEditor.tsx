@@ -149,15 +149,12 @@ export function AdminScexEditor({ onToast }: Props) {
                 min: 0,
                 max: 100,
                 label:
-                  prev.config.volumeAxis?.label ||
-                  'Điểm tần suất (log activity)',
+                  prev.config.volumeAxis?.label || 'Tần suất mention',
               },
               qualityAxis: {
                 min: 0,
                 max: 100,
-                label:
-                  prev.config.qualityAxis?.label ||
-                  'Điểm chất lượng (tier + signal)',
+                label: prev.config.qualityAxis?.label || 'Chất lượng',
               },
               volumeSplit:
                 prev.config.volumeSplit > 20 ? prev.config.volumeSplit : 42,

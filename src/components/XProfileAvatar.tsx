@@ -132,6 +132,11 @@ export function XProfileAvatar({
           width: size,
           height: size,
           fontSize: size * 0.32,
+          borderRadius: '50%',
+          overflow: 'hidden',
+          display: 'inline-flex',
+          alignItems: 'center',
+          justifyContent: 'center',
         }}
         title={`@${clean}`}
       >
@@ -149,6 +154,8 @@ export function XProfileAvatar({
         display: 'inline-flex',
         position: 'relative',
         flexShrink: 0,
+        borderRadius: '50%',
+        overflow: 'hidden',
       }}
       title={`@${clean}`}
     >
@@ -182,6 +189,9 @@ export function XProfileAvatar({
         style={{
           width: size,
           height: size,
+          borderRadius: '50%',
+          objectFit: 'cover',
+          objectPosition: 'center',
           opacity: status === 'ready' ? 1 : 0,
           position: status === 'ready' ? 'relative' : 'absolute',
           inset: 0,

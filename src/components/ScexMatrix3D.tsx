@@ -12,6 +12,8 @@ import {
   actorMatrixPos,
   actorSizeValue,
   actorVolumeMetric,
+  viQualityAxisLabel,
+  viVolumeAxisLabel,
 } from '../data/scexTracking'
 import { XProfileAvatar } from './XProfileAvatar'
 
@@ -410,13 +412,13 @@ export function ScexMatrix3D(props: ScexMatrix3DProps) {
 
         <div className="scex3d-axis-bar">
           <span className="scex3d-axis-bar__y">
-            ↑ {props.config.qualityAxis.label || 'Điểm chất lượng'}
+            ↑ {viQualityAxisLabel(props.config.qualityAxis.label)}
           </span>
           <span className="scex3d-axis-bar__hint">
             Kéo để xoay · Chấm xanh = có trên map
           </span>
           <span className="scex3d-axis-bar__x">
-            {props.config.volumeAxis.label || 'Tần suất mention'} →
+            {viVolumeAxisLabel(props.config.volumeAxis.label)} →
           </span>
         </div>
       </div>

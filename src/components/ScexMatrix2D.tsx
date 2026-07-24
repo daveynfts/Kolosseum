@@ -18,6 +18,8 @@ import {
   actorMatrixPos,
   actorSizeValue,
   actorVolumeMetric,
+  viQualityAxisLabel,
+  viVolumeAxisLabel,
 } from '../data/scexTracking'
 import { XProfileAvatar } from './XProfileAvatar'
 
@@ -700,13 +702,13 @@ export function ScexMatrix2D({
 
         <div className="scex2d-story-axes">
           <span className="scex2d-story-axes__y">
-            ↑ {config.qualityAxis.label || 'Chất lượng'}
+            ↑ {viQualityAxisLabel(config.qualityAxis.label)}
           </span>
           <span className="scex2d-story-axes__track" aria-hidden>
             <i />
           </span>
           <span className="scex2d-story-axes__x">
-            {config.volumeAxis.label || 'Tần suất mention'} →
+            {viVolumeAxisLabel(config.volumeAxis.label)} →
           </span>
         </div>
       </div>

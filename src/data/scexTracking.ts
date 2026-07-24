@@ -228,6 +228,23 @@ export function defaultScexScoring(): ScexScoringConfig {
   }
 }
 
+/** Plain-language axis labels (hide scoring jargon for partner UI). */
+export function viVolumeAxisLabel(raw?: string): string {
+  const s = (raw || '').trim()
+  if (!s || /log|activity|điểm tần|volume score|raw/i.test(s)) {
+    return 'Tần suất mention'
+  }
+  return s
+}
+
+export function viQualityAxisLabel(raw?: string): string {
+  const s = (raw || '').trim()
+  if (!s || /tier|signal|điểm chất|quality score|scoring/i.test(s)) {
+    return 'Chất lượng'
+  }
+  return s
+}
+
 export function defaultScexConfig(): ScexConfig {
   return {
     brandName: 'SCEX',

@@ -1004,7 +1004,7 @@ function ScexFeedCard({
             <div className="scex-feed-card__name">
               <strong>{actor?.displayName || post.handle}</strong>
               {onMap && (
-                <span className="scex-pill scex-pill--map">Map</span>
+                <span className="scex-pill scex-pill--map">Davey&apos;s Radar</span>
               )}
               {actor?.tier && (
                 <span className="scex-pill scex-pill--tier">{actor.tier}</span>

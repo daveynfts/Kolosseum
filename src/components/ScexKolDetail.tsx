@@ -137,7 +137,7 @@ export function ScexKolDetail({
           <div className="scex-detail__head-badges">
             {mapKol ? (
               <span className="scex-detail__badge scex-detail__badge--map">
-                Map Radar
+                On Davey&apos;s Radar
               </span>
             ) : (
               <span className="scex-detail__badge">Off-map</span>

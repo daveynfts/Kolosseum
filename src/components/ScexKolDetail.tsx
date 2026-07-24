@@ -126,7 +126,24 @@ export function ScexKolDetail({
           </div>
         )}
         <div className="scex-detail__head-text">
-          <h2>{mapKol?.displayName || actor.displayName}</h2>
+          <div className="scex-detail__name-row">
+            <h2>{mapKol?.displayName || actor.displayName}</h2>
+            <a
+              className="scex-detail__x-logo"
+              href={`https://x.com/${actor.handle}`}
+              target="_blank"
+              rel="noreferrer"
+              title={`Mở @${actor.handle} trên X`}
+              aria-label={`Mở profile X của @${actor.handle}`}
+            >
+              <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden>
+                <path
+                  fill="currentColor"
+                  d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.727-8.835L1.254 2.25H8.08l4.253 5.622L18.244 2.25zm-1.161 17.52h1.833L7.084 4.126H5.117L17.083 19.77z"
+                />
+              </svg>
+            </a>
+          </div>
           <a
             className="scex-detail__handle"
             href={`https://x.com/${actor.handle}`}
@@ -339,14 +356,6 @@ export function ScexKolDetail({
               </ul>
             )}
 
-            <a
-              className="scex-detail__xlink"
-              href={`https://x.com/${actor.handle}`}
-              target="_blank"
-              rel="noreferrer"
-            >
-              Mở profile X ↗
-            </a>
           </div>
         )}
 

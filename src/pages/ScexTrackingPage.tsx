@@ -1,5 +1,5 @@
 /**
- * Public partner view — SCEX 2D/3D mention matrix + livefeed (VI).
+ * Public partner view — SCEX 2D mention matrix + livefeed (VI).
  */
 import { useEffect, useMemo, useState } from 'react'
 import {
@@ -16,25 +16,11 @@ import type { Kol } from '../types'
 import { XProfileAvatar } from '../components/XProfileAvatar'
 import { DaveysRadarLink } from '../components/DaveysRadarLink'
 import { ScexMatrix2D } from '../components/ScexMatrix2D'
-import { ScexMatrix3D } from '../components/ScexMatrix3D'
 import { ScexKolDetail } from '../components/ScexKolDetail'
 import { resolveMediaUrl } from '../lib/avatar'
 import './ScexTrackingPage.css'
 
-type MatrixView = '2d' | '3d'
-
-const VIEW_KEY = 'scex-matrix-view-v1'
 const FILTER_KEY = 'scex-matrix-filters-v1'
-
-function readView(): MatrixView {
-  try {
-    const v = localStorage.getItem(VIEW_KEY)
-    if (v === '2d' || v === '3d') return v
-  } catch {
-    /* ignore */
-  }
-  return '2d'
-}
 
 /** Matrix filter pill ids — multi-select with AND logic */
 type MatrixFilterId =
@@ -279,8 +265,6 @@ export function ScexTrackingPage() {
   const [mapKols, setMapKols] = useState<Kol[]>([])
   const [expanded, setExpanded] = useState<Record<string, boolean>>({})
   const [selectedActor, setSelectedActor] = useState<ScexActor | null>(null)
-  const [autoRotate, setAutoRotate] = useState(true)
-  const [matrixView, setMatrixView] = useState<MatrixView>(() => readView())
   /** Livefeed filter: null = all, or lowercase handle */
   const [feedFilter, setFeedFilter] = useState<string | null>(null)
   const [feedQuery, setFeedQuery] = useState('')
@@ -356,16 +340,6 @@ export function ScexTrackingPage() {
       window.removeEventListener('resize', apply)
     }
   }, [])
-
-  const setView = (v: MatrixView) => {
-    setMatrixView(v)
-    try {
-      localStorage.setItem(VIEW_KEY, v)
-    } catch {
-      /* ignore */
-    }
-    if (v === '2d') setAutoRotate(false)
-  }
 
   const toggleMatrixFilter = (id: MatrixFilterId) => {
     setMatrixFilters((prev) => {
@@ -632,38 +606,6 @@ export function ScexTrackingPage() {
               </p>
             </div>
             <div className="scex-matrix__toolbar">
-              {/* 2D-first: default view; 3D is advanced */}
-              <div
-                className="scex-view-toggle scex-view-toggle--lite"
-                role="group"
-                aria-label="Chế độ ma trận"
-              >
-                <button
-                  type="button"
-                  className={matrixView === '2d' ? 'is-active' : ''}
-                  onClick={() => setView('2d')}
-                >
-                  2D
-                </button>
-                <button
-                  type="button"
-                  className={`scex-view-toggle__adv ${matrixView === '3d' ? 'is-active' : ''}`}
-                  onClick={() => setView('3d')}
-                  title="Chế độ nâng cao: đám mây 3D"
-                >
-                  3D · nâng cao
-                </button>
-              </div>
-              {matrixView === '3d' && (
-                <button
-                  type="button"
-                  className={`scex-rotate-btn ${autoRotate ? 'is-on' : ''}`}
-                  onClick={() => setAutoRotate((v) => !v)}
-                  title="Tự xoay đám mây 3D"
-                >
-                  {autoRotate ? 'Dừng xoay' : 'Tự xoay'}
-                </button>
-              )}
               <button
                 type="button"
                 className={`scex-fs-btn ${matrixFullscreen ? 'is-on' : ''}`}
@@ -716,40 +658,16 @@ export function ScexTrackingPage() {
             )}
           </div>
           <div
-            className={`scex-matrix__body ${matrixView === '3d' ? 'scex-matrix__body--3d' : 'scex-matrix__body--2d'} ${matrixFullscreen ? 'is-fs' : ''}`}
+            className={`scex-matrix__body scex-matrix__body--2d ${matrixFullscreen ? 'is-fs' : ''}`}
           >
-            {matrixView === '3d' ? (
-              <ScexMatrix3D
-                actors={visible}
-                config={config}
-                selectedId={selectedActor?.id ?? null}
-                mapHandles={mapHandles}
-                autoRotate={autoRotate}
-                onSelect={onSelectActor}
-              />
-            ) : (
-              <ScexMatrix2D
-                actors={visible}
-                config={config}
-                selectedId={selectedActor?.id ?? null}
-                mapHandles={mapHandles}
-                onSelect={onSelectActor}
-                showZoomControls={matrixFullscreen}
-              />
-            )}
-            {/* Encoding legend lives inside Story matrix (2D); keep compact note for 3D */}
-            {matrixView === '3d' && (
-              <div className="scex-matrix__legend">
-                <span>
-                  <i className="scex-matrix__legend-dot scex-matrix__legend-dot--map" />
-                  Chấm xanh = On <DaveysRadarLink /> — bấm xem hồ sơ
-                </span>
-                <span>
-                  <i className="scex-matrix__legend-dot" />
-                  Kéo để xoay
-                </span>
-              </div>
-            )}
+            <ScexMatrix2D
+              actors={visible}
+              config={config}
+              selectedId={selectedActor?.id ?? null}
+              mapHandles={mapHandles}
+              onSelect={onSelectActor}
+              showZoomControls={matrixFullscreen}
+            />
           </div>
         </section>
 

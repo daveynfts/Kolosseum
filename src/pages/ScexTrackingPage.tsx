@@ -69,79 +69,101 @@ const MATRIX_FILTER_PILLS: Array<{
   label: string
   title: string
   group?: 'followers' | 'sentiment' | 'quad'
+  /** Lite Partner: primary row vs collapsible “Thêm lọc” */
+  tier: 'primary' | 'more'
 }> = [
-  { id: 'on_map', label: 'Trên map', title: 'KOL đã verify trên Radar map' },
+  {
+    id: 'on_map',
+    label: 'Trên map',
+    title: 'KOL đã verify trên Radar map',
+    tier: 'primary',
+  },
   {
     id: 'f_10k',
     label: '≥10K FL',
     title: 'Followers ≥ 10.000',
     group: 'followers',
+    tier: 'primary',
   },
   {
     id: 'f_50k',
     label: '≥50K FL',
     title: 'Followers ≥ 50.000',
     group: 'followers',
-  },
-  {
-    id: 'f_100k',
-    label: '≥100K FL',
-    title: 'Followers ≥ 100.000',
-    group: 'followers',
+    tier: 'primary',
   },
   {
     id: 'sent_bullish',
     label: 'Tích cực',
     title: 'Sentiment bullish',
     group: 'sentiment',
+    tier: 'primary',
   },
   {
     id: 'sent_bearish',
     label: 'Tiêu cực',
     title: 'Sentiment bearish',
     group: 'sentiment',
-  },
-  {
-    id: 'sent_neutral',
-    label: 'Trung lập',
-    title: 'Neutral / hỗn hợp',
-    group: 'sentiment',
-  },
-  {
-    id: 'vol_high',
-    label: 'Tần suất cao',
-    title: 'Volume score ≥ split (trục X)',
-  },
-  {
-    id: 'qual_high',
-    label: 'Chất lượng cao',
-    title: 'Quality score ≥ split (trục Y)',
+    tier: 'primary',
   },
   {
     id: 'quad_stars',
     label: 'Trọng điểm',
     title: 'Vùng TRỌNG ĐIỂM',
     group: 'quad',
+    tier: 'primary',
   },
   {
     id: 'quad_nurture',
     label: 'Tiềm năng',
     title: 'Vùng TIỀM NĂNG',
     group: 'quad',
+    tier: 'primary',
+  },
+  {
+    id: 'f_100k',
+    label: '≥100K FL',
+    title: 'Followers ≥ 100.000',
+    group: 'followers',
+    tier: 'more',
+  },
+  {
+    id: 'sent_neutral',
+    label: 'Trung lập',
+    title: 'Neutral / hỗn hợp',
+    group: 'sentiment',
+    tier: 'more',
+  },
+  {
+    id: 'vol_high',
+    label: 'Tần suất cao',
+    title: 'Volume score ≥ split (trục X)',
+    tier: 'more',
+  },
+  {
+    id: 'qual_high',
+    label: 'Chất lượng cao',
+    title: 'Quality score ≥ split (trục Y)',
+    tier: 'more',
   },
   {
     id: 'quad_noise',
     label: 'Rà soát',
     title: 'Vùng CẦN RÀ SOÁT',
     group: 'quad',
+    tier: 'more',
   },
   {
     id: 'quad_ignore',
     label: 'Tín hiệu yếu',
     title: 'Vùng TÍN HIỆU YẾU',
     group: 'quad',
+    tier: 'more',
   },
 ]
+
+const PRIMARY_FILTER_PILLS = MATRIX_FILTER_PILLS.filter((p) => p.tier === 'primary')
+const MORE_FILTER_PILLS = MATRIX_FILTER_PILLS.filter((p) => p.tier === 'more')
 
 function readFilters(): Set<MatrixFilterId> {
   try {
@@ -265,6 +287,11 @@ export function ScexTrackingPage() {
     () => readFilters(),
   )
   const [matrixFullscreen, setMatrixFullscreen] = useState(false)
+  /** Lite Partner: collapse advanced matrix filters (open if any “more” filter already active) */
+  const [showMoreFilters, setShowMoreFilters] = useState(() => {
+    const saved = readFilters()
+    return MORE_FILTER_PILLS.some((p) => saved.has(p.id))
+  })
 
   useEffect(() => {
     let cancelled = false
@@ -456,15 +483,18 @@ export function ScexTrackingPage() {
     return list.slice(0, 80)
   }, [allPosts, feedFilter, feedQuery, dataset?.actors])
 
+  /** Matrix select opens detail only — do not auto-filter livefeed (Lite Partner) */
   const onSelectActor = (actor: ScexActor | null) => {
     setSelectedActor(actor)
-    // Sync livefeed filter when picking from matrix
-    if (actor) {
-      const h = actor.handle.toLowerCase()
-      const hasPosts = allPosts.some((p) => p.handle.toLowerCase() === h)
-      if (hasPosts) setFeedFilter(h)
-    }
   }
+
+  const moreFiltersActiveCount = useMemo(() => {
+    let n = 0
+    for (const p of MORE_FILTER_PILLS) {
+      if (matrixFilters.has(p.id)) n++
+    }
+    return n
+  }, [matrixFilters])
 
   if (!dataset) {
     return (
@@ -493,29 +523,60 @@ export function ScexTrackingPage() {
   const selectedMapKol = selectedActor
     ? mapByHandle.get(selectedActor.handle.toLowerCase()) || null
     : null
+  const selectedHandleLc = selectedActor?.handle.toLowerCase() ?? null
+  const selectedFeedCount = selectedHandleLc
+    ? allPosts.filter((p) => p.handle.toLowerCase() === selectedHandleLc).length
+    : 0
+
+  const renderFilterPill = (pill: (typeof MATRIX_FILTER_PILLS)[number]) => {
+    const active = matrixFilters.has(pill.id)
+    const count = baseVisible.filter((a) =>
+      actorMatchesFilters(
+        a,
+        new Set([pill.id]),
+        mapHandles,
+        config.volumeSplit,
+        config.qualitySplit,
+        config,
+      ),
+    ).length
+    return (
+      <button
+        key={pill.id}
+        type="button"
+        className={`scex-matrix-pill scex-matrix-pill--${pill.id} ${active ? 'is-active' : ''}`}
+        title={pill.title}
+        onClick={() => toggleMatrixFilter(pill.id)}
+        aria-pressed={active}
+      >
+        {pill.label}
+        <span className="scex-matrix-pill__n">{count}</span>
+      </button>
+    )
+  }
 
   return (
     <div className="scex-page">
-      <header className="scex-page__hero">
+      <header className="scex-page__hero scex-page__hero--lite">
         <div className="scex-page__brand">
           <div className="scex-page__logo">
             <XProfileAvatar
               handle={handle}
               name={config.brandName}
-              size={56}
+              size={48}
               liveFallback
             />
           </div>
           <div className="scex-page__brand-text">
             <div className="scex-page__eyebrow">
-              <span className="scex-page__badge">Partner radar</span>
+              <span className="scex-page__badge">Partner</span>
               <span className="scex-page__window">
-                {config.timeWindowDays}d window
+                {config.timeWindowDays} ngày gần đây
               </span>
             </div>
             <h1 className="scex-page__title">{config.brandName}</h1>
             <p className="scex-page__subtitle">
-              @{handle} · ma trận mention · livefeed · map Radar
+              Ai đang mention · @{handle}
             </p>
           </div>
         </div>
@@ -523,23 +584,21 @@ export function ScexTrackingPage() {
           <div className="scex-stat">
             <em>
               {visible.length}
-              {matrixFilters.size
-                ? `/${baseVisible.length}`
-                : ''}
+              {matrixFilters.size ? `/${baseVisible.length}` : ''}
             </em>
-            <span>Tài khoản</span>
+            <span>KOL</span>
           </div>
           <div className="scex-stat">
             <em>{allPosts.length}</em>
-            <span>Bài viết</span>
+            <span>Mention</span>
           </div>
           <div className="scex-stat scex-stat--accent">
             <em>{onMapCount}</em>
-            <span>Có trên map</span>
+            <span>Trên map</span>
           </div>
-          <div className="scex-stat">
+          <div className="scex-stat scex-stat--muted">
             <em>{formatCompact(totalFollowers)}</em>
-            <span>Tổng followers</span>
+            <span>Reach</span>
           </div>
         </div>
       </header>
@@ -553,14 +612,17 @@ export function ScexTrackingPage() {
             <div>
               <h2>{viMatrixTitle(config.matrixTitle)}</h2>
               <p>
-                Trục ngang: tần suất · Trục dọc: chất lượng · Size: followers ·{' '}
-                {visible.length}/{baseVisible.length} KOL
+                Tần suất × chất lượng · {visible.length} KOL
                 {matrixFilters.size ? ' (đã lọc)' : ''} · {onMapCount} trên map
-                {matrixFullscreen ? ' · Fullscreen' : ''}
               </p>
             </div>
             <div className="scex-matrix__toolbar">
-              <div className="scex-view-toggle" role="group" aria-label="Chế độ ma trận">
+              {/* 2D-first: default view; 3D is advanced */}
+              <div
+                className="scex-view-toggle scex-view-toggle--lite"
+                role="group"
+                aria-label="Chế độ ma trận"
+              >
                 <button
                   type="button"
                   className={matrixView === '2d' ? 'is-active' : ''}
@@ -570,10 +632,11 @@ export function ScexTrackingPage() {
                 </button>
                 <button
                   type="button"
-                  className={matrixView === '3d' ? 'is-active' : ''}
+                  className={`scex-view-toggle__adv ${matrixView === '3d' ? 'is-active' : ''}`}
                   onClick={() => setView('3d')}
+                  title="Chế độ nâng cao: đám mây 3D"
                 >
-                  3D
+                  3D · nâng cao
                 </button>
               </div>
               {matrixView === '3d' && (
@@ -583,7 +646,7 @@ export function ScexTrackingPage() {
                   onClick={() => setAutoRotate((v) => !v)}
                   title="Tự xoay đám mây 3D"
                 >
-                  {autoRotate ? '⏸ Dừng xoay' : '▶ Tự xoay'}
+                  {autoRotate ? 'Dừng xoay' : 'Tự xoay'}
                 </button>
               )}
               <button
@@ -597,7 +660,7 @@ export function ScexTrackingPage() {
                 aria-pressed={matrixFullscreen}
                 onClick={() => setMatrixFullscreen((v) => !v)}
               >
-                {matrixFullscreen ? 'Exit full · Esc' : 'Fullscreen'}
+                {matrixFullscreen ? 'Thoát · Esc' : 'Toàn màn hình'}
               </button>
             </div>
           </div>
@@ -612,32 +675,20 @@ export function ScexTrackingPage() {
               Tất cả
               <span className="scex-matrix-pill__n">{baseVisible.length}</span>
             </button>
-            {MATRIX_FILTER_PILLS.map((pill) => {
-              const active = matrixFilters.has(pill.id)
-              const count = baseVisible.filter((a) =>
-                actorMatchesFilters(
-                  a,
-                  new Set([pill.id]),
-                  mapHandles,
-                  config.volumeSplit,
-                  config.qualitySplit,
-                  config,
-                ),
-              ).length
-              return (
-                <button
-                  key={pill.id}
-                  type="button"
-                  className={`scex-matrix-pill scex-matrix-pill--${pill.id} ${active ? 'is-active' : ''}`}
-                  title={pill.title}
-                  onClick={() => toggleMatrixFilter(pill.id)}
-                  aria-pressed={active}
-                >
-                  {pill.label}
-                  <span className="scex-matrix-pill__n">{count}</span>
-                </button>
-              )
-            })}
+            {PRIMARY_FILTER_PILLS.map(renderFilterPill)}
+            <button
+              type="button"
+              className={`scex-matrix-pill scex-matrix-pill--more ${showMoreFilters || moreFiltersActiveCount ? 'is-open' : ''} ${moreFiltersActiveCount ? 'is-active' : ''}`}
+              onClick={() => setShowMoreFilters((v) => !v)}
+              aria-expanded={showMoreFilters}
+              title="Bộ lọc nâng cao"
+            >
+              {showMoreFilters ? 'Thu gọn' : 'Thêm lọc'}
+              {moreFiltersActiveCount > 0 && (
+                <span className="scex-matrix-pill__n">{moreFiltersActiveCount}</span>
+              )}
+            </button>
+            {showMoreFilters && MORE_FILTER_PILLS.map(renderFilterPill)}
             {matrixFilters.size > 0 && (
               <button
                 type="button"
@@ -650,7 +701,7 @@ export function ScexTrackingPage() {
             )}
           </div>
           <div
-            className={`scex-matrix__body ${matrixView === '3d' ? 'scex-matrix__body--3d' : 'scex-matrix__body--2d'}`}
+            className={`scex-matrix__body ${matrixView === '3d' ? 'scex-matrix__body--3d' : 'scex-matrix__body--2d'} ${matrixFullscreen ? 'is-fs' : ''}`}
           >
             {matrixView === '3d' ? (
               <ScexMatrix3D
@@ -668,16 +719,17 @@ export function ScexTrackingPage() {
                 selectedId={selectedActor?.id ?? null}
                 mapHandles={mapHandles}
                 onSelect={onSelectActor}
+                showZoomControls={matrixFullscreen}
               />
             )}
             <div className="scex-matrix__legend">
               <span>
                 <i className="scex-matrix__legend-dot scex-matrix__legend-dot--map" />
-                Có trên map Radar — bấm xem hồ sơ &amp; Surf
+                Có trên map — bấm xem hồ sơ
               </span>
               <span>
                 <i className="scex-matrix__legend-dot" />
-                Chỉ mention SCEX — bấm xem thống kê
+                Chỉ mention — bấm xem thống kê
               </span>
             </div>
           </div>
@@ -689,14 +741,47 @@ export function ScexTrackingPage() {
               <h2>{viFeedTitle(config.feedTitle)}</h2>
               <p>
                 {filteredPosts.length}
-                {feedFilter || feedQuery
-                  ? ` / ${allPosts.length}`
-                  : ''}{' '}
-                bài
-                {feedFilter ? ` · @${feedFilter}` : ''} ·{' '}
-                {allPosts.filter((p) => p.media?.length).length} có ảnh (R2)
+                {feedFilter || feedQuery ? ` / ${allPosts.length}` : ''} bài
+                {feedFilter ? ` · @${feedFilter}` : ''}
               </p>
             </div>
+            {selectedActor && (
+              <div className="scex-feed__viewing" role="status">
+                <span className="scex-feed__viewing-label">Đang xem</span>
+                <button
+                  type="button"
+                  className="scex-feed__viewing-chip"
+                  onClick={() => onSelectActor(selectedActor)}
+                  title="Mở lại panel chi tiết"
+                >
+                  <XProfileAvatar
+                    handle={selectedActor.handle}
+                    name={selectedActor.displayName}
+                    size={20}
+                  />
+                  @{selectedActor.handle}
+                </button>
+                {selectedFeedCount > 0 && feedFilter !== selectedHandleLc && (
+                  <button
+                    type="button"
+                    className="scex-feed__viewing-action"
+                    onClick={() => setFeedFilter(selectedHandleLc)}
+                    title="Lọc bảng tin theo KOL này"
+                  >
+                    Lọc feed ({selectedFeedCount})
+                  </button>
+                )}
+                <button
+                  type="button"
+                  className="scex-feed__viewing-close"
+                  onClick={() => setSelectedActor(null)}
+                  title="Bỏ chọn"
+                  aria-label="Bỏ chọn KOL"
+                >
+                  ×
+                </button>
+              </div>
+            )}
           </div>
 
           <div className="scex-feed__filters">
@@ -782,10 +867,41 @@ export function ScexTrackingPage() {
               />
             ))}
             {!filteredPosts.length && (
-              <li className="scex-empty">
-                {feedFilter || feedQuery
-                  ? 'Không có bài khớp bộ lọc.'
-                  : 'Chưa có bài trong cửa sổ này.'}
+              <li className="scex-empty scex-empty--cta">
+                {feedFilter || feedQuery ? (
+                  <>
+                    <strong>Không có bài khớp bộ lọc</strong>
+                    <p>Thử bỏ lọc KOL hoặc xóa từ khóa tìm kiếm.</p>
+                    <div className="scex-empty__actions">
+                      {feedFilter && (
+                        <button
+                          type="button"
+                          className="scex-empty__btn"
+                          onClick={() => setFeedFilter(null)}
+                        >
+                          Xem tất cả KOL
+                        </button>
+                      )}
+                      {feedQuery && (
+                        <button
+                          type="button"
+                          className="scex-empty__btn scex-empty__btn--ghost"
+                          onClick={() => setFeedQuery('')}
+                        >
+                          Xóa tìm kiếm
+                        </button>
+                      )}
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <strong>Chưa có mention trong cửa sổ này</strong>
+                    <p>
+                      Chọn KOL trên ma trận để xem thống kê, hoặc đợi batch
+                      cập nhật tiếp theo.
+                    </p>
+                  </>
+                )}
               </li>
             )}
           </ul>

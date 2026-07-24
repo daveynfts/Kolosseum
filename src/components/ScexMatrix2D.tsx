@@ -25,6 +25,11 @@ export type ScexMatrix2DProps = {
   selectedId: string | null
   mapHandles: Set<string>
   onSelect: (actor: ScexActor | null) => void
+  /**
+   * Always show zoom bar (e.g. fullscreen).
+   * Default: show only on hover of the 2D root (Lite Partner).
+   */
+  showZoomControls?: boolean
 }
 
 type BubbleLayout = {
@@ -143,11 +148,13 @@ export function ScexMatrix2D({
   selectedId,
   mapHandles,
   onSelect,
+  showZoomControls = false,
 }: ScexMatrix2DProps) {
   const plotRef = useRef<HTMLDivElement>(null)
   const [plotSize, setPlotSize] = useState({ w: 0, h: 0 })
   const [zoomI, setZoomI] = useState(DEFAULT_ZOOM_I)
   const [pan, setPan] = useState({ x: 0, y: 0 })
+  const [hoverId, setHoverId] = useState<string | null>(null)
   const zoom = ZOOM_STEPS[zoomI]
   const panRef = useRef(pan)
   const zoomRef = useRef(zoom)
@@ -337,8 +344,14 @@ export function ScexMatrix2D({
   const canZoomIn = zoomI < ZOOM_STEPS.length - 1
 
   return (
-    <div className="scex2d-root">
-      <div className="scex2d-zoombar" role="toolbar" aria-label="Zoom ma trận 2D">
+    <div
+      className={`scex2d-root ${showZoomControls ? 'scex2d-root--zoom-on' : 'scex2d-root--zoom-hover'}`}
+    >
+      <div
+        className="scex2d-zoombar"
+        role="toolbar"
+        aria-label="Zoom ma trận 2D"
+      >
         <button
           type="button"
           className="scex2d-zoombar__btn"
@@ -422,6 +435,9 @@ export function ScexMatrix2D({
                   const diam = b.r * 2
                   const selected = selectedId === a.id
                   const onMap = mapHandles.has(a.handle.toLowerCase())
+                  const showTip = hoverId === a.id || selected
+                  const sentLabel =
+                    config.sentimentLabels[a.sentiment]?.label || a.sentiment
                   return (
                     <button
                       key={a.id}
@@ -430,6 +446,7 @@ export function ScexMatrix2D({
                         'scex-bubble',
                         selected ? 'is-selected' : '',
                         onMap ? 'is-on-map' : '',
+                        showTip ? 'is-tip' : '',
                       ]
                         .filter(Boolean)
                         .join(' ')}
@@ -439,11 +456,19 @@ export function ScexMatrix2D({
                         width: diam,
                         height: diam,
                         borderColor: ring,
-                        zIndex: selected ? 80 : b.z,
+                        zIndex: selected || showTip ? 80 : b.z,
                         ['--depth' as string]: String(b.depth),
                         ['--ring' as string]: ring,
                       }}
-                      title={`@${a.handle} · V${Math.round(actorVolumeMetric(a, config))} · Q${Math.round(a.qualityScore)} · raw ${a.postsVolume} · ${formatCompact(a.followers)}${a.mapRank ? ` · ${a.mapRank}` : onMap ? ' · Map' : ''}`}
+                      aria-label={`@${a.handle}, ${a.displayName}`}
+                      onMouseEnter={() => setHoverId(a.id)}
+                      onMouseLeave={() =>
+                        setHoverId((id) => (id === a.id ? null : id))
+                      }
+                      onFocus={() => setHoverId(a.id)}
+                      onBlur={() =>
+                        setHoverId((id) => (id === a.id ? null : id))
+                      }
                       onClick={(ev) => {
                         ev.stopPropagation()
                         if (suppressClickRef.current) {
@@ -469,6 +494,22 @@ export function ScexMatrix2D({
                           ? `${a.handle.slice(0, 9)}…`
                           : a.handle}
                       </span>
+                      {showTip && (
+                        <span className="scex-bubble__tip" role="tooltip">
+                          <em>{a.displayName || a.handle}</em>
+                          <small>
+                            @{a.handle}
+                            {' · '}
+                            {formatCompact(a.followers)} FL
+                            {onMap ? ' · Map' : ''}
+                            {a.mapRank ? ` · ${a.mapRank}` : ''}
+                          </small>
+                          <small>
+                            V{Math.round(actorVolumeMetric(a, config))} · Q
+                            {Math.round(a.qualityScore)} · {sentLabel}
+                          </small>
+                        </span>
+                      )}
                     </button>
                   )
                 })}

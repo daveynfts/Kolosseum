@@ -673,8 +673,9 @@ export function ScexMatrix2D({
                       )
                     : zoneFromMetrics(a, config)
                 const zoneLabel = partnerZoneTitle(zoneKey)
-                // Flip tip below for bottom zones so overflow:hidden doesn't clip it
-                const tipBelow = b.y > plotSize.h * 0.52
+                // Keep tip inside plot (overflow:hidden):
+                // top half → open downward; bottom half → open upward
+                const tipBelow = b.y <= plotSize.h * 0.5
                 const tipX =
                   b.x < plotSize.w * 0.22
                     ? 'right'
@@ -686,16 +687,7 @@ export function ScexMatrix2D({
                   ['Tần suất', volPhrase],
                   ['Uy tín', qualPhrase],
                   ['Góc nhìn', sentLabel],
-                  [
-                    'Reach',
-                    [
-                      `${formatCompact(a.followers)} followers`,
-                      onMap ? "Davey's Radar" : null,
-                      a.mapRank || null,
-                    ]
-                      .filter(Boolean)
-                      .join(' · '),
-                  ],
+                  ['Reach', `${formatCompact(a.followers)} followers`],
                 ]
                 return (
                   <button

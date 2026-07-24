@@ -1916,10 +1916,10 @@
   pointer-events: none;
   white-space: normal;
 }
-/* Bottom half of plot (Ít ưu tiên / Cần rà soát): tip opens downward */
+/* Top half (incl. 12h / high-trust): tip opens downward so it isn't clipped */
 .scex-bubble.is-tip-below .scex-bubble__tip {
   bottom: auto;
-  top: calc(100% + 12px);
+  top: calc(100% + 10px);
 }
 /* Near left/right edges: keep tip inside plot */
 .scex-bubble.is-tip-right .scex-bubble__tip {

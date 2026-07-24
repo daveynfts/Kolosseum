@@ -677,18 +677,27 @@ export function ScexMatrix2D({
                     {showTip && (
                       <span className="scex-bubble__tip" role="tooltip">
                         <em>{a.displayName || a.handle}</em>
-                        <small className="scex-bubble__tip-zone">
-                          {zoneLabel}
-                        </small>
-                        <small>
-                          {volPhrase} · {qualPhrase}
-                        </small>
-                        <small>
-                          {formatCompact(a.followers)} followers
-                          {onMap ? " · On Davey's Radar" : ''}
-                          {a.mapRank ? ` · ${a.mapRank}` : ''}
-                          {sentLabel ? ` · ${sentLabel}` : ''}
-                        </small>
+                        <span className="scex-bubble__tip-handle">
+                          @{a.handle}
+                        </span>
+                        <ul className="scex-bubble__tip-list">
+                          <li>
+                            <span>Vùng</span> {zoneLabel}
+                          </li>
+                          <li>
+                            <span>Bài đăng</span> {volPhrase}
+                          </li>
+                          <li>
+                            <span>Uy tín</span> {qualPhrase}
+                          </li>
+                          <li>
+                            <span>Reach</span>{' '}
+                            {formatCompact(a.followers)} followers
+                            {onMap ? " · Davey's Radar" : ''}
+                            {a.mapRank ? ` · ${a.mapRank}` : ''}
+                            {sentLabel ? ` · ${sentLabel}` : ''}
+                          </li>
+                        </ul>
                       </span>
                     )}
                   </button>

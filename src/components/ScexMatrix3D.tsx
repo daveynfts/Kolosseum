@@ -12,6 +12,7 @@ import {
   actorMatrixPos,
   actorSizeValue,
   actorVolumeMetric,
+  partnerQuadrantTitle,
   viQualityAxisLabel,
   viVolumeAxisLabel,
 } from '../data/scexTracking'
@@ -344,25 +345,25 @@ export function ScexMatrix3D(props: ScexMatrix3DProps) {
   const quads = [
     {
       key: 'stars',
-      title: q.stars?.title || 'TRỌNG ĐIỂM',
+      title: partnerQuadrantTitle('stars'),
       sub: q.stars?.subtitle || '',
       tone: 'stars' as const,
     },
     {
       key: 'nurture',
-      title: q.nurture?.title || 'Có tiềm năng',
+      title: partnerQuadrantTitle('nurture'),
       sub: q.nurture?.subtitle || '',
       tone: 'nurture' as const,
     },
     {
       key: 'noise',
-      title: q.noise?.title || 'CẦN RÀ SOÁT',
+      title: partnerQuadrantTitle('noise'),
       sub: q.noise?.subtitle || '',
       tone: 'noise' as const,
     },
     {
       key: 'ignore',
-      title: q.ignore?.title || 'TÍN HIỆU YẾU',
+      title: partnerQuadrantTitle('ignore'),
       sub: q.ignore?.subtitle || '',
       tone: 'ignore' as const,
     },
@@ -377,10 +378,10 @@ export function ScexMatrix3D(props: ScexMatrix3DProps) {
       <div className="scex3d-stage">
         <div className="scex-frame-row scex-frame-row--top" aria-hidden>
           <span className="scex-frame-chip scex-frame-chip--nurture">
-            {q.nurture?.title || 'Có tiềm năng'}
+            {partnerQuadrantTitle('nurture')}
           </span>
           <span className="scex-frame-chip scex-frame-chip--stars">
-            {q.stars?.title || 'TRỌNG ĐIỂM'}
+            {partnerQuadrantTitle('stars')}
           </span>
         </div>
 
@@ -404,10 +405,10 @@ export function ScexMatrix3D(props: ScexMatrix3DProps) {
 
         <div className="scex-frame-row scex-frame-row--bottom" aria-hidden>
           <span className="scex-frame-chip scex-frame-chip--ignore">
-            {q.ignore?.title || 'TÍN HIỆU YẾU'}
+            {partnerQuadrantTitle('ignore')}
           </span>
           <span className="scex-frame-chip scex-frame-chip--noise">
-            {q.noise?.title || 'CẦN RÀ SOÁT'}
+            {partnerQuadrantTitle('noise')}
           </span>
         </div>
 

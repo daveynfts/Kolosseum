@@ -284,6 +284,22 @@ export function computeQuadrant(
   return 'ignore'
 }
 
+/** Partner UI title — ignores stale R2 jargon (TRỌNG ĐIỂM, Nuôi dưỡng, …). */
+export function partnerQuadrantTitle(
+  key?: ScexQuadrant | string | null,
+): string {
+  if (!key) return ''
+  if (key in DEFAULT_QUAD) {
+    return DEFAULT_QUAD[key as ScexQuadrant].title
+  }
+  const raw = String(key).trim()
+  if (/trọng điểm|stars/i.test(raw)) return DEFAULT_QUAD.stars.title
+  if (/nuôi dưỡng|tiềm năng|nurture/i.test(raw)) return DEFAULT_QUAD.nurture.title
+  if (/rà soát|noise/i.test(raw)) return DEFAULT_QUAD.noise.title
+  if (/tín hiệu yếu|ít ưu tiên|ignore/i.test(raw)) return DEFAULT_QUAD.ignore.title
+  return raw
+}
+
 function clamp01(n: number): number {
   return Math.min(100, Math.max(0, n))
 }

@@ -12,7 +12,10 @@ import {
   STATUS_LABELS,
 } from '../types'
 import type { ScexActor, ScexConfig, ScexPost } from '../data/scexTracking'
-import { actorVolumeMetric } from '../data/scexTracking'
+import {
+  actorVolumeMetric,
+  partnerQuadrantTitle,
+} from '../data/scexTracking'
 import { AvatarImg } from './AvatarImg'
 import { BioRichText } from './BioRichText'
 import { RankBadge } from './RankBadge'
@@ -162,7 +165,7 @@ export function ScexKolDetail({
             )}
             {actor.quadrant && (
               <span className="scex-detail__badge">
-                {config.quadrantLabels[actor.quadrant]?.title || actor.quadrant}
+                {partnerQuadrantTitle(actor.quadrant)}
               </span>
             )}
             <span
@@ -180,15 +183,15 @@ export function ScexKolDetail({
 
       <div className="scex-detail__quick">
         <div>
-          <span>Mentions</span>
+          <span>Số mention</span>
           <strong>{actor.postsVolume}</strong>
         </div>
         <div>
-          <span>Volume</span>
+          <span>Tần suất</span>
           <strong>{vol}</strong>
         </div>
         <div>
-          <span>Quality</span>
+          <span>Uy tín</span>
           <strong>{Math.round(actor.qualityScore)}</strong>
         </div>
         <div>
@@ -196,7 +199,7 @@ export function ScexKolDetail({
           <strong>{fmt(actor.followers)}</strong>
         </div>
         <div>
-          <span>Feed</span>
+          <span>Bài trong feed</span>
           <strong>{sortedPosts.length}</strong>
         </div>
       </div>

@@ -575,7 +575,13 @@ export function ScexTrackingPage() {
                 {config.timeWindowDays} ngày gần đây
               </span>
             </div>
-            <h1 className="scex-page__title">{config.brandName}</h1>
+            <h1 className="scex-page__title">
+              {config.brandName}
+              <span className="scex-page__legal">
+                {' '}
+                (Công ty Cổ phần Sàn Giao dịch Tài sản Mã hóa Sacom)
+              </span>
+            </h1>
             <p className="scex-page__subtitle">
               Ai đang mention · @{handle}
             </p>

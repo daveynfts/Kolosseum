@@ -618,6 +618,14 @@ export function ScexMatrix2D({
                 )
                 const zoneKey = (a.quadrant || 'ignore') as ScexQuadrant
                 const zoneLabel = zoneTitle(zoneKey, config)
+                // Flip tip below for bottom zones so overflow:hidden doesn't clip it
+                const tipBelow = b.y > plotSize.h * 0.52
+                const tipX =
+                  b.x < plotSize.w * 0.22
+                    ? 'right'
+                    : b.x > plotSize.w * 0.78
+                      ? 'left'
+                      : 'center'
                 return (
                   <button
                     key={a.id}
@@ -627,6 +635,9 @@ export function ScexMatrix2D({
                       selected ? 'is-selected' : '',
                       onMap ? 'is-on-map' : '',
                       showTip ? 'is-tip' : '',
+                      tipBelow ? 'is-tip-below' : '',
+                      tipX === 'left' ? 'is-tip-left' : '',
+                      tipX === 'right' ? 'is-tip-right' : '',
                     ]
                       .filter(Boolean)
                       .join(' ')}

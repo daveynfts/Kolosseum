@@ -496,14 +496,20 @@ export function ScexTrackingPage() {
             <XProfileAvatar
               handle={handle}
               name={config.brandName}
-              size={52}
+              size={56}
               liveFallback
             />
           </div>
-          <div>
+          <div className="scex-page__brand-text">
+            <div className="scex-page__eyebrow">
+              <span className="scex-page__badge">Partner radar</span>
+              <span className="scex-page__window">
+                {config.timeWindowDays}d window
+              </span>
+            </div>
             <h1 className="scex-page__title">{config.brandName}</h1>
             <p className="scex-page__subtitle">
-              @{handle} · cửa sổ {config.timeWindowDays} ngày · radar mention
+              @{handle} · ma trận mention · livefeed · map Radar
             </p>
           </div>
         </div>
@@ -521,7 +527,7 @@ export function ScexTrackingPage() {
             <em>{allPosts.length}</em>
             <span>Bài viết</span>
           </div>
-          <div className="scex-stat">
+          <div className="scex-stat scex-stat--accent">
             <em>{onMapCount}</em>
             <span>Có trên map</span>
           </div>

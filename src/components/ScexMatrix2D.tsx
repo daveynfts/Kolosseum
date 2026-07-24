@@ -1,8 +1,16 @@
 /**
  * SCEX mention matrix — 2D packed plot (volume × quality).
- * Quadrant labels sit in a frame OUTSIDE the avatar plot (no overlap).
+ * Quadrant labels outside plot; zoom + pan for closer inspection.
  */
-import { useLayoutEffect, useMemo, useRef, useState } from 'react'
+import {
+  useCallback,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+  type PointerEvent as ReactPointerEvent,
+  type WheelEvent as ReactWheelEvent,
+} from 'react'
 import type { ScexActor, ScexConfig } from '../data/scexTracking'
 import {
   actorMatrixPos,
@@ -28,10 +36,18 @@ type BubbleLayout = {
   depth: number
 }
 
+const ZOOM_MIN = 0.7
+const ZOOM_MAX = 2.8
+const ZOOM_STEP = 0.15
+
 function formatCompact(n: number): string {
   if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`
   if (n >= 1_000) return `${(n / 1_000).toFixed(n >= 10_000 ? 0 : 1)}K`
   return String(n)
+}
+
+function clamp(n: number, lo: number, hi: number) {
+  return Math.min(hi, Math.max(lo, n))
 }
 
 function packBubbles(
@@ -42,7 +58,6 @@ function packBubbles(
   maxSize: number,
 ): BubbleLayout[] {
   if (!actors.length || width < 40 || height < 40) return []
-  // Generous pad so avatars stay clear of plot edges
   const pad = 22
   const items = actors.map((a) => {
     const { x, y } = actorMatrixPos(a, config)
@@ -118,6 +133,17 @@ export function ScexMatrix2D({
 }: ScexMatrix2DProps) {
   const plotRef = useRef<HTMLDivElement>(null)
   const [plotSize, setPlotSize] = useState({ w: 0, h: 0 })
+  const [zoom, setZoom] = useState(1)
+  const [pan, setPan] = useState({ x: 0, y: 0 })
+  const dragRef = useRef<{
+    active: boolean
+    pid: number
+    sx: number
+    sy: number
+    ox: number
+    oy: number
+    moved: boolean
+  } | null>(null)
 
   useLayoutEffect(() => {
     const el = plotRef.current
@@ -131,6 +157,78 @@ export function ScexMatrix2D({
     ro.observe(el)
     return () => ro.disconnect()
   }, [actors.length])
+
+  // Reset pan when zoom returns to 1
+  const setZoomClamped = useCallback((next: number | ((z: number) => number)) => {
+    setZoom((z) => {
+      const v = typeof next === 'function' ? next(z) : next
+      const nz = clamp(Math.round(v * 100) / 100, ZOOM_MIN, ZOOM_MAX)
+      if (nz <= 1.02) {
+        setPan({ x: 0, y: 0 })
+        return nz <= 1 ? 1 : nz
+      }
+      return nz
+    })
+  }, [])
+
+  const clampPan = useCallback(
+    (px: number, py: number, z: number) => {
+      if (z <= 1 || !plotSize.w) return { x: 0, y: 0 }
+      const maxX = ((z - 1) * plotSize.w) / 2 + 40
+      const maxY = ((z - 1) * plotSize.h) / 2 + 40
+      return {
+        x: clamp(px, -maxX, maxX),
+        y: clamp(py, -maxY, maxY),
+      }
+    },
+    [plotSize.w, plotSize.h],
+  )
+
+  const onWheel = (e: ReactWheelEvent) => {
+    // Ctrl/meta or trackpad pinch often sets ctrlKey; also allow plain wheel over plot
+    e.preventDefault()
+    const factor = e.deltaY > 0 ? 1 - ZOOM_STEP * 0.7 : 1 + ZOOM_STEP * 0.7
+    setZoomClamped((z) => z * factor)
+  }
+
+  const onPointerDown = (e: ReactPointerEvent) => {
+    if (e.button !== 0) return
+    // Don't start pan on bubble click — bubbles stopPropagation
+    if ((e.target as HTMLElement).closest('.scex-bubble')) return
+    if (zoom <= 1.02) return
+    const el = plotRef.current
+    if (!el) return
+    el.setPointerCapture(e.pointerId)
+    dragRef.current = {
+      active: true,
+      pid: e.pointerId,
+      sx: e.clientX,
+      sy: e.clientY,
+      ox: pan.x,
+      oy: pan.y,
+      moved: false,
+    }
+  }
+
+  const onPointerMove = (e: ReactPointerEvent) => {
+    const d = dragRef.current
+    if (!d?.active || d.pid !== e.pointerId) return
+    const dx = e.clientX - d.sx
+    const dy = e.clientY - d.sy
+    if (Math.hypot(dx, dy) > 4) d.moved = true
+    setPan(clampPan(d.ox + dx, d.oy + dy, zoom))
+  }
+
+  const endDrag = (e: ReactPointerEvent) => {
+    const d = dragRef.current
+    if (!d || d.pid !== e.pointerId) return
+    try {
+      plotRef.current?.releasePointerCapture(e.pointerId)
+    } catch {
+      /* ignore */
+    }
+    dragRef.current = null
+  }
 
   const maxSize = Math.max(
     ...actors.map((a) => actorSizeValue(a, config)),
@@ -173,8 +271,45 @@ export function ScexMatrix2D({
     },
   ]
 
+  const zoomPct = Math.round(zoom * 100)
+
   return (
     <div className="scex2d-root">
+      <div className="scex2d-zoombar" role="toolbar" aria-label="Zoom ma trận 2D">
+        <button
+          type="button"
+          className="scex2d-zoombar__btn"
+          title="Thu nhỏ"
+          disabled={zoom <= ZOOM_MIN + 0.01}
+          onClick={() => setZoomClamped((z) => z - ZOOM_STEP)}
+        >
+          −
+        </button>
+        <button
+          type="button"
+          className="scex2d-zoombar__pct"
+          title="Đặt lại 100%"
+          onClick={() => {
+            setZoom(1)
+            setPan({ x: 0, y: 0 })
+          }}
+        >
+          {zoomPct}%
+        </button>
+        <button
+          type="button"
+          className="scex2d-zoombar__btn"
+          title="Phóng to"
+          disabled={zoom >= ZOOM_MAX - 0.01}
+          onClick={() => setZoomClamped((z) => z + ZOOM_STEP)}
+        >
+          +
+        </button>
+        <span className="scex2d-zoombar__hint">
+          Cuộn chuột zoom · Kéo nền để pan
+        </span>
+      </div>
+
       <div className="scex2d-stage">
         <div className="scex-frame-row scex-frame-row--top" aria-hidden>
           <span className="scex-frame-chip scex-frame-chip--nurture">
@@ -186,67 +321,84 @@ export function ScexMatrix2D({
         </div>
 
         <div className="scex2d-plot-shell">
-          <div className="scex-matrix__plot scex2d-plot" ref={plotRef}>
-            {/* Soft quadrant wash only — no text inside plot */}
-            <div className="scex2d-wash scex2d-wash--nurture" aria-hidden />
-            <div className="scex2d-wash scex2d-wash--stars" aria-hidden />
-            <div className="scex2d-wash scex2d-wash--ignore" aria-hidden />
-            <div className="scex2d-wash scex2d-wash--noise" aria-hidden />
-            <div className="scex2d-crosshair" aria-hidden />
+          <div
+            className={`scex-matrix__plot scex2d-plot ${zoom > 1.02 ? 'is-zoomed' : ''}`}
+            ref={plotRef}
+            onWheel={onWheel}
+            onPointerDown={onPointerDown}
+            onPointerMove={onPointerMove}
+            onPointerUp={endDrag}
+            onPointerCancel={endDrag}
+          >
+            <div
+              className="scex2d-zoom-layer"
+              style={{
+                transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
+              }}
+            >
+              <div className="scex2d-wash scex2d-wash--nurture" aria-hidden />
+              <div className="scex2d-wash scex2d-wash--stars" aria-hidden />
+              <div className="scex2d-wash scex2d-wash--ignore" aria-hidden />
+              <div className="scex2d-wash scex2d-wash--noise" aria-hidden />
+              <div className="scex2d-crosshair" aria-hidden />
 
-            <div className="scex-matrix__stage">
-              {packed.map((b) => {
-                const a = actorById.get(b.id)
-                if (!a) return null
-                const ring =
-                  config.sentimentLabels[a.sentiment]?.color || '#94a3b8'
-                const diam = b.r * 2
-                const selected = selectedId === a.id
-                const onMap = mapHandles.has(a.handle.toLowerCase())
-                return (
-                  <button
-                    key={a.id}
-                    type="button"
-                    className={[
-                      'scex-bubble',
-                      selected ? 'is-selected' : '',
-                      onMap ? 'is-on-map' : '',
-                    ]
-                      .filter(Boolean)
-                      .join(' ')}
-                    style={{
-                      left: b.x,
-                      top: b.y,
-                      width: diam,
-                      height: diam,
-                      borderColor: ring,
-                      zIndex: selected ? 80 : b.z,
-                      ['--depth' as string]: String(b.depth),
-                      ['--ring' as string]: ring,
-                    }}
-                    title={`@${a.handle} · V${Math.round(actorVolumeMetric(a, config))} · Q${Math.round(a.qualityScore)} · raw ${a.postsVolume} · ${formatCompact(a.followers)}${a.mapRank ? ` · ${a.mapRank}` : onMap ? ' · Map' : ''}`}
-                    onClick={() =>
-                      onSelect(selectedId === a.id ? null : a)
-                    }
-                  >
-                    <span className="scex-bubble__glow" aria-hidden />
-                    <span className="scex-bubble__disc">
-                      <XProfileAvatar
-                        handle={a.handle}
-                        name={a.displayName}
-                        size={Math.max(24, Math.round(diam - 8))}
-                      />
-                    </span>
-                    {onMap && <span className="scex-bubble__map-dot" />}
-                    <span className="scex-bubble__label">
-                      @
-                      {a.handle.length > 10
-                        ? `${a.handle.slice(0, 9)}…`
-                        : a.handle}
-                    </span>
-                  </button>
-                )
-              })}
+              <div className="scex-matrix__stage">
+                {packed.map((b) => {
+                  const a = actorById.get(b.id)
+                  if (!a) return null
+                  const ring =
+                    config.sentimentLabels[a.sentiment]?.color || '#94a3b8'
+                  const diam = b.r * 2
+                  const selected = selectedId === a.id
+                  const onMap = mapHandles.has(a.handle.toLowerCase())
+                  return (
+                    <button
+                      key={a.id}
+                      type="button"
+                      className={[
+                        'scex-bubble',
+                        selected ? 'is-selected' : '',
+                        onMap ? 'is-on-map' : '',
+                      ]
+                        .filter(Boolean)
+                        .join(' ')}
+                      style={{
+                        left: b.x,
+                        top: b.y,
+                        width: diam,
+                        height: diam,
+                        borderColor: ring,
+                        zIndex: selected ? 80 : b.z,
+                        ['--depth' as string]: String(b.depth),
+                        ['--ring' as string]: ring,
+                      }}
+                      title={`@${a.handle} · V${Math.round(actorVolumeMetric(a, config))} · Q${Math.round(a.qualityScore)} · raw ${a.postsVolume} · ${formatCompact(a.followers)}${a.mapRank ? ` · ${a.mapRank}` : onMap ? ' · Map' : ''}`}
+                      onClick={(ev) => {
+                        ev.stopPropagation()
+                        if (dragRef.current?.moved) return
+                        onSelect(selectedId === a.id ? null : a)
+                      }}
+                      onPointerDown={(ev) => ev.stopPropagation()}
+                    >
+                      <span className="scex-bubble__glow" aria-hidden />
+                      <span className="scex-bubble__disc">
+                        <XProfileAvatar
+                          handle={a.handle}
+                          name={a.displayName}
+                          size={Math.max(24, Math.round(diam - 8))}
+                        />
+                      </span>
+                      {onMap && <span className="scex-bubble__map-dot" />}
+                      <span className="scex-bubble__label">
+                        @
+                        {a.handle.length > 10
+                          ? `${a.handle.slice(0, 9)}…`
+                          : a.handle}
+                      </span>
+                    </button>
+                  )
+                })}
+              </div>
             </div>
           </div>
         </div>

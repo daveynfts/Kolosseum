@@ -5,14 +5,14 @@
   height: 100%;
   overflow: auto;
   box-sizing: border-box;
-  padding: 28px 24px 48px;
-  max-width: 1360px;
+  padding: 28px 24px 56px;
+  max-width: 1400px;
   margin: 0 auto;
   background:
-    radial-gradient(ellipse 80% 50% at 50% -10%, rgba(56, 189, 248, 0.12), transparent 55%),
-    radial-gradient(ellipse 60% 40% at 100% 50%, rgba(34, 197, 94, 0.06), transparent 50%),
-    radial-gradient(ellipse 50% 35% at 0% 80%, rgba(167, 139, 250, 0.06), transparent 45%),
-    #050814;
+    radial-gradient(ellipse 90% 55% at 50% -15%, rgba(56, 189, 248, 0.16), transparent 58%),
+    radial-gradient(ellipse 55% 45% at 100% 40%, rgba(34, 197, 94, 0.08), transparent 52%),
+    radial-gradient(ellipse 50% 40% at 0% 85%, rgba(167, 139, 250, 0.08), transparent 48%),
+    linear-gradient(180deg, #060a14 0%, #04060e 50%, #03040a 100%);
   font-family: var(--font, system-ui, sans-serif);
   color: rgba(255, 255, 255, 0.96);
   -webkit-font-smoothing: antialiased;
@@ -21,43 +21,91 @@
 .scex-page__hero {
   display: flex;
   flex-wrap: wrap;
-  align-items: flex-end;
+  align-items: center;
   justify-content: space-between;
-  gap: 16px 24px;
-  margin-bottom: 28px;
-  padding-bottom: 22px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  gap: 18px 28px;
+  margin-bottom: 26px;
+  padding: 18px 20px 20px;
+  border-radius: 22px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background:
+    linear-gradient(135deg, rgba(56, 189, 248, 0.1) 0%, transparent 45%),
+    linear-gradient(160deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.02)),
+    rgba(10, 14, 26, 0.65);
+  box-shadow:
+    0 16px 48px rgba(0, 0, 0, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(20px) saturate(150%);
+  -webkit-backdrop-filter: blur(20px) saturate(150%);
 }
 
 .scex-page__brand {
   display: flex;
   align-items: center;
   gap: 16px;
+  min-width: 0;
+}
+
+.scex-page__brand-text {
+  min-width: 0;
 }
 
 .scex-page__logo {
-  width: 52px;
-  height: 52px;
-  border-radius: 16px;
+  width: 56px;
+  height: 56px;
+  border-radius: 18px;
   overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(125, 211, 252, 0.28);
+  box-shadow:
+    0 10px 32px rgba(0, 0, 0, 0.4),
+    0 0 0 4px rgba(56, 189, 248, 0.08);
   flex-shrink: 0;
-  background: rgba(15, 23, 42, 0.8);
+  background: rgba(15, 23, 42, 0.9);
+}
+
+.scex-page__eyebrow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.scex-page__badge {
+  font-size: 0.62rem;
+  font-weight: 750;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #67e8f9;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: rgba(34, 211, 238, 0.12);
+  border: 1px solid rgba(34, 211, 238, 0.28);
+}
+
+.scex-page__window {
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: rgba(226, 232, 240, 0.45);
+  letter-spacing: 0.04em;
 }
 
 .scex-page__title {
   margin: 0;
-  font-size: clamp(1.45rem, 2.5vw, 1.85rem);
-  font-weight: 650;
-  letter-spacing: -0.03em;
-  line-height: 1.15;
+  font-size: clamp(1.5rem, 2.6vw, 1.95rem);
+  font-weight: 700;
+  letter-spacing: -0.035em;
+  line-height: 1.12;
+  background: linear-gradient(135deg, #f8fafc 0%, #bae6fd 55%, #86efac 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 
 .scex-page__subtitle {
-  margin: 6px 0 0;
-  font-size: 0.9rem;
-  color: rgba(255, 255, 255, 0.5);
+  margin: 7px 0 0;
+  font-size: 0.88rem;
+  color: rgba(226, 232, 240, 0.52);
   letter-spacing: -0.01em;
 }
 
@@ -68,41 +116,59 @@
 }
 
 .scex-stat {
-  min-width: 88px;
-  padding: 10px 14px;
-  border-radius: 14px;
-  background: rgba(255, 255, 255, 0.04);
+  min-width: 92px;
+  padding: 12px 16px;
+  border-radius: 16px;
+  background: rgba(0, 0, 0, 0.22);
   border: 1px solid rgba(255, 255, 255, 0.1);
   text-align: center;
+  transition: border-color 0.15s, transform 0.15s;
+}
+
+.scex-stat:hover {
+  border-color: rgba(125, 211, 252, 0.25);
+  transform: translateY(-1px);
+}
+
+.scex-stat--accent {
+  border-color: rgba(34, 197, 94, 0.28);
+  background: rgba(34, 197, 94, 0.08);
+}
+
+.scex-stat--accent em {
+  color: #4ade80;
 }
 
 .scex-stat em {
   display: block;
   font-style: normal;
-  font-size: 1.25rem;
-  font-weight: 650;
+  font-size: 1.3rem;
+  font-weight: 700;
   letter-spacing: -0.03em;
   color: #7dd3fc;
   line-height: 1.2;
 }
 
 .scex-stat span {
-  font-size: 0.68rem;
+  font-size: 0.66rem;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.07em;
   color: rgba(255, 255, 255, 0.42);
 }
 
 .scex-page__grid {
   display: grid;
-  grid-template-columns: 1.25fr 1fr;
-  gap: 20px;
+  grid-template-columns: 1.28fr 1fr;
+  gap: 22px;
   align-items: stretch;
 }
 
 @media (max-width: 980px) {
   .scex-page {
-    padding: 20px 14px 40px;
+    padding: 18px 12px 40px;
+  }
+  .scex-page__hero {
+    padding: 14px 14px 16px;
   }
   .scex-page__grid {
     grid-template-columns: 1fr;
@@ -110,21 +176,21 @@
 }
 
 .scex-card {
-  border-radius: 22px;
+  border-radius: 24px;
   background:
     linear-gradient(
-      160deg,
-      rgba(255, 255, 255, 0.1) 0%,
-      rgba(255, 255, 255, 0.03) 40%,
+      155deg,
+      rgba(255, 255, 255, 0.11) 0%,
+      rgba(255, 255, 255, 0.035) 42%,
       rgba(255, 255, 255, 0.02) 100%
     ),
-    rgba(12, 16, 28, 0.72);
+    rgba(10, 14, 26, 0.78);
   border: 1px solid rgba(255, 255, 255, 0.12);
   box-shadow:
-    0 20px 50px rgba(0, 0, 0, 0.35),
-    inset 0 1px 0 rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(28px) saturate(160%);
-  -webkit-backdrop-filter: blur(28px) saturate(160%);
+    0 24px 56px rgba(0, 0, 0, 0.38),
+    inset 0 1px 0 rgba(255, 255, 255, 0.09);
+  backdrop-filter: blur(32px) saturate(170%);
+  -webkit-backdrop-filter: blur(32px) saturate(170%);
   overflow: hidden;
 }
 
@@ -132,23 +198,25 @@
   padding: 18px 20px 12px;
   display: flex;
   flex-wrap: wrap;
-  align-items: baseline;
+  align-items: flex-start;
   justify-content: space-between;
-  gap: 8px;
+  gap: 10px 14px;
 }
 
 .scex-card__head h2 {
   margin: 0;
-  font-size: 1.12rem;
-  font-weight: 600;
-  letter-spacing: -0.02em;
+  font-size: 1.14rem;
+  font-weight: 650;
+  letter-spacing: -0.025em;
+  color: #f1f5f9;
 }
 
 .scex-card__head p {
-  margin: 4px 0 0;
-  font-size: 0.84rem;
-  line-height: 1.4;
-  color: rgba(226, 232, 240, 0.55);
+  margin: 5px 0 0;
+  font-size: 0.82rem;
+  line-height: 1.45;
+  color: rgba(226, 232, 240, 0.52);
+  max-width: 42rem;
 }
 
 /* ── Matrix 3D ───────────────────────────────────────── */
@@ -337,6 +405,10 @@
   height: 100% !important;
   min-height: min(70vh, 640px) !important;
   max-height: none !important;
+}
+.scex-matrix.is-fullscreen .scex2d-zoombar {
+  flex-shrink: 0;
+  padding: 0 4px 6px;
 }
 .scex-matrix.is-fullscreen .scex-matrix__legend {
   flex-shrink: 0;
@@ -753,7 +825,83 @@
 .scex2d-root {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
+}
+
+.scex2d-zoombar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  padding: 0 2px 2px;
+}
+
+.scex2d-zoombar__btn {
+  appearance: none;
+  width: 34px;
+  height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.06);
+  color: #e2e8f0;
+  font: inherit;
+  font-size: 1.15rem;
+  font-weight: 600;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.scex2d-zoombar__btn:hover:not(:disabled) {
+  border-color: rgba(125, 211, 252, 0.4);
+  background: rgba(56, 189, 248, 0.12);
+  color: #fff;
+}
+
+.scex2d-zoombar__btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.scex2d-zoombar__pct {
+  appearance: none;
+  min-width: 56px;
+  height: 34px;
+  padding: 0 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(56, 189, 248, 0.28);
+  background: rgba(56, 189, 248, 0.1);
+  color: #7dd3fc;
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.scex2d-zoombar__pct:hover {
+  border-color: rgba(125, 211, 252, 0.45);
+  background: rgba(56, 189, 248, 0.16);
+  color: #e0f2fe;
+}
+
+.scex2d-zoombar__hint {
+  margin-left: 4px;
+  font-size: 0.68rem;
+  color: rgba(226, 232, 240, 0.4);
+  font-weight: 500;
+}
+
+@media (max-width: 640px) {
+  .scex2d-zoombar__hint {
+    width: 100%;
+    margin-left: 0;
+    margin-top: 2px;
+  }
 }
 
 .scex2d-stage {
@@ -774,19 +922,37 @@
 
 .scex2d-plot {
   position: relative;
-  height: min(48vh, 420px);
-  min-height: 300px;
+  height: min(52vh, 460px);
+  min-height: 320px;
   border-radius: 14px;
   border: 1px solid rgba(255, 255, 255, 0.1);
   overflow: hidden;
   /* Override legacy 4-cell label grid — pure avatar surface */
   display: block !important;
+  touch-action: none;
+  cursor: default;
   background:
     radial-gradient(ellipse 70% 60% at 75% 25%, rgba(34, 197, 94, 0.08), transparent 55%),
     radial-gradient(ellipse 60% 50% at 25% 75%, rgba(100, 116, 139, 0.07), transparent 50%),
     radial-gradient(ellipse 50% 40% at 75% 75%, rgba(245, 158, 11, 0.06), transparent 50%),
     radial-gradient(ellipse 50% 40% at 25% 25%, rgba(56, 189, 248, 0.08), transparent 50%),
     rgba(2, 6, 23, 0.6);
+}
+
+.scex2d-plot.is-zoomed {
+  cursor: grab;
+}
+
+.scex2d-plot.is-zoomed:active {
+  cursor: grabbing;
+}
+
+.scex2d-zoom-layer {
+  position: absolute;
+  inset: 0;
+  transform-origin: center center;
+  will-change: transform;
+  transition: transform 0.08s ease-out;
 }
 
 .scex2d-wash {

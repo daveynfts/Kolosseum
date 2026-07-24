@@ -44,6 +44,18 @@ import { XProfileAvatar } from '../components/XProfileAvatar'
 import { ReportMarkdown } from '../components/ReportMarkdown'
 import type { Kol } from '../types'
 import { resolveAvatarHandle } from '../lib/avatar'
+import {
+  collectTagStats,
+  displayTags,
+  normalizeTag,
+  normalizeTags,
+  parseTagInput,
+  REPORT_TAG_PRESETS,
+  smartMergeTags,
+  suggestTagsFromText,
+  tagsFromMapKol,
+  toggleTag,
+} from '../lib/reportTags'
 
 interface Props {
   onToast: (msg: string) => void
@@ -109,6 +121,8 @@ export function AdminKolReportsEditor({ onToast, kols = [] }: Props) {
   const docxInputRef = useRef<HTMLInputElement | null>(null)
   const [importingDocx, setImportingDocx] = useState(false)
   const [mapKolQuery, setMapKolQuery] = useState('')
+  const [tagFilter, setTagFilter] = useState<string | null>(null)
+  const [tagDraft, setTagDraft] = useState('')
   const bodySlotRef = useRef(1)
 
   const mapKolsSorted = useMemo(() => {
@@ -256,12 +270,23 @@ export function AdminKolReportsEditor({ onToast, kols = [] }: Props) {
       Number.isFinite(slot) && slot >= 1 ? Math.floor(slot) : 1
   }, [dataset, selectedId])
 
+  const tagStats = useMemo(
+    () => collectTagStats(dataset?.reports || []),
+    [dataset],
+  )
+
   const list = useMemo(() => {
     if (!dataset) return [] as KolReport[]
     const base = showTrash ? dataset.trash || [] : dataset.reports
     let rows = base
     if (!showTrash && visFilter !== 'all') {
       rows = rows.filter((r) => r.visibility === visFilter)
+    }
+    if (tagFilter) {
+      const tf = tagFilter.toLowerCase()
+      rows = rows.filter((r) =>
+        displayTags(r.tags).some((t) => t.toLowerCase() === tf),
+      )
     }
     const q = query.trim().toLowerCase()
     if (q) {
@@ -271,11 +296,11 @@ export function AdminKolReportsEditor({ onToast, kols = [] }: Props) {
           (r.displayName || '').toLowerCase().includes(q) ||
           r.title.toLowerCase().includes(q) ||
           r.text.toLowerCase().includes(q) ||
-          (r.tags || []).some((t) => t.toLowerCase().includes(q)),
+          displayTags(r.tags).some((t) => t.toLowerCase().includes(q)),
       )
     }
     return rows
-  }, [dataset, query, showTrash, visFilter])
+  }, [dataset, query, showTrash, visFilter, tagFilter])
 
   const patchDraft = useCallback((patch: Partial<KolReport>) => {
     setDraft((prev) => {
@@ -324,7 +349,7 @@ export function AdminKolReportsEditor({ onToast, kols = [] }: Props) {
         visibility: d.visibility,
         coverImage: d.coverImage,
         notes: d.notes,
-        tags: d.tags,
+        tags: normalizeTags(d.tags),
         structured: d.structured,
       })
       // Preserve fields applyReportUpdate may not copy
@@ -684,13 +709,12 @@ export function AdminKolReportsEditor({ onToast, kols = [] }: Props) {
     if (!draft || draft.deletedAt) return
     const handle = k.handle.replace(/^@/, '').toLowerCase()
     const displayName = k.displayName || handle
-    const niches = [
-      k.niche,
-      ...((k.niches || []).filter((n) => n !== k.niche) as string[]),
-    ].filter(Boolean)
-    const tags = Array.from(
-      new Set([...(draft.tags || []), ...niches.map(String), 'map-sync']),
-    )
+    const niches = tagsFromMapKol(k)
+    const tags = smartMergeTags(draft.tags, {
+      mapKol: k,
+      text: draft.text,
+      max: 12,
+    })
     const title =
       !draft.title ||
       draft.title.startsWith('Báo cáo mới') ||
@@ -708,7 +732,7 @@ export function AdminKolReportsEditor({ onToast, kols = [] }: Props) {
         structured: {
           ...(prev.structured || {}),
           tierHint: k.rank || (k.tier != null ? String(k.tier) : null),
-          niches: niches.map(String),
+          niches,
           metrics: {
             ...(prev.structured?.metrics || {}),
             mapKolId: k.id,
@@ -721,7 +745,53 @@ export function AdminKolReportsEditor({ onToast, kols = [] }: Props) {
     })
     setDirty(true)
     setMapKolQuery(handle)
-    onToast(`Đã sync Meta ← map @${handle}`)
+    onToast(
+      `Đã sync Meta ← map @${handle}` +
+        (tags.length ? ` · tags: ${tags.slice(0, 4).join(', ')}` : ''),
+    )
+  }
+
+  const selectedTags = useMemo(
+    () => displayTags(draft?.tags),
+    [draft?.tags],
+  )
+
+  const suggestedTags = useMemo(() => {
+    if (!draft) return [] as string[]
+    const fromText = suggestTagsFromText(draft.text || '')
+    const fromMap = linkedMapKol ? tagsFromMapKol(linkedMapKol) : []
+    const fromStats = tagStats.map((s) => s.tag)
+    const selected = new Set(selectedTags.map((t) => t.toLowerCase()))
+    return normalizeTags([
+      ...fromMap,
+      ...fromText,
+      ...REPORT_TAG_PRESETS,
+      ...fromStats,
+    ]).filter((t) => !selected.has(t.toLowerCase()))
+  }, [draft, linkedMapKol, selectedTags, tagStats])
+
+  const addCustomTag = () => {
+    const parsed = parseTagInput(tagDraft)
+    if (!parsed.length) return
+    patchDraft({
+      tags: normalizeTags([...(draft?.tags || []), ...parsed]),
+    })
+    setTagDraft('')
+  }
+
+  const autoTagFromContent = () => {
+    if (!draft) return
+    const next = smartMergeTags(draft.tags, {
+      mapKol: linkedMapKol,
+      text: draft.text,
+      max: 12,
+    })
+    patchDraft({ tags: next })
+    onToast(
+      next.length
+        ? `Auto-tag: ${next.join(', ')}`
+        : 'Không gợi ý được tag từ nội dung',
+    )
   }
 
   const clearChangelog = () => {
@@ -1009,6 +1079,34 @@ export function AdminKolReportsEditor({ onToast, kols = [] }: Props) {
             Trash
           </button>
         </div>
+        {tagStats.length > 0 && (
+          <div className="akr-tag-filter" title="Lọc theo tag">
+            <button
+              type="button"
+              className={`akr-tag-chip akr-tag-chip--filter ${!tagFilter ? 'is-on' : ''}`}
+              onClick={() => setTagFilter(null)}
+            >
+              All tags
+            </button>
+            {tagStats.slice(0, 12).map(({ tag, count }) => (
+              <button
+                key={tag}
+                type="button"
+                className={`akr-tag-chip akr-tag-chip--filter ${
+                  tagFilter?.toLowerCase() === tag.toLowerCase() ? 'is-on' : ''
+                }`}
+                onClick={() =>
+                  setTagFilter((prev) =>
+                    prev?.toLowerCase() === tag.toLowerCase() ? null : tag,
+                  )
+                }
+              >
+                {tag}
+                <em>{count}</em>
+              </button>
+            ))}
+          </div>
+        )}
         <button
           type="button"
           className="admin-btn admin-btn--primary admin-btn--sm"
@@ -1113,6 +1211,18 @@ export function AdminKolReportsEditor({ onToast, kols = [] }: Props) {
                     {sc != null ? <em>score {sc}</em> : null}
                     <span>{(r.text || '').length.toLocaleString()} chars</span>
                   </span>
+                  {displayTags(r.tags).length > 0 && (
+                    <span className="akr-card__tags">
+                      {displayTags(r.tags)
+                        .slice(0, 3)
+                        .map((t) => (
+                          <span key={t}>{t}</span>
+                        ))}
+                      {displayTags(r.tags).length > 3 ? (
+                        <span>+{displayTags(r.tags).length - 3}</span>
+                      ) : null}
+                    </span>
+                  )}
                 </span>
               </button>
             )
@@ -1725,21 +1835,86 @@ export function AdminKolReportsEditor({ onToast, kols = [] }: Props) {
                           : 'Report private chỉ admin xem (GET ?all=1 + token).'}
                       </p>
                     </div>
-                    <label>
-                      Tags (comma)
-                      <input
-                        value={(draft.tags || []).join(', ')}
-                        disabled={readOnly}
-                        onChange={(e) =>
-                          patchDraft({
-                            tags: e.target.value
-                              .split(',')
-                              .map((t) => t.trim())
-                              .filter(Boolean),
-                          })
-                        }
-                      />
-                    </label>
+                    <div className="akr-tags-field admin-ts-fields--full">
+                      <div className="akr-tags-field__head">
+                        <span className="akr-vis-field__label">Tags</span>
+                        {!readOnly && (
+                          <button
+                            type="button"
+                            className="admin-btn admin-btn--ghost admin-btn--sm"
+                            onClick={autoTagFromContent}
+                            title="Gợi ý từ nội dung + map niche"
+                          >
+                            Auto-tag
+                          </button>
+                        )}
+                      </div>
+                      <div className="akr-tags-selected">
+                        {selectedTags.length === 0 && (
+                          <span className="admin-muted akr-tags-empty">
+                            Chưa có tag — bấm gợi ý hoặc Auto-tag
+                          </span>
+                        )}
+                        {selectedTags.map((t) => (
+                          <button
+                            key={t}
+                            type="button"
+                            className="akr-tag-chip is-selected"
+                            disabled={readOnly}
+                            title="Gỡ tag"
+                            onClick={() =>
+                              patchDraft({
+                                tags: toggleTag(draft.tags || [], t),
+                              })
+                            }
+                          >
+                            {t}
+                            {!readOnly && <span aria-hidden>×</span>}
+                          </button>
+                        ))}
+                      </div>
+                      {!readOnly && (
+                        <>
+                          <div className="akr-tags-suggest">
+                            {suggestedTags.slice(0, 16).map((t) => (
+                              <button
+                                key={t}
+                                type="button"
+                                className="akr-tag-chip akr-tag-chip--suggest"
+                                onClick={() =>
+                                  patchDraft({
+                                    tags: toggleTag(draft.tags || [], t),
+                                  })
+                                }
+                              >
+                                + {t}
+                              </button>
+                            ))}
+                          </div>
+                          <div className="akr-tags-add">
+                            <input
+                              value={tagDraft}
+                              placeholder="Thêm tag tùy chỉnh… (Enter)"
+                              onChange={(e) => setTagDraft(e.target.value)}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                  e.preventDefault()
+                                  addCustomTag()
+                                }
+                              }}
+                            />
+                            <button
+                              type="button"
+                              className="admin-btn admin-btn--ghost admin-btn--sm"
+                              disabled={!normalizeTag(tagDraft)}
+                              onClick={addCustomTag}
+                            >
+                              Thêm
+                            </button>
+                          </div>
+                        </>
+                      )}
+                    </div>
                     <label className="admin-ts-fields--full">
                       Cover image (R2)
                       <div className="akr-cover-row">

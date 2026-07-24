@@ -14,6 +14,7 @@
  * coverImage URL. Changelog records create/update/delete; private|public.
  */
 import seedJson from './internal/kol-reports.json'
+import { normalizeTags } from '../lib/reportTags'
 
 export type KolReportVisibility = 'private' | 'public'
 
@@ -337,7 +338,7 @@ function normalizeReport(raw: unknown, i: number): KolReport | null {
     deletedAt: o.deletedAt != null ? String(o.deletedAt) : undefined,
     changelog: normalizeChangelog(o.changelog),
     tags: Array.isArray(o.tags)
-      ? o.tags.map((t) => String(t))
+      ? normalizeTags(o.tags.map((t) => String(t)))
       : undefined,
     notes: o.notes != null ? String(o.notes) : undefined,
   }

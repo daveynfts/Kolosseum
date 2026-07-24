@@ -180,20 +180,20 @@ const DEFAULT_SENTIMENT: Record<ScexSentiment, ScexSentimentLabel> = {
 
 const DEFAULT_QUAD: Record<ScexQuadrant, ScexQuadrantLabel> = {
   stars: {
-    title: 'TRỌNG ĐIỂM',
-    subtitle: 'Tần suất cao · chất lượng cao — ưu tiên theo dõi',
+    title: 'Ưu tiên hợp tác',
+    subtitle: 'Hay mention · chất lượng cao — nên ưu tiên tiếp cận',
   },
   nurture: {
-    title: 'TIỀM NĂNG',
-    subtitle: 'Chất lượng cao · tần suất thấp — khuyến khích tương tác',
+    title: 'Nuôi dưỡng',
+    subtitle: 'Chất lượng cao · ít mention — nên khuyến khích tương tác',
   },
   noise: {
-    title: 'CẦN RÀ SOÁT',
-    subtitle: 'Tần suất cao · chất lượng thấp — lọc và đánh giá lại',
+    title: 'Cần rà soát',
+    subtitle: 'Hay mention · chất lượng thấp — lọc và đánh giá lại',
   },
   ignore: {
-    title: 'TÍN HIỆU YẾU',
-    subtitle: 'Tần suất thấp · chất lượng thấp — không ưu tiên',
+    title: 'Ít ưu tiên',
+    subtitle: 'Ít mention · chất lượng thấp — không cần ưu tiên',
   },
 }
 
@@ -238,8 +238,8 @@ export function defaultScexConfig(): ScexConfig {
     userMinPosts: 3,
     userMinFollowers: 5000,
     userMinQuality: 40,
-    volumeAxis: { min: 0, max: 100, label: 'Điểm tần suất (log activity)' },
-    qualityAxis: { min: 0, max: 100, label: 'Điểm chất lượng (tier + signal)' },
+    volumeAxis: { min: 0, max: 100, label: 'Tần suất mention' },
+    qualityAxis: { min: 0, max: 100, label: 'Chất lượng' },
     sizeMetric: 'followers',
     /** Mid of 0–100 volume score */
     volumeSplit: 42,

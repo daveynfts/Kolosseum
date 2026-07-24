@@ -1,23 +1,77 @@
 /**
- * SCEX mention matrix — 2D packed plot (volume × quality).
- * Zoom (discrete steps) + pan; zoom toward cursor; works in fullscreen.
+ * SCEX mention matrix — Story 2D (volume × quality).
+ * Plain-language zones/axes; zoom + pan; works in fullscreen.
  */
 import {
   useCallback,
+  useEffect,
   useLayoutEffect,
   useMemo,
   useRef,
   useState,
+  type CSSProperties,
   type PointerEvent as ReactPointerEvent,
   type WheelEvent as ReactWheelEvent,
 } from 'react'
-import type { ScexActor, ScexConfig } from '../data/scexTracking'
+import type { ScexActor, ScexConfig, ScexQuadrant } from '../data/scexTracking'
 import {
   actorMatrixPos,
   actorSizeValue,
   actorVolumeMetric,
 } from '../data/scexTracking'
 import { XProfileAvatar } from './XProfileAvatar'
+
+const STORY_TIP_KEY = 'scex-story-tip-v1'
+
+/** Action-first zone names (Story matrix) — override jargon titles when present */
+const STORY_ZONE: Record<
+  ScexQuadrant,
+  { title: string; hint: string; corner: 'tl' | 'tr' | 'bl' | 'br' }
+> = {
+  nurture: {
+    title: 'Nuôi dưỡng',
+    hint: 'Chất lượng cao · ít mention',
+    corner: 'tl',
+  },
+  stars: {
+    title: 'Ưu tiên hợp tác',
+    hint: 'Hay mention · chất lượng cao',
+    corner: 'tr',
+  },
+  ignore: {
+    title: 'Ít ưu tiên',
+    hint: 'Ít mention · chất lượng thấp',
+    corner: 'bl',
+  },
+  noise: {
+    title: 'Cần rà soát',
+    hint: 'Hay mention · chất lượng thấp',
+    corner: 'br',
+  },
+}
+
+function storyVolumePhrase(vol: number, split: number): string {
+  if (vol >= split * 1.2) return 'Hay mention'
+  if (vol >= split) return 'Mention khá'
+  if (vol >= split * 0.55) return 'Mention vừa'
+  return 'Ít mention'
+}
+
+function storyQualityPhrase(q: number, split: number): string {
+  if (q >= split * 1.15) return 'Chất lượng cao'
+  if (q >= split) return 'Chất lượng khá'
+  if (q >= split * 0.7) return 'Chất lượng trung bình'
+  return 'Chất lượng thấp'
+}
+
+function zoneTitle(key: ScexQuadrant, config: ScexConfig): string {
+  const raw = config.quadrantLabels[key]?.title || ''
+  // Prefer story labels; use config if already action-oriented (not ALL CAPS jargon)
+  if (raw && !/^(TRỌNG ĐIỂM|TIỀM NĂNG|CẦN RÀ SOÁT|TÍN HIỆU YẾU)$/i.test(raw)) {
+    return raw
+  }
+  return STORY_ZONE[key].title
+}
 
 export type ScexMatrix2DProps = {
   actors: ScexActor[]
@@ -155,6 +209,7 @@ export function ScexMatrix2D({
   const [zoomI, setZoomI] = useState(DEFAULT_ZOOM_I)
   const [pan, setPan] = useState({ x: 0, y: 0 })
   const [hoverId, setHoverId] = useState<string | null>(null)
+  const [showStoryTip, setShowStoryTip] = useState(false)
   const zoom = ZOOM_STEPS[zoomI]
   const panRef = useRef(pan)
   const zoomRef = useRef(zoom)
@@ -170,6 +225,23 @@ export function ScexMatrix2D({
     moved: boolean
   } | null>(null)
   const suppressClickRef = useRef(false)
+
+  useEffect(() => {
+    try {
+      if (localStorage.getItem(STORY_TIP_KEY) !== '1') setShowStoryTip(true)
+    } catch {
+      setShowStoryTip(true)
+    }
+  }, [])
+
+  const dismissStoryTip = () => {
+    setShowStoryTip(false)
+    try {
+      localStorage.setItem(STORY_TIP_KEY, '1')
+    } catch {
+      /* ignore */
+    }
+  }
 
   useLayoutEffect(() => {
     const el = plotRef.current
@@ -310,34 +382,27 @@ export function ScexMatrix2D({
     () => new Map(actors.map((a) => [a.id, a])),
     [actors],
   )
-  const q = config.quadrantLabels
 
-  const quads = [
-    {
-      key: 'stars',
-      title: q.stars?.title || 'TRỌNG ĐIỂM',
-      sub: q.stars?.subtitle || '',
-      tone: 'stars' as const,
-    },
-    {
-      key: 'nurture',
-      title: q.nurture?.title || 'TIỀM NĂNG',
-      sub: q.nurture?.subtitle || '',
-      tone: 'nurture' as const,
-    },
-    {
-      key: 'noise',
-      title: q.noise?.title || 'CẦN RÀ SOÁT',
-      sub: q.noise?.subtitle || '',
-      tone: 'noise' as const,
-    },
-    {
-      key: 'ignore',
-      title: q.ignore?.title || 'TÍN HIỆU YẾU',
-      sub: q.ignore?.subtitle || '',
-      tone: 'ignore' as const,
-    },
-  ]
+  const vmax = Math.max(config.volumeAxis.max, 1)
+  const qmax = Math.max(config.qualityAxis.max, 1)
+  /** Split lines as % of plot (match scoring thresholds) */
+  const splitXPct = Math.min(
+    92,
+    Math.max(8, (config.volumeSplit / vmax) * 100),
+  )
+  const splitYFromTopPct = Math.min(
+    92,
+    Math.max(8, (1 - config.qualitySplit / qmax) * 100),
+  )
+
+  const zones = (['nurture', 'stars', 'ignore', 'noise'] as const).map(
+    (key) => ({
+      key,
+      title: zoneTitle(key, config),
+      hint: STORY_ZONE[key].hint,
+      corner: STORY_ZONE[key].corner,
+    }),
+  )
 
   const zoomPct = Math.round(zoom * 100)
   const canZoomOut = zoomI > 0
@@ -345,7 +410,7 @@ export function ScexMatrix2D({
 
   return (
     <div
-      className={`scex2d-root ${showZoomControls ? 'scex2d-root--zoom-on' : 'scex2d-root--zoom-hover'}`}
+      className={`scex2d-root scex2d-root--story ${showZoomControls ? 'scex2d-root--zoom-on' : 'scex2d-root--zoom-hover'}`}
     >
       <div
         className="scex2d-zoombar"
@@ -394,19 +459,36 @@ export function ScexMatrix2D({
         </span>
       </div>
 
-      <div className="scex2d-stage">
-        <div className="scex-frame-row scex-frame-row--top" aria-hidden>
-          <span className="scex-frame-chip scex-frame-chip--nurture">
-            {q.nurture?.title || 'TIỀM NĂNG'}
-          </span>
-          <span className="scex-frame-chip scex-frame-chip--stars">
-            {q.stars?.title || 'TRỌNG ĐIỂM'}
-          </span>
+      {showStoryTip && (
+        <div className="scex2d-story-tip" role="status">
+          <div className="scex2d-story-tip__body">
+            <strong>Cách đọc nhanh</strong>
+            <p>
+              Góc <em>trên-phải</em> = ưu tiên cao (hay mention + chất lượng).
+              Bấm avatar để xem KOL. Bubble to hơn = nhiều followers.
+            </p>
+          </div>
+          <button
+            type="button"
+            className="scex2d-story-tip__ok"
+            onClick={dismissStoryTip}
+          >
+            Đã hiểu
+          </button>
         </div>
+      )}
 
+      <div className="scex2d-story-read" aria-hidden>
+        <span className="scex2d-story-read__y">↑ Chất lượng cao hơn</span>
+        <span className="scex2d-story-read__x">
+          ← Ít mention &nbsp;·&nbsp; Nhiều mention →
+        </span>
+      </div>
+
+      <div className="scex2d-stage scex2d-stage--story">
         <div className="scex2d-plot-shell">
           <div
-            className={`scex-matrix__plot scex2d-plot ${zoom > 1 ? 'is-zoomed' : ''}`}
+            className={`scex-matrix__plot scex2d-plot scex2d-plot--story ${zoom > 1 ? 'is-zoomed' : ''}`}
             ref={plotRef}
             onWheel={onWheel}
             onPointerDown={onPointerDown}
@@ -414,6 +496,18 @@ export function ScexMatrix2D({
             onPointerUp={endDrag}
             onPointerCancel={endDrag}
           >
+            {/* Zone labels fixed to viewport (readable while zoomed) */}
+            {zones.map((z) => (
+              <div
+                key={z.key}
+                className={`scex2d-zone scex2d-zone--${z.corner} scex2d-zone--${z.key}`}
+                aria-hidden
+              >
+                <strong>{z.title}</strong>
+                <span>{z.hint}</span>
+              </div>
+            ))}
+
             <div
               className="scex2d-zoom-layer"
               style={{
@@ -424,7 +518,16 @@ export function ScexMatrix2D({
               <div className="scex2d-wash scex2d-wash--stars" aria-hidden />
               <div className="scex2d-wash scex2d-wash--ignore" aria-hidden />
               <div className="scex2d-wash scex2d-wash--noise" aria-hidden />
-              <div className="scex2d-crosshair" aria-hidden />
+              <div
+                className="scex2d-crosshair scex2d-crosshair--split"
+                style={
+                  {
+                    ['--split-x' as string]: `${splitXPct}%`,
+                    ['--split-y' as string]: `${splitYFromTopPct}%`,
+                  } as CSSProperties
+                }
+                aria-hidden
+              />
 
               <div className="scex-matrix__stage">
                 {packed.map((b) => {
@@ -438,6 +541,14 @@ export function ScexMatrix2D({
                   const showTip = hoverId === a.id || selected
                   const sentLabel =
                     config.sentimentLabels[a.sentiment]?.label || a.sentiment
+                  const vol = actorVolumeMetric(a, config)
+                  const volPhrase = storyVolumePhrase(vol, config.volumeSplit)
+                  const qualPhrase = storyQualityPhrase(
+                    a.qualityScore,
+                    config.qualitySplit,
+                  )
+                  const zoneKey = (a.quadrant || 'ignore') as ScexQuadrant
+                  const zoneLabel = zoneTitle(zoneKey, config)
                   return (
                     <button
                       key={a.id}
@@ -460,7 +571,7 @@ export function ScexMatrix2D({
                         ['--depth' as string]: String(b.depth),
                         ['--ring' as string]: ring,
                       }}
-                      aria-label={`@${a.handle}, ${a.displayName}`}
+                      aria-label={`${a.displayName || a.handle}, ${zoneLabel}, ${volPhrase}, ${qualPhrase}`}
                       onMouseEnter={() => setHoverId(a.id)}
                       onMouseLeave={() =>
                         setHoverId((id) => (id === a.id ? null : id))
@@ -497,16 +608,17 @@ export function ScexMatrix2D({
                       {showTip && (
                         <span className="scex-bubble__tip" role="tooltip">
                           <em>{a.displayName || a.handle}</em>
-                          <small>
-                            @{a.handle}
-                            {' · '}
-                            {formatCompact(a.followers)} FL
-                            {onMap ? ' · Map' : ''}
-                            {a.mapRank ? ` · ${a.mapRank}` : ''}
+                          <small className="scex-bubble__tip-zone">
+                            {zoneLabel}
                           </small>
                           <small>
-                            V{Math.round(actorVolumeMetric(a, config))} · Q
-                            {Math.round(a.qualityScore)} · {sentLabel}
+                            {volPhrase} · {qualPhrase}
+                          </small>
+                          <small>
+                            {formatCompact(a.followers)} followers
+                            {onMap ? ' · Có trên map' : ''}
+                            {a.mapRank ? ` · ${a.mapRank}` : ''}
+                            {sentLabel ? ` · ${sentLabel}` : ''}
                           </small>
                         </span>
                       )}
@@ -518,36 +630,34 @@ export function ScexMatrix2D({
           </div>
         </div>
 
-        <div className="scex-frame-row scex-frame-row--bottom" aria-hidden>
-          <span className="scex-frame-chip scex-frame-chip--ignore">
-            {q.ignore?.title || 'TÍN HIỆU YẾU'}
+        <div className="scex2d-story-axes">
+          <span className="scex2d-story-axes__y">
+            ↑ {config.qualityAxis.label || 'Chất lượng'}
           </span>
-          <span className="scex-frame-chip scex-frame-chip--noise">
-            {q.noise?.title || 'CẦN RÀ SOÁT'}
+          <span className="scex2d-story-axes__track" aria-hidden>
+            <i />
           </span>
-        </div>
-
-        <div className="scex2d-axis-bar">
-          <span className="scex2d-axis-bar__y">
-            ↑ {config.qualityAxis.label || 'Điểm chất lượng'}
-          </span>
-          <span className="scex2d-axis-bar__x">
+          <span className="scex2d-story-axes__x">
             {config.volumeAxis.label || 'Tần suất mention'} →
           </span>
         </div>
       </div>
 
-      <ul className="scex3d-quad-legend">
-        {quads.map((item) => (
-          <li
-            key={item.key}
-            className={`scex3d-quad-legend__item scex3d-quad-legend__item--${item.tone}`}
-          >
-            <strong>{item.title}</strong>
-            {item.sub ? <span>{item.sub}</span> : null}
-          </li>
-        ))}
-      </ul>
+      <div className="scex2d-encode" aria-label="Chú thích ma trận">
+        <span>
+          <i className="scex2d-encode__size" aria-hidden />
+          To hơn = nhiều followers
+        </span>
+        <span>
+          <i className="scex2d-encode__ring" aria-hidden />
+          Viền = cảm xúc bài
+        </span>
+        <span>
+          <i className="scex2d-encode__map" aria-hidden />
+          Chấm xanh = đã có trên map
+        </span>
+        <span className="scex2d-encode__hint">Bấm avatar để xem chi tiết</span>
+      </div>
     </div>
   )
 }

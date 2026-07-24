@@ -108,15 +108,15 @@ const MATRIX_FILTER_PILLS: Array<{
   },
   {
     id: 'quad_stars',
-    label: 'Trọng điểm',
-    title: 'Vùng TRỌNG ĐIỂM',
+    label: 'Ưu tiên',
+    title: 'Vùng Ưu tiên hợp tác (hay mention + chất lượng cao)',
     group: 'quad',
     tier: 'primary',
   },
   {
     id: 'quad_nurture',
-    label: 'Tiềm năng',
-    title: 'Vùng TIỀM NĂNG',
+    label: 'Nuôi dưỡng',
+    title: 'Vùng Nuôi dưỡng (chất lượng cao · ít mention)',
     group: 'quad',
     tier: 'primary',
   },
@@ -149,14 +149,14 @@ const MATRIX_FILTER_PILLS: Array<{
   {
     id: 'quad_noise',
     label: 'Rà soát',
-    title: 'Vùng CẦN RÀ SOÁT',
+    title: 'Vùng Cần rà soát (hay mention · chất lượng thấp)',
     group: 'quad',
     tier: 'more',
   },
   {
     id: 'quad_ignore',
-    label: 'Tín hiệu yếu',
-    title: 'Vùng TÍN HIỆU YẾU',
+    label: 'Ít ưu tiên',
+    title: 'Vùng Ít ưu tiên (ít mention · chất lượng thấp)',
     group: 'quad',
     tier: 'more',
   },
@@ -612,8 +612,9 @@ export function ScexTrackingPage() {
             <div>
               <h2>{viMatrixTitle(config.matrixTitle)}</h2>
               <p>
-                Tần suất × chất lượng · {visible.length} KOL
-                {matrixFilters.size ? ' (đã lọc)' : ''} · {onMapCount} trên map
+                Ai đang nói về SCEX · bấm avatar để xem · {visible.length} KOL
+                {matrixFilters.size ? ' (đã lọc)' : ''}
+                {onMapCount ? ` · ${onMapCount} trên map` : ''}
               </p>
             </div>
             <div className="scex-matrix__toolbar">
@@ -722,16 +723,19 @@ export function ScexTrackingPage() {
                 showZoomControls={matrixFullscreen}
               />
             )}
-            <div className="scex-matrix__legend">
-              <span>
-                <i className="scex-matrix__legend-dot scex-matrix__legend-dot--map" />
-                Có trên map — bấm xem hồ sơ
-              </span>
-              <span>
-                <i className="scex-matrix__legend-dot" />
-                Chỉ mention — bấm xem thống kê
-              </span>
-            </div>
+            {/* Encoding legend lives inside Story matrix (2D); keep compact note for 3D */}
+            {matrixView === '3d' && (
+              <div className="scex-matrix__legend">
+                <span>
+                  <i className="scex-matrix__legend-dot scex-matrix__legend-dot--map" />
+                  Chấm xanh = có trên map — bấm xem hồ sơ
+                </span>
+                <span>
+                  <i className="scex-matrix__legend-dot" />
+                  Kéo xoay · cuộn zoom
+                </span>
+              </div>
+            )}
           </div>
         </section>
 

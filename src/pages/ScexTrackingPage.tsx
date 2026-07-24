@@ -264,6 +264,7 @@ export function ScexTrackingPage() {
   const [matrixFilters, setMatrixFilters] = useState<Set<MatrixFilterId>>(
     () => readFilters(),
   )
+  const [matrixFullscreen, setMatrixFullscreen] = useState(false)
 
   useEffect(() => {
     let cancelled = false
@@ -279,6 +280,24 @@ export function ScexTrackingPage() {
       cancelled = true
     }
   }, [])
+
+  // Matrix fullscreen: Esc exit + lock body scroll
+  useEffect(() => {
+    if (!matrixFullscreen) return
+    const prev = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.preventDefault()
+        setMatrixFullscreen(false)
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => {
+      document.body.style.overflow = prev
+      window.removeEventListener('keydown', onKey)
+    }
+  }, [matrixFullscreen])
 
   // Keep detail panel below event banner (avoid overlap)
   useEffect(() => {
@@ -514,7 +533,10 @@ export function ScexTrackingPage() {
       </header>
 
       <div className="scex-page__grid">
-        <section className="scex-card scex-matrix">
+        <section
+          className={`scex-card scex-matrix ${matrixFullscreen ? 'is-fullscreen' : ''}`}
+          aria-label="Ma trận mention SCEX"
+        >
           <div className="scex-card__head">
             <div>
               <h2>{viMatrixTitle(config.matrixTitle)}</h2>
@@ -522,6 +544,7 @@ export function ScexTrackingPage() {
                 Trục ngang: tần suất · Trục dọc: chất lượng · Size: followers ·{' '}
                 {visible.length}/{baseVisible.length} KOL
                 {matrixFilters.size ? ' (đã lọc)' : ''} · {onMapCount} trên map
+                {matrixFullscreen ? ' · Fullscreen' : ''}
               </p>
             </div>
             <div className="scex-matrix__toolbar">
@@ -551,6 +574,19 @@ export function ScexTrackingPage() {
                   {autoRotate ? '⏸ Dừng xoay' : '▶ Tự xoay'}
                 </button>
               )}
+              <button
+                type="button"
+                className={`scex-fs-btn ${matrixFullscreen ? 'is-on' : ''}`}
+                title={
+                  matrixFullscreen
+                    ? 'Thoát fullscreen (Esc)'
+                    : 'Xem ma trận full màn hình'
+                }
+                aria-pressed={matrixFullscreen}
+                onClick={() => setMatrixFullscreen((v) => !v)}
+              >
+                {matrixFullscreen ? 'Exit full · Esc' : 'Fullscreen'}
+              </button>
             </div>
           </div>
 

@@ -68,6 +68,8 @@ export async function docxFileToReportMarkdown(
   options?: {
     token?: string
     handle?: string
+    /** Stable R2 overwrite under kol-reports/images/{reportId}/docx_N.ext */
+    reportId?: string
     onProgress?: (msg: string) => void
   },
 ): Promise<DocxImportResult> {
@@ -168,6 +170,10 @@ export async function docxFileToReportMarkdown(
               handle: options?.handle || 'docx',
               contentType,
               stem: `docx_${options?.handle || 'report'}_${imgIndex}`,
+              // Same reportId + slot → overwrite previous DOCX image on R2
+              overwrite: !!options?.reportId,
+              reportId: options?.reportId,
+              slot: `docx_${imgIndex}`,
             })
             if (!up.ok) {
               imagesFailed++

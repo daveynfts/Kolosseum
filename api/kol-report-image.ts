@@ -1,12 +1,15 @@
 /**
  * Upload KOL report image to R2 for markdown embedding.
  *
- * PUT /api/kol-report-image?filename=chart.png
+ * PUT /api/kol-report-image?filename=…&overwrite=1
  *   Authorization: Bearer FEED_ADMIN_TOKEN
- *   Body: raw image bytes (or data-url base64 string)
- *   Content-Type: image/png | image/jpeg | image/webp | image/gif
+ *   Body: raw image bytes
  *
- * Returns { ok, key, url, bytes, contentType }
+ * Default: unique key (legacy one-shot uploads).
+ * overwrite=1: stable path under kol-reports/images/{reportId}/{slot}.ext
+ *   — re-upload replaces the same R2 object (no duplicate files).
+ *
+ * Returns { ok, key, url, bytes, contentType, storage, overwritten }
  */
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 import {
@@ -62,7 +65,6 @@ function extFromType(ct: string): string {
 
 function snifContentType(body: Buffer, hinted: string): string | null {
   if (body.length >= 8) {
-    // PNG
     if (
       body[0] === 0x89 &&
       body[1] === 0x50 &&
@@ -70,10 +72,8 @@ function snifContentType(body: Buffer, hinted: string): string | null {
       body[3] === 0x47
     )
       return 'image/png'
-    // JPEG
     if (body[0] === 0xff && body[1] === 0xd8 && body[2] === 0xff)
       return 'image/jpeg'
-    // GIF
     if (
       body[0] === 0x47 &&
       body[1] === 0x49 &&
@@ -81,7 +81,6 @@ function snifContentType(body: Buffer, hinted: string): string | null {
       body[3] === 0x38
     )
       return 'image/gif'
-    // WEBP (RIFF....WEBP)
     if (
       body[0] === 0x52 &&
       body[1] === 0x49 &&
@@ -99,20 +98,48 @@ function snifContentType(body: Buffer, hinted: string): string | null {
   return null
 }
 
-/**
- * Unique R2 object name — never overwrite prior uploads.
- * e.g. chart_mryd9abc_k3f2.png
- */
+/** One-shot unique name (no overwrite) */
 function uniqueFilename(raw: string, contentType: string): string {
   let base = (raw || '').trim().replace(/\\/g, '/')
   base = base.split('/').pop() || ''
   base = base.replace(/[^\w.\-()+\s\u00C0-\u024F]/g, '_').replace(/\s+/g, '_')
   const ext = extFromType(contentType)
-  // strip extension for stem
   let stem = base.replace(/\.(png|jpe?g|webp|gif)$/i, '') || 'img'
   if (stem.length > 80) stem = stem.slice(0, 80)
   const stamp = `${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`
   return `${stem}_${stamp}.${ext}`
+}
+
+/**
+ * Stable relative path: {reportId}/{slot}.ext
+ * Re-upload with same path replaces object on R2.
+ */
+function stableFilename(raw: string, contentType: string): string | null {
+  let path = (raw || '').trim().replace(/\\/g, '/').replace(/^\/+/, '')
+  if (!path) return null
+  const parts = path.split('/').filter(Boolean)
+  const ext = extFromType(contentType)
+
+  const cleanSeg = (s: string) =>
+    s.replace(/[^\w.\-]/g, '_').replace(/_+/g, '_').slice(0, 64)
+
+  if (parts.length === 1) {
+    let file = cleanSeg(parts[0])
+    if (!/\.(png|jpe?g|webp|gif)$/i.test(file)) file = `${file}.${ext}`
+    else file = file.replace(/\.(png|jpe?g|webp|gif)$/i, `.${ext}`)
+    return file
+  }
+
+  if (parts.length >= 2) {
+    // reportId / slot (ignore deeper paths)
+    const folder = cleanSeg(parts[0])
+    let file = cleanSeg(parts[parts.length - 1])
+    if (!folder || folder === '_' || folder === 'undefined') return null
+    if (!/\.(png|jpe?g|webp|gif)$/i.test(file)) file = `${file}.${ext}`
+    else file = file.replace(/\.(png|jpe?g|webp|gif)$/i, `.${ext}`)
+    return `${folder}/${file}`
+  }
+  return null
 }
 
 async function readRawBody(req: VercelRequest): Promise<Buffer> {
@@ -190,29 +217,61 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     const qName = String(req.query.filename || req.query.name || '')
     const hName = String(req.headers['x-filename'] || '')
-    const filename = uniqueFilename(qName || hName, contentType)
-    const key = `${PREFIX}/${filename}`
+    const rawName = qName || hName
+    const overwrite =
+      String(req.query.overwrite || '') === '1' ||
+      String(req.query.overwrite || '').toLowerCase() === 'true' ||
+      String(req.headers['x-overwrite'] || '') === '1'
 
-    // Durable write to Cloudflare R2 (same bucket as feed/media)
-    await r2PutBytes(client, key, body, contentType)
+    let rel: string
+    let wasOverwrite = false
+    if (overwrite) {
+      const stable = stableFilename(rawName, contentType)
+      if (!stable) {
+        return res.status(400).json({
+          error: 'invalid_stable_path',
+          message:
+            'overwrite=1 requires filename like {reportId}/cover.png or {reportId}/body_1.png',
+        })
+      }
+      rel = stable
+      wasOverwrite = true
+    } else {
+      rel = uniqueFilename(rawName, contentType)
+    }
+
+    const key = `${PREFIX}/${rel}`
+
+    // Short cache when overwriting so re-edit shows new bytes; unique still long-lived
+    await r2PutBytes(
+      client,
+      key,
+      body,
+      contentType,
+      wasOverwrite
+        ? 'public, max-age=120, must-revalidate'
+        : 'public, max-age=604800, immutable',
+    )
 
     const publicBase = r2PublicBase()
     const encoded = key
       .split('/')
       .map((s) => encodeURIComponent(s))
       .join('/')
-    // Prefer public CDN URL; fallback /r2/ rewrite for private buckets
-    const url = publicBase ? `${publicBase}/${encoded}` : `/r2/${encoded}`
+    const baseUrl = publicBase ? `${publicBase}/${encoded}` : `/r2/${encoded}`
+    // Cache-bust query so browser picks up overwritten object immediately
+    const url = wasOverwrite ? `${baseUrl}?v=${Date.now()}` : baseUrl
 
     return res.status(200).json({
       ok: true,
       key,
       url,
-      filename,
+      filename: rel,
       bytes: body.length,
       contentType,
       storage: 'r2',
       prefix: PREFIX,
+      overwritten: wasOverwrite,
       publicBase: publicBase || null,
     })
   } catch (e) {

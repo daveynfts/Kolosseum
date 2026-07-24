@@ -132,6 +132,8 @@ export async function r2PutBytes(
   key: string,
   body: Buffer,
   contentType: string,
+  /** Override default week-immutable cache (use short TTL for overwritable assets) */
+  cacheControl?: string,
 ): Promise<void> {
   await client.send(
     new PutObjectCommand({
@@ -139,7 +141,8 @@ export async function r2PutBytes(
       Key: key,
       Body: body,
       ContentType: contentType,
-      CacheControl: 'public, max-age=604800, immutable',
+      CacheControl:
+        cacheControl || 'public, max-age=604800, immutable',
     }),
   )
 }

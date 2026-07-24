@@ -1775,6 +1775,114 @@
   border-color: rgba(167, 139, 250, 0.7) !important;
   background: rgba(139, 92, 246, 0.25) !important;
 }
+.akr-map-link {
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(125, 211, 252, 0.2);
+  background: rgba(14, 165, 233, 0.06);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.akr-map-link__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px;
+}
+.akr-map-link__head strong {
+  color: #7dd3fc;
+  font-size: 0.85rem;
+}
+.akr-map-link__hint {
+  margin: 0;
+  font-size: 0.75rem;
+}
+.akr-map-linked {
+  display: grid;
+  grid-template-columns: 28px 1fr auto;
+  gap: 10px;
+  align-items: center;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: rgba(34, 197, 94, 0.08);
+  border: 1px solid rgba(34, 197, 94, 0.25);
+}
+.akr-map-linked strong {
+  display: block;
+  font-size: 0.85rem;
+  color: #f1f5f9;
+}
+.akr-map-linked small {
+  display: block;
+  font-size: 0.7rem;
+  color: #94a3b8;
+}
+.akr-map-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 180px;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.akr-map-list button {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 22px 1fr;
+  gap: 8px;
+  align-items: center;
+  text-align: left;
+  border: 1px solid transparent;
+  background: rgba(15, 23, 42, 0.4);
+  color: inherit;
+  font: inherit;
+  padding: 6px 8px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.akr-map-list button:hover {
+  border-color: rgba(125, 211, 252, 0.3);
+  background: rgba(125, 211, 252, 0.08);
+}
+.akr-map-list button.is-active {
+  border-color: rgba(125, 211, 252, 0.45);
+  background: rgba(125, 211, 252, 0.12);
+}
+.akr-map-list strong {
+  display: block;
+  font-size: 0.78rem;
+  color: #e2e8f0;
+}
+.akr-map-list small {
+  display: block;
+  font-size: 0.65rem;
+  color: #64748b;
+}
+.akr-log-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.akr-log-del {
+  margin-left: auto;
+  border: 0;
+  background: transparent;
+  color: #f87171;
+  font-size: 1.1rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 4px;
+  opacity: 0.7;
+}
+.akr-log-del:hover {
+  opacity: 1;
+}
 .akr-editor--write .akr-write {
   border-right: 0;
 }

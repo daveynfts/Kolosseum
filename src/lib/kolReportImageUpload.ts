@@ -15,6 +15,7 @@ export type KolReportImageUploadResult =
       bytes: number
       storage: 'r2'
       contentType?: string
+      overwritten?: boolean
     }
   | { ok: false; error: string; status?: number }
 
@@ -81,6 +82,25 @@ function extFromContentType(ct: string): string {
  * PUT raw bytes (File / Blob / ArrayBuffer) → R2.
  * Used by file picker and DOCX embedded image extraction.
  */
+/**
+ * Stable relative path for overwrite: {reportId}/{slot}.ext
+ * Same path on re-upload → R2 PutObject replaces old bytes (no new file).
+ */
+export function stableReportImagePath(
+  reportId: string,
+  slot: string,
+  ext: string,
+): string {
+  const id = String(reportId || 'report')
+    .replace(/[^\w.-]/g, '_')
+    .slice(0, 64)
+  const s = String(slot || 'img')
+    .replace(/[^\w.-]/g, '_')
+    .slice(0, 48)
+  const e = (ext || 'jpg').replace(/^\./, '').toLowerCase()
+  return `${id}/${s}.${e}`
+}
+
 export async function uploadKolReportImageBytes(
   body: Blob | ArrayBuffer | Uint8Array,
   options?: {
@@ -89,6 +109,10 @@ export async function uploadKolReportImageBytes(
     handle?: string
     contentType?: string
     stem?: string
+    /** When set with reportId+slot, PUT overwrites the same R2 object */
+    overwrite?: boolean
+    reportId?: string
+    slot?: string
   },
 ): Promise<KolReportImageUploadResult> {
   const token = (options?.token || getAdminToken()).trim()
@@ -139,13 +163,21 @@ export async function uploadKolReportImageBytes(
   // Server sniffs magic bytes; content-type is a hint
   const ext = extFromContentType(contentType)
   const stem = options?.stem || options?.handle || 'img'
-  const filename =
-    options?.filename ||
-    `${String(stem)
-      .replace(/[^\w.\-]+/g, '_')
-      .slice(0, 60)}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 6)}.${ext}`
+  const overwrite = !!options?.overwrite && !!options?.reportId
+  const filename = overwrite
+    ? stableReportImagePath(
+        options!.reportId!,
+        options?.slot || options?.stem || 'img',
+        ext,
+      )
+    : options?.filename ||
+      `${String(stem)
+        .replace(/[^\w.\-]+/g, '_')
+        .slice(0, 60)}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 6)}.${ext}`
 
-  const apiUrl = `${withBase('/api/kol-report-image')}?filename=${encodeURIComponent(filename)}`
+  const apiUrl = `${withBase('/api/kol-report-image')}?filename=${encodeURIComponent(filename)}${
+    overwrite ? '&overwrite=1' : ''
+  }`
 
   try {
     const res = await fetch(apiUrl, {
@@ -154,6 +186,7 @@ export async function uploadKolReportImageBytes(
         Authorization: `Bearer ${token}`,
         'Content-Type': contentType,
         'X-Filename': filename,
+        ...(overwrite ? { 'X-Overwrite': '1' } : {}),
       },
       body: blob,
     })
@@ -204,6 +237,7 @@ export async function uploadKolReportImageBytes(
       storage: 'r2',
       contentType:
         data.contentType != null ? String(data.contentType) : contentType,
+      overwritten: data.overwritten === true,
     }
   } catch (e) {
     return {
@@ -218,7 +252,14 @@ export async function uploadKolReportImageBytes(
  */
 export async function uploadKolReportImage(
   file: File,
-  options?: { token?: string; filename?: string; handle?: string },
+  options?: {
+    token?: string
+    filename?: string
+    handle?: string
+    overwrite?: boolean
+    reportId?: string
+    slot?: string
+  },
 ): Promise<KolReportImageUploadResult> {
   if (!file || file.size < 24) {
     return { ok: false, error: 'File rỗng hoặc quá nhỏ' }
@@ -240,6 +281,9 @@ export async function uploadKolReportImage(
     filename,
     handle: options?.handle,
     contentType: file.type || undefined,
+    overwrite: options?.overwrite,
+    reportId: options?.reportId,
+    slot: options?.slot,
   })
 }
 

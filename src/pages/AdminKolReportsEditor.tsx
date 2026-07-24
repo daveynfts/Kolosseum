@@ -46,9 +46,12 @@ import {
 import { docxFileToReportMarkdown } from '../lib/docxToReportMarkdown'
 import { XProfileAvatar } from '../components/XProfileAvatar'
 import { ReportMarkdown } from '../components/ReportMarkdown'
+import type { Kol } from '../types'
 
 interface Props {
   onToast: (msg: string) => void
+  /** Map KOL list — Meta picker syncs handle/displayName */
+  kols?: Kol[]
 }
 
 type ViewMode = 'write' | 'preview' | 'split'
@@ -77,7 +80,7 @@ function excerpt(text: string, n = 90): string {
   return `${t.slice(0, n)}…`
 }
 
-export function AdminKolReportsEditor({ onToast }: Props) {
+export function AdminKolReportsEditor({ onToast, kols = [] }: Props) {
   const [dataset, setDataset] = useState<KolReportsDataset | null>(null)
   const [source, setSource] = useState<'server' | 'cache' | 'seed'>('seed')
   const [dirty, setDirty] = useState(false)
@@ -102,6 +105,37 @@ export function AdminKolReportsEditor({ onToast }: Props) {
   const coverInputRef = useRef<HTMLInputElement | null>(null)
   const docxInputRef = useRef<HTMLInputElement | null>(null)
   const [importingDocx, setImportingDocx] = useState(false)
+  const [mapKolQuery, setMapKolQuery] = useState('')
+  const bodySlotRef = useRef(1)
+
+  const mapKolsSorted = useMemo(() => {
+    return [...kols]
+      .filter((k) => !k.hidden && k.handle)
+      .sort((a, b) =>
+        a.handle.localeCompare(b.handle, undefined, { sensitivity: 'base' }),
+      )
+  }, [kols])
+
+  const mapKolMatches = useMemo(() => {
+    const q = mapKolQuery.trim().toLowerCase().replace(/^@/, '')
+    if (!q) return mapKolsSorted.slice(0, 40)
+    return mapKolsSorted
+      .filter(
+        (k) =>
+          k.handle.toLowerCase().includes(q) ||
+          (k.displayName || '').toLowerCase().includes(q) ||
+          (k.niche || '').toLowerCase().includes(q),
+      )
+      .slice(0, 40)
+  }, [mapKolsSorted, mapKolQuery])
+
+  const linkedMapKol = useMemo(() => {
+    if (!draft?.handle) return null
+    const h = draft.handle.toLowerCase()
+    return (
+      mapKolsSorted.find((k) => k.handle.toLowerCase() === h) || null
+    )
+  }, [draft?.handle, mapKolsSorted])
 
   useEffect(() => {
     let cancelled = false
@@ -135,6 +169,11 @@ export function AdminKolReportsEditor({ onToast }: Props) {
     const c = cloneReport(r)
     setDraft(c)
     baselineRef.current = cloneReport(r)
+    setMapKolQuery(c.handle || '')
+    // Resume body image slot counter for stable overwrite paths
+    const slot = Number(c.structured?.metrics?.r2BodySlot)
+    bodySlotRef.current =
+      Number.isFinite(slot) && slot >= 1 ? Math.floor(slot) : 1
   }, [dataset, selectedId])
 
   const list = useMemo(() => {
@@ -210,6 +249,13 @@ export function AdminKolReportsEditor({ onToast }: Props) {
       })
       // Preserve fields applyReportUpdate may not copy
       next.coverImage = d.coverImage
+      next.sourceFilename = d.sourceFilename
+      // Respect user-edited changelog (cleared / single deletes), then prepend this save's entry
+      const head = next.changelog?.[0]
+      const userLog = Array.isArray(d.changelog) ? d.changelog : []
+      next.changelog = head
+        ? [head, ...userLog.filter((c) => c.id !== head.id)].slice(0, 200)
+        : userLog.slice(0, 200)
       if (d.deletedAt) {
         return {
           ...ds,
@@ -327,7 +373,9 @@ export function AdminKolReportsEditor({ onToast }: Props) {
     if (r.ok) {
       setDirty(false)
       setSource('server')
-      onToast('Đã lưu KOL reports lên R2')
+      onToast(
+        'Đã ghi đè R2 · internal/kol-reports/v1.json (cùng key, không file mới)',
+      )
     } else {
       onToast(`Lưu lỗi: ${r.status} ${r.message || ''}`)
     }
@@ -478,7 +526,8 @@ export function AdminKolReportsEditor({ onToast }: Props) {
     async (
       file: File,
       mode: 'inline' | 'cover',
-    ): Promise<{ url: string; key: string } | null> => {
+      slotOverride?: string,
+    ): Promise<{ url: string; key: string; overwritten?: boolean } | null> => {
       if (!isImageFile(file)) {
         onToast('Chỉ PNG / JPEG / WebP / GIF — upload thẳng R2')
         return null
@@ -487,15 +536,30 @@ export function AdminKolReportsEditor({ onToast }: Props) {
         onToast('Dán FEED_ADMIN_TOKEN trước khi upload ảnh lên R2')
         return null
       }
+      if (!draft?.id) {
+        onToast('Chưa có report id')
+        return null
+      }
       setAdminToken(tokenInput)
       setUploading(true)
       setUploadLabel(file.name || 'image')
+
+      let slot = slotOverride
+      if (!slot) {
+        if (mode === 'cover') slot = 'cover'
+        else {
+          slot = `body_${bodySlotRef.current}`
+          bodySlotRef.current += 1
+        }
+      }
+
+      // overwrite=1 → same key kol-reports/images/{reportId}/{slot}.ext
       const r = await uploadKolReportImage(file, {
         token: tokenInput,
-        handle:
-          mode === 'cover'
-            ? `cover_${draft?.handle || 'kol'}`
-            : draft?.handle,
+        handle: draft.handle,
+        overwrite: true,
+        reportId: draft.id,
+        slot,
       })
       setUploading(false)
       setUploadLabel('')
@@ -507,9 +571,9 @@ export function AdminKolReportsEditor({ onToast }: Props) {
         onToast('Upload không xác nhận storage=r2')
         return null
       }
-      return { url: r.url, key: r.key }
+      return { url: r.url, key: r.key, overwritten: r.overwritten }
     },
-    [tokenInput, draft?.handle, onToast],
+    [tokenInput, draft?.id, draft?.handle, onToast],
   )
 
   const insertImageFromR2 = async (file: File) => {
@@ -525,15 +589,96 @@ export function AdminKolReportsEditor({ onToast }: Props) {
       const prevList = prevRaw
         ? prevRaw.split('\n').map((s) => s.trim()).filter(Boolean)
         : []
-      metrics.r2ImageUrls = [...prevList, up.url].slice(-40).join('\n')
+      // de-dupe by key prefix (strip ?v=)
+      const clean = up.url.split('?')[0]
+      const nextList = [
+        ...prevList.filter((u) => !String(u).startsWith(clean)),
+        up.url,
+      ].slice(-40)
+      metrics.r2ImageUrls = nextList.join('\n')
       metrics.lastR2Key = up.key
+      metrics.r2BodySlot = bodySlotRef.current
       return {
         ...prev,
         structured: { ...(prev.structured || {}), metrics },
       }
     })
     setDirty(true)
-    onToast(`Đã lưu R2 · ${up.key}`)
+    onToast(
+      up.overwritten
+        ? `Đã ghi đè R2 · ${up.key}`
+        : `Đã lưu R2 · ${up.key}`,
+    )
+  }
+
+  /** Link Meta fields to a KOL on the public map */
+  const syncFromMapKol = (k: Kol) => {
+    if (!draft || draft.deletedAt) return
+    const handle = k.handle.replace(/^@/, '').toLowerCase()
+    const displayName = k.displayName || handle
+    const niches = [
+      k.niche,
+      ...((k.niches || []).filter((n) => n !== k.niche) as string[]),
+    ].filter(Boolean)
+    const tags = Array.from(
+      new Set([...(draft.tags || []), ...niches.map(String), 'map-sync']),
+    )
+    const title =
+      !draft.title ||
+      draft.title.startsWith('Báo cáo mới') ||
+      draft.title.includes(draft.handle)
+        ? `Báo cáo đánh giá KOL @${handle}`
+        : draft.title
+    setDraft((prev) => {
+      if (!prev || prev.deletedAt) return prev
+      return {
+        ...prev,
+        handle,
+        displayName,
+        title,
+        tags,
+        structured: {
+          ...(prev.structured || {}),
+          tierHint: k.rank || (k.tier != null ? String(k.tier) : null),
+          niches: niches.map(String),
+          metrics: {
+            ...(prev.structured?.metrics || {}),
+            mapKolId: k.id,
+            mapFollowers: k.followers,
+            mapScore: k.score,
+            mapSyncedAt: new Date().toISOString(),
+          },
+        },
+      }
+    })
+    setDirty(true)
+    setMapKolQuery(handle)
+    onToast(`Đã sync Meta ← map @${handle}`)
+  }
+
+  const clearChangelog = () => {
+    if (!draft || draft.deletedAt) return
+    if (!(draft.changelog || []).length) {
+      onToast('Changelog đã trống')
+      return
+    }
+    if (
+      !confirm(
+        `Xóa toàn bộ ${(draft.changelog || []).length} mục changelog? (sẽ lưu lên R2 khi Save)`,
+      )
+    ) {
+      return
+    }
+    patchDraft({ changelog: [] })
+    onToast('Đã xóa changelog — Save R2 để ghi đè dataset')
+  }
+
+  const removeChangelogEntry = (id: string) => {
+    if (!draft || draft.deletedAt) return
+    patchDraft({
+      changelog: (draft.changelog || []).filter((c) => c.id !== id),
+    })
+    setDirty(true)
   }
 
   const insertImageUrl = () => {
@@ -558,10 +703,15 @@ export function AdminKolReportsEditor({ onToast }: Props) {
     const file = e.target.files?.[0]
     e.target.value = ''
     if (!file) return
-    const up = await uploadFileToR2(file, 'cover')
+    // Always slot=cover → overwrite same R2 object for this report
+    const up = await uploadFileToR2(file, 'cover', 'cover')
     if (!up) return
     patchDraft({ coverImage: up.url })
-    onToast(`Cover đã lưu R2 · ${up.key}`)
+    onToast(
+      up.overwritten
+        ? `Cover ghi đè R2 · ${up.key}`
+        : `Cover đã lưu R2 · ${up.key}`,
+    )
   }
 
   const onEditorPaste = async (e: ClipboardEvent<HTMLTextAreaElement>) => {
@@ -612,6 +762,7 @@ export function AdminKolReportsEditor({ onToast }: Props) {
     const result = await docxFileToReportMarkdown(file, {
       token: tokenInput,
       handle: draft.handle,
+      reportId: draft.id,
       onProgress: (msg) => setUploadLabel(msg),
     })
     setImportingDocx(false)
@@ -1237,14 +1388,110 @@ export function AdminKolReportsEditor({ onToast }: Props) {
 
               {sidePanel === 'meta' && (
                 <div className="akr-panel">
-                  <div className="admin-ts-fields">
+                  <div className="akr-map-link">
+                    <div className="akr-map-link__head">
+                      <strong>Map KOL</strong>
+                      <span className="admin-muted">
+                        Chọn KOL trên map → sync handle / name / niche
+                        {mapKolsSorted.length
+                          ? ` · ${mapKolsSorted.length} accounts`
+                          : ' · (chưa load map)'}
+                      </span>
+                    </div>
+                    <input
+                      className="admin-search"
+                      placeholder="Tìm handle / tên trên map…"
+                      disabled={readOnly}
+                      value={mapKolQuery}
+                      onChange={(e) => setMapKolQuery(e.target.value)}
+                    />
+                    {linkedMapKol ? (
+                      <div className="akr-map-linked">
+                        <XProfileAvatar
+                          handle={linkedMapKol.handle}
+                          name={linkedMapKol.displayName}
+                          size={28}
+                        />
+                        <div>
+                          <strong>@{linkedMapKol.handle}</strong>
+                          <small>
+                            {linkedMapKol.displayName}
+                            {linkedMapKol.rank
+                              ? ` · ${linkedMapKol.rank}`
+                              : ''}
+                            {linkedMapKol.niche
+                              ? ` · ${linkedMapKol.niche}`
+                              : ''}
+                            {linkedMapKol.followers
+                              ? ` · ${linkedMapKol.followers.toLocaleString()} fl`
+                              : ''}
+                          </small>
+                        </div>
+                        <button
+                          type="button"
+                          className="admin-btn"
+                          disabled={readOnly}
+                          onClick={() => syncFromMapKol(linkedMapKol)}
+                        >
+                          Re-sync
+                        </button>
+                      </div>
+                    ) : (
+                      <p className="admin-muted akr-map-link__hint">
+                        Handle chưa khớp map — chọn bên dưới để gán.
+                      </p>
+                    )}
+                    {!readOnly && (
+                      <ul className="akr-map-list">
+                        {mapKolMatches.map((k) => (
+                          <li key={k.id}>
+                            <button
+                              type="button"
+                              className={
+                                draft.handle.toLowerCase() ===
+                                k.handle.toLowerCase()
+                                  ? 'is-active'
+                                  : ''
+                              }
+                              onClick={() => syncFromMapKol(k)}
+                            >
+                              <XProfileAvatar
+                                handle={k.handle}
+                                name={k.displayName}
+                                size={22}
+                              />
+                              <span>
+                                <strong>@{k.handle}</strong>
+                                <small>
+                                  {k.displayName}
+                                  {k.rank ? ` · ${k.rank}` : ''}
+                                  {k.niche ? ` · ${k.niche}` : ''}
+                                </small>
+                              </span>
+                            </button>
+                          </li>
+                        ))}
+                        {!mapKolMatches.length && (
+                          <li className="admin-muted" style={{ padding: 8 }}>
+                            Không thấy KOL phù hợp trên map.
+                          </li>
+                        )}
+                      </ul>
+                    )}
+                  </div>
+
+                  <div className="admin-ts-fields" style={{ marginTop: 14 }}>
                     <label>
                       Handle
                       <input
                         value={draft.handle}
                         disabled={readOnly}
                         onChange={(e) =>
-                          patchDraft({ handle: e.target.value })
+                          patchDraft({
+                            handle: e.target.value
+                              .replace(/^@/, '')
+                              .toLowerCase(),
+                          })
                         }
                       />
                     </label>
@@ -1473,6 +1720,22 @@ export function AdminKolReportsEditor({ onToast }: Props) {
 
               {sidePanel === 'log' && (
                 <div className="akr-panel">
+                  <div className="akr-log-actions">
+                    <span className="admin-muted">
+                      {(draft.changelog || []).length} mục · Save R2 để ghi
+                      đè dataset (cùng key, không tạo file mới)
+                    </span>
+                    {!readOnly && (
+                      <button
+                        type="button"
+                        className="admin-btn"
+                        disabled={!(draft.changelog || []).length}
+                        onClick={clearChangelog}
+                      >
+                        Xóa hết changelog
+                      </button>
+                    )}
+                  </div>
                   <ul className="admin-kol-changelog">
                     {(draft.changelog || []).slice(0, 50).map((c) => (
                       <li key={c.id}>
@@ -1482,6 +1745,16 @@ export function AdminKolReportsEditor({ onToast }: Props) {
                             {new Date(c.at).toLocaleString()}
                           </time>
                           {c.by && <span>by {c.by}</span>}
+                          {!readOnly && (
+                            <button
+                              type="button"
+                              className="akr-log-del"
+                              title="Xóa mục này"
+                              onClick={() => removeChangelogEntry(c.id)}
+                            >
+                              ×
+                            </button>
+                          )}
                         </div>
                         <p>{c.summary}</p>
                         {c.changes?.length ? (

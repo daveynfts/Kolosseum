@@ -554,7 +554,9 @@ export function AdminDashboard() {
 
       {tab === 'scex' && <AdminScexEditor onToast={flash} />}
 
-      {tab === 'reports' && <AdminKolReportsEditor onToast={flash} />}
+      {tab === 'reports' && (
+        <AdminKolReportsEditor onToast={flash} kols={kols} />
+      )}
 
       {tab === 'legend' && <FieldLegend />}
 

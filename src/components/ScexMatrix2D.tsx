@@ -685,17 +685,20 @@ export function ScexMatrix2D({
                             <span>Vùng</span> {zoneLabel}
                           </li>
                           <li>
-                            <span>Bài đăng</span> {volPhrase}
+                            <span>Tần suất</span> {volPhrase}
                           </li>
                           <li>
                             <span>Uy tín</span> {qualPhrase}
+                          </li>
+                          <li>
+                            <span>Góc nhìn</span>{' '}
+                            {sentLabel || a.sentiment || '—'}
                           </li>
                           <li>
                             <span>Reach</span>{' '}
                             {formatCompact(a.followers)} followers
                             {onMap ? " · Davey's Radar" : ''}
                             {a.mapRank ? ` · ${a.mapRank}` : ''}
-                            {sentLabel ? ` · ${sentLabel}` : ''}
                           </li>
                         </ul>
                       </span>

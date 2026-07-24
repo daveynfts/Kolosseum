@@ -42,14 +42,29 @@ import { AdminFeedEditor } from './AdminFeedEditor'
 import { AdminRecentFollowersEditor } from './AdminRecentFollowersEditor'
 import { AdminTwitterScoreEditor } from './AdminTwitterScoreEditor'
 import { AdminScexEditor } from './AdminScexEditor'
+import { AdminKolReportsEditor } from './AdminKolReportsEditor'
 import './AdminDashboard.css'
 
-type Tab = 'list' | 'edit' | 'feed' | 'follows' | 'data' | 'scex' | 'legend'
+type Tab =
+  | 'list'
+  | 'edit'
+  | 'feed'
+  | 'follows'
+  | 'data'
+  | 'scex'
+  | 'reports'
+  | 'legend'
 
 function tabFromHash(): Tab {
   const h = window.location.hash.replace(/^#\/?/, '').toLowerCase()
   // #/admin/feed or #/admin?tab=feed
   if (h.includes('scex') || h.includes('campaign')) return 'scex'
+  if (
+    h.includes('reports') ||
+    h.includes('kol-report') ||
+    h.includes('surf-report')
+  )
+    return 'reports'
   if (
     h.includes('twitterscore') ||
     h.includes('ts-data') ||
@@ -112,11 +127,13 @@ export function AdminDashboard() {
             ? '#/admin/data'
             : t === 'scex'
               ? '#/admin/scex'
-              : t === 'legend'
-                ? '#/admin/legend'
-                : t === 'edit'
-                  ? '#/admin/edit'
-                  : '#/admin'
+              : t === 'reports'
+                ? '#/admin/reports'
+                : t === 'legend'
+                  ? '#/admin/legend'
+                  : t === 'edit'
+                    ? '#/admin/edit'
+                    : '#/admin'
     if (window.location.hash !== path) {
       window.location.hash = path
     }
@@ -492,13 +509,14 @@ export function AdminDashboard() {
             'follows',
             'data',
             'scex',
+            'reports',
             'legend',
           ] as Tab[]
         ).map((t) => (
           <button
             key={t}
             type="button"
-            className={`admin-tab ${tab === t ? 'is-active' : ''} ${t === 'feed' || t === 'follows' || t === 'data' || t === 'scex' ? 'admin-tab--feed' : ''}`}
+            className={`admin-tab ${tab === t ? 'is-active' : ''} ${t === 'feed' || t === 'follows' || t === 'data' || t === 'scex' || t === 'reports' ? 'admin-tab--feed' : ''}`}
             onClick={() => goTab(t)}
           >
             {t === 'list'
@@ -513,7 +531,9 @@ export function AdminDashboard() {
                       ? '★ Data / TwitterScore'
                       : t === 'scex'
                         ? '★ SCEX Tracking'
-                        : 'AI field legend'}
+                        : t === 'reports'
+                          ? '★ KOL Reports'
+                          : 'AI field legend'}
           </button>
         ))}
       </div>
@@ -533,6 +553,8 @@ export function AdminDashboard() {
       {tab === 'data' && <AdminTwitterScoreEditor onToast={flash} />}
 
       {tab === 'scex' && <AdminScexEditor onToast={flash} />}
+
+      {tab === 'reports' && <AdminKolReportsEditor onToast={flash} />}
 
       {tab === 'legend' && <FieldLegend />}
 

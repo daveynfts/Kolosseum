@@ -1332,3 +1332,58 @@
 }
 .scex-public { min-height: 100vh; padding: 16px; max-width: 1280px; margin: 0 auto; box-sizing: border-box; }
 .scex-public .admin-header { padding: 14px 18px; }
+
+/* KOL reports admin */
+.admin-kol-changelog {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 320px;
+  overflow: auto;
+}
+.admin-kol-changelog li {
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(148, 163, 184, 0.15);
+  background: rgba(15, 23, 42, 0.45);
+}
+.admin-kol-changelog__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  font-size: 0.75rem;
+  color: #94a3b8;
+  margin-bottom: 4px;
+}
+.admin-kol-changelog__meta strong {
+  color: #7dd3fc;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.admin-kol-changelog p {
+  margin: 0;
+  font-size: 0.86rem;
+  color: #e2e8f0;
+}
+.admin-kol-changelog__diff {
+  list-style: none;
+  margin: 6px 0 0;
+  padding: 0;
+  font-size: 0.72rem;
+  color: #94a3b8;
+}
+.admin-kol-changelog__diff code {
+  color: #fbbf24;
+  margin-right: 6px;
+}
+.admin-kol-changelog__diff .from {
+  opacity: 0.7;
+  text-decoration: line-through;
+  margin-right: 4px;
+}
+.admin-kol-changelog__diff .to {
+  color: #86efac;
+}

@@ -68,6 +68,8 @@ export const RECENT_FOLLOWERS_OBJECT_KEY = 'recent-followers/v1.json'
 export const TWITTERSCORE_TOP100_OBJECT_KEY = 'internal/twitterscore-top100/v1.json'
 /** SCEX partner tracking (matrix + livefeed) — admin-editable */
 export const SCEX_TRACKING_OBJECT_KEY = 'scex/tracking/v1.json'
+/** KOL evaluation reports (text from DOCX) + changelog — admin-editable */
+export const KOL_REPORTS_OBJECT_KEY = 'internal/kol-reports/v1.json'
 
 export function mediaObjectKey(id: string) {
   return `media/${id}`

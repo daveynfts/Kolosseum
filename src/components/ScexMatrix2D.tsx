@@ -191,8 +191,8 @@ function packBubbles(
 }
 
 /**
- * Spread base positions from plot center by zoom, then separate again in
- * screen space so avatars open up when zooming in (size stays ~constant).
+ * Zoom-in: positions spread from center AND avatar radius grows so faces
+ * read clearer (not smaller). Then de-overlap in screen space.
  */
 function layoutWithZoom(
   packed: ReturnType<typeof packBubbles>,
@@ -204,29 +204,31 @@ function layoutWithZoom(
   if (!packed.length || width < 1 || height < 1) return []
   const cx = width / 2
   const cy = height / 2
+  // Avatar grows with zoom (cap so they don't eat the whole plot)
+  const sizeScale = clamp(zoom, 0.75, 2.4)
 
   const items = packed.map((p) => {
-    // Zoom expands positions from center; pan shifts view. Radii NOT scaled.
     const x = cx + (p.x - cx) * zoom + pan.x
     const y = cy + (p.y - cy) * zoom + pan.y
+    const r = Math.min(p.r * sizeScale, 52)
     return {
       id: p.id,
       bx: p.x,
       by: p.y,
       x,
       y,
-      r: p.r,
+      r,
       depth: p.depth,
       quality: p.quality,
       followers: p.followers,
     }
   })
 
-  // Screen-space de-overlap — stronger when zoomed in
-  const gap = 6 + 14 * Math.max(0, zoom - 1)
-  const iters = Math.round(24 + 18 * Math.max(0, zoom - 0.75))
+  // De-overlap with larger bodies — gap scales with zoom too
+  const gap = 8 + 12 * Math.max(0, zoom - 1)
+  const iters = Math.round(28 + 20 * Math.max(0, zoom - 0.75))
   for (let iter = 0; iter < iters; iter++) {
-    const strength = 0.5 * (1 - iter / iters) + 0.1
+    const strength = 0.55 * (1 - iter / iters) + 0.12
     for (let i = 0; i < items.length; i++) {
       for (let j = i + 1; j < items.length; j++) {
         const a = items[i]
@@ -251,8 +253,7 @@ function layoutWithZoom(
     }
   }
 
-  // Soft clamp: allow slightly outside when zoomed (pan reveals)
-  const margin = zoom > 1 ? 80 * (zoom - 1) : 0
+  const margin = zoom > 1 ? 100 * (zoom - 1) : 0
   for (const it of items) {
     it.x = clamp(it.x, it.r - margin, width - it.r + margin)
     it.y = clamp(it.y, it.r - margin, height - it.r + margin)
@@ -481,8 +482,8 @@ export function ScexMatrix2D({
           <div className="scex2d-story-tip__body">
             <strong>Cách đọc nhanh</strong>
             <p>
-              Góc <em>trên-phải</em> = ưu tiên cao. Phóng to (+) để giãn bubble
-              ra cho dễ bấm. Bấm avatar để xem KOL.
+              Góc <em>trên-phải</em> = ưu tiên cao. Phóng to (+) để avatar to
+              và rõ hơn. Bấm avatar để xem KOL.
             </p>
           </div>
           <button
@@ -654,7 +655,7 @@ export function ScexMatrix2D({
               <button
                 type="button"
                 className="scex2d-zoom-fab__btn"
-                title="Phóng to — giãn bubble"
+                title="Phóng to — avatar to và rõ hơn"
                 disabled={!canZoomIn}
                 onClick={(e) => {
                   e.stopPropagation()
@@ -741,7 +742,7 @@ export function ScexMatrix2D({
           Chấm xanh = trên map
         </span>
         <span className="scex2d-encode__hint">
-          + giãn bubble · kéo nền khi &gt;100%
+          + phóng to avatar · kéo nền khi &gt;100%
         </span>
       </div>
     </div>

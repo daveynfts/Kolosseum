@@ -533,31 +533,44 @@
   overflow: auto;
 }
 
-/* Matrix filter pills (under toolbar) */
+/* Matrix filter pills — single compact horizontal row */
 .scex-matrix__filters {
   display: flex;
-  flex-wrap: wrap;
-  gap: 5px;
+  flex-wrap: nowrap;
+  gap: 4px;
   padding: 0 12px 8px;
   align-items: center;
   flex-shrink: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(148, 163, 184, 0.35) transparent;
+}
+.scex-matrix__filters::-webkit-scrollbar {
+  height: 4px;
+}
+.scex-matrix__filters::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.35);
+  border-radius: 999px;
 }
 
 .scex-matrix-pill {
   appearance: none;
   display: inline-flex;
   align-items: center;
-  gap: 5px;
+  gap: 3px;
   border: 1px solid rgba(255, 255, 255, 0.12);
   background: rgba(255, 255, 255, 0.04);
   color: rgba(226, 232, 240, 0.72);
   font: inherit;
-  font-size: 0.72rem;
+  font-size: 0.68rem;
   font-weight: 650;
-  padding: 5px 10px;
+  padding: 4px 8px;
   border-radius: 999px;
   cursor: pointer;
   white-space: nowrap;
+  flex-shrink: 0;
   transition:
     background 0.15s,
     border-color 0.15s,
@@ -577,13 +590,16 @@
 }
 
 .scex-matrix-pill__n {
-  font-size: 0.64rem;
+  font-size: 0.6rem;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
-  padding: 1px 6px;
+  padding: 0 5px;
+  min-width: 1.1rem;
+  text-align: center;
   border-radius: 999px;
   background: rgba(0, 0, 0, 0.28);
   color: rgba(148, 163, 184, 0.95);
+  line-height: 1.35;
 }
 
 .scex-matrix-pill.is-active .scex-matrix-pill__n {
@@ -662,11 +678,12 @@
 
 @media (max-width: 720px) {
   .scex-matrix__filters {
-    padding: 0 12px 10px;
-    gap: 5px;
+    padding: 0 10px 8px;
+    gap: 4px;
   }
   .scex-matrix-pill {
-    font-size: 0.68rem;
+    font-size: 0.64rem;
+    padding: 3px 7px;
     padding: 4px 8px;
   }
 }

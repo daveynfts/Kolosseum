@@ -35,6 +35,14 @@ import {
   markdownImage,
   uploadKolReportImage,
 } from '../lib/kolReportImageUpload'
+import {
+  htmlToMarkdown,
+  shouldConvertHtmlPaste,
+} from '../lib/htmlToMarkdown'
+import {
+  REPORT_TEMPLATES,
+  type ReportTemplateId,
+} from '../lib/reportTemplates'
 import { XProfileAvatar } from '../components/XProfileAvatar'
 import { ReportMarkdown } from '../components/ReportMarkdown'
 
@@ -395,6 +403,68 @@ export function AdminKolReportsEditor({ onToast }: Props) {
       e.preventDefault()
       void save()
     }
+    // Enter: continue markdown lists automatically
+    if (e.key === 'Enter' && !e.shiftKey && !e.metaKey && !e.ctrlKey) {
+      const el = textareaRef.current
+      if (!el || !draft) return
+      const pos = el.selectionStart
+      const before = draft.text.slice(0, pos)
+      const lineStart = before.lastIndexOf('\n') + 1
+      const line = before.slice(lineStart)
+      const ul = line.match(/^(\s*)([-*+])\s+(.*)$/)
+      const ol = line.match(/^(\s*)(\d+)[.)]\s+(.*)$/)
+      if (ul) {
+        e.preventDefault()
+        if (!ul[3].trim()) {
+          // empty bullet → exit list
+          const next =
+            draft.text.slice(0, lineStart) + draft.text.slice(pos)
+          patchDraft({ text: next })
+          requestAnimationFrame(() => {
+            el.focus()
+            el.setSelectionRange(lineStart, lineStart)
+          })
+          return
+        }
+        const insert = `\n${ul[1]}${ul[2]} `
+        insertAtCursor(insert)
+        return
+      }
+      if (ol) {
+        e.preventDefault()
+        if (!ol[3].trim()) {
+          const next =
+            draft.text.slice(0, lineStart) + draft.text.slice(pos)
+          patchDraft({ text: next })
+          requestAnimationFrame(() => {
+            el.focus()
+            el.setSelectionRange(lineStart, lineStart)
+          })
+          return
+        }
+        const n = Number(ol[2]) + 1
+        insertAtCursor(`\n${ol[1]}${n}. `)
+      }
+    }
+  }
+
+  const applyTemplate = (id: ReportTemplateId) => {
+    if (!draft || draft.deletedAt) return
+    const tpl = REPORT_TEMPLATES.find((t) => t.id === id)
+    if (!tpl) return
+    const body = tpl.build(draft.handle, draft.displayName)
+    if ((draft.text || '').trim().length > 40) {
+      if (
+        !confirm(
+          'Thay toàn bộ nội dung hiện tại bằng template? (không hoàn tác trừ khi Reload)',
+        )
+      ) {
+        return
+      }
+    }
+    patchDraft({ text: body })
+    setViewMode('split')
+    onToast(`Đã áp template: ${tpl.label}`)
   }
 
   /**
@@ -492,16 +562,36 @@ export function AdminKolReportsEditor({ onToast }: Props) {
   }
 
   const onEditorPaste = async (e: ClipboardEvent<HTMLTextAreaElement>) => {
-    const items = e.clipboardData?.items
-    if (!items?.length) return
-    for (const item of Array.from(items)) {
-      const file = fileFromClipboardItem(item)
-      if (file) {
+    const cd = e.clipboardData
+    if (!cd) return
+
+    // 1) Image file → R2 (screenshot / copy image)
+    const items = cd.items
+    if (items?.length) {
+      for (const item of Array.from(items)) {
+        const file = fileFromClipboardItem(item)
+        if (file) {
+          e.preventDefault()
+          await insertImageFromR2(file)
+          return
+        }
+      }
+    }
+
+    // 2) Rich HTML (Word / Docs / Notion / browser) → Markdown
+    const html = cd.getData('text/html')
+    const plain = cd.getData('text/plain')
+    if (html && shouldConvertHtmlPaste(html, plain)) {
+      const md = htmlToMarkdown(html)
+      if (md && md.trim()) {
         e.preventDefault()
-        await insertImageFromR2(file)
+        insertAtCursor(md)
+        onToast('Đã dán thông minh: HTML → Markdown')
         return
       }
     }
+
+    // 3) Plain markdown / text — browser default paste
   }
 
   const onEditorDrop = async (e: DragEvent<HTMLTextAreaElement>) => {
@@ -834,6 +924,26 @@ export function AdminKolReportsEditor({ onToast }: Props) {
                 </div>
                 {!readOnly && viewMode !== 'preview' ? (
                   <div className="akr-md-tools">
+                    <label className="akr-tpl-select" title="Chèn khung sẵn">
+                      <span>Template</span>
+                      <select
+                        defaultValue=""
+                        onChange={(e) => {
+                          const v = e.target.value as ReportTemplateId | ''
+                          e.target.value = ''
+                          if (v) applyTemplate(v)
+                        }}
+                      >
+                        <option value="" disabled>
+                          Chọn khung…
+                        </option>
+                        {REPORT_TEMPLATES.map((t) => (
+                          <option key={t.id} value={t.id}>
+                            {t.label}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
                     <button
                       type="button"
                       title="Heading"
@@ -927,6 +1037,9 @@ export function AdminKolReportsEditor({ onToast }: Props) {
                     >
                       ―
                     </button>
+                    <span className="akr-md-tip" title="Dán từ Word/Docs/Notion/ChatGPT sẽ tự chuyển Markdown">
+                      Paste thông minh ✓
+                    </span>
                   </div>
                 ) : null}
               </div>
@@ -964,9 +1077,11 @@ export function AdminKolReportsEditor({ onToast }: Props) {
                       onDrop={(e) => void onEditorDrop(e)}
                       spellCheck={false}
                       placeholder={
-                        '# Tiêu đề\n\nViết Markdown…\n\n' +
-                        'Ảnh: nút ⬆ R2 Ảnh · kéo thả · Ctrl+V (clipboard)\n' +
-                        '→ luôn lưu Cloudflare R2 (kol-reports/images/…)'
+                        'Viết hoặc dán nội dung…\n\n' +
+                        '• Dán từ Word / Google Docs / Notion / ChatGPT → tự thành Markdown\n' +
+                        '• Dán ảnh / kéo thả → upload R2\n' +
+                        '• Template (thanh công cụ) để có khung sẵn\n' +
+                        '• Enter trong list → tiếp tục bullet/số'
                       }
                     />
                     <div className="akr-write__hint">
@@ -976,8 +1091,8 @@ export function AdminKolReportsEditor({ onToast }: Props) {
                         </strong>
                       ) : (
                         <>
-                          Ảnh → R2 · kéo thả / paste / ⬆ R2 Ảnh · Ctrl+B/I ·
-                          Ctrl+S ·{' '}
+                          Paste HTML→MD · Ảnh→R2 · Template · Enter=list ·
+                          Ctrl+B/I/S ·{' '}
                           {(draft.text || '').length.toLocaleString()} chars
                         </>
                       )}

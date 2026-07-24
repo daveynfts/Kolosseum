@@ -39,10 +39,6 @@ import {
   htmlToMarkdown,
   shouldConvertHtmlPaste,
 } from '../lib/htmlToMarkdown'
-import {
-  REPORT_TEMPLATES,
-  type ReportTemplateId,
-} from '../lib/reportTemplates'
 import { docxFileToReportMarkdown } from '../lib/docxToReportMarkdown'
 import { XProfileAvatar } from '../components/XProfileAvatar'
 import { ReportMarkdown } from '../components/ReportMarkdown'
@@ -581,25 +577,6 @@ export function AdminKolReportsEditor({ onToast, kols = [] }: Props) {
         insertAtCursor(`\n${ol[1]}${n}. `)
       }
     }
-  }
-
-  const applyTemplate = (id: ReportTemplateId) => {
-    if (!draft || draft.deletedAt) return
-    const tpl = REPORT_TEMPLATES.find((t) => t.id === id)
-    if (!tpl) return
-    const body = tpl.build(draft.handle, draft.displayName)
-    if ((draft.text || '').trim().length > 40) {
-      if (
-        !confirm(
-          'Thay toàn bộ nội dung hiện tại bằng template? (không hoàn tác trừ khi Reload)',
-        )
-      ) {
-        return
-      }
-    }
-    patchDraft({ text: body })
-    setViewMode('split')
-    onToast(`Đã áp template: ${tpl.label}`)
   }
 
   /**
@@ -1315,25 +1292,6 @@ export function AdminKolReportsEditor({ onToast, kols = [] }: Props) {
                 {!readOnly && viewMode !== 'preview' ? (
                   <div className="akr-editor-chrome__row akr-editor-chrome__row--tools">
                     <div className="akr-md-tools">
-                      <label className="akr-tpl-select" title="Chèn khung sẵn">
-                        <select
-                          defaultValue=""
-                          onChange={(e) => {
-                            const v = e.target.value as ReportTemplateId | ''
-                            e.target.value = ''
-                            if (v) applyTemplate(v)
-                          }}
-                        >
-                          <option value="" disabled>
-                            Template…
-                          </option>
-                          {REPORT_TEMPLATES.map((t) => (
-                            <option key={t.id} value={t.id}>
-                              {t.label}
-                            </option>
-                          ))}
-                        </select>
-                      </label>
                       <button
                         type="button"
                         title="Heading"
@@ -1717,24 +1675,46 @@ export function AdminKolReportsEditor({ onToast, kols = [] }: Props) {
                         }
                       />
                     </label>
-                    <label>
-                      Visibility
-                      <select
-                        value={draft.visibility}
-                        disabled={readOnly}
-                        onChange={(e) =>
-                          patchDraft({
-                            visibility:
-                              e.target.value === 'public'
-                                ? 'public'
-                                : 'private',
-                          })
-                        }
+                    <div className="akr-vis-field admin-ts-fields--full">
+                      <span className="akr-vis-field__label">Visibility</span>
+                      <div
+                        className="akr-vis-toggle"
+                        role="group"
+                        aria-label="Visibility"
                       >
-                        <option value="private">private</option>
-                        <option value="public">public</option>
-                      </select>
-                    </label>
+                        <button
+                          type="button"
+                          disabled={readOnly}
+                          className={`akr-vis-toggle__btn ${
+                            draft.visibility === 'private' ? 'is-active is-private' : ''
+                          }`}
+                          onClick={() =>
+                            patchDraft({ visibility: 'private' })
+                          }
+                        >
+                          <span className="akr-vis-toggle__dot" aria-hidden />
+                          Private
+                          <small>Chỉ admin</small>
+                        </button>
+                        <button
+                          type="button"
+                          disabled={readOnly}
+                          className={`akr-vis-toggle__btn ${
+                            draft.visibility === 'public' ? 'is-active is-public' : ''
+                          }`}
+                          onClick={() => patchDraft({ visibility: 'public' })}
+                        >
+                          <span className="akr-vis-toggle__dot" aria-hidden />
+                          Public
+                          <small>Minh bạch / publish</small>
+                        </button>
+                      </div>
+                      <p className="akr-vis-field__hint admin-muted">
+                        {draft.visibility === 'public'
+                          ? 'Report public sẽ hiện qua API công khai (GET /api/kol-reports).'
+                          : 'Report private chỉ admin xem (GET ?all=1 + token).'}
+                      </p>
+                    </div>
                     <label>
                       Tags (comma)
                       <input

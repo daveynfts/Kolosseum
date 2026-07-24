@@ -541,14 +541,11 @@
   flex-direction: column;
   overflow: hidden;
 }
-.scex-matrix.is-fullscreen .scex2d-stage.scex2d-axis-frame {
-  display: grid !important;
-  grid-template-columns: auto minmax(0, 1fr) auto;
-  grid-template-rows: auto minmax(0, 1fr) auto;
-  gap: 6px 8px;
+.scex-matrix.is-fullscreen .scex2d-plot-shell {
+  overflow: visible !important;
 }
 .scex-matrix.is-fullscreen .scex2d-axis-end {
-  flex: 0 0 auto;
+  z-index: 12;
 }
 .scex-matrix.is-fullscreen .scex-frame-row,
 .scex-matrix.is-fullscreen .scex2d-axis-bar,
@@ -1123,19 +1120,16 @@
   flex-direction: column;
   overflow: hidden;
 }
-/* Grid axis frame overrides column flex on the same stage element */
-.scex2d-stage--story.scex2d-axis-frame {
-  display: grid;
-  overflow: hidden;
-}
-.scex-matrix__body--2d .scex2d-axis-frame > .scex2d-plot-shell {
-  flex: none;
+.scex-matrix__body--2d .scex2d-plot-shell {
+  flex: 1 1 auto;
   min-height: 160px;
   position: relative;
   padding: 0;
   height: 100%;
+  /* Allow side labels to expand on hover without clipping */
+  overflow: visible;
 }
-.scex-matrix__body--2d .scex2d-axis-frame .scex2d-plot {
+.scex-matrix__body--2d .scex2d-plot-shell .scex2d-plot {
   position: absolute;
   inset: 0;
   width: auto;
@@ -1310,173 +1304,142 @@
 }
 
 /*
-  Axis frame: labels sit OUTSIDE the zoomable plot (CSS grid), so they never
-  scale/pan with zoom — always pinned to the 4 axis ends.
+  Axis-end labels: absolute on plot-shell edges (true axis tips).
+  Side labels use rotate() so hover can flip to horizontal reliably.
 */
-.scex2d-axis-frame {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
-  grid-template-rows: auto minmax(0, 1fr) auto;
-  grid-template-areas:
-    '. n .'
-    'w plot e'
-    '. s .';
-  gap: 6px 8px;
-  align-items: stretch;
-  min-height: 0;
-  flex: 1 1 auto;
-  height: 100%;
-}
-.scex2d-axis-frame > .scex2d-plot-shell {
-  grid-area: plot;
-  min-height: 0;
-  min-width: 0;
-  height: 100%;
-  padding: 0;
-}
 .scex2d-axis-end {
+  position: absolute;
+  z-index: 10;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 5px 10px;
+  padding: 6px 10px;
   border-radius: 10px;
-  background: rgba(4, 10, 20, 0.72);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.28);
+  background: rgba(4, 10, 20, 0.82);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
   pointer-events: none;
   user-select: none;
-  flex-shrink: 0;
-  z-index: 6;
 }
-.scex2d-axis-end strong {
+.scex2d-axis-end__text {
+  display: block;
   font-size: 0.72rem;
   font-weight: 750;
   letter-spacing: -0.01em;
   line-height: 1.25;
   text-align: center;
   white-space: nowrap;
+  font-family: inherit;
 }
+
+/* Top / bottom of vertical (uy tín) axis — dead center of edge */
 .scex2d-axis-end--n {
-  grid-area: n;
-  justify-self: center;
-  border-color: rgba(125, 211, 252, 0.35);
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-color: rgba(125, 211, 252, 0.4);
+  pointer-events: none;
 }
-.scex2d-axis-end--n strong {
+.scex2d-axis-end--n .scex2d-axis-end__text {
   color: #7dd3fc;
 }
 .scex2d-axis-end--s {
-  grid-area: s;
-  justify-self: center;
-  border-color: rgba(148, 163, 184, 0.3);
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-color: rgba(148, 163, 184, 0.35);
+  pointer-events: none;
 }
-.scex2d-axis-end--s strong {
+.scex2d-axis-end--s .scex2d-axis-end__text {
   color: #cbd5e1;
 }
-/* Side labels: vertical by default; hover flips to horizontal reading order */
-.scex2d-axis-end--e,
-.scex2d-axis-end--w {
+
+/* Left / right of horizontal (bài đăng) axis */
+.scex2d-axis-end--w,
+.scex2d-axis-end--e {
+  top: 50%;
+  width: 32px;
+  min-height: 7.5rem;
+  padding: 10px 4px;
   pointer-events: auto;
   cursor: default;
   transition:
-    writing-mode 0.2s ease,
+    width 0.2s ease,
+    min-height 0.2s ease,
     padding 0.2s ease,
     transform 0.22s ease,
     box-shadow 0.2s ease,
     border-color 0.2s ease,
     background 0.2s ease;
 }
-.scex2d-axis-end--e strong,
-.scex2d-axis-end--w strong {
-  white-space: normal;
-  transition: transform 0.22s ease;
+.scex2d-axis-end--w {
+  left: 8px;
+  transform: translateY(-50%);
+  border-color: rgba(251, 191, 36, 0.4);
 }
 .scex2d-axis-end--e {
-  grid-area: e;
-  align-self: center;
-  writing-mode: vertical-rl;
-  text-orientation: mixed;
-  padding: 10px 6px;
-  border-color: rgba(134, 239, 172, 0.35);
+  right: 8px;
+  transform: translateY(-50%);
+  border-color: rgba(134, 239, 172, 0.4);
 }
-.scex2d-axis-end--e strong {
-  color: #86efac;
-  /* vertical-rl + rotate so letters read bottom→top along edge */
-  transform: rotate(180deg);
-}
-.scex2d-axis-end--w {
-  grid-area: w;
-  align-self: center;
-  writing-mode: vertical-rl;
-  text-orientation: mixed;
-  padding: 10px 6px;
-  border-color: rgba(251, 191, 36, 0.3);
-}
-.scex2d-axis-end--w strong {
+.scex2d-axis-end--w .scex2d-axis-end__text {
   color: #fde68a;
-  transform: rotate(180deg);
+  /* Vertical reading along left edge */
+  transform: rotate(-90deg);
+  transition: transform 0.22s ease;
 }
-/* Hover: flip to horizontal, float over plot for easy reading */
-.scex2d-axis-end--e:hover,
+.scex2d-axis-end--e .scex2d-axis-end__text {
+  color: #86efac;
+  transform: rotate(90deg);
+  transition: transform 0.22s ease;
+}
+
+/* Hover / focus: flip text horizontal + expand chip */
 .scex2d-axis-end--w:hover,
-.scex2d-axis-end--e:focus-visible,
-.scex2d-axis-end--w:focus-visible {
-  writing-mode: horizontal-tb;
-  text-orientation: mixed;
+.scex2d-axis-end--e:hover,
+.scex2d-axis-end--w:focus-visible,
+.scex2d-axis-end--e:focus-visible {
+  width: auto;
+  min-height: 0;
   padding: 8px 12px;
-  z-index: 20;
-  background: rgba(6, 12, 24, 0.94);
+  z-index: 30;
+  background: rgba(6, 12, 24, 0.96);
   box-shadow:
-    0 10px 28px rgba(0, 0, 0, 0.45),
-    0 0 0 1px rgba(255, 255, 255, 0.08);
+    0 12px 32px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(255, 255, 255, 0.1);
+}
+.scex2d-axis-end--w:hover,
+.scex2d-axis-end--w:focus-visible {
+  transform: translateY(-50%) translateX(4px);
+  border-color: rgba(251, 191, 36, 0.6);
 }
 .scex2d-axis-end--e:hover,
 .scex2d-axis-end--e:focus-visible {
-  transform: translateX(-6px);
-  border-color: rgba(134, 239, 172, 0.55);
+  transform: translateY(-50%) translateX(-4px);
+  border-color: rgba(134, 239, 172, 0.6);
 }
-.scex2d-axis-end--w:hover,
-.scex2d-axis-end--w:focus-visible {
-  transform: translateX(6px);
-  border-color: rgba(251, 191, 36, 0.5);
-}
-.scex2d-axis-end--e:hover strong,
-.scex2d-axis-end--w:hover strong,
-.scex2d-axis-end--e:focus-visible strong,
-.scex2d-axis-end--w:focus-visible strong {
-  transform: none;
-  white-space: nowrap;
-  letter-spacing: -0.01em;
-}
-@media (hover: none) {
-  /* Touch: keep vertical (no hover flip) */
-  .scex2d-axis-end--e:hover,
-  .scex2d-axis-end--w:hover {
-    writing-mode: vertical-rl;
-    transform: none;
-    padding: 10px 6px;
-  }
-  .scex2d-axis-end--e:hover strong,
-  .scex2d-axis-end--w:hover strong {
-    transform: rotate(180deg);
-    white-space: normal;
-  }
+.scex2d-axis-end--w:hover .scex2d-axis-end__text,
+.scex2d-axis-end--e:hover .scex2d-axis-end__text,
+.scex2d-axis-end--w:focus-visible .scex2d-axis-end__text,
+.scex2d-axis-end--e:focus-visible .scex2d-axis-end__text {
+  transform: rotate(0deg);
 }
 
 @media (max-width: 720px) {
-  .scex2d-axis-frame {
-    gap: 4px 5px;
-  }
-  .scex2d-axis-end {
-    padding: 4px 7px;
-  }
-  .scex2d-axis-end strong {
+  .scex2d-axis-end__text {
     font-size: 0.62rem;
   }
-  .scex2d-axis-end--e,
-  .scex2d-axis-end--w {
-    padding: 8px 4px;
+  .scex2d-axis-end--w,
+  .scex2d-axis-end--e {
+    width: 26px;
+    min-height: 6.2rem;
+    padding: 8px 2px;
+  }
+  .scex2d-axis-end--n,
+  .scex2d-axis-end--s {
+    padding: 4px 8px;
   }
   .scex2d-zone span {
     display: none;

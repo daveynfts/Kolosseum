@@ -574,23 +574,33 @@ export function ScexMatrix2D({
         </div>
       )}
 
-      {/*
-        Axis frame: 4 end-labels live OUTSIDE the zoom/pan plot so they stay
-        fixed at axis ends regardless of zoom level.
-      */}
-      <div className="scex2d-stage scex2d-stage--story scex2d-axis-frame">
-        <div className="scex2d-axis-end scex2d-axis-end--n" aria-hidden>
-          <strong>Uy tín cao nhất</strong>
-        </div>
-        <div
-          className="scex2d-axis-end scex2d-axis-end--w"
-          tabIndex={0}
-          title="Rê chuột để đọc ngang"
-        >
-          <strong>Ít bài đăng nhất</strong>
-        </div>
-
+      <div className="scex2d-stage scex2d-stage--story">
         <div className="scex2d-plot-shell">
+          {/*
+            Axis-end labels pinned to plot edges (fixed vs zoom/pan).
+            Side labels flip horizontal on hover for readability.
+          */}
+          <div className="scex2d-axis-end scex2d-axis-end--n" aria-hidden>
+            <span className="scex2d-axis-end__text">Uy tín cao nhất</span>
+          </div>
+          <div className="scex2d-axis-end scex2d-axis-end--s" aria-hidden>
+            <span className="scex2d-axis-end__text">Uy tín thấp nhất</span>
+          </div>
+          <div
+            className="scex2d-axis-end scex2d-axis-end--w"
+            tabIndex={0}
+            title="Rê chuột để đọc ngang"
+          >
+            <span className="scex2d-axis-end__text">Ít bài đăng nhất</span>
+          </div>
+          <div
+            className="scex2d-axis-end scex2d-axis-end--e"
+            tabIndex={0}
+            title="Rê chuột để đọc ngang"
+          >
+            <span className="scex2d-axis-end__text">Nhiều bài đăng nhất</span>
+          </div>
+
           <div
             className={`scex-matrix__plot scex2d-plot scex2d-plot--story ${zoom > 1 ? 'is-zoomed' : ''}`}
             ref={plotRef}
@@ -784,17 +794,6 @@ export function ScexMatrix2D({
               {zoomPct}%
             </div>
           </div>
-        </div>
-
-        <div
-          className="scex2d-axis-end scex2d-axis-end--e"
-          tabIndex={0}
-          title="Rê chuột để đọc ngang"
-        >
-          <strong>Nhiều bài đăng nhất</strong>
-        </div>
-        <div className="scex2d-axis-end scex2d-axis-end--s" aria-hidden>
-          <strong>Uy tín thấp nhất</strong>
         </div>
       </div>
 

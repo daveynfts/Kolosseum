@@ -9,6 +9,8 @@ import {
   useRef,
   useState,
   type ChangeEvent,
+  type ClipboardEvent,
+  type DragEvent,
   type KeyboardEvent,
 } from 'react'
 import {
@@ -28,6 +30,8 @@ import {
 } from '../lib/kolReportsStore'
 import { getAdminToken, setAdminToken } from '../lib/feedStore'
 import {
+  fileFromClipboardItem,
+  isImageFile,
   markdownImage,
   uploadKolReportImage,
 } from '../lib/kolReportImageUpload'
@@ -70,6 +74,8 @@ export function AdminKolReportsEditor({ onToast }: Props) {
   const [dirty, setDirty] = useState(false)
   const [saving, setSaving] = useState(false)
   const [uploading, setUploading] = useState(false)
+  const [uploadLabel, setUploadLabel] = useState('')
+  const [dragOver, setDragOver] = useState(false)
   const [tokenInput, setTokenInput] = useState(() => getAdminToken())
   const [query, setQuery] = useState('')
   const [selectedId, setSelectedId] = useState<string | null>(null)
@@ -84,6 +90,7 @@ export function AdminKolReportsEditor({ onToast }: Props) {
   const baselineRef = useRef<KolReport | null>(null)
   const textareaRef = useRef<HTMLTextAreaElement | null>(null)
   const fileInputRef = useRef<HTMLInputElement | null>(null)
+  const coverInputRef = useRef<HTMLInputElement | null>(null)
 
   useEffect(() => {
     let cancelled = false
@@ -390,33 +397,84 @@ export function AdminKolReportsEditor({ onToast }: Props) {
     }
   }
 
+  /**
+   * Single path for every image: File → PUT /api/kol-report-image → R2.
+   * Markdown only stores the returned public URL (never base64/blob).
+   */
+  const uploadFileToR2 = useCallback(
+    async (
+      file: File,
+      mode: 'inline' | 'cover',
+    ): Promise<{ url: string; key: string } | null> => {
+      if (!isImageFile(file)) {
+        onToast('Chỉ PNG / JPEG / WebP / GIF — upload thẳng R2')
+        return null
+      }
+      if (!tokenInput.trim()) {
+        onToast('Dán FEED_ADMIN_TOKEN trước khi upload ảnh lên R2')
+        return null
+      }
+      setAdminToken(tokenInput)
+      setUploading(true)
+      setUploadLabel(file.name || 'image')
+      const r = await uploadKolReportImage(file, {
+        token: tokenInput,
+        handle:
+          mode === 'cover'
+            ? `cover_${draft?.handle || 'kol'}`
+            : draft?.handle,
+      })
+      setUploading(false)
+      setUploadLabel('')
+      if (!r.ok) {
+        onToast(`R2 upload lỗi: ${r.error}`)
+        return null
+      }
+      if (r.storage !== 'r2') {
+        onToast('Upload không xác nhận storage=r2')
+        return null
+      }
+      return { url: r.url, key: r.key }
+    },
+    [tokenInput, draft?.handle, onToast],
+  )
+
+  const insertImageFromR2 = async (file: File) => {
+    if (draft?.deletedAt) return
+    const up = await uploadFileToR2(file, 'inline')
+    if (!up) return
+    const alt = file.name.replace(/\.[^.]+$/, '') || 'image'
+    insertAtCursor(`\n${markdownImage(up.url, alt)}\n\n`)
+    setDraft((prev) => {
+      if (!prev) return prev
+      const metrics = { ...(prev.structured?.metrics || {}) }
+      const prevRaw = String(metrics.r2ImageUrls || '')
+      const prevList = prevRaw
+        ? prevRaw.split('\n').map((s) => s.trim()).filter(Boolean)
+        : []
+      metrics.r2ImageUrls = [...prevList, up.url].slice(-40).join('\n')
+      metrics.lastR2Key = up.key
+      return {
+        ...prev,
+        structured: { ...(prev.structured || {}), metrics },
+      }
+    })
+    setDirty(true)
+    onToast(`Đã lưu R2 · ${up.key}`)
+  }
+
   const insertImageUrl = () => {
-    const url = window.prompt('URL ảnh (https://… hoặc /r2/…)')
+    const url = window.prompt(
+      'Chỉ dùng cho ảnh đã public (CDN). Muốn lưu R2: dùng nút ⬆ Ảnh / kéo thả / paste.',
+    )
     if (!url?.trim()) return
     const alt = window.prompt('Mô tả ảnh (alt)', 'image') || 'image'
     insertAtCursor(`\n${markdownImage(url.trim(), alt)}\n\n`)
   }
 
-  const onUploadImage = async (e: ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    e.target.value = ''
-    if (!file) return
-    setAdminToken(tokenInput)
-    setUploading(true)
-    const r = await uploadKolReportImage(file, { token: tokenInput })
-    setUploading(false)
-    if (!r.ok) {
-      onToast(`Upload ảnh lỗi: ${r.error}`)
-      return
-    }
-    const alt = file.name.replace(/\.[^.]+$/, '') || 'image'
-    insertAtCursor(`\n${markdownImage(r.url, alt)}\n\n`)
-    onToast(`Đã chèn ảnh · ${r.bytes} bytes`)
-  }
-
   const setCoverFromUrl = () => {
     const url = window.prompt(
-      'Cover image URL',
+      'Cover URL (public). Để lưu R2 hãy Upload cover.',
       draft?.coverImage || '',
     )
     if (url == null) return
@@ -427,21 +485,37 @@ export function AdminKolReportsEditor({ onToast }: Props) {
     const file = e.target.files?.[0]
     e.target.value = ''
     if (!file) return
-    setAdminToken(tokenInput)
-    setUploading(true)
-    const r = await uploadKolReportImage(file, {
-      token: tokenInput,
-      filename: `cover_${draft?.handle || 'kol'}_${Date.now().toString(36)}.${
-        file.name.split('.').pop() || 'jpg'
-      }`,
-    })
-    setUploading(false)
-    if (!r.ok) {
-      onToast(`Upload cover lỗi: ${r.error}`)
+    const up = await uploadFileToR2(file, 'cover')
+    if (!up) return
+    patchDraft({ coverImage: up.url })
+    onToast(`Cover đã lưu R2 · ${up.key}`)
+  }
+
+  const onEditorPaste = async (e: ClipboardEvent<HTMLTextAreaElement>) => {
+    const items = e.clipboardData?.items
+    if (!items?.length) return
+    for (const item of Array.from(items)) {
+      const file = fileFromClipboardItem(item)
+      if (file) {
+        e.preventDefault()
+        await insertImageFromR2(file)
+        return
+      }
+    }
+  }
+
+  const onEditorDrop = async (e: DragEvent<HTMLTextAreaElement>) => {
+    e.preventDefault()
+    setDragOver(false)
+    if (draft?.deletedAt) return
+    const files = Array.from(e.dataTransfer?.files || []).filter(isImageFile)
+    if (!files.length) {
+      onToast('Kéo thả file ảnh (PNG/JPEG/WebP/GIF) để upload R2')
       return
     }
-    patchDraft({ coverImage: r.url })
-    onToast('Đã set cover image')
+    for (const f of files.slice(0, 5)) {
+      await insertImageFromR2(f)
+    }
   }
 
   if (!dataset) {
@@ -824,18 +898,27 @@ export function AdminKolReportsEditor({ onToast }: Props) {
                     </button>
                     <button
                       type="button"
-                      title="Upload image to R2"
+                      title="Upload ảnh thẳng lên Cloudflare R2"
                       disabled={uploading}
                       onClick={() => fileInputRef.current?.click()}
                     >
-                      {uploading ? '…' : '⬆ Ảnh'}
+                      {uploading
+                        ? `R2… ${uploadLabel.slice(0, 12)}`
+                        : '⬆ R2 Ảnh'}
                     </button>
                     <input
                       ref={fileInputRef}
                       type="file"
                       accept="image/png,image/jpeg,image/webp,image/gif,.png,.jpg,.jpeg,.webp,.gif"
                       hidden
-                      onChange={(e) => void onUploadImage(e)}
+                      multiple
+                      onChange={async (e) => {
+                        const files = Array.from(e.target.files || [])
+                        e.target.value = ''
+                        for (const f of files.slice(0, 8)) {
+                          await insertImageFromR2(f)
+                        }
+                      }}
                     />
                     <button
                       type="button"
@@ -858,20 +941,46 @@ export function AdminKolReportsEditor({ onToast }: Props) {
                 }`}
               >
                 {viewMode !== 'preview' && (
-                  <div className="akr-write">
+                  <div
+                    className={`akr-write ${dragOver ? 'is-dragover' : ''}`}
+                  >
                     <textarea
                       ref={textareaRef}
                       className="akr-textarea"
-                      disabled={readOnly}
+                      disabled={readOnly || uploading}
                       value={draft.text}
                       onChange={(e) => patchDraft({ text: e.target.value })}
                       onKeyDown={onMdKeyDown}
+                      onPaste={(e) => void onEditorPaste(e)}
+                      onDragEnter={(e) => {
+                        e.preventDefault()
+                        if (!readOnly) setDragOver(true)
+                      }}
+                      onDragOver={(e) => {
+                        e.preventDefault()
+                        if (!readOnly) setDragOver(true)
+                      }}
+                      onDragLeave={() => setDragOver(false)}
+                      onDrop={(e) => void onEditorDrop(e)}
                       spellCheck={false}
-                      placeholder="# Tiêu đề&#10;&#10;Viết Markdown…&#10;&#10;![ảnh](https://…)"
+                      placeholder={
+                        '# Tiêu đề\n\nViết Markdown…\n\n' +
+                        'Ảnh: nút ⬆ R2 Ảnh · kéo thả · Ctrl+V (clipboard)\n' +
+                        '→ luôn lưu Cloudflare R2 (kol-reports/images/…)'
+                      }
                     />
                     <div className="akr-write__hint">
-                      Markdown · Ctrl+B đậm · Ctrl+I nghiêng · Ctrl+S lưu ·{' '}
-                      {(draft.text || '').length.toLocaleString()} chars
+                      {uploading ? (
+                        <strong className="akr-uploading">
+                          Đang upload R2: {uploadLabel}…
+                        </strong>
+                      ) : (
+                        <>
+                          Ảnh → R2 · kéo thả / paste / ⬆ R2 Ảnh · Ctrl+B/I ·
+                          Ctrl+S ·{' '}
+                          {(draft.text || '').length.toLocaleString()} chars
+                        </>
+                      )}
                     </div>
                   </div>
                 )}
@@ -958,12 +1067,12 @@ export function AdminKolReportsEditor({ onToast }: Props) {
                       />
                     </label>
                     <label className="admin-ts-fields--full">
-                      Cover image URL
+                      Cover image (R2)
                       <div className="akr-cover-row">
                         <input
                           value={draft.coverImage || ''}
                           disabled={readOnly}
-                          placeholder="https://… hoặc upload"
+                          placeholder="URL public R2 sau upload"
                           onChange={(e) =>
                             patchDraft({ coverImage: e.target.value })
                           }
@@ -972,20 +1081,26 @@ export function AdminKolReportsEditor({ onToast }: Props) {
                           <>
                             <button
                               type="button"
+                              className="admin-btn admin-btn--primary"
+                              disabled={uploading}
+                              onClick={() => coverInputRef.current?.click()}
+                            >
+                              {uploading ? 'R2…' : '⬆ R2 Cover'}
+                            </button>
+                            <input
+                              ref={coverInputRef}
+                              type="file"
+                              accept="image/png,image/jpeg,image/webp,image/gif"
+                              hidden
+                              onChange={(e) => void onCoverUpload(e)}
+                            />
+                            <button
+                              type="button"
                               className="admin-btn"
                               onClick={setCoverFromUrl}
                             >
-                              Paste
+                              URL
                             </button>
-                            <label className="admin-btn akr-file-btn">
-                              Upload
-                              <input
-                                type="file"
-                                accept="image/*"
-                                hidden
-                                onChange={(e) => void onCoverUpload(e)}
-                              />
-                            </label>
                           </>
                         )}
                       </div>
@@ -996,6 +1111,10 @@ export function AdminKolReportsEditor({ onToast }: Props) {
                           className="akr-cover-thumb"
                         />
                       ) : null}
+                      <span className="admin-muted" style={{ fontSize: '0.72rem' }}>
+                        Cover upload → Cloudflare R2 prefix{' '}
+                        <code>kol-reports/images/</code>
+                      </span>
                     </label>
                     <label className="admin-ts-fields--full">
                       Notes (internal)

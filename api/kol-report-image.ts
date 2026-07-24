@@ -26,6 +26,7 @@ export const config = {
   },
 }
 
+/** Always under this R2 prefix — durable public CDN path */
 const PREFIX = 'kol-reports/images'
 const MAX_BYTES = 4.5 * 1024 * 1024
 const ALLOWED = new Set([
@@ -98,16 +99,20 @@ function snifContentType(body: Buffer, hinted: string): string | null {
   return null
 }
 
-function sanitizeFilename(raw: string, contentType: string): string {
-  let name = (raw || '').trim().replace(/\\/g, '/')
-  name = name.split('/').pop() || ''
-  name = name.replace(/[^\w.\-()+\s\u00C0-\u024F]/g, '_').replace(/\s+/g, '_')
+/**
+ * Unique R2 object name — never overwrite prior uploads.
+ * e.g. chart_mryd9abc_k3f2.png
+ */
+function uniqueFilename(raw: string, contentType: string): string {
+  let base = (raw || '').trim().replace(/\\/g, '/')
+  base = base.split('/').pop() || ''
+  base = base.replace(/[^\w.\-()+\s\u00C0-\u024F]/g, '_').replace(/\s+/g, '_')
   const ext = extFromType(contentType)
-  if (!name || !/\.(png|jpe?g|webp|gif)$/i.test(name)) {
-    name = `img_${Date.now().toString(36)}.${ext}`
-  }
-  if (name.length > 160) name = name.slice(0, 140) + `.${ext}`
-  return name
+  // strip extension for stem
+  let stem = base.replace(/\.(png|jpe?g|webp|gif)$/i, '') || 'img'
+  if (stem.length > 80) stem = stem.slice(0, 80)
+  const stamp = `${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`
+  return `${stem}_${stamp}.${ext}`
 }
 
 async function readRawBody(req: VercelRequest): Promise<Buffer> {
@@ -185,9 +190,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     const qName = String(req.query.filename || req.query.name || '')
     const hName = String(req.headers['x-filename'] || '')
-    const filename = sanitizeFilename(qName || hName, contentType)
+    const filename = uniqueFilename(qName || hName, contentType)
     const key = `${PREFIX}/${filename}`
 
+    // Durable write to Cloudflare R2 (same bucket as feed/media)
     await r2PutBytes(client, key, body, contentType)
 
     const publicBase = r2PublicBase()
@@ -195,6 +201,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       .split('/')
       .map((s) => encodeURIComponent(s))
       .join('/')
+    // Prefer public CDN URL; fallback /r2/ rewrite for private buckets
     const url = publicBase ? `${publicBase}/${encoded}` : `/r2/${encoded}`
 
     return res.status(200).json({
@@ -205,6 +212,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       bytes: body.length,
       contentType,
       storage: 'r2',
+      prefix: PREFIX,
+      publicBase: publicBase || null,
     })
   } catch (e) {
     console.error('[api/kol-report-image]', e)

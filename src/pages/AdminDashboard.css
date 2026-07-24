@@ -1716,9 +1716,30 @@
   flex-direction: column;
   min-height: 360px;
   border-right: 1px solid rgba(148, 163, 184, 0.1);
+  position: relative;
+}
+.akr-write.is-dragover::after {
+  content: 'Thả ảnh → upload Cloudflare R2';
+  position: absolute;
+  inset: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  border: 2px dashed rgba(125, 211, 252, 0.65);
+  background: rgba(14, 165, 233, 0.12);
+  color: #7dd3fc;
+  font-weight: 700;
+  font-size: 0.95rem;
+  pointer-events: none;
+  z-index: 2;
 }
 .akr-editor--write .akr-write {
   border-right: 0;
+}
+.akr-uploading {
+  color: #7dd3fc;
+  font-weight: 650;
 }
 .akr-textarea {
   flex: 1;

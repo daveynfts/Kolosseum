@@ -582,7 +582,11 @@ export function ScexMatrix2D({
         <div className="scex2d-axis-end scex2d-axis-end--n" aria-hidden>
           <strong>Uy tín cao nhất</strong>
         </div>
-        <div className="scex2d-axis-end scex2d-axis-end--w" aria-hidden>
+        <div
+          className="scex2d-axis-end scex2d-axis-end--w"
+          tabIndex={0}
+          title="Rê chuột để đọc ngang"
+        >
           <strong>Ít bài đăng nhất</strong>
         </div>
 
@@ -782,7 +786,11 @@ export function ScexMatrix2D({
           </div>
         </div>
 
-        <div className="scex2d-axis-end scex2d-axis-end--e" aria-hidden>
+        <div
+          className="scex2d-axis-end scex2d-axis-end--e"
+          tabIndex={0}
+          title="Rê chuột để đọc ngang"
+        >
           <strong>Nhiều bài đăng nhất</strong>
         </div>
         <div className="scex2d-axis-end scex2d-axis-end--s" aria-hidden>

@@ -530,7 +530,18 @@ export function ScexMatrix2D({
         </div>
       )}
 
-      <div className="scex2d-stage scex2d-stage--story">
+      {/*
+        Axis frame: 4 end-labels live OUTSIDE the zoom/pan plot so they stay
+        fixed at axis ends regardless of zoom level.
+      */}
+      <div className="scex2d-stage scex2d-stage--story scex2d-axis-frame">
+        <div className="scex2d-axis-end scex2d-axis-end--n" aria-hidden>
+          <strong>Uy tín cao nhất</strong>
+        </div>
+        <div className="scex2d-axis-end scex2d-axis-end--w" aria-hidden>
+          <strong>Ít bài đăng nhất</strong>
+        </div>
+
         <div className="scex2d-plot-shell">
           <div
             className={`scex-matrix__plot scex2d-plot scex2d-plot--story ${zoom > 1 ? 'is-zoomed' : ''}`}
@@ -542,22 +553,6 @@ export function ScexMatrix2D({
             onPointerCancel={endDrag}
             onDoubleClick={() => goZoom(DEFAULT_ZOOM_I)}
           >
-            {/* Clock-face compass: 12 / 3 / 6 / 9 — how to read the matrix */}
-            <div className="scex2d-compass" aria-hidden>
-              <div className="scex2d-compass__item scex2d-compass__item--n">
-                <strong>Uy tín cao nhất</strong>
-              </div>
-              <div className="scex2d-compass__item scex2d-compass__item--e">
-                <strong>Nhiều bài đăng nhất</strong>
-              </div>
-              <div className="scex2d-compass__item scex2d-compass__item--s">
-                <strong>Uy tín thấp nhất</strong>
-              </div>
-              <div className="scex2d-compass__item scex2d-compass__item--w">
-                <strong>Ít bài đăng nhất</strong>
-              </div>
-            </div>
-
             {zones.map((z) => (
               <div
                 key={z.key}
@@ -708,12 +703,11 @@ export function ScexMatrix2D({
           </div>
         </div>
 
-        <div className="scex2d-story-axes">
-          <span className="scex2d-story-axes__y">↑ Uy tín</span>
-          <span className="scex2d-story-axes__track" aria-hidden>
-            <i />
-          </span>
-          <span className="scex2d-story-axes__x">Bài đăng →</span>
+        <div className="scex2d-axis-end scex2d-axis-end--e" aria-hidden>
+          <strong>Nhiều bài đăng nhất</strong>
+        </div>
+        <div className="scex2d-axis-end scex2d-axis-end--s" aria-hidden>
+          <strong>Uy tín thấp nhất</strong>
         </div>
       </div>
 

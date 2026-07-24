@@ -521,6 +521,15 @@
   flex-direction: column;
   overflow: hidden;
 }
+.scex-matrix.is-fullscreen .scex2d-stage.scex2d-axis-frame {
+  display: grid !important;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  gap: 6px 8px;
+}
+.scex-matrix.is-fullscreen .scex2d-axis-end {
+  flex: 0 0 auto;
+}
 .scex-matrix.is-fullscreen .scex-frame-row,
 .scex-matrix.is-fullscreen .scex2d-axis-bar,
 .scex-matrix.is-fullscreen .scex3d-axis-bar,
@@ -1094,15 +1103,21 @@
   flex-direction: column;
   overflow: hidden;
 }
-.scex-matrix__body--2d .scex2d-plot-shell {
-  flex: 1 1 auto;
+/* Grid axis frame overrides column flex on the same stage element */
+.scex2d-stage--story.scex2d-axis-frame {
+  display: grid;
+  overflow: hidden;
+}
+.scex-matrix__body--2d .scex2d-axis-frame > .scex2d-plot-shell {
+  flex: none;
   min-height: 160px;
   position: relative;
-  padding: 0 8px;
+  padding: 0;
+  height: 100%;
 }
-.scex-matrix__body--2d .scex2d-plot {
+.scex-matrix__body--2d .scex2d-axis-frame .scex2d-plot {
   position: absolute;
-  inset: 0 8px;
+  inset: 0;
   width: auto;
   height: auto;
   min-height: 0;
@@ -1274,82 +1289,113 @@
   color: #fff;
 }
 
-/* Clock-face compass on matrix edges (12 / 3 / 6 / 9) */
-.scex2d-compass {
-  position: absolute;
-  inset: 0;
-  z-index: 5;
-  pointer-events: none;
+/*
+  Axis frame: labels sit OUTSIDE the zoomable plot (CSS grid), so they never
+  scale/pan with zoom — always pinned to the 4 axis ends.
+*/
+.scex2d-axis-frame {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  grid-template-areas:
+    '. n .'
+    'w plot e'
+    '. s .';
+  gap: 6px 8px;
+  align-items: stretch;
+  min-height: 0;
+  flex: 1 1 auto;
+  height: 100%;
 }
-.scex2d-compass__item {
-  position: absolute;
+.scex2d-axis-frame > .scex2d-plot-shell {
+  grid-area: plot;
+  min-height: 0;
+  min-width: 0;
+  height: 100%;
+  padding: 0;
+}
+.scex2d-axis-end {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 2px;
+  justify-content: center;
   padding: 5px 10px;
   border-radius: 10px;
   background: rgba(4, 10, 20, 0.72);
   border: 1px solid rgba(255, 255, 255, 0.12);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
-  max-width: min(46%, 200px);
-  text-align: center;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.28);
+  pointer-events: none;
+  user-select: none;
+  flex-shrink: 0;
+  z-index: 6;
 }
-.scex2d-compass__item strong {
+.scex2d-axis-end strong {
   font-size: 0.72rem;
   font-weight: 750;
   letter-spacing: -0.01em;
-  line-height: 1.2;
-  color: #f1f5f9;
+  line-height: 1.25;
+  text-align: center;
+  white-space: nowrap;
 }
-.scex2d-compass__item--n {
-  top: 8px;
-  left: 50%;
-  transform: translateX(-50%);
+.scex2d-axis-end--n {
+  grid-area: n;
+  justify-self: center;
   border-color: rgba(125, 211, 252, 0.35);
 }
-.scex2d-compass__item--n strong {
+.scex2d-axis-end--n strong {
   color: #7dd3fc;
 }
-.scex2d-compass__item--s {
-  bottom: 8px;
-  left: 50%;
-  transform: translateX(-50%);
+.scex2d-axis-end--s {
+  grid-area: s;
+  justify-self: center;
   border-color: rgba(148, 163, 184, 0.3);
 }
-.scex2d-compass__item--s strong {
+.scex2d-axis-end--s strong {
   color: #cbd5e1;
 }
-.scex2d-compass__item--e {
-  right: 8px;
-  top: 50%;
-  transform: translateY(-50%);
+.scex2d-axis-end--e {
+  grid-area: e;
+  align-self: center;
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  padding: 10px 6px;
   border-color: rgba(134, 239, 172, 0.35);
 }
-.scex2d-compass__item--e strong {
+.scex2d-axis-end--e strong {
   color: #86efac;
+  white-space: normal;
+  /* vertical-rl already rotates; keep readable top→bottom */
+  transform: rotate(180deg);
 }
-.scex2d-compass__item--w {
-  left: 8px;
-  top: 50%;
-  transform: translateY(-50%);
+.scex2d-axis-end--w {
+  grid-area: w;
+  align-self: center;
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  padding: 10px 6px;
   border-color: rgba(251, 191, 36, 0.3);
 }
-.scex2d-compass__item--w strong {
+.scex2d-axis-end--w strong {
   color: #fde68a;
+  white-space: normal;
+  transform: rotate(180deg);
 }
 
 @media (max-width: 720px) {
-  .scex2d-compass__item {
-    padding: 4px 7px;
-    max-width: min(42%, 140px);
+  .scex2d-axis-frame {
+    gap: 4px 5px;
   }
-  .scex2d-compass__item strong {
+  .scex2d-axis-end {
+    padding: 4px 7px;
+  }
+  .scex2d-axis-end strong {
     font-size: 0.62rem;
   }
-  /* Corners already crowded — soft fade zone titles on small screens */
+  .scex2d-axis-end--e,
+  .scex2d-axis-end--w {
+    padding: 8px 4px;
+  }
   .scex2d-zone span {
     display: none;
   }
@@ -1374,7 +1420,6 @@
   border: 1px solid rgba(255, 255, 255, 0.08);
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
-  /* Sit slightly inward so compass mid-edge labels read first */
   opacity: 0.88;
 }
 .scex2d-zone strong {

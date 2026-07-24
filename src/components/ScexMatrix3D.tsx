@@ -251,7 +251,7 @@ function ActorBubble3D({
             />
           </span>
           {onMap && (
-            <span className="scex3d-bubble__map-dot" title="Có trên map" />
+            <span className="scex3d-bubble__map-dot" title="On Davey's Radar" />
           )}
           {(focus || selected) && (
             <span className="scex3d-bubble__tip">
@@ -415,7 +415,7 @@ export function ScexMatrix3D(props: ScexMatrix3DProps) {
             ↑ {viQualityAxisLabel(props.config.qualityAxis.label)}
           </span>
           <span className="scex3d-axis-bar__hint">
-            Kéo để xoay · Chấm xanh = có trên map
+            Kéo để xoay · Chấm xanh = On Davey&apos;s Radar
           </span>
           <span className="scex3d-axis-bar__x">
             {viVolumeAxisLabel(props.config.volumeAxis.label)} →

@@ -74,8 +74,8 @@ const MATRIX_FILTER_PILLS: Array<{
 }> = [
   {
     id: 'on_map',
-    label: 'Trên map',
-    title: 'KOL đã verify trên Radar map',
+    label: "On Davey's Radar",
+    title: "KOL đã có trên Davey's Radar map",
     tier: 'primary',
   },
   {
@@ -594,7 +594,7 @@ export function ScexTrackingPage() {
           </div>
           <div className="scex-stat scex-stat--accent">
             <em>{onMapCount}</em>
-            <span>Trên map</span>
+            <span>On Davey&apos;s Radar</span>
           </div>
           <div className="scex-stat scex-stat--muted">
             <em>{formatCompact(totalFollowers)}</em>
@@ -614,7 +614,9 @@ export function ScexTrackingPage() {
               <p>
                 Ai đang nói về SCEX · bấm avatar để xem · {visible.length} KOL
                 {matrixFilters.size ? ' (đã lọc)' : ''}
-                {onMapCount ? ` · ${onMapCount} trên map` : ''}
+                {onMapCount
+                  ? ` · ${onMapCount} On Davey's Radar`
+                  : ''}
               </p>
             </div>
             <div className="scex-matrix__toolbar">
@@ -728,7 +730,7 @@ export function ScexTrackingPage() {
               <div className="scex-matrix__legend">
                 <span>
                   <i className="scex-matrix__legend-dot scex-matrix__legend-dot--map" />
-                  Chấm xanh = có trên map — bấm xem hồ sơ
+                  Chấm xanh = On Davey&apos;s Radar — bấm xem hồ sơ
                 </span>
                 <span>
                   <i className="scex-matrix__legend-dot" />
@@ -982,7 +984,11 @@ function ScexFeedCard({
           type="button"
           className="scex-feed-card__author"
           onClick={onOpenActor}
-          title={onMap ? 'Xem chi tiết KOL trên map' : 'Xem thống kê SCEX'}
+          title={
+            onMap
+              ? "Xem chi tiết KOL On Davey's Radar"
+              : 'Xem thống kê SCEX'
+          }
         >
           <div
             className="scex-feed-card__av"

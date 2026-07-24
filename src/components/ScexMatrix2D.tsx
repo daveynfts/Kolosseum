@@ -678,7 +678,7 @@ export function ScexMatrix2D({
                         </small>
                         <small>
                           {formatCompact(a.followers)} followers
-                          {onMap ? ' · Có trên map' : ''}
+                          {onMap ? " · On Davey's Radar" : ''}
                           {a.mapRank ? ` · ${a.mapRank}` : ''}
                           {sentLabel ? ` · ${sentLabel}` : ''}
                         </small>
@@ -724,10 +724,7 @@ export function ScexMatrix2D({
         </span>
         <span>
           <i className="scex2d-encode__map" aria-hidden />
-          Chấm xanh = trên map
-        </span>
-        <span className="scex2d-encode__hint">
-          Cuộn = zoom · kéo nền khi &gt;100%
+          Chấm xanh = On Davey&apos;s Radar
         </span>
       </div>
     </div>

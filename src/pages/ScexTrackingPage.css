@@ -129,6 +129,34 @@
   letter-spacing: 0.04em;
 }
 
+/* Brand link → radar.daveynfts.com */
+.scex-davey-link {
+  color: #86efac;
+  text-decoration: none;
+  font-weight: 700;
+  border-bottom: 1px solid rgba(134, 239, 172, 0.35);
+  transition: color 0.15s, border-color 0.15s;
+}
+.scex-davey-link:hover {
+  color: #bbf7d0;
+  border-bottom-color: rgba(187, 247, 208, 0.7);
+}
+.scex-stat .scex-davey-link {
+  font-size: inherit;
+  font-weight: 600;
+  color: inherit;
+  border-bottom-color: rgba(74, 222, 128, 0.35);
+}
+.scex-stat .scex-davey-link:hover {
+  color: #86efac;
+}
+.scex-pill--map .scex-davey-link,
+.scex-detail__badge--map .scex-davey-link {
+  color: inherit;
+  border-bottom-color: rgba(255, 255, 255, 0.25);
+  font-weight: inherit;
+}
+
 .scex-page__title {
   margin: 0;
   font-size: clamp(1.5rem, 2.6vw, 1.95rem);

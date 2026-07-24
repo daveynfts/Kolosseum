@@ -18,6 +18,7 @@ import { BioRichText } from './BioRichText'
 import { RankBadge } from './RankBadge'
 import { SurfAnalysisMock } from './SurfAnalysisMock'
 import { XProfileAvatar } from './XProfileAvatar'
+import { DaveysRadarLink } from './DaveysRadarLink'
 import { resolveMediaUrl } from '../lib/avatar'
 
 type Tab = 'overview' | 'analysis' | 'scex'
@@ -137,7 +138,7 @@ export function ScexKolDetail({
           <div className="scex-detail__head-badges">
             {mapKol ? (
               <span className="scex-detail__badge scex-detail__badge--map">
-                On Davey&apos;s Radar
+                On <DaveysRadarLink />
               </span>
             ) : (
               <span className="scex-detail__badge">Off-map</span>

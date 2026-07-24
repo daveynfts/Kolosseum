@@ -22,6 +22,7 @@ import {
   viVolumeAxisLabel,
 } from '../data/scexTracking'
 import { XProfileAvatar } from './XProfileAvatar'
+import { DaveysRadarLink } from './DaveysRadarLink'
 
 const STORY_TIP_KEY = 'scex-story-tip-v1'
 
@@ -724,7 +725,7 @@ export function ScexMatrix2D({
         </span>
         <span>
           <i className="scex2d-encode__map" aria-hidden />
-          Chấm xanh = On Davey&apos;s Radar
+          Chấm xanh = On <DaveysRadarLink />
         </span>
       </div>
     </div>

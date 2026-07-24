@@ -16,6 +16,7 @@ import {
   viVolumeAxisLabel,
 } from '../data/scexTracking'
 import { XProfileAvatar } from './XProfileAvatar'
+import { DaveysRadarLink } from './DaveysRadarLink'
 
 export type ScexMatrix3DProps = {
   actors: ScexActor[]
@@ -415,7 +416,7 @@ export function ScexMatrix3D(props: ScexMatrix3DProps) {
             ↑ {viQualityAxisLabel(props.config.qualityAxis.label)}
           </span>
           <span className="scex3d-axis-bar__hint">
-            Kéo để xoay · Chấm xanh = On Davey&apos;s Radar
+            Kéo để xoay · Chấm xanh = On <DaveysRadarLink />
           </span>
           <span className="scex3d-axis-bar__x">
             {viVolumeAxisLabel(props.config.volumeAxis.label)} →

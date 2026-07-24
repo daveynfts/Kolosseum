@@ -14,6 +14,7 @@ import { loadScexWithSource } from '../lib/scexStore'
 import { loadKolsWithSource } from '../lib/kolStore'
 import type { Kol } from '../types'
 import { XProfileAvatar } from '../components/XProfileAvatar'
+import { DaveysRadarLink } from '../components/DaveysRadarLink'
 import { ScexMatrix2D } from '../components/ScexMatrix2D'
 import { ScexMatrix3D } from '../components/ScexMatrix3D'
 import { ScexKolDetail } from '../components/ScexKolDetail'
@@ -594,7 +595,9 @@ export function ScexTrackingPage() {
           </div>
           <div className="scex-stat scex-stat--accent">
             <em>{onMapCount}</em>
-            <span>On Davey&apos;s Radar</span>
+            <span>
+              On <DaveysRadarLink />
+            </span>
           </div>
           <div className="scex-stat scex-stat--muted">
             <em>{formatCompact(totalFollowers)}</em>
@@ -614,9 +617,12 @@ export function ScexTrackingPage() {
               <p>
                 Ai đang nói về SCEX · bấm avatar để xem · {visible.length} KOL
                 {matrixFilters.size ? ' (đã lọc)' : ''}
-                {onMapCount
-                  ? ` · ${onMapCount} On Davey's Radar`
-                  : ''}
+                {onMapCount ? (
+                  <>
+                    {' '}
+                    · {onMapCount} On <DaveysRadarLink />
+                  </>
+                ) : null}
               </p>
             </div>
             <div className="scex-matrix__toolbar">
@@ -730,7 +736,7 @@ export function ScexTrackingPage() {
               <div className="scex-matrix__legend">
                 <span>
                   <i className="scex-matrix__legend-dot scex-matrix__legend-dot--map" />
-                  Chấm xanh = On Davey&apos;s Radar — bấm xem hồ sơ
+                  Chấm xanh = On <DaveysRadarLink /> — bấm xem hồ sơ
                 </span>
                 <span>
                   <i className="scex-matrix__legend-dot" />
@@ -1004,7 +1010,9 @@ function ScexFeedCard({
             <div className="scex-feed-card__name">
               <strong>{actor?.displayName || post.handle}</strong>
               {onMap && (
-                <span className="scex-pill scex-pill--map">Davey&apos;s Radar</span>
+                <span className="scex-pill scex-pill--map">
+                  <DaveysRadarLink />
+                </span>
               )}
               {actor?.tier && (
                 <span className="scex-pill scex-pill--tier">{actor.tier}</span>

@@ -1232,200 +1232,202 @@ export function AdminKolReportsEditor({ onToast, kols = [] }: Props) {
                 ref={editorShellRef}
                 className={`akr-editor-shell ${
                   splitFullscreen ? 'is-fullscreen' : ''
-                }`}
+                } ${viewMode === 'preview' ? 'is-reader' : ''}`}
               >
               <div className="akr-editor-chrome">
-                <div className="akr-seg akr-seg--sm">
-                  {(
-                    [
-                      ['write', 'Write'],
-                      ['split', 'Split'],
-                      ['preview', 'Preview'],
-                    ] as const
-                  ).map(([k, label]) => (
-                    <button
-                      key={k}
-                      type="button"
-                      className={`akr-seg__btn ${viewMode === k ? 'is-active' : ''}`}
-                      onClick={() => {
-                        setViewMode(k)
-                        if (k !== 'split' && splitFullscreen) {
-                          setSplitFullscreen(false)
-                        }
-                      }}
-                    >
-                      {label}
-                    </button>
-                  ))}
-                </div>
-                <div className="akr-split-controls">
-                  <label
-                    className={`akr-sync-toggle ${scrollSync ? 'is-on' : ''}`}
-                    title="Đồng bộ scroll Write ↔ Preview khi Split"
-                  >
-                    <input
-                      type="checkbox"
-                      checked={scrollSync}
-                      onChange={(e) => setScrollSync(e.target.checked)}
-                    />
-                    Sync scroll
-                  </label>
-                  <button
-                    type="button"
-                    className={`admin-btn akr-fs-btn ${splitFullscreen ? 'is-active' : ''}`}
-                    title={
-                      splitFullscreen
-                        ? 'Thoát fullscreen (Esc)'
-                        : 'Fullscreen Split — chỉnh sửa rộng'
-                    }
-                    onClick={() => {
-                      if (splitFullscreen) exitSplitFullscreen()
-                      else enterSplitFullscreen()
-                    }}
-                  >
-                    {splitFullscreen ? '⛶ Exit FS' : '⛶ Fullscreen'}
-                  </button>
-                  {splitFullscreen && (
-                    <span className="akr-fs-hint">Esc để thoát</span>
-                  )}
-                </div>
-                {!readOnly && viewMode !== 'preview' ? (
-                  <div className="akr-md-tools">
-                    <label className="akr-tpl-select" title="Chèn khung sẵn">
-                      <span>Template</span>
-                      <select
-                        defaultValue=""
-                        onChange={(e) => {
-                          const v = e.target.value as ReportTemplateId | ''
-                          e.target.value = ''
-                          if (v) applyTemplate(v)
+                <div className="akr-editor-chrome__row akr-editor-chrome__row--primary">
+                  <div className="akr-seg akr-seg--sm">
+                    {(
+                      [
+                        ['write', 'Write'],
+                        ['split', 'Split'],
+                        ['preview', 'Đọc'],
+                      ] as const
+                    ).map(([k, label]) => (
+                      <button
+                        key={k}
+                        type="button"
+                        className={`akr-seg__btn ${viewMode === k ? 'is-active' : ''}`}
+                        onClick={() => {
+                          setViewMode(k)
+                          if (k !== 'split' && splitFullscreen) {
+                            setSplitFullscreen(false)
+                          }
                         }}
                       >
-                        <option value="" disabled>
-                          Chọn khung…
-                        </option>
-                        {REPORT_TEMPLATES.map((t) => (
-                          <option key={t.id} value={t.id}>
-                            {t.label}
-                          </option>
-                        ))}
-                      </select>
-                    </label>
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                  <div className="akr-split-controls">
+                    {viewMode === 'split' && (
+                      <label
+                        className={`akr-sync-toggle ${scrollSync ? 'is-on' : ''}`}
+                        title="Đồng bộ scroll Write ↔ Preview"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={scrollSync}
+                          onChange={(e) => setScrollSync(e.target.checked)}
+                        />
+                        Sync
+                      </label>
+                    )}
                     <button
                       type="button"
-                      title="Heading"
-                      onClick={() => insertAtCursor('\n## ', '')}
-                    >
-                      H2
-                    </button>
-                    <button
-                      type="button"
-                      title="Bold (Ctrl+B)"
-                      onClick={() => wrapSelection('**', '**', 'đậm')}
-                    >
-                      B
-                    </button>
-                    <button
-                      type="button"
-                      title="Italic (Ctrl+I)"
-                      onClick={() => wrapSelection('*', '*', 'nghiêng')}
-                    >
-                      I
-                    </button>
-                    <button
-                      type="button"
-                      title="Bullet list"
-                      onClick={() => insertAtCursor('\n- item\n', 'item')}
-                    >
-                      • List
-                    </button>
-                    <button
-                      type="button"
-                      title="Quote"
-                      onClick={() => insertAtCursor('\n> ', '')}
-                    >
-                      Quote
-                    </button>
-                    <button
-                      type="button"
-                      title="Table"
-                      onClick={() =>
-                        insertAtCursor(
-                          '\n| Cột | Giá trị |\n| --- | --- |\n| A | 1 |\n\n',
-                        )
+                      className={`admin-btn akr-fs-btn ${splitFullscreen ? 'is-active' : ''}`}
+                      title={
+                        splitFullscreen
+                          ? 'Thoát fullscreen (Esc)'
+                          : 'Fullscreen — chỉnh / đọc rộng'
                       }
-                    >
-                      Table
-                    </button>
-                    <button
-                      type="button"
-                      title="Link"
-                      onClick={() =>
-                        wrapSelection('[', '](https://)', 'link')
-                      }
-                    >
-                      Link
-                    </button>
-                    <button
-                      type="button"
-                      title="Image URL"
-                      onClick={insertImageUrl}
-                    >
-                      🖼 URL
-                    </button>
-                    <button
-                      type="button"
-                      title="Upload ảnh thẳng lên Cloudflare R2"
-                      disabled={uploading || importingDocx}
-                      onClick={() => fileInputRef.current?.click()}
-                    >
-                      {uploading
-                        ? `R2… ${uploadLabel.slice(0, 12)}`
-                        : '⬆ R2 Ảnh'}
-                    </button>
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      accept="image/png,image/jpeg,image/webp,image/gif,.png,.jpg,.jpeg,.webp,.gif"
-                      hidden
-                      multiple
-                      onChange={async (e) => {
-                        const files = Array.from(e.target.files || [])
-                        e.target.value = ''
-                        for (const f of files.slice(0, 8)) {
-                          await insertImageFromR2(f)
+                      onClick={() => {
+                        if (splitFullscreen) exitSplitFullscreen()
+                        else {
+                          if (viewMode === 'write') setViewMode('split')
+                          enterSplitFullscreen()
                         }
                       }}
-                    />
-                    <button
-                      type="button"
-                      title="Import DOCX → Markdown + ảnh lên R2"
-                      disabled={uploading || importingDocx}
-                      className="akr-docx-btn"
-                      onClick={() => docxInputRef.current?.click()}
                     >
-                      {importingDocx ? 'DOCX…' : '⬆ DOCX'}
+                      {splitFullscreen ? 'Exit FS' : 'Fullscreen'}
                     </button>
-                    <input
-                      ref={docxInputRef}
-                      type="file"
-                      accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-                      hidden
-                      onChange={(e) => void onDocxPick(e)}
-                    />
-                    <button
-                      type="button"
-                      title="Horizontal rule"
-                      onClick={() => insertAtCursor('\n\n---\n\n')}
-                    >
-                      ―
-                    </button>
-                    <span
-                      className="akr-md-tip"
-                      title="Dán Word/Docs/Notion → MD · DOCX upload ảnh R2 · Preview Split"
-                    >
-                      DOCX+Paste → MD ✓
-                    </span>
+                    {splitFullscreen && (
+                      <span className="akr-fs-hint">Esc</span>
+                    )}
+                  </div>
+                </div>
+                {!readOnly && viewMode !== 'preview' ? (
+                  <div className="akr-editor-chrome__row akr-editor-chrome__row--tools">
+                    <div className="akr-md-tools">
+                      <label className="akr-tpl-select" title="Chèn khung sẵn">
+                        <select
+                          defaultValue=""
+                          onChange={(e) => {
+                            const v = e.target.value as ReportTemplateId | ''
+                            e.target.value = ''
+                            if (v) applyTemplate(v)
+                          }}
+                        >
+                          <option value="" disabled>
+                            Template…
+                          </option>
+                          {REPORT_TEMPLATES.map((t) => (
+                            <option key={t.id} value={t.id}>
+                              {t.label}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+                      <button
+                        type="button"
+                        title="Heading"
+                        onClick={() => insertAtCursor('\n## ', '')}
+                      >
+                        H2
+                      </button>
+                      <button
+                        type="button"
+                        title="Bold (Ctrl+B)"
+                        onClick={() => wrapSelection('**', '**', 'đậm')}
+                      >
+                        B
+                      </button>
+                      <button
+                        type="button"
+                        title="Italic (Ctrl+I)"
+                        onClick={() => wrapSelection('*', '*', 'nghiêng')}
+                      >
+                        I
+                      </button>
+                      <button
+                        type="button"
+                        title="Bullet list"
+                        onClick={() => insertAtCursor('\n- item\n', 'item')}
+                      >
+                        • List
+                      </button>
+                      <button
+                        type="button"
+                        title="Quote"
+                        onClick={() => insertAtCursor('\n> ', '')}
+                      >
+                        Quote
+                      </button>
+                      <button
+                        type="button"
+                        title="Table"
+                        onClick={() =>
+                          insertAtCursor(
+                            '\n| Cột | Giá trị |\n| --- | --- |\n| A | 1 |\n\n',
+                          )
+                        }
+                      >
+                        Table
+                      </button>
+                      <button
+                        type="button"
+                        title="Link"
+                        onClick={() =>
+                          wrapSelection('[', '](https://)', 'link')
+                        }
+                      >
+                        Link
+                      </button>
+                      <button
+                        type="button"
+                        title="Image URL"
+                        onClick={insertImageUrl}
+                      >
+                        URL
+                      </button>
+                      <button
+                        type="button"
+                        title="Upload ảnh R2"
+                        disabled={uploading || importingDocx}
+                        onClick={() => fileInputRef.current?.click()}
+                      >
+                        {uploading
+                          ? `R2…`
+                          : 'R2 Ảnh'}
+                      </button>
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/png,image/jpeg,image/webp,image/gif,.png,.jpg,.jpeg,.webp,.gif"
+                        hidden
+                        multiple
+                        onChange={async (e) => {
+                          const files = Array.from(e.target.files || [])
+                          e.target.value = ''
+                          for (const f of files.slice(0, 8)) {
+                            await insertImageFromR2(f)
+                          }
+                        }}
+                      />
+                      <button
+                        type="button"
+                        title="Import DOCX → Markdown + ảnh R2"
+                        disabled={uploading || importingDocx}
+                        className="akr-docx-btn"
+                        onClick={() => docxInputRef.current?.click()}
+                      >
+                        {importingDocx ? 'DOCX…' : 'DOCX'}
+                      </button>
+                      <input
+                        ref={docxInputRef}
+                        type="file"
+                        accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                        hidden
+                        onChange={(e) => void onDocxPick(e)}
+                      />
+                      <button
+                        type="button"
+                        title="Horizontal rule"
+                        onClick={() => insertAtCursor('\n\n---\n\n')}
+                      >
+                        ―
+                      </button>
+                    </div>
                   </div>
                 ) : null}
               </div>
@@ -1497,13 +1499,56 @@ export function AdminKolReportsEditor({ onToast, kols = [] }: Props) {
                     className="akr-preview"
                     onScroll={onPreviewScroll}
                   >
-                    <div className="akr-pane-label akr-pane-label--preview">
-                      Preview
-                      {scrollSync && viewMode === 'split' ? (
-                        <span className="akr-sync-badge">synced</span>
-                      ) : null}
+                    {viewMode === 'split' && (
+                      <div className="akr-pane-label akr-pane-label--preview">
+                        Preview
+                        {scrollSync ? (
+                          <span className="akr-sync-badge">synced</span>
+                        ) : null}
+                      </div>
+                    )}
+                    <div
+                      className={
+                        viewMode === 'preview'
+                          ? 'akr-reader'
+                          : 'akr-preview-body'
+                      }
+                    >
+                      {viewMode === 'preview' && (
+                        <header className="akr-reader__head">
+                          <p className="akr-reader__kicker">KOL Report</p>
+                          <h2 className="akr-reader__title">{draft.title}</h2>
+                          <div className="akr-reader__meta">
+                            <span>@{draft.handle}</span>
+                            {score != null && (
+                              <span className="akr-score-chip">
+                                {score}/100
+                              </span>
+                            )}
+                            <span
+                              className={`akr-badge ${
+                                draft.visibility === 'public'
+                                  ? 'akr-badge--pub'
+                                  : ''
+                              }`}
+                            >
+                              {draft.visibility}
+                            </span>
+                            <time dateTime={draft.updatedAt}>
+                              {new Date(draft.updatedAt).toLocaleString()}
+                            </time>
+                          </div>
+                        </header>
+                      )}
+                      <ReportMarkdown
+                        text={draft.text}
+                        className={
+                          viewMode === 'preview'
+                            ? 'report-md--reader'
+                            : 'report-md--preview'
+                        }
+                      />
                     </div>
-                    <ReportMarkdown text={draft.text} />
                   </div>
                 )}
               </div>

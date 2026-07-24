@@ -732,7 +732,7 @@ export function ScexTrackingPage() {
                 </span>
                 <span>
                   <i className="scex-matrix__legend-dot" />
-                  Kéo xoay · cuộn zoom
+                  Kéo để xoay
                 </span>
               </div>
             )}

@@ -1,11 +1,14 @@
 /* SCEX public partner view — premium matrix + feed */
 
 .scex-page {
-  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
   height: 100%;
-  overflow: auto;
+  /* One-screen partner layout — scroll only inside feed list */
+  overflow: hidden;
   box-sizing: border-box;
-  padding: 28px 24px 56px;
+  padding: 14px 18px 16px;
   max-width: 1400px;
   margin: 0 auto;
   background:
@@ -41,10 +44,11 @@
 
 /* Lite Partner — tighter hero */
 .scex-page__hero--lite {
-  margin-bottom: 20px;
-  padding: 14px 16px 16px;
-  gap: 14px 20px;
-  border-radius: 18px;
+  flex-shrink: 0;
+  margin-bottom: 12px;
+  padding: 10px 14px 12px;
+  gap: 10px 16px;
+  border-radius: 16px;
 }
 .scex-page__hero--lite .scex-page__logo {
   width: 48px;
@@ -192,36 +196,46 @@
 .scex-page__grid {
   display: grid;
   grid-template-columns: minmax(0, 1.32fr) minmax(0, 1fr);
-  gap: 22px;
+  gap: 14px;
   align-items: stretch;
-  /* Equal column height — no orphan empty frame on the right */
-  min-height: min(78vh, 780px);
+  /* Fill remaining viewport under hero — both columns equal height */
+  flex: 1 1 auto;
+  min-height: 0;
+  height: auto;
+  max-height: 100%;
 }
 
 .scex-page__grid > .scex-matrix,
 .scex-page__grid > .scex-feed {
   min-height: 0;
   height: 100%;
-  max-height: none;
+  max-height: 100%;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 }
 
 @media (max-width: 980px) {
   .scex-page {
-    padding: 18px 12px 40px;
+    padding: 12px 10px 14px;
+    overflow: auto; /* stack needs page scroll on small screens */
   }
   .scex-page__hero {
-    padding: 14px 14px 16px;
+    padding: 12px 12px 14px;
   }
   .scex-page__grid {
     grid-template-columns: 1fr;
+    flex: none;
     min-height: 0;
+    height: auto;
+    max-height: none;
+    gap: 12px;
   }
   .scex-page__grid > .scex-matrix,
   .scex-page__grid > .scex-feed {
     height: auto;
-    min-height: min(70vh, 640px);
+    max-height: min(68vh, 560px);
+    min-height: min(52vh, 420px);
   }
 }
 
@@ -245,12 +259,13 @@
 }
 
 .scex-card__head {
-  padding: 18px 20px 12px;
+  padding: 12px 14px 8px;
   display: flex;
   flex-wrap: wrap;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 10px 14px;
+  gap: 8px 12px;
+  flex-shrink: 0;
 }
 
 .scex-card__head h2 {
@@ -278,17 +293,19 @@
   flex-shrink: 0;
 }
 .scex-matrix__body {
-  padding: 4px 18px 18px;
+  padding: 2px 12px 10px;
   position: relative;
   flex: 1 1 auto;
   min-height: 0;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 }
 .scex-matrix__body--2d .scex2d-root,
 .scex-matrix__body--3d .scex3d-root {
-  flex: 1;
+  flex: 1 1 auto;
   min-height: 0;
+  height: 100%;
 }
 
 .scex-matrix__body--3d {
@@ -519,9 +536,10 @@
 .scex-matrix__filters {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
-  padding: 0 18px 12px;
+  gap: 5px;
+  padding: 0 12px 8px;
   align-items: center;
+  flex-shrink: 0;
 }
 
 .scex-matrix-pill {
@@ -727,12 +745,17 @@
 .scex3d-root {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 8px;
+  min-height: 0;
+  height: 100%;
+  flex: 1 1 auto;
 }
 
 .scex3d-stage {
   display: flex;
   flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
   border-radius: 18px;
   overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.12);
@@ -747,8 +770,9 @@
 
 .scex3d-canvas-wrap {
   position: relative;
-  height: min(48vh, 420px);
-  min-height: 300px;
+  flex: 1 1 auto;
+  min-height: 180px;
+  height: auto;
   touch-action: none;
   /* No absolute labels over this layer */
   z-index: 1;
@@ -1074,8 +1098,9 @@
 
 .scex2d-plot {
   position: relative;
-  height: min(52vh, 460px);
-  min-height: 320px;
+  /* Default fallback when not in flex fill; body layout overrides */
+  height: 100%;
+  min-height: 0;
   border-radius: 14px;
   border: 1px solid rgba(255, 255, 255, 0.1);
   overflow: hidden;
@@ -1089,6 +1114,35 @@
     radial-gradient(ellipse 50% 40% at 75% 75%, rgba(245, 158, 11, 0.06), transparent 50%),
     radial-gradient(ellipse 50% 40% at 25% 25%, rgba(56, 189, 248, 0.08), transparent 50%),
     rgba(2, 6, 23, 0.6);
+}
+
+/* Story / 2D: plot shell fills remaining column height */
+.scex2d-root--story {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  flex: 1 1 auto;
+  height: 100%;
+}
+.scex2d-stage--story {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.scex-matrix__body--2d .scex2d-plot-shell {
+  flex: 1 1 auto;
+  min-height: 160px;
+  position: relative;
+  padding: 0 8px;
+}
+.scex-matrix__body--2d .scex2d-plot {
+  position: absolute;
+  inset: 0 8px;
+  width: auto;
+  height: auto;
+  min-height: 0;
 }
 
 .scex2d-plot.is-zoomed {
@@ -1847,9 +1901,10 @@
   display: flex;
   flex-direction: column;
   min-height: 0;
-  /* Fill grid cell — match matrix column height */
+  /* Match matrix column — list scrolls inside, not page stretch */
   height: 100%;
-  max-height: none;
+  max-height: 100%;
+  overflow: hidden;
 }
 
 .scex-feed > .scex-card__head {
@@ -1936,12 +1991,12 @@
 }
 
 .scex-feed__filters {
-  padding: 0 14px 10px;
+  padding: 0 12px 8px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-  margin-bottom: 4px;
+  margin-bottom: 2px;
   flex-shrink: 0;
 }
 
@@ -2238,7 +2293,7 @@
 .scex-feed-media img {
   display: block;
   width: 100%;
-  max-height: 220px;
+  max-height: 140px;
   object-fit: cover;
   transition: transform 0.25s ease;
 }

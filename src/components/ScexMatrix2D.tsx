@@ -11,7 +11,6 @@ import {
   useState,
   type CSSProperties,
   type PointerEvent as ReactPointerEvent,
-  type WheelEvent as ReactWheelEvent,
 } from 'react'
 import type { ScexActor, ScexConfig, ScexQuadrant } from '../data/scexTracking'
 import {
@@ -107,19 +106,6 @@ function formatCompact(n: number): string {
 
 function clamp(n: number, lo: number, hi: number) {
   return Math.min(hi, Math.max(lo, n))
-}
-
-function nearestStepIndex(z: number): number {
-  let best = 0
-  let bestD = Infinity
-  for (let i = 0; i < ZOOM_STEPS.length; i++) {
-    const d = Math.abs(ZOOM_STEPS[i] - z)
-    if (d < bestD) {
-      bestD = d
-      best = i
-    }
-  }
-  return best
 }
 
 function packBubbles(
@@ -311,22 +297,6 @@ export function ScexMatrix2D({
     [clampPanTo, plotSize.w, plotSize.h],
   )
 
-  const onWheel = (e: ReactWheelEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-    const el = plotRef.current
-    if (!el) return
-    const rect = el.getBoundingClientRect()
-    const focus = {
-      x: e.clientX - rect.left,
-      y: e.clientY - rect.top,
-    }
-    const dir = e.deltaY > 0 ? -1 : 1
-    // Use current nearest step in case of float drift
-    const cur = nearestStepIndex(zoomRef.current)
-    goZoom(cur + dir, focus)
-  }
-
   const onPointerDown = (e: ReactPointerEvent) => {
     if (e.button !== 0) return
     if ((e.target as HTMLElement).closest('.scex-bubble')) return
@@ -455,7 +425,7 @@ export function ScexMatrix2D({
           ))}
         </div>
         <span className="scex2d-zoombar__hint">
-          Scroll = zoom · Kéo nền = pan (khi &gt;100%)
+          Dùng ± để zoom · Kéo nền = pan (khi &gt;100%)
         </span>
       </div>
 
@@ -490,7 +460,6 @@ export function ScexMatrix2D({
           <div
             className={`scex-matrix__plot scex2d-plot scex2d-plot--story ${zoom > 1 ? 'is-zoomed' : ''}`}
             ref={plotRef}
-            onWheel={onWheel}
             onPointerDown={onPointerDown}
             onPointerMove={onPointerMove}
             onPointerUp={endDrag}

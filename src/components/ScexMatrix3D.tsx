@@ -322,6 +322,7 @@ function SceneInner({
         makeDefault
         target={[0, 0.2, 0]}
         enablePan={false}
+        enableZoom={false}
         minDistance={10}
         maxDistance={26}
         autoRotate={autoRotate}
@@ -412,7 +413,7 @@ export function ScexMatrix3D(props: ScexMatrix3DProps) {
             ↑ {props.config.qualityAxis.label || 'Điểm chất lượng'}
           </span>
           <span className="scex3d-axis-bar__hint">
-            Kéo để xoay · Cuộn để zoom · Chấm xanh = có trên map
+            Kéo để xoay · Chấm xanh = có trên map
           </span>
           <span className="scex3d-axis-bar__x">
             {props.config.volumeAxis.label || 'Tần suất mention'} →

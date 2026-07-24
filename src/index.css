@@ -304,9 +304,10 @@ input {
   min-height: 0;
 }
 
-/* When SCEX page is inside shell, page scrolls inside remaining height */
+/* SCEX partner page fills shell height (internal feed scroll, not page stretch) */
 .app-shell > .scex-page {
-  height: auto;
+  height: 100%;
+  max-height: 100%;
 }
 
 /* Strong liquid glass surface */

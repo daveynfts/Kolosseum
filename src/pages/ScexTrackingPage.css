@@ -1297,14 +1297,6 @@
   max-width: min(46%, 200px);
   text-align: center;
 }
-.scex2d-compass__clock {
-  font-size: 0.58rem;
-  font-weight: 750;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: rgba(148, 163, 184, 0.85);
-  line-height: 1;
-}
 .scex2d-compass__item strong {
   font-size: 0.72rem;
   font-weight: 750;
@@ -1356,9 +1348,6 @@
   }
   .scex2d-compass__item strong {
     font-size: 0.62rem;
-  }
-  .scex2d-compass__clock {
-    font-size: 0.52rem;
   }
   /* Corners already crowded — soft fade zone titles on small screens */
   .scex2d-zone span {

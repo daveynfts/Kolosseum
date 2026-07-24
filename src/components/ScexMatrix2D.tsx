@@ -516,8 +516,8 @@ export function ScexMatrix2D({
           <div className="scex2d-story-tip__body">
             <strong>Cách đọc nhanh</strong>
             <p>
-              <em>12h</em> uy tín cao · <em>3h</em> nhiều bài · <em>6h</em> uy
-              tín thấp · <em>9h</em> ít bài. Bấm avatar để xem KOL.
+              Trên = uy tín cao · Phải = nhiều bài · Dưới = uy tín thấp · Trái =
+              ít bài. Bấm avatar để xem KOL.
             </p>
           </div>
           <button
@@ -545,19 +545,15 @@ export function ScexMatrix2D({
             {/* Clock-face compass: 12 / 3 / 6 / 9 — how to read the matrix */}
             <div className="scex2d-compass" aria-hidden>
               <div className="scex2d-compass__item scex2d-compass__item--n">
-                <span className="scex2d-compass__clock">12h</span>
                 <strong>Uy tín cao nhất</strong>
               </div>
               <div className="scex2d-compass__item scex2d-compass__item--e">
-                <span className="scex2d-compass__clock">3h</span>
                 <strong>Nhiều bài đăng nhất</strong>
               </div>
               <div className="scex2d-compass__item scex2d-compass__item--s">
-                <span className="scex2d-compass__clock">6h</span>
                 <strong>Uy tín thấp nhất</strong>
               </div>
               <div className="scex2d-compass__item scex2d-compass__item--w">
-                <span className="scex2d-compass__clock">9h</span>
                 <strong>Ít bài đăng nhất</strong>
               </div>
             </div>
@@ -713,15 +709,11 @@ export function ScexMatrix2D({
         </div>
 
         <div className="scex2d-story-axes">
-          <span className="scex2d-story-axes__y">
-            ↑ Uy tín (12h cao · 6h thấp)
-          </span>
+          <span className="scex2d-story-axes__y">↑ Uy tín</span>
           <span className="scex2d-story-axes__track" aria-hidden>
             <i />
           </span>
-          <span className="scex2d-story-axes__x">
-            Bài đăng (9h ít · 3h nhiều) →
-          </span>
+          <span className="scex2d-story-axes__x">Bài đăng →</span>
         </div>
       </div>
 

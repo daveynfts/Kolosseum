@@ -1,7 +1,7 @@
 {
   "version": 1,
   "kind": "kol-reports",
-  "updatedAt": "2026-07-24T03:13:27.888Z",
+  "updatedAt": "2026-07-24T03:19:42.232Z",
   "reports": [
     {
       "id": "rep_mryd4z6h_uvybcn",
@@ -964,6 +964,6 @@
     }
   ],
   "trash": [],
-  "asOf": "2026-07-24T03:13:27.888Z",
+  "asOf": "2026-07-24T03:19:42.232Z",
   "note": "KOL reports text corpus · 17 reports · imported from DOCX"
 }

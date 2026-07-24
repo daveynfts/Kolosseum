@@ -9,9 +9,9 @@
  *   GET/PUT /api/kol-reports
  *   → cached in localStorage after load
  *
- * AI-friendly: each report has free-form `text` (source of truth) + optional
- * `structured` metrics for scoring later. Changelog records create/update/delete
- * with timestamps; visibility private|public for publish transparency.
+ * AI-friendly: each report has free-form Markdown `text` (source of truth) +
+ * optional `structured` metrics for scoring later. Images via markdown or
+ * coverImage URL. Changelog records create/update/delete; private|public.
  */
 import seedJson from './internal/kol-reports.json'
 
@@ -66,12 +66,16 @@ export interface KolReport {
   displayName?: string
   title: string
   /**
-   * Full report body as plain text / markdown-ish.
-   * Primary corpus for AI consumption and human edit.
+   * Full report body as Markdown (headings, lists, images, tables…).
+   * Primary corpus for AI consumption and human edit / publish.
    */
   text: string
   structured?: KolReportStructured
+  /** Optional hero/cover image URL (https or /r2/…) */
+  coverImage?: string
+  /** @deprecated Kept for old imports — not shown in UI */
   sourceFilename?: string
+  /** @deprecated Kept for old imports — not shown in UI */
   sourcePath?: string
   visibility: KolReportVisibility
   createdAt: string
@@ -148,21 +152,52 @@ export function createChangelogEntry(
   }
 }
 
+/** Starter markdown template for manual authoring */
+export function emptyReportMarkdown(handle = 'handle'): string {
+  const h = handle.replace(/^@/, '') || 'handle'
+  return [
+    `# Báo cáo đánh giá · @${h}`,
+    '',
+    '> Viết bằng Markdown. Chèn ảnh: `![mô tả](https://…)` hoặc toolbar Ảnh.',
+    '',
+    '## Tóm tắt',
+    '',
+    'Điểm nổi bật…',
+    '',
+    '## Hồ sơ & vị thế',
+    '',
+    '- Followers:',
+    '- Niche:',
+    '- Phong cách:',
+    '',
+    '## Phân tích',
+    '',
+    'Nội dung chi tiết…',
+    '',
+    '## Kết luận',
+    '',
+    'Khuyến nghị…',
+    '',
+  ].join('\n')
+}
+
 export function createEmptyReport(handle = ''): KolReport {
   const now = new Date().toISOString()
   const h = handle.replace(/^@/, '').trim().toLowerCase()
+  const handleFinal = h || `unknown_${Date.now().toString(36).slice(-4)}`
   return {
     id: newId('rep'),
-    handle: h || `unknown_${Date.now().toString(36).slice(-4)}`,
+    handle: handleFinal,
     displayName: h || 'New report',
     title: h ? `Báo cáo đánh giá KOL @${h}` : 'Báo cáo mới',
-    text: '',
-    structured: {},
+    text: emptyReportMarkdown(handleFinal),
+    structured: { overallScore: null, niches: [], metrics: {} },
+    coverImage: '',
     visibility: 'private',
     createdAt: now,
     updatedAt: now,
     changelog: [
-      createChangelogEntry('create', 'Tạo báo cáo trống trong admin'),
+      createChangelogEntry('create', 'Tạo báo cáo mới (markdown) trong admin'),
     ],
     tags: [],
   }
@@ -179,7 +214,7 @@ export function diffReportFields(
     'title',
     'text',
     'visibility',
-    'sourceFilename',
+    'coverImage',
     'notes',
   ]
   const changes: KolReportFieldChange[] = []
@@ -292,6 +327,7 @@ function normalizeReport(raw: unknown, i: number): KolReport | null {
       o.structured && typeof o.structured === 'object'
         ? (o.structured as KolReportStructured)
         : {},
+    coverImage: o.coverImage != null ? String(o.coverImage) : undefined,
     sourceFilename:
       o.sourceFilename != null ? String(o.sourceFilename) : undefined,
     sourcePath: o.sourcePath != null ? String(o.sourcePath) : undefined,

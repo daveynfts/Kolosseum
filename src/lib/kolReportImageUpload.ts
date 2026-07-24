@@ -68,13 +68,28 @@ export function isImageFile(file: File): boolean {
   )
 }
 
+function extFromContentType(ct: string): string {
+  const t = (ct || '').toLowerCase()
+  if (t.includes('png')) return 'png'
+  if (t.includes('webp')) return 'webp'
+  if (t.includes('gif')) return 'gif'
+  if (t.includes('jpeg') || t.includes('jpg')) return 'jpg'
+  return 'png'
+}
+
 /**
- * PUT raw image bytes → R2. Does NOT store base64 in the report JSON.
- * Markdown only receives the returned public URL.
+ * PUT raw bytes (File / Blob / ArrayBuffer) → R2.
+ * Used by file picker and DOCX embedded image extraction.
  */
-export async function uploadKolReportImage(
-  file: File,
-  options?: { token?: string; filename?: string; handle?: string },
+export async function uploadKolReportImageBytes(
+  body: Blob | ArrayBuffer | Uint8Array,
+  options?: {
+    token?: string
+    filename?: string
+    handle?: string
+    contentType?: string
+    stem?: string
+  },
 ): Promise<KolReportImageUploadResult> {
   const token = (options?.token || getAdminToken()).trim()
   if (!token) {
@@ -83,35 +98,54 @@ export async function uploadKolReportImage(
       error: 'Chưa có token — dán FEED_ADMIN_TOKEN rồi upload lại',
     }
   }
-  if (!file || file.size < 24) {
+
+  let blob: Blob
+  const hinted = (options?.contentType || '').toLowerCase()
+  if (body instanceof Blob) {
+    blob = body
+  } else if (body instanceof ArrayBuffer) {
+    blob = new Blob([body], {
+      type: hinted || 'application/octet-stream',
+    })
+  } else {
+    const u8 = body as Uint8Array
+    // copy into a plain ArrayBuffer (avoids SharedArrayBuffer typing issues)
+    const ab = new ArrayBuffer(u8.byteLength)
+    new Uint8Array(ab).set(u8)
+    blob = new Blob([ab], {
+      type: hinted || 'application/octet-stream',
+    })
+  }
+
+  if (blob.size < 24) {
     return { ok: false, error: 'File rỗng hoặc quá nhỏ' }
   }
-  if (file.size > MAX_BYTES) {
+  if (blob.size > MAX_BYTES) {
     return {
       ok: false,
-      error: `Ảnh quá lớn (${(file.size / 1024 / 1024).toFixed(1)}MB, max 4.5MB)`,
+      error: `Ảnh quá lớn (${(blob.size / 1024 / 1024).toFixed(1)}MB, max 4.5MB)`,
     }
   }
 
-  if (!isImageFile(file)) {
-    return {
-      ok: false,
-      error: 'Chỉ nhận PNG, JPEG, WebP, GIF — đẩy thẳng lên R2',
-    }
-  }
+  const contentType =
+    hinted && ALLOWED_TYPES.has(hinted)
+      ? hinted === 'image/jpg'
+        ? 'image/jpeg'
+        : hinted
+      : blob.type && ALLOWED_TYPES.has(blob.type.toLowerCase())
+        ? blob.type
+        : `image/${extFromContentType(hinted || blob.type || 'image/png') === 'jpg' ? 'jpeg' : extFromContentType(hinted || blob.type || 'image/png')}`
 
+  // Server sniffs magic bytes; content-type is a hint
+  const ext = extFromContentType(contentType)
+  const stem = options?.stem || options?.handle || 'img'
   const filename =
     options?.filename ||
-    uniqueImageFilename(
-      file,
-      options?.handle ? `kol_${options.handle}` : undefined,
-    )
+    `${String(stem)
+      .replace(/[^\w.\-]+/g, '_')
+      .slice(0, 60)}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 6)}.${ext}`
 
   const apiUrl = `${withBase('/api/kol-report-image')}?filename=${encodeURIComponent(filename)}`
-  const contentType =
-    file.type && ALLOWED_TYPES.has(file.type.toLowerCase())
-      ? file.type
-      : `image/${extFromFile(file) === 'jpg' ? 'jpeg' : extFromFile(file)}`
 
   try {
     const res = await fetch(apiUrl, {
@@ -121,8 +155,7 @@ export async function uploadKolReportImage(
         'Content-Type': contentType,
         'X-Filename': filename,
       },
-      // Raw File body → serverless → r2PutBytes (no base64 in report corpus)
-      body: file,
+      body: blob,
     })
     const text = await res.text()
     let data: Record<string, unknown> = {}
@@ -149,7 +182,6 @@ export async function uploadKolReportImage(
         error: 'API không trả URL/key R2 — kiểm tra R2_PUBLIC_BASE_URL',
       }
     }
-    // Guard: must look like R2 CDN or /r2/ proxy — never accept empty/local
     const looksR2 =
       key.startsWith('kol-reports/images/') &&
       (url.includes('r2.dev') ||
@@ -168,9 +200,10 @@ export async function uploadKolReportImage(
       url,
       key,
       filename: String(data.filename || filename),
-      bytes: Number(data.bytes) || file.size,
+      bytes: Number(data.bytes) || blob.size,
       storage: 'r2',
-      contentType: data.contentType != null ? String(data.contentType) : undefined,
+      contentType:
+        data.contentType != null ? String(data.contentType) : contentType,
     }
   } catch (e) {
     return {
@@ -178,6 +211,36 @@ export async function uploadKolReportImage(
       error: e instanceof Error ? e.message : String(e),
     }
   }
+}
+
+/**
+ * PUT File → R2 (file picker / drag-drop / paste).
+ */
+export async function uploadKolReportImage(
+  file: File,
+  options?: { token?: string; filename?: string; handle?: string },
+): Promise<KolReportImageUploadResult> {
+  if (!file || file.size < 24) {
+    return { ok: false, error: 'File rỗng hoặc quá nhỏ' }
+  }
+  if (!isImageFile(file)) {
+    return {
+      ok: false,
+      error: 'Chỉ nhận PNG, JPEG, WebP, GIF — đẩy thẳng lên R2',
+    }
+  }
+  const filename =
+    options?.filename ||
+    uniqueImageFilename(
+      file,
+      options?.handle ? `kol_${options.handle}` : undefined,
+    )
+  return uploadKolReportImageBytes(file, {
+    token: options?.token,
+    filename,
+    handle: options?.handle,
+    contentType: file.type || undefined,
+  })
 }
 
 /** Build markdown image snippet pointing at R2 URL */

@@ -1749,7 +1749,7 @@
   position: relative;
 }
 .akr-write.is-dragover::after {
-  content: 'Thả ảnh → upload Cloudflare R2';
+  content: 'Thả ảnh → R2  ·  hoặc .docx → Markdown + ảnh R2';
   position: absolute;
   inset: 8px;
   display: flex;
@@ -1760,9 +1760,20 @@
   background: rgba(14, 165, 233, 0.12);
   color: #7dd3fc;
   font-weight: 700;
-  font-size: 0.95rem;
+  font-size: 0.9rem;
+  text-align: center;
+  padding: 12px;
   pointer-events: none;
   z-index: 2;
+}
+.akr-docx-btn {
+  border-color: rgba(167, 139, 250, 0.45) !important;
+  color: #ddd6fe !important;
+  background: rgba(139, 92, 246, 0.15) !important;
+}
+.akr-docx-btn:hover:not(:disabled) {
+  border-color: rgba(167, 139, 250, 0.7) !important;
+  background: rgba(139, 92, 246, 0.25) !important;
 }
 .akr-editor--write .akr-write {
   border-right: 0;

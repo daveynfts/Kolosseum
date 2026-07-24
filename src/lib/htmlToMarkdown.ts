@@ -36,9 +36,10 @@ function inlineFromNode(node: Node): string {
 
   if (tag === 'br') return '\n'
   if (tag === 'img') {
-    const src = el.getAttribute('src') || ''
+    const src = (el.getAttribute('src') || '').trim()
     const alt = el.getAttribute('alt') || 'image'
-    if (!src || src.startsWith('data:')) return '' // skip embedded base64
+    // Skip empty / base64 (DOCX path uploads to R2 first)
+    if (!src || src.startsWith('data:')) return ''
     return `![${alt}](${src})`
   }
   if (tag === 'a') {
@@ -103,9 +104,37 @@ function blockFromElement(el: HTMLElement, listDepth = 0): string {
   if (tag === 'h4') return `\n#### ${cleanText(childrenInline(el))}\n\n`
 
   if (tag === 'p' || tag === 'div') {
+    // Mammoth often wraps a lone image in <p>
+    const elementChildren = Array.from(el.children)
+    if (
+      elementChildren.length === 1 &&
+      elementChildren[0].tagName.toLowerCase() === 'img' &&
+      cleanText(el.textContent || '') === ''
+    ) {
+      return blockFromElement(elementChildren[0] as HTMLElement, listDepth)
+    }
+    // Paragraphs with mixed text + images
+    if (elementChildren.some((c) => c.tagName.toLowerCase() === 'img')) {
+      let out = ''
+      for (const child of Array.from(el.childNodes)) {
+        if (child.nodeType === Node.ELEMENT_NODE) {
+          const ctag = (child as HTMLElement).tagName.toLowerCase()
+          if (ctag === 'img') {
+            out += blockFromElement(child as HTMLElement, listDepth)
+          } else {
+            const piece = inlineFromNode(child)
+            if (cleanText(piece)) out += `${cleanText(piece)}\n\n`
+          }
+        } else if (child.nodeType === Node.TEXT_NODE) {
+          const t = cleanText(child.textContent || '')
+          if (t) out += `${t}\n\n`
+        }
+      }
+      return out
+    }
     // Nested blocks inside div
     const hasBlock = Array.from(el.children).some((c) =>
-      /^(UL|OL|TABLE|H1|H2|H3|H4|PRE|BLOCKQUOTE|P|DIV)$/i.test(c.tagName),
+      /^(UL|OL|TABLE|H1|H2|H3|H4|PRE|BLOCKQUOTE|P|DIV|IMG)$/i.test(c.tagName),
     )
     if (hasBlock) {
       let out = ''
@@ -201,7 +230,7 @@ function blockFromElement(el: HTMLElement, listDepth = 0): string {
   }
 
   if (tag === 'img') {
-    const src = el.getAttribute('src') || ''
+    const src = (el.getAttribute('src') || '').trim()
     const alt = el.getAttribute('alt') || 'image'
     if (!src || src.startsWith('data:')) return ''
     return `\n![${alt}](${src})\n\n`

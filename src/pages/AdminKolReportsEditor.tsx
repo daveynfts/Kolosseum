@@ -43,6 +43,7 @@ import {
   REPORT_TEMPLATES,
   type ReportTemplateId,
 } from '../lib/reportTemplates'
+import { docxFileToReportMarkdown } from '../lib/docxToReportMarkdown'
 import { XProfileAvatar } from '../components/XProfileAvatar'
 import { ReportMarkdown } from '../components/ReportMarkdown'
 
@@ -99,6 +100,8 @@ export function AdminKolReportsEditor({ onToast }: Props) {
   const textareaRef = useRef<HTMLTextAreaElement | null>(null)
   const fileInputRef = useRef<HTMLInputElement | null>(null)
   const coverInputRef = useRef<HTMLInputElement | null>(null)
+  const docxInputRef = useRef<HTMLInputElement | null>(null)
+  const [importingDocx, setImportingDocx] = useState(false)
 
   useEffect(() => {
     let cancelled = false
@@ -594,13 +597,100 @@ export function AdminKolReportsEditor({ onToast }: Props) {
     // 3) Plain markdown / text — browser default paste
   }
 
+  const importDocxFile = async (file: File, mode: 'replace' | 'append' = 'replace') => {
+    if (!draft || draft.deletedAt) {
+      onToast('Chọn / tạo report trước khi import DOCX')
+      return
+    }
+    if (!tokenInput.trim()) {
+      onToast('Dán FEED_ADMIN_TOKEN trước — ảnh DOCX cần upload R2')
+      return
+    }
+    setAdminToken(tokenInput)
+    setImportingDocx(true)
+    setUploadLabel(file.name)
+    const result = await docxFileToReportMarkdown(file, {
+      token: tokenInput,
+      handle: draft.handle,
+      onProgress: (msg) => setUploadLabel(msg),
+    })
+    setImportingDocx(false)
+    setUploadLabel('')
+    if (!result.ok) {
+      onToast(`DOCX lỗi: ${result.error}`)
+      return
+    }
+
+    const nextText =
+      mode === 'append' && (draft.text || '').trim()
+        ? `${draft.text.trim()}\n\n---\n\n${result.markdown}`
+        : result.markdown
+
+    setDraft((prev) => {
+      if (!prev) return prev
+      const metrics = { ...(prev.structured?.metrics || {}) }
+      const prevRaw = String(metrics.r2ImageUrls || '')
+      const prevList = prevRaw
+        ? prevRaw.split('\n').map((s) => s.trim()).filter(Boolean)
+        : []
+      metrics.r2ImageUrls = [...prevList, ...result.imageUrls]
+        .slice(-60)
+        .join('\n')
+      if (result.imageKeys[0]) metrics.lastR2Key = result.imageKeys[0]
+      metrics.docxSource = result.sourceFilename
+      metrics.docxImagesOk = result.imagesUploaded
+      metrics.docxImagesFail = result.imagesFailed
+      return {
+        ...prev,
+        text: nextText,
+        sourceFilename: result.sourceFilename,
+        structured: { ...(prev.structured || {}), metrics },
+        title:
+          prev.title && !prev.title.includes('Báo cáo mới')
+            ? prev.title
+            : `Báo cáo · @${prev.handle}`,
+      }
+    })
+    setDirty(true)
+    setViewMode('split')
+    onToast(
+      `DOCX → MD · ${result.chars.toLocaleString()} chars · ` +
+        `${result.imagesUploaded} ảnh R2` +
+        (result.imagesFailed ? ` · ${result.imagesFailed} ảnh lỗi` : ''),
+    )
+  }
+
+  const onDocxPick = async (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    e.target.value = ''
+    if (!file) return
+    let mode: 'replace' | 'append' = 'replace'
+    if ((draft?.text || '').trim().length > 80) {
+      const choice = window.confirm(
+        'OK = thay toàn bộ nội dung bằng DOCX\nCancel = nối thêm (append) vào cuối',
+      )
+      mode = choice ? 'replace' : 'append'
+    }
+    await importDocxFile(file, mode)
+  }
+
   const onEditorDrop = async (e: DragEvent<HTMLTextAreaElement>) => {
     e.preventDefault()
     setDragOver(false)
     if (draft?.deletedAt) return
-    const files = Array.from(e.dataTransfer?.files || []).filter(isImageFile)
+    const all = Array.from(e.dataTransfer?.files || [])
+    const docx = all.find(
+      (f) =>
+        /\.docx$/i.test(f.name) ||
+        (f.type || '').includes('wordprocessingml'),
+    )
+    if (docx) {
+      await importDocxFile(docx, 'replace')
+      return
+    }
+    const files = all.filter(isImageFile)
     if (!files.length) {
-      onToast('Kéo thả file ảnh (PNG/JPEG/WebP/GIF) để upload R2')
+      onToast('Kéo thả ảnh (R2) hoặc file .docx')
       return
     }
     for (const f of files.slice(0, 5)) {
@@ -1009,7 +1099,7 @@ export function AdminKolReportsEditor({ onToast }: Props) {
                     <button
                       type="button"
                       title="Upload ảnh thẳng lên Cloudflare R2"
-                      disabled={uploading}
+                      disabled={uploading || importingDocx}
                       onClick={() => fileInputRef.current?.click()}
                     >
                       {uploading
@@ -1032,13 +1122,32 @@ export function AdminKolReportsEditor({ onToast }: Props) {
                     />
                     <button
                       type="button"
+                      title="Import DOCX → Markdown + ảnh lên R2"
+                      disabled={uploading || importingDocx}
+                      className="akr-docx-btn"
+                      onClick={() => docxInputRef.current?.click()}
+                    >
+                      {importingDocx ? 'DOCX…' : '⬆ DOCX'}
+                    </button>
+                    <input
+                      ref={docxInputRef}
+                      type="file"
+                      accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                      hidden
+                      onChange={(e) => void onDocxPick(e)}
+                    />
+                    <button
+                      type="button"
                       title="Horizontal rule"
                       onClick={() => insertAtCursor('\n\n---\n\n')}
                     >
                       ―
                     </button>
-                    <span className="akr-md-tip" title="Dán từ Word/Docs/Notion/ChatGPT sẽ tự chuyển Markdown">
-                      Paste thông minh ✓
+                    <span
+                      className="akr-md-tip"
+                      title="Dán Word/Docs/Notion → MD · DOCX upload ảnh R2 · Preview Split"
+                    >
+                      DOCX+Paste → MD ✓
                     </span>
                   </div>
                 ) : null}
@@ -1060,7 +1169,7 @@ export function AdminKolReportsEditor({ onToast }: Props) {
                     <textarea
                       ref={textareaRef}
                       className="akr-textarea"
-                      disabled={readOnly || uploading}
+                      disabled={readOnly || uploading || importingDocx}
                       value={draft.text}
                       onChange={(e) => patchDraft({ text: e.target.value })}
                       onKeyDown={onMdKeyDown}
@@ -1077,21 +1186,22 @@ export function AdminKolReportsEditor({ onToast }: Props) {
                       onDrop={(e) => void onEditorDrop(e)}
                       spellCheck={false}
                       placeholder={
-                        'Viết hoặc dán nội dung…\n\n' +
-                        '• Dán từ Word / Google Docs / Notion / ChatGPT → tự thành Markdown\n' +
-                        '• Dán ảnh / kéo thả → upload R2\n' +
-                        '• Template (thanh công cụ) để có khung sẵn\n' +
-                        '• Enter trong list → tiếp tục bullet/số'
+                        'Viết, dán, hoặc import DOCX…\n\n' +
+                        '• ⬆ DOCX → Markdown đẹp + ảnh đẩy thẳng R2\n' +
+                        '• Dán Word/Docs/Notion/ChatGPT → Markdown\n' +
+                        '• Ảnh: paste / kéo thả / ⬆ R2 Ảnh\n' +
+                        '• Template · Enter trong list · Split preview'
                       }
                     />
                     <div className="akr-write__hint">
-                      {uploading ? (
+                      {uploading || importingDocx ? (
                         <strong className="akr-uploading">
-                          Đang upload R2: {uploadLabel}…
+                          {importingDocx ? 'Import DOCX: ' : 'Upload R2: '}
+                          {uploadLabel}…
                         </strong>
                       ) : (
                         <>
-                          Paste HTML→MD · Ảnh→R2 · Template · Enter=list ·
+                          DOCX→MD+R2 · Paste HTML→MD · Ảnh→R2 · Template ·
                           Ctrl+B/I/S ·{' '}
                           {(draft.text || '').length.toLocaleString()} chars
                         </>

@@ -4,12 +4,14 @@
 import {
   defaultKolReportsDataset,
   normalizeKolReportsDataset,
+  type KolReport,
   type KolReportsDataset,
 } from '../data/kolReports'
 import { withBase } from './base'
 import { getAdminToken } from './feedStore'
 
 const STORAGE_KEY = 'vn-kol-reports-v1'
+const PUBLIC_CACHE_KEY = 'vn-kol-reports-public-v1'
 export const KOL_REPORTS_EVENT = 'vn-kol-reports-updated'
 
 export type KolReportsSource = 'server' | 'cache' | 'seed'
@@ -17,6 +19,10 @@ export type KolReportsSource = 'server' | 'cache' | 'seed'
 function apiUrl() {
   return withBase('/api/kol-reports')
 }
+
+/** In-memory public dataset (shared by Surf AI / map UI) */
+let publicCache: { at: number; dataset: KolReportsDataset } | null = null
+const PUBLIC_TTL_MS = 60_000
 
 export function loadKolReportsLocal(): KolReportsDataset | null {
   try {
@@ -66,16 +72,86 @@ export async function fetchKolReportsAdmin(
   }
 }
 
-export async function fetchKolReportsPublic(): Promise<KolReportsDataset | null> {
+export async function fetchKolReportsPublic(opts?: {
+  force?: boolean
+}): Promise<KolReportsDataset | null> {
+  const force = !!opts?.force
+  if (!force && publicCache && Date.now() - publicCache.at < PUBLIC_TTL_MS) {
+    return publicCache.dataset
+  }
   try {
     const res = await fetch(`${apiUrl()}?t=${Date.now()}`, {
       headers: { Accept: 'application/json' },
     })
-    if (res.status === 404 || res.status === 503) return null
+    if (res.status === 404 || res.status === 503) {
+      // session fallback
+      try {
+        const raw = sessionStorage.getItem(PUBLIC_CACHE_KEY)
+        if (raw) {
+          const ds = normalizeKolReportsDataset(JSON.parse(raw))
+          if (ds) {
+            publicCache = { at: Date.now(), dataset: ds }
+            return ds
+          }
+        }
+      } catch {
+        /* ignore */
+      }
+      return null
+    }
     if (!res.ok) return null
-    return normalizeKolReportsDataset(await res.json())
+    const ds = normalizeKolReportsDataset(await res.json())
+    if (ds) {
+      publicCache = { at: Date.now(), dataset: ds }
+      try {
+        sessionStorage.setItem(PUBLIC_CACHE_KEY, JSON.stringify(ds))
+      } catch {
+        /* ignore */
+      }
+    }
+    return ds
   } catch {
     return null
+  }
+}
+
+/** Latest public report for a map handle (case-insensitive). */
+export function findPublicReportByHandle(
+  dataset: KolReportsDataset | null | undefined,
+  handle: string,
+): KolReport | null {
+  if (!dataset?.reports?.length) return null
+  const h = handle.replace(/^@/, '').trim().toLowerCase()
+  if (!h) return null
+  const matches = dataset.reports.filter(
+    (r) =>
+      !r.deletedAt &&
+      r.visibility === 'public' &&
+      r.handle.toLowerCase() === h,
+  )
+  if (!matches.length) return null
+  matches.sort(
+    (a, b) =>
+      new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
+  )
+  return matches[0]
+}
+
+export async function loadPublicReportForHandle(
+  handle: string,
+  opts?: { force?: boolean },
+): Promise<KolReport | null> {
+  const ds = await fetchKolReportsPublic(opts)
+  return findPublicReportByHandle(ds, handle)
+}
+
+/** Invalidate public cache after admin publish/save (optional call). */
+export function invalidatePublicKolReportsCache(): void {
+  publicCache = null
+  try {
+    sessionStorage.removeItem(PUBLIC_CACHE_KEY)
+  } catch {
+    /* ignore */
   }
 }
 
@@ -123,6 +199,8 @@ export async function saveKolReportsToServer(
       }
     }
     saveKolReportsLocal(payload)
+    // Public map/Surf AI must see latest publish flags
+    invalidatePublicKolReportsCache()
     return { ok: true, status: res.status }
   } catch (e) {
     return {

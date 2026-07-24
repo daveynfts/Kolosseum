@@ -1070,68 +1070,71 @@ export function AdminDashboard() {
 
                 <section className="admin-section">
                   <h3>
-                    Surf AI report (mock) <SrcBadge source="ai" />
+                    Surf AI → KOL Report <SrcBadge source="ai" />
                   </h3>
                   <p className="admin-hint" style={{ marginTop: 0 }}>
-                    Link <strong>PDF</strong> public trên R2 cho{' '}
-                    <strong>KOL này</strong> — user bấm logo Surf ở tab “Phân
-                    tích sâu”. Chỉ upload PDF (export từ DOCX nếu cần). Không
-                    có URL = chưa cấu hình.
+                    Map / tab “Phân tích sâu” mở <strong>KOL Report</strong>{' '}
+                    (Markdown) trên web — không còn mở PDF. Soạn tại{' '}
+                    <strong>★ KOL Reports</strong>, gắn handle map, set{' '}
+                    <strong>Visibility = Public</strong>, Save R2.
                   </p>
-                  <Field
-                    label="Surf report PDF (R2 · RadarKOLsReport/)"
-                    source="ai"
-                  >
-                    <input
-                      type="url"
-                      value={draft.surfReportPdfUrl || ''}
-                      onChange={(e) =>
-                        patchDraft(
-                          'surfReportPdfUrl',
-                          e.target.value.trim() || undefined,
-                        )
-                      }
-                      placeholder="https://pub-xxxx.r2.dev/RadarKOLsReport/….pdf"
-                      spellCheck={false}
-                      autoComplete="off"
-                    />
-                  </Field>
-                  <div
-                    className="admin-avatar-field__actions"
-                    style={{ marginTop: 8 }}
-                  >
-                    <label
-                      className={`btn btn--sm btn--file ${uploadingSurf ? 'is-disabled' : ''}`}
+                  <p className="admin-hint">
+                    Handle hiện tại: <code>@{draft.handle}</code> — report
+                    public cùng handle sẽ hiện badge “Report sẵn sàng” trên
+                    Surf AI.
+                  </p>
+                  <details className="admin-legacy-pdf">
+                    <summary>Legacy PDF (tùy chọn · không dùng trên map)</summary>
+                    <Field
+                      label="Surf report PDF (R2 · RadarKOLsReport/)"
+                      source="ai"
                     >
-                      {uploadingSurf ? 'Uploading…' : 'Upload PDF → R2'}
                       <input
-                        type="file"
-                        accept=".pdf,application/pdf"
-                        hidden
-                        disabled={uploadingSurf}
-                        onChange={(e) => {
-                          const f = e.target.files?.[0]
-                          if (f) void onUploadSurfReport(f)
-                          e.target.value = ''
-                        }}
+                        type="url"
+                        value={draft.surfReportPdfUrl || ''}
+                        onChange={(e) =>
+                          patchDraft(
+                            'surfReportPdfUrl',
+                            e.target.value.trim() || undefined,
+                          )
+                        }
+                        placeholder="https://pub-xxxx.r2.dev/RadarKOLsReport/….pdf"
+                        spellCheck={false}
+                        autoComplete="off"
                       />
-                    </label>
-                    {draft.surfReportPdfUrl ? (
-                      <a
-                        className="btn btn--sm"
-                        href={draft.surfReportPdfUrl}
-                        target="_blank"
-                        rel="noreferrer"
+                    </Field>
+                    <div
+                      className="admin-avatar-field__actions"
+                      style={{ marginTop: 8 }}
+                    >
+                      <label
+                        className={`btn btn--sm btn--file ${uploadingSurf ? 'is-disabled' : ''}`}
                       >
-                        Test open
-                      </a>
-                    ) : null}
-                    <span className="admin-hint" style={{ margin: 0 }}>
-                      Chỉ <strong>PDF</strong> (không .docx) → URL + auto{' '}
-                      <strong>Save (R2)</strong>. Prefix:{' '}
-                      <code>RadarKOLsReport/</code>
-                    </span>
-                  </div>
+                        {uploadingSurf ? 'Uploading…' : 'Upload PDF → R2'}
+                        <input
+                          type="file"
+                          accept=".pdf,application/pdf"
+                          hidden
+                          disabled={uploadingSurf}
+                          onChange={(e) => {
+                            const f = e.target.files?.[0]
+                            if (f) void onUploadSurfReport(f)
+                            e.target.value = ''
+                          }}
+                        />
+                      </label>
+                      {draft.surfReportPdfUrl ? (
+                        <a
+                          className="btn btn--sm"
+                          href={draft.surfReportPdfUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          Test open
+                        </a>
+                      ) : null}
+                    </div>
+                  </details>
                 </section>
 
                 <section className="admin-section">

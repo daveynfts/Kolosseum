@@ -1,8 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import {
   initials,
-  xAvatarTextureUrl,
-  xAvatarUrl,
+  xAvatarUrlCandidates,
 } from '../lib/avatar'
 
 interface Props {
@@ -77,17 +76,19 @@ export function XProfileAvatar({
   const imgRef = useRef<HTMLImageElement | null>(null)
 
   const sources = useMemo(() => {
+    // R2 keys are case-sensitive (Lecter_XFinance.jpg ≠ lecter_xfinance.jpg).
+    // Try casing variants + same-origin /r2 proxy, then unavatar, then optional live.
     const list: string[] = [
-      // Prefer durable R2 cache (warmed by admin scripts)
-      xAvatarUrl(clean),
-      xAvatarTextureUrl(clean),
+      ...xAvatarUrlCandidates(clean),
       `/avatars/${encodeURIComponent(clean)}.jpg`,
+      `/avatars/${encodeURIComponent(clean.toLowerCase())}.jpg`,
       // Live proxy CDN fallbacks
       `https://unavatar.io/x/${encodeURIComponent(clean)}`,
       `https://unavatar.io/twitter/${encodeURIComponent(clean)}`,
+      `https://unavatar.io/x/${encodeURIComponent(clean.toLowerCase())}`,
     ]
     if (liveUrl) list.push(liveUrl)
-    return [...new Set(list)]
+    return [...new Set(list.filter(Boolean))]
   }, [clean, liveUrl])
 
   useEffect(() => {

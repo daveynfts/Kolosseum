@@ -24,12 +24,35 @@ export function r2PublicBase(): string {
 
 /**
  * Object key relative to bucket (no leading slash).
- * Filenames match upload from public/avatars/{handle}.jpg exactly.
+ * R2 keys are case-sensitive — filenames match warm/upload handle casing
+ * (often X-style: Lecter_XFinance.jpg, Martin_bml.jpg).
  */
 export function avatarObjectKey(handle: string): string {
   const clean = handle.replace(/^@/, '').trim()
   const safe = clean.replace(/[?#%\\]/g, '')
   return `${RADAR_PREFIX}/avatars/${safe}.jpg`
+}
+
+/**
+ * Handle casing variants for R2 lookup.
+ * Reports/import often store lowercase; warm scripts keep X casing.
+ */
+export function avatarHandleVariants(handle: string): string[] {
+  const clean = handle.replace(/^@/, '').trim().replace(/[?#%\\/]/g, '')
+  if (!clean) return []
+  const lower = clean.toLowerCase()
+  const out = new Set<string>()
+  out.add(clean)
+  out.add(lower)
+  // Martin_bml style: first letter upper, rest unchanged lower
+  out.add(lower.charAt(0).toUpperCase() + lower.slice(1))
+  // Lecter_Xfinance style: capitalize after start/_ 
+  out.add(
+    lower.replace(/(^|_)([a-z])/g, (_, sep: string, c: string) => sep + c.toUpperCase()),
+  )
+  // Camel after underscore: xfinance → Xfinance (still may miss XFinance)
+  // Prefer map-handle / liveFallback for exotic mixed case.
+  return [...out]
 }
 
 /** Direct R2 URL — best for <img> display. */
@@ -38,11 +61,41 @@ export function xAvatarUrl(handle: string): string {
 }
 
 /**
+ * Ordered R2 (+ proxy) candidates across casing variants.
+ * Prefer exact handle first, then common X-style variants.
+ */
+export function xAvatarUrlCandidates(handle: string): string[] {
+  const base = r2PublicBase()
+  const urls: string[] = []
+  for (const h of avatarHandleVariants(handle)) {
+    const key = avatarObjectKey(h)
+    urls.push(`${base}/${key}`)
+    urls.push(`/r2/${key}`)
+  }
+  return [...new Set(urls)]
+}
+
+/**
  * Same-origin path proxied to R2 (vercel.json rewrite).
  * WebGL TextureLoader + DOM fallback.
  */
 export function xAvatarTextureUrl(handle: string): string {
   return `/r2/${avatarObjectKey(handle)}`
+}
+
+/**
+ * Prefer map/sheet handle casing when available (case-insensitive match).
+ * Fixes reports that stored lowercase handles while R2 avatars keep X casing.
+ */
+export function resolveAvatarHandle(
+  handle: string,
+  kols?: Array<{ handle: string }>,
+): string {
+  const clean = handle.replace(/^@/, '').trim()
+  if (!clean || !kols?.length) return clean
+  const lower = clean.toLowerCase()
+  const hit = kols.find((k) => k.handle.replace(/^@/, '').toLowerCase() === lower)
+  return hit ? hit.handle.replace(/^@/, '').trim() : clean
 }
 
 /**

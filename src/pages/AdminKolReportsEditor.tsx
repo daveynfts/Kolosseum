@@ -43,6 +43,7 @@ import { docxFileToReportMarkdown } from '../lib/docxToReportMarkdown'
 import { XProfileAvatar } from '../components/XProfileAvatar'
 import { ReportMarkdown } from '../components/ReportMarkdown'
 import type { Kol } from '../types'
+import { resolveAvatarHandle } from '../lib/avatar'
 
 interface Props {
   onToast: (msg: string) => void
@@ -138,6 +139,12 @@ export function AdminKolReportsEditor({ onToast, kols = [] }: Props) {
       mapKolsSorted.find((k) => k.handle.toLowerCase() === h) || null
     )
   }, [draft?.handle, mapKolsSorted])
+
+  /** Map casing for R2 avatars (case-sensitive keys on R2) */
+  const avatarHandle = useCallback(
+    (handle: string) => resolveAvatarHandle(handle, kols),
+    [kols],
+  )
 
   useEffect(() => {
     let cancelled = false
@@ -1084,9 +1091,10 @@ export function AdminKolReportsEditor({ onToast, kols = [] }: Props) {
                 ) : (
                   <span className="akr-card__avatar">
                     <XProfileAvatar
-                      handle={r.handle}
+                      handle={avatarHandle(r.handle)}
                       name={r.displayName || r.handle}
                       size={36}
+                      liveFallback
                     />
                   </span>
                 )}
@@ -1150,9 +1158,10 @@ export function AdminKolReportsEditor({ onToast, kols = [] }: Props) {
 
               <div className="akr-detail__head">
                 <XProfileAvatar
-                  handle={draft.handle}
+                  handle={avatarHandle(draft.handle)}
                   name={draft.displayName || draft.handle}
                   size={44}
+                  liveFallback
                 />
                 <div className="akr-detail__titles">
                   <input
@@ -1623,6 +1632,7 @@ export function AdminKolReportsEditor({ onToast, kols = [] }: Props) {
                                   handle={k.handle}
                                   name={k.displayName}
                                   size={22}
+                                  liveFallback
                                 />
                                 <span>
                                   <strong>@{k.handle}</strong>

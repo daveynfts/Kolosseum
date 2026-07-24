@@ -1658,6 +1658,123 @@
   flex-wrap: wrap;
   gap: 6px;
 }
+.akr-editor-shell {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  flex: 1;
+}
+.akr-editor-shell.is-fullscreen {
+  position: fixed;
+  inset: 0;
+  z-index: 12000;
+  background: linear-gradient(180deg, #0b1220 0%, #0f172a 100%);
+  box-shadow: 0 0 0 1px rgba(148, 163, 184, 0.12);
+  padding: 0;
+}
+.akr-editor-shell.is-fullscreen .akr-editor-chrome {
+  flex-shrink: 0;
+  padding: 10px 16px;
+  background: rgba(2, 6, 23, 0.92);
+  border-bottom: 1px solid rgba(125, 211, 252, 0.15);
+  backdrop-filter: blur(8px);
+}
+.akr-editor-shell.is-fullscreen .akr-editor {
+  flex: 1;
+  min-height: 0;
+  height: calc(100vh - 56px);
+}
+.akr-editor-shell.is-fullscreen .akr-write,
+.akr-editor-shell.is-fullscreen .akr-preview {
+  min-height: 0;
+  height: 100%;
+  max-height: none;
+}
+.akr-editor-shell.is-fullscreen .akr-textarea {
+  min-height: 0;
+  height: 100%;
+  resize: none;
+  flex: 1;
+}
+.akr-editor-shell.is-fullscreen .akr-write__hint {
+  flex-shrink: 0;
+}
+.akr-split-controls {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.akr-sync-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.72rem;
+  font-weight: 650;
+  color: #94a3b8;
+  padding: 5px 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  background: rgba(15, 23, 42, 0.45);
+  cursor: pointer;
+  user-select: none;
+}
+.akr-sync-toggle input {
+  accent-color: #38bdf8;
+  width: 14px;
+  height: 14px;
+  margin: 0;
+}
+.akr-sync-toggle.is-on {
+  color: #7dd3fc;
+  border-color: rgba(125, 211, 252, 0.4);
+  background: rgba(14, 165, 233, 0.12);
+}
+.akr-fs-btn.is-active {
+  border-color: rgba(251, 191, 36, 0.45) !important;
+  color: #fde68a !important;
+  background: rgba(245, 158, 11, 0.12) !important;
+}
+.akr-fs-hint {
+  font-size: 0.68rem;
+  color: #94a3b8;
+  font-weight: 600;
+}
+.akr-pane-label {
+  flex-shrink: 0;
+  padding: 4px 12px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #64748b;
+  background: rgba(15, 23, 42, 0.55);
+  border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.akr-pane-label--preview {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: rgba(8, 12, 24, 0.92);
+  backdrop-filter: blur(6px);
+}
+.akr-sync-badge {
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #86efac;
+  background: rgba(34, 197, 94, 0.12);
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  border-radius: 999px;
+  padding: 1px 7px;
+}
+.akr-editor--sync .akr-write {
+  border-right-color: rgba(125, 211, 252, 0.25);
+}
 .akr-editor-chrome {
   display: flex;
   flex-wrap: wrap;
@@ -1726,6 +1843,7 @@
   display: grid;
   min-height: 360px;
   flex: 1;
+  min-width: 0;
 }
 .akr-editor--write {
   grid-template-columns: 1fr;
@@ -1735,9 +1853,13 @@
 }
 .akr-editor--split {
   grid-template-columns: 1fr 1fr;
+  min-height: min(70vh, 720px);
 }
 @media (max-width: 900px) {
   .akr-editor--split {
+    grid-template-columns: 1fr;
+  }
+  .akr-editor-shell.is-fullscreen .akr-editor--split {
     grid-template-columns: 1fr;
   }
 }
@@ -1747,6 +1869,8 @@
   min-height: 360px;
   border-right: 1px solid rgba(148, 163, 184, 0.1);
   position: relative;
+  min-width: 0;
+  overflow: hidden;
 }
 .akr-write.is-dragover::after {
   content: 'Thả ảnh → R2  ·  hoặc .docx → Markdown + ảnh R2';
@@ -1904,6 +2028,11 @@
   line-height: 1.55;
   padding: 14px 16px;
   outline: none;
+  overflow: auto;
+}
+.akr-editor--split .akr-textarea {
+  resize: none;
+  min-height: 0;
 }
 .akr-textarea:disabled {
   opacity: 0.65;
@@ -1916,10 +2045,22 @@
   background: rgba(8, 12, 24, 0.4);
 }
 .akr-preview {
-  padding: 16px 18px 24px;
+  padding: 0 0 24px;
   overflow: auto;
   background: rgba(8, 12, 24, 0.25);
   min-height: 320px;
+  min-width: 0;
+}
+.akr-preview .report-md {
+  padding: 12px 18px 8px;
+}
+.akr-editor--split .akr-write,
+.akr-editor--split .akr-preview {
+  max-height: min(70vh, 720px);
+}
+.akr-editor-shell.is-fullscreen .akr-editor--split .akr-write,
+.akr-editor-shell.is-fullscreen .akr-editor--split .akr-preview {
+  max-height: none;
 }
 .akr-side-tabs {
   display: flex;

@@ -97,10 +97,16 @@ export function AdminKolReportsEditor({ onToast, kols = [] }: Props) {
   )
   const [viewMode, setViewMode] = useState<ViewMode>('split')
   const [sidePanel, setSidePanel] = useState<SidePanel>('meta')
+  /** Split: fullscreen overlay + linked scroll Write ↔ Preview */
+  const [splitFullscreen, setSplitFullscreen] = useState(false)
+  const [scrollSync, setScrollSync] = useState(true)
   /** Local draft of selected report — changelog only on commit/save */
   const [draft, setDraft] = useState<KolReport | null>(null)
   const baselineRef = useRef<KolReport | null>(null)
   const textareaRef = useRef<HTMLTextAreaElement | null>(null)
+  const previewRef = useRef<HTMLDivElement | null>(null)
+  const editorShellRef = useRef<HTMLDivElement | null>(null)
+  const scrollLockRef = useRef<'write' | 'preview' | null>(null)
   const fileInputRef = useRef<HTMLInputElement | null>(null)
   const coverInputRef = useRef<HTMLInputElement | null>(null)
   const docxInputRef = useRef<HTMLInputElement | null>(null)
@@ -149,6 +155,77 @@ export function AdminKolReportsEditor({ onToast, kols = [] }: Props) {
       cancelled = true
     }
   }, [])
+
+  // Fullscreen: Esc to exit + lock body scroll
+  useEffect(() => {
+    if (!splitFullscreen) return
+    const prev = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    const onKey = (e: globalThis.KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.preventDefault()
+        setSplitFullscreen(false)
+      }
+      // F11-like: Ctrl+Shift+F toggles
+      if (e.key === 'f' && e.ctrlKey && e.shiftKey) {
+        e.preventDefault()
+        setSplitFullscreen(false)
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => {
+      document.body.style.overflow = prev
+      window.removeEventListener('keydown', onKey)
+    }
+  }, [splitFullscreen])
+
+  const enterSplitFullscreen = useCallback(() => {
+    setViewMode('split')
+    setSplitFullscreen(true)
+  }, [])
+
+  const exitSplitFullscreen = useCallback(() => {
+    setSplitFullscreen(false)
+  }, [])
+
+  /**
+   * Sync scroll ratio between Write (textarea) and Preview pane.
+   * Proportional mapping so long docs stay roughly aligned.
+   */
+  const syncScrollFrom = useCallback(
+    (source: 'write' | 'preview') => {
+      if (!scrollSync || viewMode !== 'split') return
+      if (scrollLockRef.current && scrollLockRef.current !== source) return
+      const writeEl = textareaRef.current
+      const prevEl = previewRef.current
+      if (!writeEl || !prevEl) return
+      const a = source === 'write' ? writeEl : prevEl
+      const b = source === 'write' ? prevEl : writeEl
+      const aMax = a.scrollHeight - a.clientHeight
+      const bMax = b.scrollHeight - b.clientHeight
+      if (aMax <= 0) {
+        b.scrollTop = 0
+        return
+      }
+      if (bMax <= 0) return
+      const ratio = Math.min(1, Math.max(0, a.scrollTop / aMax))
+      scrollLockRef.current = source
+      b.scrollTop = ratio * bMax
+      // release lock after layout
+      requestAnimationFrame(() => {
+        scrollLockRef.current = null
+      })
+    },
+    [scrollSync, viewMode],
+  )
+
+  const onWriteScroll = useCallback(() => {
+    syncScrollFrom('write')
+  }, [syncScrollFrom])
+
+  const onPreviewScroll = useCallback(() => {
+    syncScrollFrom('preview')
+  }, [syncScrollFrom])
 
   // Sync draft when selection changes (flush previous dirty into dataset first if same session?)
   useEffect(() => {
@@ -453,6 +530,13 @@ export function AdminKolReportsEditor({ onToast, kols = [] }: Props) {
     if ((e.metaKey || e.ctrlKey) && e.key === 's') {
       e.preventDefault()
       void save()
+    }
+    // Ctrl+Shift+F — toggle Split fullscreen
+    if ((e.metaKey || e.ctrlKey) && e.shiftKey && (e.key === 'f' || e.key === 'F')) {
+      e.preventDefault()
+      if (splitFullscreen) exitSplitFullscreen()
+      else enterSplitFullscreen()
+      return
     }
     // Enter: continue markdown lists automatically
     if (e.key === 'Enter' && !e.shiftKey && !e.metaKey && !e.ctrlKey) {
@@ -1144,6 +1228,12 @@ export function AdminKolReportsEditor({ onToast, kols = [] }: Props) {
                 </div>
               </div>
 
+              <div
+                ref={editorShellRef}
+                className={`akr-editor-shell ${
+                  splitFullscreen ? 'is-fullscreen' : ''
+                }`}
+              >
               <div className="akr-editor-chrome">
                 <div className="akr-seg akr-seg--sm">
                   {(
@@ -1157,11 +1247,47 @@ export function AdminKolReportsEditor({ onToast, kols = [] }: Props) {
                       key={k}
                       type="button"
                       className={`akr-seg__btn ${viewMode === k ? 'is-active' : ''}`}
-                      onClick={() => setViewMode(k)}
+                      onClick={() => {
+                        setViewMode(k)
+                        if (k !== 'split' && splitFullscreen) {
+                          setSplitFullscreen(false)
+                        }
+                      }}
                     >
                       {label}
                     </button>
                   ))}
+                </div>
+                <div className="akr-split-controls">
+                  <label
+                    className={`akr-sync-toggle ${scrollSync ? 'is-on' : ''}`}
+                    title="Đồng bộ scroll Write ↔ Preview khi Split"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={scrollSync}
+                      onChange={(e) => setScrollSync(e.target.checked)}
+                    />
+                    Sync scroll
+                  </label>
+                  <button
+                    type="button"
+                    className={`admin-btn akr-fs-btn ${splitFullscreen ? 'is-active' : ''}`}
+                    title={
+                      splitFullscreen
+                        ? 'Thoát fullscreen (Esc)'
+                        : 'Fullscreen Split — chỉnh sửa rộng'
+                    }
+                    onClick={() => {
+                      if (splitFullscreen) exitSplitFullscreen()
+                      else enterSplitFullscreen()
+                    }}
+                  >
+                    {splitFullscreen ? '⛶ Exit FS' : '⛶ Fullscreen'}
+                  </button>
+                  {splitFullscreen && (
+                    <span className="akr-fs-hint">Esc để thoát</span>
+                  )}
                 </div>
                 {!readOnly && viewMode !== 'preview' ? (
                   <div className="akr-md-tools">
@@ -1311,12 +1437,13 @@ export function AdminKolReportsEditor({ onToast, kols = [] }: Props) {
                     : viewMode === 'preview'
                       ? 'akr-editor--preview'
                       : 'akr-editor--write'
-                }`}
+                }${scrollSync && viewMode === 'split' ? ' akr-editor--sync' : ''}`}
               >
                 {viewMode !== 'preview' && (
                   <div
                     className={`akr-write ${dragOver ? 'is-dragover' : ''}`}
                   >
+                    <div className="akr-pane-label">Write</div>
                     <textarea
                       ref={textareaRef}
                       className="akr-textarea"
@@ -1325,6 +1452,7 @@ export function AdminKolReportsEditor({ onToast, kols = [] }: Props) {
                       onChange={(e) => patchDraft({ text: e.target.value })}
                       onKeyDown={onMdKeyDown}
                       onPaste={(e) => void onEditorPaste(e)}
+                      onScroll={onWriteScroll}
                       onDragEnter={(e) => {
                         e.preventDefault()
                         if (!readOnly) setDragOver(true)
@@ -1341,7 +1469,7 @@ export function AdminKolReportsEditor({ onToast, kols = [] }: Props) {
                         '• ⬆ DOCX → Markdown đẹp + ảnh đẩy thẳng R2\n' +
                         '• Dán Word/Docs/Notion/ChatGPT → Markdown\n' +
                         '• Ảnh: paste / kéo thả / ⬆ R2 Ảnh\n' +
-                        '• Template · Enter trong list · Split preview'
+                        '• Split + Fullscreen + Sync scroll để chỉnh dễ'
                       }
                     />
                     <div className="akr-write__hint">
@@ -1352,8 +1480,11 @@ export function AdminKolReportsEditor({ onToast, kols = [] }: Props) {
                         </strong>
                       ) : (
                         <>
-                          DOCX→MD+R2 · Paste HTML→MD · Ảnh→R2 · Template ·
-                          Ctrl+B/I/S ·{' '}
+                          {viewMode === 'split' && scrollSync
+                            ? 'Scroll sync ON · '
+                            : ''}
+                          {splitFullscreen ? 'Fullscreen · Esc thoát · ' : ''}
+                          DOCX→MD+R2 · Ctrl+B/I/S ·{' '}
                           {(draft.text || '').length.toLocaleString()} chars
                         </>
                       )}
@@ -1361,12 +1492,25 @@ export function AdminKolReportsEditor({ onToast, kols = [] }: Props) {
                   </div>
                 )}
                 {viewMode !== 'write' && (
-                  <div className="akr-preview">
+                  <div
+                    ref={previewRef}
+                    className="akr-preview"
+                    onScroll={onPreviewScroll}
+                  >
+                    <div className="akr-pane-label akr-pane-label--preview">
+                      Preview
+                      {scrollSync && viewMode === 'split' ? (
+                        <span className="akr-sync-badge">synced</span>
+                      ) : null}
+                    </div>
                     <ReportMarkdown text={draft.text} />
                   </div>
                 )}
               </div>
+              </div>
 
+              {!splitFullscreen && (
+              <>
               <div className="akr-side-tabs">
                 {(
                   [
@@ -1785,6 +1929,8 @@ export function AdminKolReportsEditor({ onToast, kols = [] }: Props) {
                     )}
                   </ul>
                 </div>
+              )}
+              </>
               )}
             </>
           )}

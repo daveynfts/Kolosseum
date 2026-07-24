@@ -116,8 +116,8 @@ const MATRIX_FILTER_PILLS: Array<{
   },
   {
     id: 'quad_nurture',
-    label: 'Nuôi dưỡng',
-    title: 'Vùng Nuôi dưỡng (chất lượng cao · ít mention)',
+    label: 'Có tiềm năng',
+    title: 'Vùng Có tiềm năng (chất lượng cao · ít mention)',
     group: 'quad',
     tier: 'primary',
   },

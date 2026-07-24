@@ -184,7 +184,7 @@ const DEFAULT_QUAD: Record<ScexQuadrant, ScexQuadrantLabel> = {
     subtitle: 'Hay mention · chất lượng cao — nên ưu tiên tiếp cận',
   },
   nurture: {
-    title: 'Nuôi dưỡng',
+    title: 'Có tiềm năng',
     subtitle: 'Chất lượng cao · ít mention — nên khuyến khích tương tác',
   },
   noise: {

@@ -29,7 +29,7 @@ const STORY_ZONE: Record<
   { title: string; hint: string; corner: 'tl' | 'tr' | 'bl' | 'br' }
 > = {
   nurture: {
-    title: 'Nuôi dưỡng',
+    title: 'Có tiềm năng',
     hint: 'Chất lượng cao · ít mention',
     corner: 'tl',
   },

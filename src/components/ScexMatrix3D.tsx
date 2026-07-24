@@ -350,7 +350,7 @@ export function ScexMatrix3D(props: ScexMatrix3DProps) {
     },
     {
       key: 'nurture',
-      title: q.nurture?.title || 'TIỀM NĂNG',
+      title: q.nurture?.title || 'Có tiềm năng',
       sub: q.nurture?.subtitle || '',
       tone: 'nurture' as const,
     },
@@ -377,7 +377,7 @@ export function ScexMatrix3D(props: ScexMatrix3DProps) {
       <div className="scex3d-stage">
         <div className="scex-frame-row scex-frame-row--top" aria-hidden>
           <span className="scex-frame-chip scex-frame-chip--nurture">
-            {q.nurture?.title || 'TIỀM NĂNG'}
+            {q.nurture?.title || 'Có tiềm năng'}
           </span>
           <span className="scex-frame-chip scex-frame-chip--stars">
             {q.stars?.title || 'TRỌNG ĐIỂM'}

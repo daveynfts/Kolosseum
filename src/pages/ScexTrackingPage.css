@@ -480,8 +480,9 @@
   flex-direction: column;
   gap: 6px;
 }
-.scex-matrix.is-fullscreen .scex2d-zoombar {
-  flex: 0 0 auto;
+.scex-matrix.is-fullscreen .scex2d-zoom-fab {
+  right: 16px;
+  bottom: 16px;
 }
 .scex-matrix.is-fullscreen .scex2d-stage,
 .scex-matrix.is-fullscreen .scex3d-stage {
@@ -962,65 +963,37 @@
   gap: 10px;
 }
 
-.scex2d-zoombar {
+/* Compact floating zoom FAB — overlay inside plot, zero layout height */
+.scex2d-zoom-fab {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  z-index: 30;
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
   align-items: center;
-  gap: 6px;
-  padding: 0 2px 2px;
+  gap: 3px;
+  padding: 5px;
+  border-radius: 14px;
+  background: rgba(6, 10, 20, 0.82);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow:
+    0 10px 28px rgba(0, 0, 0, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(12px) saturate(140%);
+  -webkit-backdrop-filter: blur(12px) saturate(140%);
+  pointer-events: auto;
 }
 
-/* Lite Partner: zoom bar only on hover (or forced on in fullscreen) */
-.scex2d-root--zoom-hover .scex2d-zoombar {
-  opacity: 0;
-  max-height: 0;
-  overflow: hidden;
-  pointer-events: none;
-  padding: 0;
-  margin: 0;
-  transition:
-    opacity 0.18s ease,
-    max-height 0.2s ease,
-    padding 0.2s ease;
-}
-.scex2d-root--zoom-hover:hover .scex2d-zoombar,
-.scex2d-root--zoom-hover:focus-within .scex2d-zoombar {
-  opacity: 1;
-  max-height: 48px;
-  pointer-events: auto;
-  padding: 0 2px 2px;
-}
-.scex2d-root--zoom-on .scex2d-zoombar {
-  opacity: 1;
-  max-height: none;
-  pointer-events: auto;
-}
-/* Fullscreen always shows zoom */
-.scex-matrix.is-fullscreen .scex2d-root--zoom-hover .scex2d-zoombar {
-  opacity: 1;
-  max-height: none;
-  pointer-events: auto;
-  padding: 0 2px 2px;
-}
-@media (hover: none) {
-  /* Touch devices: keep zoom accessible */
-  .scex2d-root--zoom-hover .scex2d-zoombar {
-    opacity: 1;
-    max-height: none;
-    pointer-events: auto;
-    padding: 0 2px 2px;
-  }
-}
-
-.scex2d-zoombar__btn {
+.scex2d-zoom-fab__btn {
   appearance: none;
-  width: 34px;
-  height: 34px;
+  width: 32px;
+  height: 32px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   border-radius: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   background: rgba(255, 255, 255, 0.06);
   color: #e2e8f0;
   font: inherit;
@@ -1030,54 +1003,65 @@
   cursor: pointer;
   transition: background 0.15s, border-color 0.15s, color 0.15s;
 }
-
-.scex2d-zoombar__btn:hover:not(:disabled) {
-  border-color: rgba(125, 211, 252, 0.4);
-  background: rgba(56, 189, 248, 0.12);
+.scex2d-zoom-fab__btn:hover:not(:disabled) {
+  border-color: rgba(125, 211, 252, 0.45);
+  background: rgba(56, 189, 248, 0.16);
   color: #fff;
 }
-
-.scex2d-zoombar__btn:disabled {
-  opacity: 0.35;
+.scex2d-zoom-fab__btn:disabled {
+  opacity: 0.3;
   cursor: not-allowed;
 }
 
-.scex2d-zoombar__pct {
+.scex2d-zoom-fab__level {
   appearance: none;
-  min-width: 56px;
-  height: 34px;
-  padding: 0 10px;
-  border-radius: 10px;
-  border: 1px solid rgba(56, 189, 248, 0.28);
-  background: rgba(56, 189, 248, 0.1);
-  color: #7dd3fc;
+  min-width: 32px;
+  height: 22px;
+  padding: 0 4px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: rgba(148, 163, 184, 0.95);
   font: inherit;
-  font-size: 0.78rem;
-  font-weight: 700;
+  font-size: 0.62rem;
+  font-weight: 750;
   font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
   cursor: pointer;
-  transition: background 0.15s, border-color 0.15s;
+  transition: color 0.15s, background 0.15s;
 }
-
-.scex2d-zoombar__pct:hover {
-  border-color: rgba(125, 211, 252, 0.45);
-  background: rgba(56, 189, 248, 0.16);
+.scex2d-zoom-fab__level.is-active {
+  color: #7dd3fc;
+  background: rgba(56, 189, 248, 0.12);
+}
+.scex2d-zoom-fab__level:hover {
   color: #e0f2fe;
 }
 
-.scex2d-zoombar__hint {
-  margin-left: 4px;
-  font-size: 0.68rem;
-  color: rgba(226, 232, 240, 0.4);
-  font-weight: 500;
+.scex2d-zoom-fab__rail {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 0 1px;
 }
-
-@media (max-width: 640px) {
-  .scex2d-zoombar__hint {
-    width: 100%;
-    margin-left: 0;
-    margin-top: 2px;
-  }
+.scex2d-zoom-fab__tick {
+  appearance: none;
+  width: 6px;
+  height: 6px;
+  padding: 0;
+  border-radius: 50%;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  background: transparent;
+  cursor: pointer;
+}
+.scex2d-zoom-fab__tick.is-on {
+  background: #38bdf8;
+  border-color: #7dd3fc;
+  box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.25);
+}
+.scex2d-zoom-fab__tick:hover {
+  border-color: #7dd3fc;
 }
 
 .scex2d-stage {
@@ -1164,29 +1148,101 @@
   /* no CSS transition — discrete steps feel snappier & avoid fight with wheel */
 }
 
-.scex2d-zoombar__steps {
+/* Cluster nodes */
+.scex-cluster {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  border: 2px solid rgba(125, 211, 252, 0.55);
+  padding: 0;
+  margin: 0;
+  appearance: none;
+  -webkit-appearance: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background:
+    radial-gradient(circle at 40% 35%, rgba(56, 189, 248, 0.22), transparent 60%),
+    rgba(8, 14, 28, 0.92);
+  box-shadow:
+    0 10px 24px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(255, 255, 255, 0.08),
+    0 0 20px rgba(56, 189, 248, 0.18);
+  cursor: pointer;
+  pointer-events: auto;
+  font: inherit;
+  color: inherit;
+  overflow: visible;
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+.scex-cluster:hover,
+.scex-cluster.is-tip {
+  transform: translate(-50%, -50%) scale(1.08);
+  z-index: 90 !important;
+  box-shadow:
+    0 14px 30px rgba(0, 0, 0, 0.55),
+    0 0 0 2px rgba(125, 211, 252, 0.55),
+    0 0 28px rgba(56, 189, 248, 0.35);
+}
+.scex-cluster__stack {
+  position: relative;
+  width: 70%;
+  height: 55%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.scex-cluster__face {
+  position: absolute;
+  width: 48%;
+  height: auto;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 1.5px solid rgba(8, 12, 22, 0.95);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+.scex-cluster__face > * {
+  width: 100% !important;
+  height: 100% !important;
+  border-radius: 50%;
+}
+.scex-cluster__badge {
+  position: absolute;
+  right: -2px;
+  bottom: -2px;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #38bdf8, #22c55e);
+  color: #041018;
+  font-size: 0.68rem;
+  font-weight: 800;
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  margin-left: 4px;
+  justify-content: center;
+  border: 1.5px solid #041018;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+  z-index: 5;
 }
-.scex2d-zoombar__dot {
-  appearance: none;
-  width: 8px;
-  height: 8px;
-  padding: 0;
-  border-radius: 50%;
-  border: 1px solid rgba(148, 163, 184, 0.35);
-  background: transparent;
-  cursor: pointer;
-}
-.scex2d-zoombar__dot.is-on {
-  background: #38bdf8;
-  border-color: #7dd3fc;
-  box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.25);
-}
-.scex2d-zoombar__dot:hover {
-  border-color: #7dd3fc;
+.scex-cluster__map {
+  position: absolute;
+  left: -2px;
+  top: -2px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: #22c55e;
+  color: #041018;
+  font-size: 0.58rem;
+  font-weight: 800;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1.5px solid #041018;
+  z-index: 5;
 }
 
 .scex2d-wash {
@@ -1505,6 +1561,19 @@
   margin-left: auto;
   color: rgba(125, 211, 252, 0.7);
   font-weight: 600;
+}
+.scex2d-encode__cluster {
+  color: rgba(186, 230, 253, 0.85);
+}
+.scex2d-encode__cluster-icon {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(56, 189, 248, 0.65);
+  background:
+    radial-gradient(circle at 35% 35%, rgba(56, 189, 248, 0.5), transparent 65%),
+    rgba(15, 23, 42, 0.9);
+  box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.12);
 }
 
 .scex-bubble__tip-zone {

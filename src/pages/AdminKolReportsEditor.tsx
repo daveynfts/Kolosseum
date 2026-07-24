@@ -975,12 +975,16 @@ export function AdminKolReportsEditor({ onToast, kols = [] }: Props) {
             onChange={(e) => setTokenInput(e.target.value)}
             autoComplete="off"
           />
-          <button type="button" className="admin-btn" onClick={() => void reload()}>
+          <button
+            type="button"
+            className="admin-btn admin-btn--ghost admin-btn--sm"
+            onClick={() => void reload()}
+          >
             Reload
           </button>
           <button
             type="button"
-            className="admin-btn admin-btn--primary"
+            className="admin-btn admin-btn--primary admin-btn--sm"
             disabled={saving || !dirty}
             onClick={() => void save()}
           >
@@ -1021,12 +1025,16 @@ export function AdminKolReportsEditor({ onToast, kols = [] }: Props) {
             Trash
           </button>
         </div>
-        <button type="button" className="admin-btn admin-btn--primary" onClick={addReport}>
+        <button
+          type="button"
+          className="admin-btn admin-btn--primary admin-btn--sm"
+          onClick={addReport}
+        >
           + New report
         </button>
         <button
           type="button"
-          className="admin-btn"
+          className="admin-btn admin-btn--ghost admin-btn--sm"
           onClick={() => {
             const blob = new Blob([exportKolReportsJson(dataset)], {
               type: 'application/json',
@@ -1039,7 +1047,7 @@ export function AdminKolReportsEditor({ onToast, kols = [] }: Props) {
         >
           Export
         </button>
-        <label className="admin-btn akr-file-btn">
+        <label className="admin-btn admin-btn--ghost admin-btn--sm akr-file-btn">
           Import JSON
           <input
             type="file"
@@ -1063,7 +1071,7 @@ export function AdminKolReportsEditor({ onToast, kols = [] }: Props) {
         </label>
         <button
           type="button"
-          className="admin-btn"
+          className="admin-btn admin-btn--ghost admin-btn--sm"
           onClick={() => {
             clearKolReportsCache()
             onToast('Đã xóa cache local')
@@ -1130,10 +1138,10 @@ export function AdminKolReportsEditor({ onToast, kols = [] }: Props) {
               {!showTrash && (
                 <button
                   type="button"
-                  className="admin-btn admin-btn--primary"
+                  className="admin-btn admin-btn--primary admin-btn--sm"
                   onClick={addReport}
                 >
-                  Tạo báo cáo Markdown
+                  + New report
                 </button>
               )}
             </div>
@@ -1146,7 +1154,7 @@ export function AdminKolReportsEditor({ onToast, kols = [] }: Props) {
               <p>Chọn một report ở danh sách, hoặc tạo mới.</p>
               <button
                 type="button"
-                className="admin-btn admin-btn--primary"
+                className="admin-btn admin-btn--primary admin-btn--sm"
                 onClick={addReport}
               >
                 + New report
@@ -1200,16 +1208,20 @@ export function AdminKolReportsEditor({ onToast, kols = [] }: Props) {
                     <>
                       <button
                         type="button"
-                        className={`admin-btn ${draft.visibility === 'public' ? '' : 'admin-btn--primary'}`}
+                        className={`admin-btn admin-btn--sm ${
+                          draft.visibility === 'public'
+                            ? 'admin-btn--ghost'
+                            : 'admin-btn--primary'
+                        }`}
                         onClick={togglePublish}
                       >
                         {draft.visibility === 'public'
-                          ? 'Set private'
+                          ? 'Private'
                           : 'Publish'}
                       </button>
                       <button
                         type="button"
-                        className="admin-btn"
+                        className="admin-btn admin-btn--ghost admin-btn--sm admin-btn--danger"
                         onClick={softDelete}
                       >
                         Delete
@@ -1219,7 +1231,7 @@ export function AdminKolReportsEditor({ onToast, kols = [] }: Props) {
                   {readOnly && (
                     <button
                       type="button"
-                      className="admin-btn admin-btn--primary"
+                      className="admin-btn admin-btn--primary admin-btn--sm"
                       onClick={restore}
                     >
                       Restore
@@ -1275,7 +1287,11 @@ export function AdminKolReportsEditor({ onToast, kols = [] }: Props) {
                     )}
                     <button
                       type="button"
-                      className={`admin-btn akr-fs-btn ${splitFullscreen ? 'is-active' : ''}`}
+                      className={`admin-btn admin-btn--sm akr-fs-btn ${
+                        splitFullscreen
+                          ? 'admin-btn--primary is-active'
+                          : 'admin-btn--ghost'
+                      }`}
                       title={
                         splitFullscreen
                           ? 'Thoát fullscreen (Esc)'
@@ -1289,7 +1305,7 @@ export function AdminKolReportsEditor({ onToast, kols = [] }: Props) {
                         }
                       }}
                     >
-                      {splitFullscreen ? 'Exit FS' : 'Fullscreen'}
+                      {splitFullscreen ? 'Exit full' : 'Fullscreen'}
                     </button>
                     {splitFullscreen && (
                       <span className="akr-fs-hint">Esc</span>
@@ -1596,29 +1612,30 @@ export function AdminKolReportsEditor({ onToast, kols = [] }: Props) {
                     />
                     {linkedMapKol ? (
                       <div className="akr-map-linked">
-                        <XProfileAvatar
-                          handle={linkedMapKol.handle}
-                          name={linkedMapKol.displayName}
-                          size={28}
-                        />
-                        <div>
-                          <strong>@{linkedMapKol.handle}</strong>
-                          <small>
-                            {linkedMapKol.displayName}
-                            {linkedMapKol.rank
-                              ? ` · ${linkedMapKol.rank}`
-                              : ''}
-                            {linkedMapKol.niche
-                              ? ` · ${linkedMapKol.niche}`
-                              : ''}
-                            {linkedMapKol.followers
-                              ? ` · ${linkedMapKol.followers.toLocaleString()} fl`
-                              : ''}
-                          </small>
+                        {/* No avatar here — report head already shows profile */}
+                        <div className="akr-map-linked__info">
+                          <span className="akr-map-linked__ok" aria-hidden>
+                            ✓
+                          </span>
+                          <div>
+                            <strong>Đã gắn map · @{linkedMapKol.handle}</strong>
+                            <small>
+                              {linkedMapKol.displayName}
+                              {linkedMapKol.rank
+                                ? ` · ${linkedMapKol.rank}`
+                                : ''}
+                              {linkedMapKol.niche
+                                ? ` · ${linkedMapKol.niche}`
+                                : ''}
+                              {linkedMapKol.followers
+                                ? ` · ${linkedMapKol.followers.toLocaleString()} fl`
+                                : ''}
+                            </small>
+                          </div>
                         </div>
                         <button
                           type="button"
-                          className="admin-btn"
+                          className="admin-btn admin-btn--ghost admin-btn--sm"
                           disabled={readOnly}
                           onClick={() => syncFromMapKol(linkedMapKol)}
                         >
@@ -1632,37 +1649,43 @@ export function AdminKolReportsEditor({ onToast, kols = [] }: Props) {
                     )}
                     {!readOnly && (
                       <ul className="akr-map-list">
-                        {mapKolMatches.map((k) => (
-                          <li key={k.id}>
-                            <button
-                              type="button"
-                              className={
-                                draft.handle.toLowerCase() ===
-                                k.handle.toLowerCase()
-                                  ? 'is-active'
-                                  : ''
-                              }
-                              onClick={() => syncFromMapKol(k)}
-                            >
-                              <XProfileAvatar
-                                handle={k.handle}
-                                name={k.displayName}
-                                size={22}
-                              />
-                              <span>
-                                <strong>@{k.handle}</strong>
-                                <small>
-                                  {k.displayName}
-                                  {k.rank ? ` · ${k.rank}` : ''}
-                                  {k.niche ? ` · ${k.niche}` : ''}
-                                </small>
-                              </span>
-                            </button>
-                          </li>
-                        ))}
-                        {!mapKolMatches.length && (
+                        {mapKolMatches
+                          .filter(
+                            (k) =>
+                              k.handle.toLowerCase() !==
+                              draft.handle.toLowerCase(),
+                          )
+                          .map((k) => (
+                            <li key={k.id}>
+                              <button
+                                type="button"
+                                onClick={() => syncFromMapKol(k)}
+                              >
+                                <XProfileAvatar
+                                  handle={k.handle}
+                                  name={k.displayName}
+                                  size={22}
+                                />
+                                <span>
+                                  <strong>@{k.handle}</strong>
+                                  <small>
+                                    {k.displayName}
+                                    {k.rank ? ` · ${k.rank}` : ''}
+                                    {k.niche ? ` · ${k.niche}` : ''}
+                                  </small>
+                                </span>
+                              </button>
+                            </li>
+                          ))}
+                        {!mapKolMatches.filter(
+                          (k) =>
+                            k.handle.toLowerCase() !==
+                            draft.handle.toLowerCase(),
+                        ).length && (
                           <li className="admin-muted" style={{ padding: 8 }}>
-                            Không thấy KOL phù hợp trên map.
+                            {linkedMapKol
+                              ? 'Đã gắn map. Tìm handle khác để đổi.'
+                              : 'Không thấy KOL phù hợp trên map.'}
                           </li>
                         )}
                       </ul>
@@ -1742,11 +1765,11 @@ export function AdminKolReportsEditor({ onToast, kols = [] }: Props) {
                           <>
                             <button
                               type="button"
-                              className="admin-btn admin-btn--primary"
+                              className="admin-btn admin-btn--primary admin-btn--sm"
                               disabled={uploading}
                               onClick={() => coverInputRef.current?.click()}
                             >
-                              {uploading ? 'R2…' : '⬆ R2 Cover'}
+                              {uploading ? 'R2…' : 'R2 Cover'}
                             </button>
                             <input
                               ref={coverInputRef}
@@ -1757,7 +1780,7 @@ export function AdminKolReportsEditor({ onToast, kols = [] }: Props) {
                             />
                             <button
                               type="button"
-                              className="admin-btn"
+                              className="admin-btn admin-btn--ghost admin-btn--sm"
                               onClick={setCoverFromUrl}
                             >
                               URL

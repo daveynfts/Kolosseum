@@ -1333,6 +1333,91 @@
 .scex-public { min-height: 100vh; padding: 16px; max-width: 1280px; margin: 0 auto; box-sizing: border-box; }
 .scex-public .admin-header { padding: 14px 18px; }
 
+/* Shared admin buttons — used across reports / SCEX / feed */
+.admin-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  background: rgba(15, 23, 42, 0.55);
+  color: #e2e8f0;
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  padding: 8px 14px;
+  border-radius: 9px;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease,
+    box-shadow 0.15s ease,
+    opacity 0.15s ease;
+  white-space: nowrap;
+  line-height: 1.2;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+.admin-btn:hover:not(:disabled) {
+  border-color: rgba(125, 211, 252, 0.35);
+  background: rgba(30, 41, 59, 0.75);
+  color: #f8fafc;
+}
+.admin-btn:active:not(:disabled) {
+  transform: translateY(0.5px);
+}
+.admin-btn:disabled {
+  opacity: 0.42;
+  cursor: not-allowed;
+}
+.admin-btn--sm {
+  font-size: 0.72rem;
+  padding: 6px 11px;
+  border-radius: 8px;
+}
+.admin-btn--primary {
+  border-color: rgba(56, 189, 248, 0.45);
+  background: linear-gradient(
+    135deg,
+    rgba(14, 165, 233, 0.35) 0%,
+    rgba(99, 102, 241, 0.32) 100%
+  );
+  color: #f0f9ff;
+  box-shadow:
+    0 0 0 1px rgba(56, 189, 248, 0.12),
+    0 4px 14px rgba(14, 165, 233, 0.12);
+}
+.admin-btn--primary:hover:not(:disabled) {
+  border-color: rgba(125, 211, 252, 0.6);
+  background: linear-gradient(
+    135deg,
+    rgba(14, 165, 233, 0.5) 0%,
+    rgba(99, 102, 241, 0.42) 100%
+  );
+  color: #fff;
+}
+.admin-btn--ghost {
+  border-color: rgba(148, 163, 184, 0.16);
+  background: transparent;
+  color: #94a3b8;
+  box-shadow: none;
+}
+.admin-btn--ghost:hover:not(:disabled) {
+  border-color: rgba(148, 163, 184, 0.28);
+  background: rgba(148, 163, 184, 0.08);
+  color: #e2e8f0;
+}
+.admin-btn--danger {
+  border-color: rgba(248, 113, 113, 0.28);
+  color: #fca5a5;
+}
+.admin-btn--danger:hover:not(:disabled) {
+  border-color: rgba(248, 113, 113, 0.45);
+  background: rgba(239, 68, 68, 0.12);
+  color: #fecaca;
+}
+
 /* ─── KOL Reports admin ─── */
 .admin-kol-reports {
   display: flex;
@@ -1775,11 +1860,6 @@
   border-color: rgba(125, 211, 252, 0.4);
   background: rgba(14, 165, 233, 0.12);
 }
-.akr-fs-btn.is-active {
-  border-color: rgba(251, 191, 36, 0.45) !important;
-  color: #fde68a !important;
-  background: rgba(245, 158, 11, 0.12) !important;
-}
 .akr-fs-hint {
   font-size: 0.68rem;
   color: #94a3b8;
@@ -1986,24 +2066,50 @@
   font-size: 0.75rem;
 }
 .akr-map-linked {
-  display: grid;
-  grid-template-columns: 28px 1fr auto;
-  gap: 10px;
+  display: flex;
+  flex-wrap: wrap;
   align-items: center;
+  justify-content: space-between;
+  gap: 8px 12px;
   padding: 8px 10px;
   border-radius: 10px;
   background: rgba(34, 197, 94, 0.08);
   border: 1px solid rgba(34, 197, 94, 0.25);
 }
+.akr-map-linked__info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  flex: 1;
+}
+.akr-map-linked__ok {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  flex-shrink: 0;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #86efac;
+  background: rgba(34, 197, 94, 0.18);
+  border: 1px solid rgba(34, 197, 94, 0.35);
+}
 .akr-map-linked strong {
   display: block;
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   color: #f1f5f9;
 }
 .akr-map-linked small {
   display: block;
-  font-size: 0.7rem;
+  font-size: 0.68rem;
   color: #94a3b8;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 280px;
 }
 .akr-map-list {
   list-style: none;

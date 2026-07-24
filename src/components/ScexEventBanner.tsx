@@ -59,8 +59,7 @@ export function ScexEventBanner() {
 
         <span className="scex-event-banner__right">
           <span className="scex-event-banner__pills" aria-hidden>
-            <span>Demo 1 tỷ VND</span>
-            <span>VNĐ</span>
+            <span>nhận ngay 1 tỷ VND</span>
           </span>
           <span className="scex-event-banner__cta">
             Tham gia chương trình

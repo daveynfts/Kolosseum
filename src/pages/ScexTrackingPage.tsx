@@ -308,17 +308,18 @@ export function ScexTrackingPage() {
     }
   }, [])
 
-  // Matrix fullscreen: Esc exit + lock body scroll (don't steal Esc from KOL detail)
+  // Matrix fullscreen: lock body scroll; Esc exits fullscreen only if no KOL detail open
   useEffect(() => {
     if (!matrixFullscreen) return
     const prev = document.body.style.overflow
     document.body.style.overflow = 'hidden'
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        e.preventDefault()
-        e.stopPropagation()
-        setMatrixFullscreen(false)
-      }
+      if (e.key !== 'Escape') return
+      // Let KOL detail close first (detail is above fullscreen)
+      if (selectedActor) return
+      e.preventDefault()
+      e.stopPropagation()
+      setMatrixFullscreen(false)
     }
     window.addEventListener('keydown', onKey, true)
     // Force a resize so 2D plot ResizeObserver remeasures after flex settles
@@ -330,7 +331,7 @@ export function ScexTrackingPage() {
       window.removeEventListener('keydown', onKey, true)
       window.clearTimeout(t)
     }
-  }, [matrixFullscreen])
+  }, [matrixFullscreen, selectedActor])
 
   // Keep detail panel below event banner (avoid overlap)
   useEffect(() => {

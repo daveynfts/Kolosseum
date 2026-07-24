@@ -2294,13 +2294,14 @@
 }
 
 /* ── KOL detail — near-fullscreen panel ─────────────── */
+/* Must sit ABOVE matrix fullscreen (z-index 20050) so click-to-detail works there */
 .scex-detail-scrim {
   position: fixed;
   top: var(--scex-banner-h, 0px);
   left: 0;
   right: 0;
   bottom: 0;
-  z-index: 140;
+  z-index: 20100;
   border: 0;
   padding: 0;
   margin: 0;
@@ -2312,7 +2313,7 @@
 
 .scex-detail {
   position: fixed;
-  z-index: 150;
+  z-index: 20110;
   top: calc(var(--scex-banner-h, 0px) + 2.5vh);
   left: 50%;
   transform: translateX(-50%);

@@ -570,7 +570,6 @@ export function ScexTrackingPage() {
           </div>
           <div className="scex-page__brand-text">
             <div className="scex-page__eyebrow">
-              <span className="scex-page__badge">Partner</span>
               <span className="scex-page__window">
                 {config.timeWindowDays} ngày gần đây
               </span>

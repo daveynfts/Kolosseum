@@ -233,15 +233,34 @@ export async function loadRecentFollowersWithSource(): Promise<LoadFollowersResu
 }
 
 export type ServerFollowersSaveResult =
-  | { ok: true; count: number; updatedAt: string; map: RecentFollowersMap }
+  | { ok: true; count: number; updatedAt: string; map: RecentFollowersMap; smartMap: SmartFollowersMap }
   | { ok: false; error: string; status?: number }
 
-/** Publish full map to R2. No standalone local-only save. */
+function mergeFollowersMaps(
+  server: RecentFollowersMap | undefined,
+  local: RecentFollowersMap,
+): RecentFollowersMap {
+  return { ...(server ?? {}), ...local }
+}
+
+function mergeSmartFollowersMaps(
+  server: SmartFollowersMap | undefined,
+  local: SmartFollowersMap | undefined,
+): SmartFollowersMap {
+  const seed = seedSmartFollowersMap()
+  if (local !== undefined) {
+    return { ...seed, ...(server ?? {}), ...local }
+  }
+  return { ...seed, ...(server ?? {}) }
+}
+
+/** Publish full map to R2. Re-fetches server and merges before PUT. */
 export async function saveRecentFollowersToServer(
   map: RecentFollowersMap,
   note?: string,
   tokenOverride?: string,
   smartMap?: SmartFollowersMap,
+  baseUpdatedAt?: string,
 ): Promise<ServerFollowersSaveResult> {
   const token = (tokenOverride ?? getAdminToken()).trim()
   if (!token) {
@@ -250,19 +269,24 @@ export async function saveRecentFollowersToServer(
       error: 'Chưa có token — dán FEED_ADMIN_TOKEN rồi Apply token.',
     }
   }
+
+  const server = await fetchServerRecentFollowers()
   const next = normalizeMap(map)
-  const nextSmart =
-    smartMap !== undefined
-      ? normalizeSmartMap(smartMap)
-      : readCache()?.smartMap || seedSmartFollowersMap()
-  const payload: RecentFollowersPayload = {
+  const mergedMap = mergeFollowersMaps(server?.map, next)
+  const mergedSmart = mergeSmartFollowersMaps(
+    server?.smartMap,
+    smartMap !== undefined ? normalizeSmartMap(smartMap) : undefined,
+  )
+
+  const payload: RecentFollowersPayload & { baseUpdatedAt?: string } = {
     version: 1,
     updatedAt: new Date().toISOString(),
     source: note ? `admin server · ${note}` : 'admin server',
     note,
-    count: Object.keys(next).length,
-    map: next,
-    smartMap: Object.keys(nextSmart).length ? nextSmart : undefined,
+    count: Object.keys(mergedMap).length,
+    map: mergedMap,
+    smartMap: Object.keys(mergedSmart).length ? mergedSmart : undefined,
+    baseUpdatedAt: baseUpdatedAt ?? server?.updatedAt,
   }
   try {
     const res = await fetch(apiUrl(), {
@@ -280,13 +304,19 @@ export async function saveRecentFollowersToServer(
       count?: number
     }
     if (!res.ok) {
+      let errMsg = body.message || body.error || `Server ${res.status}`
+      if (res.status === 409) {
+        errMsg =
+          body.message ||
+          'Server có bản followers mới hơn — Reload rồi Save lại.'
+      }
       return {
         ok: false,
         status: res.status,
-        error: body.message || body.error || `Server ${res.status}`,
+        error: errMsg,
       }
     }
-    writeCache(next, {
+    writeCache(mergedMap, {
       updatedAt: body.updatedAt || payload.updatedAt,
       source: payload.source,
       smartMap: payload.smartMap,
@@ -295,7 +325,8 @@ export async function saveRecentFollowersToServer(
       ok: true,
       count: body.count ?? payload.count!,
       updatedAt: body.updatedAt || payload.updatedAt!,
-      map: next,
+      map: mergedMap,
+      smartMap: mergedSmart,
     }
   } catch (e) {
     return {
@@ -327,6 +358,40 @@ export function getRecentFollowersFor(
 ): RecentFollower[] {
   const m = map ?? loadRecentFollowersMap()
   return m[normalizeHandle(handle)] ?? []
+}
+
+export function loadSmartFollowersMap(): SmartFollowersMap {
+  return readCache()?.smartMap ?? seedSmartFollowersMap()
+}
+
+export function getSmartFollowersFor(
+  handle: string,
+  smartMap?: SmartFollowersMap,
+): SmartFollower[] {
+  const m = smartMap ?? loadSmartFollowersMap()
+  return m[normalizeHandle(handle)] ?? []
+}
+
+export function setSmartFollowersFor(
+  smartMap: SmartFollowersMap,
+  kolHandle: string,
+  followers: SmartFollower[],
+): SmartFollowersMap {
+  const key = normalizeHandle(kolHandle)
+  const next = { ...smartMap }
+  const list = followers
+    .map((f) => normalizeSmartFollower(f))
+    .filter((f): f is SmartFollower => !!f)
+  if (list.length === 0) delete next[key]
+  else next[key] = list
+  return next
+}
+
+export function listKolHandlesWithSmartFollowers(
+  smartMap?: SmartFollowersMap,
+): string[] {
+  const m = smartMap ?? loadSmartFollowersMap()
+  return Object.keys(m).sort((a, b) => a.localeCompare(b))
 }
 
 export function setRecentFollowersFor(

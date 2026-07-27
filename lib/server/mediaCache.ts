@@ -10,6 +10,25 @@ import {
 /** Soft cap ~2MB per image for admin-curated feed */
 const MAX_BYTES = 2_000_000
 
+/** Only cache images from known tweet/CDN hosts (blocks open fetch-to-R2 abuse). */
+const ALLOWED_IMAGE_HOSTS = new Set([
+  'pbs.twimg.com',
+  'video.twimg.com',
+  'abs.twimg.com',
+  'ton.twimg.com',
+])
+
+function isAllowedImageUrl(sourceUrl: string): boolean {
+  try {
+    const u = new URL(sourceUrl)
+    if (u.protocol !== 'https:' && u.protocol !== 'http:') return false
+    const host = u.hostname.replace(/^www\./, '').toLowerCase()
+    return ALLOWED_IMAGE_HOSTS.has(host)
+  } catch {
+    return false
+  }
+}
+
 export function hashUrl(url: string): string {
   return createHash('sha256').update(url).digest('hex').slice(0, 24)
 }
@@ -24,6 +43,14 @@ export async function cacheRemoteImage(
 ): Promise<{ cachedUrl: string; id: string | null; cached: boolean; error?: string }> {
   if (!sourceUrl || !/^https?:\/\//i.test(sourceUrl)) {
     return { cachedUrl: sourceUrl, id: null, cached: false, error: 'invalid_url' }
+  }
+  if (!isAllowedImageUrl(sourceUrl)) {
+    return {
+      cachedUrl: sourceUrl,
+      id: null,
+      cached: false,
+      error: 'host_not_allowed',
+    }
   }
   // Already our cached media (proxy or R2). Do NOT match pbs.twimg.com/media/…
   if (isOurMediaUrl(sourceUrl)) {

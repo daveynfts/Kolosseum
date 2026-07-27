@@ -8,6 +8,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 import { r2Client } from '../lib/server/r2.js'
 import { cacheRemoteImage } from '../lib/server/mediaCache.js'
+import { isAdmin } from '../lib/server/apiHelpers.js'
 
 type TweetOut = {
   id: string
@@ -115,8 +116,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(405).json({ error: 'method_not_allowed' })
   }
 
-  // Public read: SCEX livefeed + tools hydrate tweet media without admin token.
-  // Bearer is optional (accepted if present for admin tools).
+  // Public read; R2 image cache only when admin token present (prevents open fetch-to-R2 abuse).
+  const allowR2Cache = isAdmin(req)
 
   const rawUrl = String(req.query.url || req.query.u || '').trim()
   if (!rawUrl) {
@@ -215,7 +216,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const mediaCached: string[] = []
   const client = r2Client()
 
-  if (client && mediaOriginal.length) {
+  if (client && allowR2Cache && mediaOriginal.length) {
     for (const m of mediaOriginal.slice(0, 4)) {
       const result = await cacheRemoteImage(client, m)
       mediaCached.push(result.cachedUrl)
@@ -225,7 +226,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const media =
     mediaCached.length > 0 ? mediaCached : mediaOriginal.slice(0, 4)
 
-  if (client && avatarRemote) {
+  if (client && allowR2Cache && avatarRemote) {
     await cacheRemoteImage(client, avatarRemote)
   }
 

@@ -16,6 +16,12 @@ import {
   r2GetJson,
   r2PutJson,
 } from '../lib/server/r2.js'
+import {
+  assertNotStale,
+  bearer,
+  debugAllowed,
+  readBaseUpdatedAt,
+} from '../lib/server/apiHelpers.js'
 
 type KolsBody = {
   version?: number
@@ -39,17 +45,14 @@ function cors(res: VercelResponse) {
   res.setHeader('Cache-Control', 'no-store')
 }
 
-function bearer(req: VercelRequest): string {
-  const h = req.headers.authorization || ''
-  if (h.startsWith('Bearer ') || h.startsWith('bearer ')) return h.slice(7).trim()
-  return ''
-}
-
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   cors(res)
   if (req.method === 'OPTIONS') return res.status(204).end()
 
   if (req.method === 'GET' && (req.query.debug === '1' || req.query.debug === 'true')) {
+    if (!debugAllowed(req)) {
+      return res.status(401).json({ error: 'unauthorized' })
+    }
     return res.status(200).json({
       ok: true,
       storage: 'cloudflare-r2',
@@ -94,12 +97,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       if (!got || got !== secret) {
         return res.status(401).json({
           error: 'unauthorized',
-          message:
-            'Token mismatch. Use FEED_ADMIN_TOKEN (same as Feed admin).',
-          hint: {
-            receivedLen: got.length,
-            expectedLen: secret.length,
-          },
+          message: 'Token mismatch. Use FEED_ADMIN_TOKEN.',
         })
       }
 
@@ -111,6 +109,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         return res.status(400).json({
           error: 'invalid_body',
           message: 'Body must be JSON with non-empty kols[]',
+        })
+      }
+
+      const current = await r2GetJson<KolsBody>(client, KOLS_OBJECT_KEY)
+      const stale = assertNotStale(
+        current?.updatedAt,
+        readBaseUpdatedAt(body as Record<string, unknown>),
+      )
+      if (!stale.ok) {
+        return res.status(409).json({
+          error: 'conflict',
+          message: 'Server có KOL list mới hơn. Reload rồi Save lại.',
+          serverUpdatedAt: stale.serverUpdatedAt,
         })
       }
 
@@ -126,6 +137,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             ? body.surfDefaultPdfUrl.trim() || undefined
             : undefined,
       }
+      delete (payload as { baseUpdatedAt?: string }).baseUpdatedAt
 
       await r2PutJson(client, KOLS_OBJECT_KEY, payload)
       return res.status(200).json({

@@ -18,6 +18,12 @@ import {
   r2GetJson,
   r2PutJson,
 } from '../lib/server/r2.js'
+import {
+  assertNotStale,
+  bearer,
+  debugAllowed,
+  readBaseUpdatedAt,
+} from '../lib/server/apiHelpers.js'
 
 type FeedBody = {
   posts?: unknown[]
@@ -38,25 +44,19 @@ function cors(res: VercelResponse) {
   res.setHeader('Cache-Control', 'no-store')
 }
 
-function bearer(req: VercelRequest): string {
-  const h = req.headers.authorization || ''
-  if (h.startsWith('Bearer ') || h.startsWith('bearer ')) return h.slice(7).trim()
-  return ''
-}
-
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   cors(res)
   if (req.method === 'OPTIONS') return res.status(204).end()
 
   if (req.method === 'GET' && (req.query.debug === '1' || req.query.debug === 'true')) {
+    if (!debugAllowed(req)) {
+      return res.status(401).json({ error: 'unauthorized' })
+    }
     return res.status(200).json({
       ok: true,
       storage: 'cloudflare-r2',
       r2Ready: r2Configured(),
       env: envPresence(),
-      hint: r2Configured()
-        ? 'R2 creds visible to function.'
-        : 'Set R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET_NAME + Redeploy.',
     })
   }
 
@@ -95,23 +95,31 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       if (!got || got !== secret) {
         return res.status(401).json({
           error: 'unauthorized',
-          message:
-            'Token mismatch. Use FEED_ADMIN_TOKEN (not R2/Upstash keys).',
-          hint: {
-            receivedLen: got.length,
-            expectedLen: secret.length,
-          },
+          message: 'Token mismatch. Use FEED_ADMIN_TOKEN.',
         })
       }
 
       const body = (
         typeof req.body === 'string' ? JSON.parse(req.body) : req.body
-      ) as FeedBody
+      ) as FeedBody & { baseUpdatedAt?: string }
 
       if (!body || !Array.isArray(body.posts)) {
         return res.status(400).json({
           error: 'invalid_body',
           message: 'Body must be feed JSON with posts[]',
+        })
+      }
+
+      const current = await r2GetJson<FeedBody>(client, FEED_OBJECT_KEY)
+      const stale = assertNotStale(
+        current?.generatedAt,
+        readBaseUpdatedAt(body as Record<string, unknown>),
+      )
+      if (!stale.ok) {
+        return res.status(409).json({
+          error: 'conflict',
+          message: 'Server có feed mới hơn. Reload rồi Save lại.',
+          serverUpdatedAt: stale.serverUpdatedAt,
         })
       }
 
@@ -122,6 +130,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         generatedAt: new Date().toISOString(),
         postCount: body.posts.length,
       }
+      delete (payload as { baseUpdatedAt?: string }).baseUpdatedAt
 
       await r2PutJson(client, FEED_OBJECT_KEY, payload)
       return res.status(200).json({

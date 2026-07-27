@@ -77,7 +77,7 @@ export function FeedPanel({ open, onClose, kols, onSelectKol }: Props) {
     setHighlightId(feed.posts[0].id)
     const t = window.setTimeout(() => setHighlightId(null), 1800)
     return () => window.clearTimeout(t)
-  }, [feed?.generatedAt])
+  }, [feed?.generatedAt, feed?.posts[0]?.id])
 
   const voiceStats = useMemo(() => {
     if (!feed) return [] as Array<{ handle: string; name: string; count: number; color: string }>

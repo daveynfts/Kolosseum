@@ -16,6 +16,11 @@ import {
   r2GetJson,
   r2PutJson,
 } from '../lib/server/r2.js'
+import {
+  assertNotStale,
+  bearer,
+  readBaseUpdatedAt,
+} from '../lib/server/apiHelpers.js'
 
 type Body = {
   version?: number
@@ -36,12 +41,6 @@ function cors(res: VercelResponse) {
   res.setHeader('Cache-Control', 'no-store')
 }
 
-function bearer(req: VercelRequest): string {
-  const h = req.headers.authorization || ''
-  if (h.startsWith('Bearer ') || h.startsWith('bearer ')) return h.slice(7).trim()
-  return ''
-}
-
 function isAdmin(req: VercelRequest): boolean {
   const secret = env('FEED_ADMIN_TOKEN')
   if (!secret) return false
@@ -58,7 +57,8 @@ function publicSlice(data: Body): Body {
     .map((r) => {
       const o = r as Record<string, unknown>
       const cl = Array.isArray(o.changelog) ? o.changelog.slice(0, 5) : []
-      return { ...o, changelog: cl }
+      const { sourceFilename: _sf, sourcePath: _sp, ...rest } = o
+      return { ...rest, changelog: cl }
     })
   return {
     version: data.version ?? 1,
@@ -122,6 +122,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           message: 'Need reports array',
         })
       }
+      const current = await r2GetJson<Body>(client, KOL_REPORTS_OBJECT_KEY)
+      const stale = assertNotStale(
+        current?.updatedAt,
+        readBaseUpdatedAt(body as Record<string, unknown>),
+      )
+      if (!stale.ok) {
+        return res.status(409).json({
+          error: 'conflict',
+          message: 'Server có reports mới hơn. Reload rồi Save lại.',
+          serverUpdatedAt: stale.serverUpdatedAt,
+        })
+      }
       const payload: Body = {
         ...body,
         version: body.version ?? 1,
@@ -129,6 +141,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         trash: Array.isArray(body.trash) ? body.trash : [],
         updatedAt: new Date().toISOString(),
       }
+      delete (payload as { baseUpdatedAt?: string }).baseUpdatedAt
       await r2PutJson(client, KOL_REPORTS_OBJECT_KEY, payload)
       return res.status(200).json({
         ok: true,

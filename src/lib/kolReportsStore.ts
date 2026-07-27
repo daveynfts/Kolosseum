@@ -165,6 +165,11 @@ export async function loadKolReportsWithSource(
   }
   const local = loadKolReportsLocal()
   if (local) return { dataset: local, source: 'cache' }
+  const t = (token ?? getAdminToken()).trim()
+  if (t) {
+    const { adminSeedKolReportsDataset } = await import('../data/kolReportsAdminSeed')
+    return { dataset: adminSeedKolReportsDataset(), source: 'seed' }
+  }
   return { dataset: defaultKolReportsDataset(), source: 'seed' }
 }
 
@@ -174,12 +179,14 @@ export async function saveKolReportsToServer(
 ): Promise<{ ok: boolean; status: number; message?: string }> {
   const t = (token ?? getAdminToken()).trim()
   if (!t) return { ok: false, status: 0, message: 'Missing admin token' }
-  const payload: KolReportsDataset = {
+  const baseUpdatedAt = dataset.updatedAt
+  const payload: KolReportsDataset & { baseUpdatedAt?: string } = {
     ...dataset,
     kind: 'kol-reports' as const,
     version: dataset.version || 1,
     updatedAt: new Date().toISOString(),
     trash: dataset.trash || [],
+    baseUpdatedAt,
   }
   try {
     const res = await fetch(apiUrl(), {
@@ -192,10 +199,23 @@ export async function saveKolReportsToServer(
     })
     const text = await res.text()
     if (!res.ok) {
+      let message = text.slice(0, 200)
+      try {
+        const j = JSON.parse(text) as { message?: string; error?: string }
+        if (res.status === 409) {
+          message =
+            j.message ||
+            'Server có bản mới hơn — Reload rồi Save lại.'
+        } else {
+          message = j.message || j.error || message
+        }
+      } catch {
+        /* keep text slice */
+      }
       return {
         ok: false,
         status: res.status,
-        message: text.slice(0, 200),
+        message,
       }
     }
     saveKolReportsLocal(payload)

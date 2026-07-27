@@ -24,7 +24,16 @@ export interface LoadFeedResult {
 
 export function getAdminToken(): string {
   try {
-    return localStorage.getItem(TOKEN_KEY) || ''
+    let t = sessionStorage.getItem(TOKEN_KEY) || ''
+    if (!t) {
+      const legacy = localStorage.getItem(TOKEN_KEY)
+      if (legacy) {
+        sessionStorage.setItem(TOKEN_KEY, legacy)
+        localStorage.removeItem(TOKEN_KEY)
+        t = legacy
+      }
+    }
+    return t
   } catch {
     return ''
   }
@@ -32,8 +41,13 @@ export function getAdminToken(): string {
 
 export function setAdminToken(token: string): void {
   try {
-    if (token.trim()) localStorage.setItem(TOKEN_KEY, token.trim())
-    else localStorage.removeItem(TOKEN_KEY)
+    if (token.trim()) {
+      sessionStorage.setItem(TOKEN_KEY, token.trim())
+      localStorage.removeItem(TOKEN_KEY)
+    } else {
+      sessionStorage.removeItem(TOKEN_KEY)
+      localStorage.removeItem(TOKEN_KEY)
+    }
   } catch {
     /* ignore */
   }
@@ -151,6 +165,14 @@ export async function saveFeedToServer(
     }
   }
 
+  let baseUpdatedAt: string | undefined
+  try {
+    const serverFeed = await fetchServerFeed()
+    baseUpdatedAt = serverFeed?.generatedAt
+  } catch {
+    /* ignore */
+  }
+
   try {
     const res = await fetch(feedApiUrl(), {
       method: 'PUT',
@@ -158,7 +180,7 @@ export async function saveFeedToServer(
         'Content-Type': 'application/json',
         Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify(next),
+      body: JSON.stringify({ ...next, baseUpdatedAt }),
     })
     const body = (await res.json().catch(() => ({}))) as {
       error?: string
@@ -172,7 +194,9 @@ export async function saveFeedToServer(
           body.message ||
           body.error ||
           `Server ${res.status}${
-            res.status === 401
+            res.status === 409
+              ? ' — server có feed mới hơn, Reload rồi Save'
+              : res.status === 401
               ? ' — token không khớp FEED_ADMIN_TOKEN trên Vercel'
               : res.status === 503
                 ? ' — chưa cấu hình R2 / FEED_ADMIN_TOKEN (xem docs/FEED_SERVER.md)'

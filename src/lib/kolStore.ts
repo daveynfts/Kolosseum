@@ -295,14 +295,16 @@ export async function saveKolsToServer(
 
   // Always re-fetch server first and preserve PDF/avatar if local draft is empty
   let merged = kols
+  let baseUpdatedAt: string | undefined
   try {
     const server = await fetchServerKols()
     merged = mergeKolsPreserveServerExtras(kols, server?.kols)
+    baseUpdatedAt = server?.updatedAt
   } catch {
     /* proceed with local list */
   }
 
-  const payload: KolStorePayload = {
+  const payload: KolStorePayload & { baseUpdatedAt?: string } = {
     version: STORAGE_VERSION,
     updatedAt: new Date().toISOString(),
     kols: merged,
@@ -310,6 +312,7 @@ export async function saveKolsToServer(
     source: note ? `admin server · ${note}` : 'admin server r2',
     count: merged.length,
     surfDefaultPdfUrl: getSurfDefaultPdfUrl() || undefined,
+    baseUpdatedAt,
   }
 
   try {
@@ -335,7 +338,9 @@ export async function saveKolsToServer(
           body.message ||
           body.error ||
           `Server ${res.status}${
-            res.status === 401
+            res.status === 409
+              ? ' — server có KOL list mới hơn, Reload rồi Save'
+              : res.status === 401
               ? ' — token không khớp FEED_ADMIN_TOKEN trên Vercel'
               : res.status === 503
                 ? ' — chưa cấu hình R2 / FEED_ADMIN_TOKEN'

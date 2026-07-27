@@ -15,6 +15,11 @@ import {
   r2GetJson,
   r2PutJson,
 } from '../lib/server/r2.js'
+import {
+  assertNotStale,
+  bearer,
+  readBaseUpdatedAt,
+} from '../lib/server/apiHelpers.js'
 
 type Body = {
   version?: number
@@ -36,12 +41,6 @@ function cors(res: VercelResponse) {
     'Content-Type, Authorization',
   )
   res.setHeader('Cache-Control', 'no-store')
-}
-
-function bearer(req: VercelRequest): string {
-  const h = req.headers.authorization || ''
-  if (h.startsWith('Bearer ') || h.startsWith('bearer ')) return h.slice(7).trim()
-  return ''
 }
 
 function isValidBody(body: Body): boolean {
@@ -94,6 +93,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           message: 'Need config object (actors/posts optional arrays)',
         })
       }
+      const current = await r2GetJson<Body>(client, SCEX_TRACKING_OBJECT_KEY)
+      const stale = assertNotStale(
+        current?.updatedAt,
+        readBaseUpdatedAt(body as Record<string, unknown>),
+      )
+      if (!stale.ok) {
+        return res.status(409).json({
+          error: 'conflict',
+          message: 'Server có SCEX mới hơn. Reload rồi Save lại.',
+          serverUpdatedAt: stale.serverUpdatedAt,
+        })
+      }
       const payload: Body = {
         ...body,
         version: body.version ?? 1,
@@ -102,6 +113,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         actors: Array.isArray(body.actors) ? body.actors : [],
         posts: Array.isArray(body.posts) ? body.posts : [],
       }
+      delete (payload as { baseUpdatedAt?: string }).baseUpdatedAt
       await r2PutJson(client, SCEX_TRACKING_OBJECT_KEY, payload)
       return res.status(200).json({
         ok: true,

@@ -1745,7 +1745,8 @@ export function getRecentFollowers(handle: string): RecentFollower[] {
       map = cache as unknown as Record<string, RecentFollower[]>
     }
     if (map && key in map && Array.isArray(map[key])) {
-      return map[key]
+      const list = map[key]
+      if (list.length > 0) return list
     }
   }
   return RECENT_FOLLOWERS_BY_HANDLE[key] ?? []
@@ -1760,7 +1761,8 @@ export function getSmartFollowers(handle: string): SmartFollower[] {
     key in cache.smartMap &&
     Array.isArray(cache.smartMap[key])
   ) {
-    return cache.smartMap[key]
+    const list = cache.smartMap[key]
+    if (list.length > 0) return list
   }
   return SMART_FOLLOWERS_BY_HANDLE[key] ?? []
 }

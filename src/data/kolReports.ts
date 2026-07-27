@@ -9,11 +9,8 @@
  *   GET/PUT /api/kol-reports
  *   → cached in localStorage after load
  *
- * AI-friendly: each report has free-form Markdown `text` (source of truth) +
- * optional `structured` metrics for scoring later. Images via markdown or
- * coverImage URL. Changelog records create/update/delete; private|public.
+ * Full seed (incl. private) lives in kolReportsAdminSeed.ts — admin-only dynamic import.
  */
-import seedJson from './internal/kol-reports.json'
 import { normalizeTags } from '../lib/reportTags'
 
 export type KolReportVisibility = 'private' | 'public'
@@ -111,24 +108,9 @@ export function emptyKolReportsDataset(): KolReportsDataset {
   }
 }
 
-/** Repo seed (DOCX imports) — used offline / before first R2 PUT */
-export const SEED_KOL_REPORTS: KolReportsDataset =
-  normalizeKolReportsDataset(seedJson) || emptyKolReportsDataset()
-
+/** Offline/admin fallback when R2 unreachable — empty (full seed via kolReportsAdminSeed). */
 export function defaultKolReportsDataset(): KolReportsDataset {
-  return SEED_KOL_REPORTS.reports.length
-    ? {
-        ...SEED_KOL_REPORTS,
-        reports: SEED_KOL_REPORTS.reports.map((r) => ({
-          ...r,
-          changelog: [...(r.changelog || [])],
-        })),
-        trash: (SEED_KOL_REPORTS.trash || []).map((r) => ({
-          ...r,
-          changelog: [...(r.changelog || [])],
-        })),
-      }
-    : emptyKolReportsDataset()
+  return emptyKolReportsDataset()
 }
 
 function newId(prefix: string): string {
@@ -329,9 +311,6 @@ function normalizeReport(raw: unknown, i: number): KolReport | null {
         ? (o.structured as KolReportStructured)
         : {},
     coverImage: o.coverImage != null ? String(o.coverImage) : undefined,
-    sourceFilename:
-      o.sourceFilename != null ? String(o.sourceFilename) : undefined,
-    sourcePath: o.sourcePath != null ? String(o.sourcePath) : undefined,
     visibility,
     createdAt: String(o.createdAt || new Date().toISOString()),
     updatedAt: String(o.updatedAt || o.createdAt || new Date().toISOString()),
@@ -384,10 +363,16 @@ export function publicKolReportsView(
     ...ds,
     reports: ds.reports
       .filter((r) => r.visibility === 'public')
-      .map((r) => ({
-        ...r,
-        changelog: (r.changelog || []).slice(0, 5),
-      })),
+      .map((r) => {
+        const { sourceFilename: _sf, sourcePath: _sp, ...rest } = r as KolReport & {
+          sourceFilename?: string
+          sourcePath?: string
+        }
+        return {
+          ...rest,
+          changelog: (r.changelog || []).slice(0, 5),
+        }
+      }),
     trash: [],
     note: 'Public KOL reports only',
   }

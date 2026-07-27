@@ -98,12 +98,22 @@ export async function saveScexToServer(
   if (!token) {
     return { ok: false, error: 'Missing FEED_ADMIN_TOKEN — Apply token first' }
   }
+
+  let baseUpdatedAt: string | undefined
+  try {
+    const server = await fetchServerScex()
+    baseUpdatedAt = server?.updatedAt
+  } catch {
+    /* ignore */
+  }
+
   const payload = recomputeScexActors({
     ...dataset,
     note: note ?? dataset.note,
     updatedAt: new Date().toISOString(),
     asOf: new Date().toISOString(),
-  })
+    baseUpdatedAt,
+  } as ScexDataset & { baseUpdatedAt?: string })
   try {
     const res = await fetch(apiUrl(), {
       method: 'PUT',
@@ -122,7 +132,11 @@ export async function saveScexToServer(
     if (!res.ok) {
       return {
         ok: false,
-        error: j.message || j.error || res.statusText,
+        error:
+          res.status === 409
+            ? j.message ||
+              'Server có SCEX mới hơn — Reload rồi Save lại.'
+            : j.message || j.error || res.statusText,
         status: res.status,
       }
     }

@@ -77,7 +77,7 @@ export function RecentFollowersPanel({ kolHandle }: Props) {
     <div className="recent-follows">
       <div className="recent-follows__head">
         <h3 className="recent-follows__title">
-          Smart Followers
+          {subTab === 'smart' ? 'Smart Followers' : 'Recent Followers'}
           <span className="recent-follows__count">({activeCount})</span>
         </h3>
         <p className="recent-follows__sub">

@@ -1660,6 +1660,56 @@ export const SMART_FOLLOWERS_BY_HANDLE: Record<string, SmartFollower[]> = {
       influenceScore: 0,
     },
   ],
+
+  /**
+   * Thiên Thiên (@Thienthien1305) — curated smart followers (signal review).
+   * influenceScore ≈ độ mạnh tín hiệu (sort proxy).
+   */
+  thienthien1305: [
+    {
+      handle: 'calchulus',
+      displayName: 'Calchulus',
+      role: 'Mạnh nhất · Impossible Finance; từng làm tại Binance Research (2018–2021). Follow đã 4 năm, có nền tảng research/operator thực — nhưng follow ~18K nên độ chọn lọc không quá cao',
+      influenceScore: 900,
+    },
+    {
+      handle: 'xkonjin',
+      displayName: 'xkonjin',
+      role: 'Mạnh · Marketing tại Plasma; viết về stablecoin, privacy và machine intelligence. Đúng ngách infra crypto; điểm trừ: follow mới ~4 tháng và following khá rộng',
+      influenceScore: 860,
+    },
+    {
+      handle: 'paradex',
+      displayName: 'Paradex',
+      role: 'Mạnh (thương hiệu) · Tài khoản chính thức futures/options. Mutual + following thấp là tín hiệu tốt; có thể follow vì BD/community hơn đánh giá cá nhân',
+      influenceScore: 820,
+    },
+    {
+      handle: 'jampzey',
+      displayName: 'Jampzey',
+      role: 'Khá · Crypto creator/operator, liên quan R3ACH Network. Mạng lưới lớn, follow ~1 năm — nhưng follow gần 10K nên không nên xem là endorsement đặc biệt',
+      influenceScore: 720,
+    },
+    {
+      handle: 'wolfyxbt',
+      displayName: 'WolfyXBT',
+      role: 'Trung bình–khá · KOL crypto tiếng Trung (trading/meme, CHILABS). 856K followers + mutual là điểm cộng; nội dung đại chúng/quảng bá và following hàng nghìn',
+      followers: 856_000,
+      influenceScore: 650,
+    },
+    {
+      handle: 'yuyue_chris',
+      displayName: 'Yuyue Chris',
+      role: 'Trung bình–khá · Angel investor; nội dung AI, crypto và trading. Có độ liên quan nhưng hồ sơ công khai chưa đủ để coi là endorsement đầu tư/research trọng lượng cao',
+      influenceScore: 620,
+    },
+    {
+      handle: 'darcydonavan',
+      displayName: 'Darcy Donavan',
+      role: 'Yếu · Diễn viên/nghệ sĩ/doanh nhân, có liên hệ NFT — không phải research crypto cốt lõi; follow ~88K nên chọn lọc rất thấp',
+      influenceScore: 380,
+    },
+  ],
 }
 
 function readCachePayload(): {

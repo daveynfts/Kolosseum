@@ -1235,6 +1235,76 @@ export const RECENT_FOLLOWERS_BY_HANDLE: Record<string, RecentFollower[]> = {
 
 /** Smart followers seed — key = KOL handle lowercase */
 export const SMART_FOLLOWERS_BY_HANDLE: Record<string, SmartFollower[]> = {
+  /**
+   * Hên Vãi (@henvaibta) — curated smart network (Tier A/B review).
+   * influenceScore: Tier A ≈ 800–900, Tier B ≈ 480–520 (sort proxy).
+   */
+  henvaibta: [
+    {
+      handle: 'NickyPham_HC',
+      displayName: 'Nicky Pham',
+      role: 'Tier A · Đồng sáng lập AlphaBack; crypto, trading, airdrop. Network lớn tại Việt Nam; cần lưu ý mô hình affiliate/hoàn phí',
+      followers: 335_089,
+      influenceScore: 900,
+    },
+    {
+      handle: 'TNC404',
+      displayName: 'TNC404',
+      role: 'Tier A · Tài khoản thị trường/crypto từ 2016. Lâu năm, chỉ theo dõi 18 tài khoản; độ nổi bật cao nhưng bio không chứng minh chuyên môn cụ thể',
+      followers: 135_804,
+      influenceScore: 880,
+    },
+    {
+      handle: 'TCVNcommunity',
+      displayName: 'TradeCoinVN Community',
+      role: 'Tier A · Cộng đồng TradeCoinVN. Smart network/media account, không phải một trader cá nhân',
+      followers: 63_327,
+      influenceScore: 860,
+    },
+    {
+      handle: 'hanjiahnn',
+      displayName: 'Hanjiahnn',
+      role: 'Tier A · Trader, holder crypto và hàng hóa; founder TWH Group. Chuyên môn thị trường thể hiện rõ; chưa có PnL kiểm toán công khai',
+      followers: 52_442,
+      influenceScore: 840,
+    },
+    {
+      handle: 'ShengMo0x',
+      displayName: 'ShengMo',
+      role: 'Tier A · Crypto từ 2013, mining, Bitcoin ecosystem. Hồ sơ lâu năm và ngách chuyên môn tương đối rõ',
+      followers: 49_581,
+      influenceScore: 820,
+    },
+    {
+      handle: 'LuckyStudent02',
+      displayName: 'Lucky Student',
+      role: 'Tier A · Nội dung trading, quản lý vốn và tâm lý giao dịch. Có cộng đồng riêng; nên xem là trading educator/KOL, không mặc định là smart money',
+      followers: 45_040,
+      influenceScore: 800,
+    },
+    {
+      handle: 'immihu',
+      displayName: 'immihu',
+      role: 'Tier B · Web3 builder; HCMC Blockchain Association; từng ở AmberBlocks. Có yếu tố builder và hệ sinh thái; giá trị nằm ở network hơn là dự báo giá',
+      followers: 27_970,
+      influenceScore: 520,
+    },
+    {
+      handle: 'Tnubmv',
+      displayName: 'Tnubmv',
+      role: 'Tier B · Tài khoản giao dịch crypto. Tỷ lệ follower/following tốt nhưng bio quá mỏng, chưa đủ dữ liệu xếp Tier A',
+      followers: 25_014,
+      influenceScore: 500,
+    },
+    {
+      handle: 'Airdrop_CSGroup',
+      displayName: 'Airdrop CS Group',
+      role: 'Tier B · Cộng đồng trading, news và airdrop. Có độ phủ cộng đồng nhưng thiên về phân phối nội dung',
+      followers: 23_034,
+      influenceScore: 480,
+    },
+  ],
+
   /** Martin (@Martin_bml) — SurfAI smart followers snapshot */
   martin_bml: [
     {

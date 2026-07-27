@@ -1303,6 +1303,104 @@ export const RECENT_FOLLOWERS_BY_HANDLE: Record<string, RecentFollower[]> = {
       score: 761,
     },
   ],
+
+  /**
+   * Thiên Thiên (@Thienthien1305) — curated recent followers snapshot.
+   * score = điểm / thứ hạng TwitterScore (🏆).
+   */
+  thienthien1305: [
+    {
+      handle: 'martindale',
+      displayName: 'Eric Martindale [₿]',
+      followedAgo: '4 months ago',
+      followedAt: '2026-03-27T00:00:00.000Z',
+      score: 17112,
+    },
+    {
+      handle: 'evans666666',
+      displayName: 'Evans.eth🇨🇳 🇻🇳🇮🇩',
+      followedAgo: '4 months ago',
+      followedAt: '2026-03-26T00:00:00.000Z',
+      score: 6837,
+    },
+    {
+      handle: 'mrryanchi',
+      displayName: 'Mr.RC｜𝟎𝐱𝐔',
+      followedAgo: '10 months ago',
+      followedAt: '2025-09-27T00:00:00.000Z',
+      score: 6408,
+    },
+    {
+      handle: 'lc_hk0x',
+      displayName: 'LC🎮',
+      followedAgo: '10 months ago',
+      followedAt: '2025-09-26T00:00:00.000Z',
+      score: 28298,
+    },
+    {
+      handle: 'blockchainrese6',
+      displayName: '陌陌',
+      followedAgo: '1 year ago',
+      followedAt: '2025-07-27T00:00:00.000Z',
+      score: 7430,
+    },
+    {
+      handle: 'afangyuan',
+      displayName: '方源',
+      followedAgo: '1 year ago',
+      followedAt: '2025-07-26T00:00:00.000Z',
+      score: 18401,
+    },
+    {
+      handle: 'gala_nft1',
+      displayName: 'gala⚡',
+      followedAgo: '1 year ago',
+      followedAt: '2025-07-25T00:00:00.000Z',
+      score: 21830,
+    },
+    {
+      handle: 'cryptoamandal',
+      displayName: '阿曼达要吃肉Amanda.eth',
+      followedAgo: '1 year ago',
+      followedAt: '2025-07-24T00:00:00.000Z',
+      score: 5626,
+    },
+    {
+      handle: 'metaio102',
+      displayName: 'Meta',
+      followedAgo: '1 year ago',
+      followedAt: '2025-07-23T00:00:00.000Z',
+      score: 4039,
+    },
+    {
+      handle: 'nero8888',
+      displayName: '🌱Nero',
+      followedAgo: '1 year ago',
+      followedAt: '2025-07-22T00:00:00.000Z',
+      score: 6167,
+    },
+    {
+      handle: 'hm010169',
+      displayName: '币圈荒木｜Araki🪵',
+      followedAgo: '1 year ago',
+      followedAt: '2025-07-21T00:00:00.000Z',
+      score: 2810,
+    },
+    {
+      handle: 'gala_nft2',
+      displayName: 'gala⚡',
+      followedAgo: '1 year ago',
+      followedAt: '2025-07-20T00:00:00.000Z',
+      score: 6880,
+    },
+    {
+      handle: '466anan',
+      displayName: 'Crypto Nan',
+      followedAgo: '1 year ago',
+      followedAt: '2025-07-19T00:00:00.000Z',
+      score: 9077,
+    },
+  ],
 }
 
 /** Smart followers seed — key = KOL handle lowercase */

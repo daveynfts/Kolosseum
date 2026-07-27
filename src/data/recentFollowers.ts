@@ -9,6 +9,8 @@ export interface RecentFollower {
   followedAgo: string
   /** Optional ISO for sorting */
   followedAt?: string
+  /** Optional score / rank proxy (TwitterScore etc.) */
+  score?: number
 }
 
 /** High-signal accounts that follow the KOL (SurfAI / graph quality list). */
@@ -1229,6 +1231,76 @@ export const RECENT_FOLLOWERS_BY_HANDLE: Record<string, RecentFollower[]> = {
       displayName: 'ChandlerGuo 郭宏才 宝二爷',
       followedAgo: 'a year ago',
       followedAt: '2025-07-15T00:00:00.000Z',
+    },
+  ],
+
+  /**
+   * Hak Research (@HakResearch) — curated recent followers snapshot.
+   * score = điểm / thứ hạng TwitterScore (nếu có).
+   */
+  hakresearch: [
+    {
+      handle: '0xsweep',
+      displayName: 'Sweep',
+      followedAgo: '25 days ago',
+      followedAt: '2026-07-02T00:00:00.000Z',
+      score: 1430,
+    },
+    {
+      handle: 'greta0086',
+      displayName: 'Greta008',
+      followedAgo: '6 months ago',
+      followedAt: '2026-01-27T00:00:00.000Z',
+      score: 3395,
+    },
+    {
+      handle: 'marcinredstone',
+      displayName: 'Marcin Kazmierczak ♦️',
+      followedAgo: '9 months ago',
+      followedAt: '2025-10-27T00:00:00.000Z',
+      score: 9331,
+    },
+    {
+      handle: 'boredelonmusk',
+      displayName: 'BORED',
+      followedAgo: '10 months ago',
+      followedAt: '2025-09-27T00:00:00.000Z',
+      score: 140,
+    },
+    {
+      handle: 'jtsong2',
+      displayName: 'Jtsong.eth (Ø,G)',
+      followedAgo: '1 year ago',
+      followedAt: '2025-07-27T00:00:00.000Z',
+      score: 4180,
+    },
+    {
+      handle: 'jeffmindfulness',
+      displayName: 'Jeff | Mindfulness',
+      followedAgo: '1 year ago',
+      followedAt: '2025-07-26T00:00:00.000Z',
+      score: 19108,
+    },
+    {
+      handle: 'defiignas',
+      displayName: 'Ignas | DeFi',
+      followedAgo: '1 year ago',
+      followedAt: '2025-07-25T00:00:00.000Z',
+      score: 390,
+    },
+    {
+      handle: 'serpinxbt',
+      displayName: 'Serpin Taxt',
+      followedAgo: '1 year ago',
+      followedAt: '2025-07-24T00:00:00.000Z',
+      score: 12697,
+    },
+    {
+      handle: 'kkmoat',
+      displayName: 'kkmoat.btc',
+      followedAgo: '1 year ago',
+      followedAt: '2025-07-23T00:00:00.000Z',
+      score: 761,
     },
   ],
 }

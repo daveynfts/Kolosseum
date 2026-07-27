@@ -40,11 +40,14 @@ function normalizeHandle(handle: string): string {
 function normalizeFollower(f: Partial<RecentFollower>): RecentFollower | null {
   const handle = normalizeHandle(f.handle || '')
   if (!handle) return null
+  const score =
+    typeof f.score === 'number' && Number.isFinite(f.score) ? f.score : undefined
   return {
     handle,
     displayName: (f.displayName || handle).trim(),
     followedAgo: (f.followedAgo || '').trim() || 'recently',
     followedAt: f.followedAt,
+    score,
   }
 }
 

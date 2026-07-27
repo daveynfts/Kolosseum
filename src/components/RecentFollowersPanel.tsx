@@ -159,17 +159,27 @@ export function RecentFollowersPanel({ kolHandle }: Props) {
                     </span>
                     <span className="recent-follows__handle">@{handle}</span>
                   </span>
-                  <time
-                    className="recent-follows__ago"
-                    dateTime={f.followedAt || undefined}
-                    title={
-                      f.followedAt
-                        ? new Date(f.followedAt).toLocaleString()
-                        : f.followedAgo
-                    }
-                  >
-                    {ago}
-                  </time>
+                  <span className="recent-follows__stats">
+                    {f.score != null && Number.isFinite(f.score) && (
+                      <span
+                        className="recent-follows__stat recent-follows__stat--score"
+                        title="Điểm / thứ hạng"
+                      >
+                        {f.score.toLocaleString('en-US')}
+                      </span>
+                    )}
+                    <time
+                      className="recent-follows__ago"
+                      dateTime={f.followedAt || undefined}
+                      title={
+                        f.followedAt
+                          ? new Date(f.followedAt).toLocaleString()
+                          : f.followedAgo
+                      }
+                    >
+                      {ago}
+                    </time>
+                  </span>
                 </a>
               </li>
             )

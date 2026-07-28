@@ -642,80 +642,6 @@ button.view-toggle-btn.is-active {
 }
 
 /* ——— LoL-inspired rank badges (muted, geometric) ——— */
-.rank-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 2px 8px 2px 5px;
-  border-radius: 999px;
-  font-size: 0.65rem;
-  font-weight: 600;
-  letter-spacing: 0.03em;
-  text-transform: none;
-  color: var(--rank, #e2e8f0);
-  background: color-mix(in srgb, var(--rank, #94a3b8) 12%, rgba(8, 12, 24, 0.82));
-  border: 1px solid color-mix(in srgb, var(--rank, #94a3b8) 38%, transparent);
-  box-shadow: 0 0 10px color-mix(in srgb, var(--rank, #94a3b8) 10%, transparent);
-  line-height: 1.2;
-  white-space: nowrap;
-  vertical-align: middle;
-}
-
-.rank-badge--sm {
-  font-size: 0.62rem;
-  padding: 2px 7px 2px 4px;
-}
-
-.rank-badge--md {
-  font-size: 0.72rem;
-  padding: 3px 10px 3px 6px;
-  gap: 5px;
-}
-
-.rank-badge--md .rank-mark {
-  width: 14px;
-  height: 14px;
-}
-
-.rank-badge__label {
-  color: inherit;
-  opacity: 0.95;
-}
-
-.rank-mark {
-  width: 12px;
-  height: 12px;
-  flex-shrink: 0;
-  color: inherit;
-}
-
-.rank-pip {
-  display: grid;
-  place-items: center;
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  color: var(--rank, #e2e8f0);
-  background: rgba(6, 10, 20, 0.88);
-  border: 1px solid color-mix(in srgb, var(--rank, #94a3b8) 48%, transparent);
-  box-shadow:
-    0 0 0 1px rgba(0, 0, 0, 0.4),
-    0 0 8px color-mix(in srgb, var(--rank, #94a3b8) 20%, transparent);
-}
-
-.rank-pip .rank-mark {
-  width: 11px;
-  height: 11px;
-}
-
-/* Challenger: soft warm pulse without being loud */
-.rank-pip--challenger,
-.rank-badge--challenger {
-  box-shadow:
-    0 0 0 1px rgba(0, 0, 0, 0.35),
-    0 0 12px color-mix(in srgb, var(--rank, #f0e6d2) 28%, transparent);
-}
-
 .rank-pip--map {
   transform: scale(0.92);
   opacity: 0.92;
@@ -802,22 +728,6 @@ button.view-toggle-btn.is-active {
   line-height: 1.45;
   font-size: 0.68rem;
   color: #94a3b8;
-}
-
-.rank-badge--challenger {
-  color: #f5efe6;
-}
-.rank-badge--master {
-  color: #e9d5ff;
-}
-.rank-badge--diamond {
-  color: #bae6fd;
-}
-.rank-badge--platinum {
-  color: #ccfbf1;
-}
-.rank-badge--gold {
-  color: #fef3c7;
 }
 
 .tag--rank {

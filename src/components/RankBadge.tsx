@@ -5,6 +5,7 @@ import {
   RANK_SHORT,
   type KolRank,
 } from '../types'
+import './RankBadge.css'
 
 interface Props {
   tier?: number
@@ -60,9 +61,16 @@ export function RankBadge({
 
 function RankMark({ rank }: { rank: KolRank }) {
   // Minimal geometric marks — not official LoL assets
+  const svgProps = {
+    className: 'rank-mark' as const,
+    viewBox: '0 0 16 16',
+    width: 12,
+    height: 12,
+    'aria-hidden': true as const,
+  }
   if (rank === 'challenger') {
     return (
-      <svg className="rank-mark" viewBox="0 0 16 16" aria-hidden>
+      <svg {...svgProps}>
         <path
           d="M8 1.5l1.6 3.6 3.9.4-2.9 2.6.9 3.8L8 10.2 4.5 12l.9-3.8L2.5 5.5l3.9-.4L8 1.5z"
           fill="currentColor"
@@ -73,7 +81,7 @@ function RankMark({ rank }: { rank: KolRank }) {
   }
   if (rank === 'master') {
     return (
-      <svg className="rank-mark" viewBox="0 0 16 16" aria-hidden>
+      <svg {...svgProps}>
         <path
           d="M3 12.5L4.2 5.5 8 8.2l3.8-2.7L13 12.5H3z"
           fill="currentColor"
@@ -85,7 +93,7 @@ function RankMark({ rank }: { rank: KolRank }) {
   }
   if (rank === 'diamond') {
     return (
-      <svg className="rank-mark" viewBox="0 0 16 16" aria-hidden>
+      <svg {...svgProps}>
         <path
           d="M8 1.8L13.5 6.2 8 14.2 2.5 6.2 8 1.8z"
           fill="none"
@@ -105,7 +113,7 @@ function RankMark({ rank }: { rank: KolRank }) {
   }
   if (rank === 'platinum') {
     return (
-      <svg className="rank-mark" viewBox="0 0 16 16" aria-hidden>
+      <svg {...svgProps}>
         <path
           d="M8 2.2L12.8 5.5 11 13.2H5L3.2 5.5 8 2.2z"
           fill="none"
@@ -118,7 +126,7 @@ function RankMark({ rank }: { rank: KolRank }) {
   }
   // gold
   return (
-    <svg className="rank-mark" viewBox="0 0 16 16" aria-hidden>
+    <svg {...svgProps}>
       <circle
         cx="8"
         cy="8"

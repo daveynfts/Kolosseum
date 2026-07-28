@@ -1,5 +1,6 @@
-import type { VercelRequest } from '@vercel/node'
+import type { VercelRequest, VercelResponse } from '@vercel/node'
 import { env } from './r2.js'
+import { checkRateLimit, pruneRateLimitBuckets } from './rateLimit.js'
 
 export function bearer(req: VercelRequest): string {
   const h = req.headers.authorization || ''
@@ -13,7 +14,7 @@ export function isAdmin(req: VercelRequest): boolean {
   return bearer(req) === secret
 }
 
-/** Debug/env probes: admin token only (not public in production). */
+/** Debug/env probes: admin token only. */
 export function debugAllowed(req: VercelRequest): boolean {
   return isAdmin(req)
 }
@@ -22,10 +23,6 @@ export type StaleCheck =
   | { ok: true }
   | { ok: false; serverUpdatedAt: string }
 
-/**
- * Reject PUT when server copy is newer than client's base timestamp.
- * Skip check when either side is missing (first write / legacy clients).
- */
 export function assertNotStale(
   serverUpdatedAt: string | undefined | null,
   clientBaseUpdatedAt: string | undefined | null,
@@ -41,4 +38,69 @@ export function assertNotStale(
 export function readBaseUpdatedAt(body: Record<string, unknown>): string | undefined {
   const v = body.baseUpdatedAt ?? body.clientUpdatedAt
   return typeof v === 'string' && v.trim() ? v.trim() : undefined
+}
+
+export function clientIp(req: VercelRequest): string {
+  const fwd = req.headers['x-forwarded-for']
+  if (typeof fwd === 'string' && fwd.trim()) {
+    return fwd.split(',')[0].trim()
+  }
+  if (Array.isArray(fwd) && fwd[0]) return String(fwd[0]).trim()
+  const real = req.headers['x-real-ip']
+  if (typeof real === 'string' && real.trim()) return real.trim()
+  return 'unknown'
+}
+
+export function cors(
+  res: VercelResponse,
+  methods: string,
+  headers = 'Content-Type, Authorization',
+): void {
+  res.setHeader('Access-Control-Allow-Origin', '*')
+  res.setHeader('Access-Control-Allow-Methods', methods)
+  res.setHeader('Access-Control-Allow-Headers', headers)
+}
+
+export function jsonError(
+  res: VercelResponse,
+  status: number,
+  error: string,
+  extra?: Record<string, unknown>,
+): VercelResponse {
+  return res.status(status).json({ error, ...extra })
+}
+
+export function conflictResponse(
+  res: VercelResponse,
+  message: string,
+  serverUpdatedAt: string,
+): VercelResponse {
+  return res.status(409).json({
+    error: 'conflict',
+    message,
+    serverUpdatedAt,
+  })
+}
+
+/**
+ * Public GET rate limit. Skipped for admin Bearer on same request.
+ * @returns true if request should proceed
+ */
+export function enforcePublicRateLimit(
+  req: VercelRequest,
+  res: VercelResponse,
+  routeKey: string,
+  maxPerMinute = 90,
+): boolean {
+  if (isAdmin(req)) return true
+  pruneRateLimitBuckets()
+  const key = `${routeKey}:${clientIp(req)}`
+  const hit = checkRateLimit(key, maxPerMinute, 60_000)
+  if (hit.ok) return true
+  res.setHeader('Retry-After', String(hit.retryAfterSec))
+  jsonError(res, 429, 'rate_limit_exceeded', {
+    message: 'Too many requests — try again shortly.',
+    retryAfterSec: hit.retryAfterSec,
+  })
+  return false
 }

@@ -20,6 +20,7 @@ import {
   assertNotStale,
   bearer,
   debugAllowed,
+  enforcePublicRateLimit,
   readBaseUpdatedAt,
 } from '../lib/server/apiHelpers.js'
 
@@ -74,6 +75,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   try {
     if (req.method === 'GET') {
+      if (!enforcePublicRateLimit(req, res, 'kols', 90)) return
       const data = await r2GetJson<KolsBody>(client, KOLS_OBJECT_KEY)
       if (!data || !Array.isArray(data.kols) || data.kols.length === 0) {
         return res.status(404).json({

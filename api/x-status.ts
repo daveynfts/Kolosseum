@@ -8,7 +8,12 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 import { r2Client } from '../lib/server/r2.js'
 import { cacheRemoteImage } from '../lib/server/mediaCache.js'
-import { isAdmin } from '../lib/server/apiHelpers.js'
+import {
+  cors as applyCors,
+  enforcePublicRateLimit,
+  isAdmin,
+  jsonError,
+} from '../lib/server/apiHelpers.js'
 
 type TweetOut = {
   id: string
@@ -29,16 +34,6 @@ type TweetOut = {
   avatarRemote?: string
   fetchedAt: string
   source: string
-}
-
-function cors(res: VercelResponse) {
-  res.setHeader('Access-Control-Allow-Origin', '*')
-  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS')
-  res.setHeader(
-    'Access-Control-Allow-Headers',
-    'Content-Type, Authorization',
-  )
-  res.setHeader('Cache-Control', 'no-store')
 }
 
 function parseXStatusUrl(raw: string): { id: string; handle?: string } | null {
@@ -110,11 +105,13 @@ function toIso(created: unknown): string {
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  cors(res)
+  applyCors(res, 'GET, OPTIONS', 'Content-Type, Authorization')
+  res.setHeader('Cache-Control', 'no-store')
   if (req.method === 'OPTIONS') return res.status(204).end()
   if (req.method !== 'GET') {
-    return res.status(405).json({ error: 'method_not_allowed' })
+    return jsonError(res, 405, 'method_not_allowed')
   }
+  if (!enforcePublicRateLimit(req, res, 'x-status', 40)) return
 
   // Public read; R2 image cache only when admin token present (prevents open fetch-to-R2 abuse).
   const allowR2Cache = isAdmin(req)

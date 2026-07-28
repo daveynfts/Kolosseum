@@ -9,7 +9,6 @@
  */
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 import {
-  env,
   envPresence,
   KOL_REPORTS_OBJECT_KEY,
   r2Client,
@@ -18,7 +17,8 @@ import {
 } from '../lib/server/r2.js'
 import {
   assertNotStale,
-  bearer,
+  enforcePublicRateLimit,
+  isAdmin,
   readBaseUpdatedAt,
 } from '../lib/server/apiHelpers.js'
 
@@ -39,12 +39,6 @@ function cors(res: VercelResponse) {
     'Content-Type, Authorization',
   )
   res.setHeader('Cache-Control', 'no-store')
-}
-
-function isAdmin(req: VercelRequest): boolean {
-  const secret = env('FEED_ADMIN_TOKEN')
-  if (!secret) return false
-  return bearer(req) === secret
 }
 
 function publicSlice(data: Body): Body {
@@ -86,6 +80,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   try {
     if (req.method === 'GET') {
+      if (!enforcePublicRateLimit(req, res, 'kol-reports', 90)) return
       const wantAll =
         String(req.query.all || '') === '1' ||
         String(req.query.scope || '') === 'admin'

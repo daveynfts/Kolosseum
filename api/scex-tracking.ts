@@ -18,6 +18,7 @@ import {
 import {
   assertNotStale,
   bearer,
+  enforcePublicRateLimit,
   readBaseUpdatedAt,
 } from '../lib/server/apiHelpers.js'
 
@@ -62,6 +63,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   try {
     if (req.method === 'GET') {
+      if (!enforcePublicRateLimit(req, res, 'scex-tracking', 90)) return
       const data = await r2GetJson<Body>(client, SCEX_TRACKING_OBJECT_KEY)
       if (!data || !data.config) {
         return res.status(404).json({

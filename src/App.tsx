@@ -1,5 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
-import { Scene } from './components/Scene'
+import { Suspense, lazy, useCallback, useEffect, useMemo, useState } from 'react'
 import { SceneErrorBoundary } from './components/SceneErrorBoundary'
 import { Hud } from './components/Hud'
 import { FeedPanel } from './components/FeedPanel'
@@ -14,6 +13,14 @@ import type { ViewMode } from './lib/layout'
 import type { Kol, KolRank, Niche, StatusLabel } from './types'
 import { getKolRank, kolMatchesNiche } from './types'
 import './App.css'
+
+const Scene = lazy(() =>
+  import('./components/Scene.tsx').then((m) => ({ default: m.Scene })),
+)
+
+function SceneLoading() {
+  return <div className="canvas-loading" aria-busy="true" />
+}
 
 const SHORTLIST_MAX = 5
 const VIEW_KEY = 'vn-kol-map-view-mode'
@@ -129,14 +136,16 @@ function App() {
     <div className={`app app--${viewMode}`}>
       <div className="canvas-wrap">
         <SceneErrorBoundary>
-          <Scene
-            kols={visibleKols}
-            selectedId={selectedId}
-            filterNiche={filterNiche}
-            onSelect={onSelect}
-            autoRotate={autoRotate}
-            viewMode={viewMode}
-          />
+          <Suspense fallback={<SceneLoading />}>
+            <Scene
+              kols={visibleKols}
+              selectedId={selectedId}
+              filterNiche={filterNiche}
+              onSelect={onSelect}
+              autoRotate={autoRotate}
+              viewMode={viewMode}
+            />
+          </Suspense>
         </SceneErrorBoundary>
       </div>
       <Hud

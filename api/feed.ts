@@ -22,6 +22,7 @@ import {
   assertNotStale,
   bearer,
   debugAllowed,
+  enforcePublicRateLimit,
   readBaseUpdatedAt,
 } from '../lib/server/apiHelpers.js'
 
@@ -72,6 +73,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   try {
     if (req.method === 'GET') {
+      if (!enforcePublicRateLimit(req, res, 'feed', 90)) return
       const data = await r2GetJson<FeedBody>(client, FEED_OBJECT_KEY)
       if (!data || !Array.isArray(data.posts)) {
         return res.status(404).json({

@@ -17,6 +17,7 @@ import {
   assertNotStale,
   bearer,
   debugAllowed,
+  enforcePublicRateLimit,
   readBaseUpdatedAt,
 } from '../lib/server/apiHelpers.js'
 
@@ -69,6 +70,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   try {
     if (req.method === 'GET') {
+      if (!enforcePublicRateLimit(req, res, 'recent-followers', 90)) return
       const data = await r2GetJson<Body>(client, RECENT_FOLLOWERS_OBJECT_KEY)
       if (!data?.map || typeof data.map !== 'object') {
         return res.status(404).json({

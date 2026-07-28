@@ -7,7 +7,10 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "oxlint",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "preview": "vite preview",
+    "radar:push": "node scripts/radar.mjs",
     "sync:surf-pdfs": "node scripts/sync_surf_pdfs.mjs",
     "sync:surf-pdfs:apply": "node scripts/sync_surf_pdfs.mjs --apply --fix-existing",
     "feed:refresh-cm": "node scripts/refresh_feed_challenger_master.mjs"
@@ -30,6 +33,7 @@
     "@vitejs/plugin-react": "^6.0.3",
     "oxlint": "^1.71.0",
     "typescript": "~6.0.2",
-    "vite": "^8.1.1"
+    "vite": "^8.1.1",
+    "vitest": "^3.2.4"
   }
 }

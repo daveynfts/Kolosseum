@@ -236,18 +236,18 @@ export type ServerFollowersSaveResult =
   | { ok: true; count: number; updatedAt: string; map: RecentFollowersMap; smartMap: SmartFollowersMap }
   | { ok: false; error: string; status?: number }
 
-function mergeFollowersMaps(
+export function mergeFollowersMapsForPublish(
   server: RecentFollowersMap | undefined,
   local: RecentFollowersMap,
 ): RecentFollowersMap {
   return { ...(server ?? {}), ...local }
 }
 
-function mergeSmartFollowersMaps(
+export function mergeSmartFollowersMapsForPublish(
   server: SmartFollowersMap | undefined,
   local: SmartFollowersMap | undefined,
+  seed: SmartFollowersMap,
 ): SmartFollowersMap {
-  const seed = seedSmartFollowersMap()
   if (local !== undefined) {
     return { ...seed, ...(server ?? {}), ...local }
   }
@@ -272,10 +272,11 @@ export async function saveRecentFollowersToServer(
 
   const server = await fetchServerRecentFollowers()
   const next = normalizeMap(map)
-  const mergedMap = mergeFollowersMaps(server?.map, next)
-  const mergedSmart = mergeSmartFollowersMaps(
+  const mergedMap = mergeFollowersMapsForPublish(server?.map, next)
+  const mergedSmart = mergeSmartFollowersMapsForPublish(
     server?.smartMap,
     smartMap !== undefined ? normalizeSmartMap(smartMap) : undefined,
+    seedSmartFollowersMap(),
   )
 
   const payload: RecentFollowersPayload & { baseUpdatedAt?: string } = {

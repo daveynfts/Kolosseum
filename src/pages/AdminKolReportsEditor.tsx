@@ -42,6 +42,7 @@ import {
 } from '../lib/htmlToMarkdown'
 import { docxFileToReportMarkdown } from '../lib/docxToReportMarkdown'
 import { XProfileAvatar } from '../components/XProfileAvatar'
+import { EditableReportPreview, isPreviewEditFocused } from '../components/EditableReportPreview'
 import { ReportMarkdown } from '../components/ReportMarkdown'
 import type { Kol } from '../types'
 import { resolveAvatarHandle } from '../lib/avatar'
@@ -505,8 +506,47 @@ export function AdminKolReportsEditor({ onToast, kols = [] }: Props) {
   }
 
   const insertAtCursor = (snippet: string, selectPlaceholder?: string) => {
-    const el = textareaRef.current
     if (!draft) return
+    // WYSIWYG Live Preview focused → insert as HTML when possible
+    if (!readOnly && isPreviewEditFocused()) {
+      if (snippet.includes('## ')) {
+        document.execCommand('formatBlock', false, 'h2')
+      } else if (snippet.includes('**')) {
+        document.execCommand('bold')
+      } else if (snippet.trim() === '*' || snippet.includes('*')) {
+        document.execCommand('italic')
+      } else if (snippet.includes('- ')) {
+        document.execCommand('insertUnorderedList')
+      } else if (snippet.includes('> ')) {
+        document.execCommand('formatBlock', false, 'blockquote')
+      } else if (snippet.includes('---')) {
+        document.execCommand('insertHorizontalRule')
+      } else if (snippet.includes('![')) {
+        const m = snippet.match(/!\[([^\]]*)\]\(([^)\s]+)\)/)
+        if (m) {
+          const alt = m[1] || 'image'
+          const src = m[2]
+          document.execCommand(
+            'insertHTML',
+            false,
+            `<figure class="report-md__figure"><img src="${src}" alt="${alt}" class="report-md__img" loading="lazy" />${
+              alt
+                ? `<figcaption class="report-md__caption">${alt}</figcaption>`
+                : ''
+            }</figure><p><br></p>`,
+          )
+        } else {
+          document.execCommand('insertText', false, snippet.replace(/^\n+|\n+$/g, ''))
+        }
+      } else if (snippet.includes('](')) {
+        const url = window.prompt('URL')
+        if (url) document.execCommand('createLink', false, url)
+      } else {
+        document.execCommand('insertText', false, snippet.replace(/^\n+|\n+$/g, ''))
+      }
+      return
+    }
+    const el = textareaRef.current
     if (!el) {
       patchDraft({ text: `${draft.text}\n${snippet}` })
       return
@@ -530,8 +570,15 @@ export function AdminKolReportsEditor({ onToast, kols = [] }: Props) {
   }
 
   const wrapSelection = (left: string, right: string, fallback: string) => {
+    if (!draft) return
+    if (!readOnly && isPreviewEditFocused()) {
+      if (left === '**') document.execCommand('bold')
+      else if (left === '*') document.execCommand('italic')
+      else document.execCommand('insertText', false, `${left}${fallback}${right}`)
+      return
+    }
     const el = textareaRef.current
-    if (!draft || !el) {
+    if (!el) {
       insertAtCursor(`${left}${fallback}${right}`, fallback)
       return
     }
@@ -1362,7 +1409,7 @@ export function AdminKolReportsEditor({ onToast, kols = [] }: Props) {
                   <div className="akr-seg akr-seg--sm">
                     {(
                       [
-                        ['write', 'Edit'],
+                        ['write', 'Markdown'],
                         ['split', 'Split'],
                         ['preview', 'Đọc'],
                       ] as const
@@ -1568,90 +1615,60 @@ export function AdminKolReportsEditor({ onToast, kols = [] }: Props) {
                       : 'akr-editor--write'
                 }${scrollSync && viewMode === 'split' ? ' akr-editor--sync' : ''}`}
               >
-                {/* Split: Preview LEFT · Edit RIGHT — edit luôn ở cột phải */}
+                {/* Split: WYSIWYG Live Preview LEFT · Markdown raw RIGHT */}
                 {viewMode !== 'write' && (
                   <div
                     ref={previewRef}
                     className={`akr-preview${
-                      !readOnly && viewMode === 'preview'
-                        ? ' akr-preview--direct-edit'
-                        : ''
+                      !readOnly ? ' akr-preview--wysiwyg' : ''
                     }`}
                     onScroll={onPreviewScroll}
                   >
-                    {viewMode === 'split' && (
-                      <div className="akr-pane-label akr-pane-label--preview">
-                        Live preview
-                        {scrollSync ? (
-                          <span className="akr-sync-badge">synced</span>
-                        ) : null}
-                      </div>
-                    )}
-                    {!readOnly && viewMode === 'preview' ? (
-                      <>
-                        <div className="akr-pane-label akr-pane-label--preview">
-                          Edit report
-                          <span className="akr-sync-badge akr-sync-badge--edit">
-                            editable
-                          </span>
-                        </div>
-                        <textarea
-                          ref={textareaRef}
-                          className="akr-textarea akr-textarea--preview-edit"
-                          disabled={uploading || importingDocx}
-                          value={draft.text}
-                          onChange={(e) => patchDraft({ text: e.target.value })}
-                          onKeyDown={onMdKeyDown}
-                          onPaste={(e) => void onEditorPaste(e)}
-                          onScroll={onWriteScroll}
-                          onDragEnter={(e) => {
-                            e.preventDefault()
-                            setDragOver(true)
-                          }}
-                          onDragOver={(e) => {
-                            e.preventDefault()
-                            setDragOver(true)
-                          }}
-                          onDragLeave={() => setDragOver(false)}
-                          onDrop={(e) => void onEditorDrop(e)}
-                          spellCheck={false}
-                          placeholder="Sửa nội dung report tại đây…"
-                        />
-                      </>
-                    ) : (
-                      <div
-                        className={
-                          viewMode === 'preview'
-                            ? 'akr-reader'
-                            : 'akr-preview-body'
-                        }
-                      >
-                        {viewMode === 'preview' && (
-                          <header className="akr-reader__head">
-                            <p className="akr-reader__kicker">KOL Report</p>
-                            <h2 className="akr-reader__title">{draft.title}</h2>
-                            <div className="akr-reader__meta">
-                              <span>@{draft.handle}</span>
-                              {score != null && (
-                                <span className="akr-score-chip">
-                                  {score}/100
-                                </span>
-                              )}
-                              <span
-                                className={`akr-badge ${
-                                  draft.visibility === 'public'
-                                    ? 'akr-badge--pub'
-                                    : ''
-                                }`}
-                              >
-                                {draft.visibility}
+                    <div className="akr-pane-label akr-pane-label--preview">
+                      {readOnly ? 'Live preview' : 'Live Preview · click to edit'}
+                      {!readOnly ? (
+                        <span className="akr-sync-badge akr-sync-badge--edit">
+                          WYSIWYG
+                        </span>
+                      ) : null}
+                      {scrollSync && viewMode === 'split' ? (
+                        <span className="akr-sync-badge">synced</span>
+                      ) : null}
+                    </div>
+                    <div
+                      className={
+                        viewMode === 'preview'
+                          ? 'akr-reader'
+                          : 'akr-preview-body'
+                      }
+                    >
+                      {viewMode === 'preview' && (
+                        <header className="akr-reader__head">
+                          <p className="akr-reader__kicker">KOL Report</p>
+                          <h2 className="akr-reader__title">{draft.title}</h2>
+                          <div className="akr-reader__meta">
+                            <span>@{draft.handle}</span>
+                            {score != null && (
+                              <span className="akr-score-chip">
+                                {score}/100
                               </span>
-                              <time dateTime={draft.updatedAt}>
-                                {new Date(draft.updatedAt).toLocaleString()}
-                              </time>
-                            </div>
-                          </header>
-                        )}
+                            )}
+                            <span
+                              className={`akr-badge ${
+                                draft.visibility === 'public'
+                                  ? 'akr-badge--pub'
+                                  : ''
+                              }`}
+                            >
+                              {draft.visibility}
+                            </span>
+                            <time dateTime={draft.updatedAt}>
+                              {new Date(draft.updatedAt).toLocaleString()}
+                            </time>
+                          </div>
+                        </header>
+                      )}
+                      {readOnly ? (
                         <ReportMarkdown
                           text={draft.text}
                           className={
@@ -1660,8 +1677,20 @@ export function AdminKolReportsEditor({ onToast, kols = [] }: Props) {
                               : 'report-md--preview'
                           }
                         />
-                      </div>
-                    )}
+                      ) : (
+                        <EditableReportPreview
+                          docKey={draft.id}
+                          text={draft.text}
+                          disabled={uploading || importingDocx}
+                          className={
+                            viewMode === 'preview'
+                              ? 'report-md--reader'
+                              : 'report-md--preview'
+                          }
+                          onChange={(md) => patchDraft({ text: md })}
+                        />
+                      )}
+                    </div>
                   </div>
                 )}
                 {viewMode !== 'preview' && (
@@ -1669,11 +1698,9 @@ export function AdminKolReportsEditor({ onToast, kols = [] }: Props) {
                     className={`akr-write ${dragOver ? 'is-dragover' : ''}`}
                   >
                     <div className="akr-pane-label">
-                      {viewMode === 'split' ? 'Edit' : 'Write'}
+                      {viewMode === 'split' ? 'Markdown · raw' : 'Markdown'}
                       {viewMode === 'split' ? (
-                        <span className="akr-sync-badge akr-sync-badge--edit">
-                          type here
-                        </span>
+                        <span className="akr-sync-badge">optional</span>
                       ) : null}
                     </div>
                     <textarea

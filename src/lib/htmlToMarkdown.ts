@@ -103,7 +103,28 @@ function blockFromElement(el: HTMLElement, listDepth = 0): string {
   if (tag === 'h3') return `\n### ${cleanText(childrenInline(el))}\n\n`
   if (tag === 'h4') return `\n#### ${cleanText(childrenInline(el))}\n\n`
 
+  if (tag === 'figure') {
+    const img = el.querySelector('img')
+    if (img) {
+      let out = blockFromElement(img as HTMLElement, listDepth)
+      const cap = el.querySelector('figcaption')
+      if (cap) {
+        const c = cleanText(childrenInline(cap as HTMLElement))
+        if (c) out += `*${c}*\n\n`
+      }
+      return out
+    }
+    return ''
+  }
+
   if (tag === 'p' || tag === 'div') {
+    // Spacer used by markdown renderer
+    if (el.classList.contains('report-md__spacer')) return '\n'
+    // Table wrap
+    if (el.classList.contains('report-md__table-wrap')) {
+      const table = el.querySelector('table')
+      return table ? blockFromElement(table as HTMLElement, listDepth) : ''
+    }
     // Mammoth often wraps a lone image in <p>
     const elementChildren = Array.from(el.children)
     if (
@@ -274,10 +295,13 @@ export function normalizeMarkdown(md: string): string {
 }
 
 /**
- * Convert clipboard HTML to markdown.
+ * Convert clipboard / contentEditable HTML to markdown.
  * Returns null if HTML is empty / not useful.
  */
-export function htmlToMarkdown(html: string): string | null {
+export function htmlToMarkdown(
+  html: string,
+  opts?: { loose?: boolean },
+): string | null {
   if (!html || !html.trim()) return null
   // Ignore tiny wrappers that are effectively plain text
   const stripped = html
@@ -293,7 +317,7 @@ export function htmlToMarkdown(html: string): string | null {
     const md = normalizeMarkdown(blockFromElement(body))
     if (!md || md.length < 1) return null
     // If conversion produced almost nothing useful vs plain length, skip
-    if (md.replace(/\W/g, '').length < 2) return null
+    if (!opts?.loose && md.replace(/\W/g, '').length < 2) return null
     return md
   } catch {
     return null

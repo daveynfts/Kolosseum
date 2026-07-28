@@ -1,7 +1,7 @@
 /**
- * ContentEditable report body — edit rendered preview, sync back to markdown.
+ * WYSIWYG report body — edit rendered preview, sync back to markdown.
  */
-import { useEffect, useRef } from 'react'
+import { useLayoutEffect, useRef } from 'react'
 import { htmlToMarkdown } from '../lib/htmlToMarkdown'
 import { markdownToHtml } from '../lib/markdownToHtml'
 
@@ -11,6 +11,8 @@ interface Props {
   className?: string
   disabled?: boolean
   placeholder?: string
+  /** Remount/resync key when switching reports */
+  docKey?: string
 }
 
 export function EditableReportPreview({
@@ -18,24 +20,39 @@ export function EditableReportPreview({
   onChange,
   className = '',
   disabled = false,
-  placeholder = 'Viết nội dung report…',
+  placeholder = 'Click vào đây để sửa nội dung…',
+  docKey = '',
 }: Props) {
   const ref = useRef<HTMLDivElement>(null)
   const focusedRef = useRef(false)
   const lastMdRef = useRef(text)
   const debounceRef = useRef<number | null>(null)
+  const seededKeyRef = useRef('')
 
-  // Seed / resync HTML when external markdown changes and we're not typing
-  useEffect(() => {
+  const seedHtml = (md: string) => {
     const el = ref.current
     if (!el) return
-    if (focusedRef.current) return
-    if (text === lastMdRef.current && el.innerHTML) return
-    lastMdRef.current = text
-    el.innerHTML = markdownToHtml(text)
-  }, [text])
+    lastMdRef.current = md
+    el.innerHTML = markdownToHtml(md)
+  }
 
-  useEffect(() => {
+  // Seed when report changes or external markdown updates (and not typing)
+  useLayoutEffect(() => {
+    const el = ref.current
+    if (!el) return
+    const keyChanged = seededKeyRef.current !== docKey
+    if (keyChanged) {
+      seededKeyRef.current = docKey
+      focusedRef.current = false
+      seedHtml(text)
+      return
+    }
+    if (focusedRef.current) return
+    if (text === lastMdRef.current && el.innerHTML.trim()) return
+    seedHtml(text)
+  }, [text, docKey])
+
+  useLayoutEffect(() => {
     return () => {
       if (debounceRef.current != null) window.clearTimeout(debounceRef.current)
     }
@@ -45,7 +62,7 @@ export function EditableReportPreview({
     const el = ref.current
     if (!el || disabled) return
     const run = () => {
-      const md = htmlToMarkdown(el.innerHTML)
+      const md = htmlToMarkdown(el.innerHTML, { loose: true })
       const next =
         md ??
         ((el.textContent || '').trim() ? lastMdRef.current : '')
@@ -62,7 +79,7 @@ export function EditableReportPreview({
       return
     }
     if (debounceRef.current != null) window.clearTimeout(debounceRef.current)
-    debounceRef.current = window.setTimeout(run, 280)
+    debounceRef.current = window.setTimeout(run, 320)
   }
 
   return (
@@ -74,7 +91,8 @@ export function EditableReportPreview({
       data-placeholder={placeholder}
       role="textbox"
       aria-multiline="true"
-      aria-label="Report body"
+      aria-label="Sửa nội dung báo cáo (Live Preview)"
+      spellCheck={false}
       onFocus={() => {
         focusedRef.current = true
       }}
@@ -84,11 +102,39 @@ export function EditableReportPreview({
       }}
       onInput={() => commitFromDom(false)}
       onPaste={(e) => {
-        // Prefer plain / HTML → markdown pipeline via default paste into
-        // contentEditable, then commit; strip risky scripts by re-serializing.
-        requestAnimationFrame(() => commitFromDom(true))
-        void e
+        e.preventDefault()
+        const html = e.clipboardData.getData('text/html')
+        const plain = e.clipboardData.getData('text/plain')
+        if (html && html.trim()) {
+          const md = htmlToMarkdown(html, { loose: true })
+          if (md) {
+            document.execCommand('insertHTML', false, markdownToHtml(md))
+          } else {
+            document.execCommand('insertText', false, plain || '')
+          }
+        } else {
+          document.execCommand('insertText', false, plain || '')
+        }
+        commitFromDom(true)
+      }}
+      onKeyDown={(e) => {
+        if ((e.metaKey || e.ctrlKey) && e.key === 'b') {
+          e.preventDefault()
+          document.execCommand('bold')
+          commitFromDom(false)
+        }
+        if ((e.metaKey || e.ctrlKey) && e.key === 'i') {
+          e.preventDefault()
+          document.execCommand('italic')
+          commitFromDom(false)
+        }
       }}
     />
   )
+}
+
+/** True if focus is inside the WYSIWYG preview editor */
+export function isPreviewEditFocused(): boolean {
+  const ae = document.activeElement
+  return !!(ae && ae.closest && ae.closest('.report-md--editable'))
 }

@@ -41,7 +41,6 @@ import {
 } from '../lib/htmlToMarkdown'
 import { docxFileToReportMarkdown } from '../lib/docxToReportMarkdown'
 import { XProfileAvatar } from '../components/XProfileAvatar'
-import { EditableReportPreview } from '../components/EditableReportPreview'
 import { ReportMarkdown } from '../components/ReportMarkdown'
 import type { Kol } from '../types'
 import { resolveAvatarHandle } from '../lib/avatar'
@@ -1348,7 +1347,7 @@ export function AdminKolReportsEditor({ onToast, kols = [] }: Props) {
                   <div className="akr-seg akr-seg--sm">
                     {(
                       [
-                        ['write', 'Write'],
+                        ['write', 'Edit'],
                         ['split', 'Split'],
                         ['preview', 'Đọc'],
                       ] as const
@@ -1529,17 +1528,120 @@ export function AdminKolReportsEditor({ onToast, kols = [] }: Props) {
               <div
                 className={`akr-editor ${
                   viewMode === 'split'
-                    ? 'akr-editor--split'
+                    ? 'akr-editor--split akr-editor--preview-left'
                     : viewMode === 'preview'
                       ? 'akr-editor--preview'
                       : 'akr-editor--write'
                 }${scrollSync && viewMode === 'split' ? ' akr-editor--sync' : ''}`}
               >
+                {/* Split: Preview LEFT · Edit RIGHT — edit luôn ở cột phải */}
+                {viewMode !== 'write' && (
+                  <div
+                    ref={previewRef}
+                    className={`akr-preview${
+                      !readOnly && viewMode === 'preview'
+                        ? ' akr-preview--direct-edit'
+                        : ''
+                    }`}
+                    onScroll={onPreviewScroll}
+                  >
+                    {viewMode === 'split' && (
+                      <div className="akr-pane-label akr-pane-label--preview">
+                        Live preview
+                        {scrollSync ? (
+                          <span className="akr-sync-badge">synced</span>
+                        ) : null}
+                      </div>
+                    )}
+                    {!readOnly && viewMode === 'preview' ? (
+                      <>
+                        <div className="akr-pane-label akr-pane-label--preview">
+                          Edit report
+                          <span className="akr-sync-badge akr-sync-badge--edit">
+                            editable
+                          </span>
+                        </div>
+                        <textarea
+                          ref={textareaRef}
+                          className="akr-textarea akr-textarea--preview-edit"
+                          disabled={uploading || importingDocx}
+                          value={draft.text}
+                          onChange={(e) => patchDraft({ text: e.target.value })}
+                          onKeyDown={onMdKeyDown}
+                          onPaste={(e) => void onEditorPaste(e)}
+                          onScroll={onWriteScroll}
+                          onDragEnter={(e) => {
+                            e.preventDefault()
+                            setDragOver(true)
+                          }}
+                          onDragOver={(e) => {
+                            e.preventDefault()
+                            setDragOver(true)
+                          }}
+                          onDragLeave={() => setDragOver(false)}
+                          onDrop={(e) => void onEditorDrop(e)}
+                          spellCheck={false}
+                          placeholder="Sửa nội dung report tại đây…"
+                        />
+                      </>
+                    ) : (
+                      <div
+                        className={
+                          viewMode === 'preview'
+                            ? 'akr-reader'
+                            : 'akr-preview-body'
+                        }
+                      >
+                        {viewMode === 'preview' && (
+                          <header className="akr-reader__head">
+                            <p className="akr-reader__kicker">KOL Report</p>
+                            <h2 className="akr-reader__title">{draft.title}</h2>
+                            <div className="akr-reader__meta">
+                              <span>@{draft.handle}</span>
+                              {score != null && (
+                                <span className="akr-score-chip">
+                                  {score}/100
+                                </span>
+                              )}
+                              <span
+                                className={`akr-badge ${
+                                  draft.visibility === 'public'
+                                    ? 'akr-badge--pub'
+                                    : ''
+                                }`}
+                              >
+                                {draft.visibility}
+                              </span>
+                              <time dateTime={draft.updatedAt}>
+                                {new Date(draft.updatedAt).toLocaleString()}
+                              </time>
+                            </div>
+                          </header>
+                        )}
+                        <ReportMarkdown
+                          text={draft.text}
+                          className={
+                            viewMode === 'preview'
+                              ? 'report-md--reader'
+                              : 'report-md--preview'
+                          }
+                        />
+                      </div>
+                    )}
+                  </div>
+                )}
                 {viewMode !== 'preview' && (
                   <div
                     className={`akr-write ${dragOver ? 'is-dragover' : ''}`}
                   >
-                    <div className="akr-pane-label">Write</div>
+                    <div className="akr-pane-label">
+                      {viewMode === 'split' ? 'Edit' : 'Write'}
+                      {viewMode === 'split' ? (
+                        <span className="akr-sync-badge akr-sync-badge--edit">
+                          type here
+                        </span>
+                      ) : null}
+                    </div>
                     <textarea
                       ref={textareaRef}
                       className="akr-textarea"
@@ -1583,77 +1685,6 @@ export function AdminKolReportsEditor({ onToast, kols = [] }: Props) {
                           DOCX→MD+R2 · Ctrl+B/I/S ·{' '}
                           {(draft.text || '').length.toLocaleString()} chars
                         </>
-                      )}
-                    </div>
-                  </div>
-                )}
-                {viewMode !== 'write' && (
-                  <div
-                    ref={previewRef}
-                    className="akr-preview"
-                    onScroll={onPreviewScroll}
-                  >
-                    {viewMode === 'split' && (
-                      <div className="akr-pane-label akr-pane-label--preview">
-                        {readOnly ? 'Preview' : 'Preview · edit'}
-                        {scrollSync ? (
-                          <span className="akr-sync-badge">synced</span>
-                        ) : null}
-                      </div>
-                    )}
-                    <div
-                      className={
-                        viewMode === 'preview'
-                          ? 'akr-reader'
-                          : 'akr-preview-body'
-                      }
-                    >
-                      {viewMode === 'preview' && (
-                        <header className="akr-reader__head">
-                          <p className="akr-reader__kicker">KOL Report</p>
-                          <h2 className="akr-reader__title">{draft.title}</h2>
-                          <div className="akr-reader__meta">
-                            <span>@{draft.handle}</span>
-                            {score != null && (
-                              <span className="akr-score-chip">
-                                {score}/100
-                              </span>
-                            )}
-                            <span
-                              className={`akr-badge ${
-                                draft.visibility === 'public'
-                                  ? 'akr-badge--pub'
-                                  : ''
-                              }`}
-                            >
-                              {draft.visibility}
-                            </span>
-                            <time dateTime={draft.updatedAt}>
-                              {new Date(draft.updatedAt).toLocaleString()}
-                            </time>
-                          </div>
-                        </header>
-                      )}
-                      {readOnly ? (
-                        <ReportMarkdown
-                          text={draft.text}
-                          className={
-                            viewMode === 'preview'
-                              ? 'report-md--reader'
-                              : 'report-md--preview'
-                          }
-                        />
-                      ) : (
-                        <EditableReportPreview
-                          text={draft.text}
-                          disabled={uploading || importingDocx}
-                          className={
-                            viewMode === 'preview'
-                              ? 'report-md--reader'
-                              : 'report-md--preview'
-                          }
-                          onChange={(md) => patchDraft({ text: md })}
-                        />
                       )}
                     </div>
                   </div>

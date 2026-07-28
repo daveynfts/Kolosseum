@@ -13,6 +13,7 @@ import {
   type DragEvent,
   type KeyboardEvent,
 } from 'react'
+import { createPortal } from 'react-dom'
 import {
   applyReportUpdate,
   createChangelogEntry,
@@ -115,6 +116,7 @@ export function AdminKolReportsEditor({ onToast, kols = [] }: Props) {
   const textareaRef = useRef<HTMLTextAreaElement | null>(null)
   const previewRef = useRef<HTMLDivElement | null>(null)
   const editorShellRef = useRef<HTMLDivElement | null>(null)
+  const [editorMount, setEditorMount] = useState<HTMLDivElement | null>(null)
   const scrollLockRef = useRef<'write' | 'preview' | null>(null)
   const fileInputRef = useRef<HTMLInputElement | null>(null)
   const coverInputRef = useRef<HTMLInputElement | null>(null)
@@ -173,31 +175,38 @@ export function AdminKolReportsEditor({ onToast, kols = [] }: Props) {
     }
   }, [])
 
-  // Fullscreen: Esc to exit + lock body scroll
+  // Fullscreen: Esc to exit + lock body scroll + escape stacking contexts (.glass)
   useEffect(() => {
     if (!splitFullscreen) return
     const prev = document.body.style.overflow
     document.body.style.overflow = 'hidden'
+    document.body.classList.add('akr-report-fs')
     const onKey = (e: globalThis.KeyboardEvent) => {
       if (e.key === 'Escape') {
         e.preventDefault()
         setSplitFullscreen(false)
       }
-      // F11-like: Ctrl+Shift+F toggles
       if (e.key === 'f' && e.ctrlKey && e.shiftKey) {
         e.preventDefault()
         setSplitFullscreen(false)
       }
+      if ((e.metaKey || e.ctrlKey) && e.key === 's') {
+        // keep native save handler on textarea; no-op here
+      }
     }
     window.addEventListener('keydown', onKey)
+    // Focus editor after paint
+    requestAnimationFrame(() => {
+      textareaRef.current?.focus()
+    })
     return () => {
       document.body.style.overflow = prev
+      document.body.classList.remove('akr-report-fs')
       window.removeEventListener('keydown', onKey)
     }
   }, [splitFullscreen])
 
   const enterSplitFullscreen = useCallback(() => {
-    setViewMode('split')
     setSplitFullscreen(true)
   }, [])
 
@@ -1337,11 +1346,17 @@ export function AdminKolReportsEditor({ onToast, kols = [] }: Props) {
               </div>
 
               <div
-                ref={editorShellRef}
-                className={`akr-editor-shell ${
-                  splitFullscreen ? 'is-fullscreen' : ''
-                } ${viewMode === 'preview' ? 'is-reader' : ''}`}
-              >
+                ref={setEditorMount}
+                className={`akr-fs-host${splitFullscreen ? ' akr-fs-host--open' : ''}`}
+              />
+              {editorMount &&
+                createPortal(
+                  <div
+                    ref={editorShellRef}
+                    className={`akr-editor-shell ${
+                      splitFullscreen ? 'is-fullscreen' : ''
+                    } ${viewMode === 'preview' ? 'is-reader' : ''}`}
+                  >
               <div className="akr-editor-chrome">
                 <div className="akr-editor-chrome__row akr-editor-chrome__row--primary">
                   <div className="akr-seg akr-seg--sm">
@@ -1358,20 +1373,31 @@ export function AdminKolReportsEditor({ onToast, kols = [] }: Props) {
                         className={`akr-seg__btn ${viewMode === k ? 'is-active' : ''}`}
                         onClick={() => {
                           setViewMode(k)
-                          if (k !== 'split' && splitFullscreen) {
-                            setSplitFullscreen(false)
-                          }
                         }}
                       >
                         {label}
                       </button>
                     ))}
                   </div>
+                  {splitFullscreen && draft ? (
+                    <div className="akr-fs-meta">
+                      <strong className="akr-fs-meta__title" title={draft.title}>
+                        {draft.title || 'Untitled report'}
+                      </strong>
+                      <span className="akr-fs-meta__handle">@{draft.handle}</span>
+                      {dirty ? (
+                        <span className="akr-pill akr-pill--warn">unsaved</span>
+                      ) : null}
+                      <span className="akr-fs-meta__chars">
+                        {(draft.text || '').length.toLocaleString()} chars
+                      </span>
+                    </div>
+                  ) : null}
                   <div className="akr-split-controls">
                     {viewMode === 'split' && (
                       <label
                         className={`akr-sync-toggle ${scrollSync ? 'is-on' : ''}`}
-                        title="Đồng bộ scroll Write ↔ Preview"
+                        title="Đồng bộ scroll Edit ↔ Preview"
                       >
                         <input
                           type="checkbox"
@@ -1380,6 +1406,17 @@ export function AdminKolReportsEditor({ onToast, kols = [] }: Props) {
                         />
                         Sync
                       </label>
+                    )}
+                    {!readOnly && splitFullscreen && (
+                      <button
+                        type="button"
+                        className="admin-btn admin-btn--sm admin-btn--primary"
+                        disabled={saving || !dirty}
+                        onClick={() => void save()}
+                        title="Ctrl+S"
+                      >
+                        {saving ? 'Saving…' : 'Save R2'}
+                      </button>
                     )}
                     <button
                       type="button"
@@ -1391,20 +1428,17 @@ export function AdminKolReportsEditor({ onToast, kols = [] }: Props) {
                       title={
                         splitFullscreen
                           ? 'Thoát fullscreen (Esc)'
-                          : 'Fullscreen — chỉnh / đọc rộng'
+                          : 'Fullscreen — chỉnh / đọc rộng (Ctrl+Shift+F)'
                       }
                       onClick={() => {
                         if (splitFullscreen) exitSplitFullscreen()
-                        else {
-                          if (viewMode === 'write') setViewMode('split')
-                          enterSplitFullscreen()
-                        }
+                        else enterSplitFullscreen()
                       }}
                     >
                       {splitFullscreen ? 'Exit full' : 'Fullscreen'}
                     </button>
                     {splitFullscreen && (
-                      <span className="akr-fs-hint">Esc</span>
+                      <span className="akr-fs-hint">Esc · Ctrl+Shift+F</span>
                     )}
                   </div>
                 </div>
@@ -1690,7 +1724,9 @@ export function AdminKolReportsEditor({ onToast, kols = [] }: Props) {
                   </div>
                 )}
               </div>
-              </div>
+              </div>,
+                  splitFullscreen ? document.body : editorMount,
+                )}
 
               {!splitFullscreen && (
               <>

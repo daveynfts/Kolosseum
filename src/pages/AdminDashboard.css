@@ -1815,25 +1815,93 @@
   flex: 1 1 auto;
   overflow: hidden;
 }
+.akr-fs-host {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  flex: 1 1 auto;
+  min-height: 360px;
+}
+.akr-fs-host--open {
+  /* Reserve space while editor is portaled to body */
+  min-height: min(70vh, 640px);
+  border-radius: 14px;
+  border: 1px dashed rgba(148, 163, 184, 0.25);
+  background: rgba(15, 23, 42, 0.35);
+}
+.akr-fs-host--open::after {
+  content: 'Fullscreen editor · Esc to exit';
+  margin: auto;
+  color: #64748b;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
 .akr-editor-shell.is-fullscreen {
   position: fixed;
   inset: 0;
-  z-index: 12000;
-  background: linear-gradient(180deg, #0b1220 0%, #0f172a 100%);
-  box-shadow: 0 0 0 1px rgba(148, 163, 184, 0.12);
+  z-index: 60000;
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+  background:
+    radial-gradient(ellipse 80% 50% at 50% -10%, rgba(56, 189, 248, 0.1), transparent 55%),
+    linear-gradient(180deg, #070b14 0%, #0b1220 40%, #0f172a 100%);
+  box-shadow: none;
   padding: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+body.akr-report-fs {
+  overflow: hidden !important;
 }
 .akr-editor-shell.is-fullscreen .akr-editor-chrome {
   flex-shrink: 0;
-  padding: 10px 16px;
-  background: rgba(2, 6, 23, 0.92);
-  border-bottom: 1px solid rgba(125, 211, 252, 0.15);
-  backdrop-filter: blur(8px);
+  padding: 10px 16px 8px;
+  background: rgba(2, 6, 23, 0.94);
+  border-bottom: 1px solid rgba(125, 211, 252, 0.18);
+  backdrop-filter: blur(12px);
+  gap: 8px;
+}
+.akr-editor-shell.is-fullscreen .akr-editor-chrome__row--primary {
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.akr-fs-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  flex: 1 1 180px;
+  margin: 0 4px;
+}
+.akr-fs-meta__title {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #f1f5f9;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: min(42vw, 420px);
+}
+.akr-fs-meta__handle {
+  font-size: 0.75rem;
+  color: #7dd3fc;
+  flex-shrink: 0;
+}
+.akr-fs-meta__chars {
+  font-size: 0.7rem;
+  color: #64748b;
+  flex-shrink: 0;
 }
 .akr-editor-shell.is-fullscreen .akr-editor {
-  flex: 1;
+  flex: 1 1 auto;
   min-height: 0;
-  height: calc(100vh - 56px);
+  height: auto;
+}
+.akr-editor-shell.is-fullscreen .akr-editor--split {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.08fr);
 }
 .akr-editor-shell.is-fullscreen .akr-write,
 .akr-editor-shell.is-fullscreen .akr-preview {
@@ -1846,9 +1914,25 @@
   height: 100%;
   resize: none;
   flex: 1;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  padding: 16px 18px 28px;
+}
+.akr-editor-shell.is-fullscreen .akr-preview-body {
+  padding: 16px 20px 40px;
 }
 .akr-editor-shell.is-fullscreen .akr-write__hint {
   flex-shrink: 0;
+}
+.akr-editor-shell.is-fullscreen .akr-pane-label {
+  background: rgba(2, 6, 23, 0.75);
+}
+.akr-editor-shell.is-fullscreen .report-md--preview {
+  font-size: 0.92rem;
+  line-height: 1.6;
+}
+.akr-editor-shell.is-fullscreen .akr-md-tools {
+  flex-wrap: wrap;
 }
 .akr-split-controls {
   display: inline-flex;
@@ -2901,19 +2985,11 @@
   color: #fff;
 }
 
-/* Fullscreen chrome tweaks */
-.akr-editor-shell.is-fullscreen .akr-editor-chrome__row--primary {
-  padding: 10px 16px;
-}
-.akr-editor-shell.is-fullscreen .akr-editor {
-  height: calc(100vh - 52px);
-}
-.akr-editor-shell.is-fullscreen.is-reader .akr-editor {
-  height: calc(100vh - 48px);
-}
-.akr-editor-shell.is-fullscreen .akr-write,
-.akr-editor-shell.is-fullscreen .akr-preview {
-  max-height: none;
+/* Fullscreen chrome tweaks (host layout uses flex; avoid fixed vh height) */
+.akr-editor-shell.is-fullscreen.is-reader .akr-reader {
+  max-width: 820px;
+  padding-top: 28px;
+  padding-bottom: 64px;
 }
 
 /* ── Admin Event Banner tab ───────────────────────────── */

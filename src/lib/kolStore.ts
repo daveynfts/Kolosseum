@@ -247,7 +247,7 @@ export async function loadKolsWithSource(): Promise<LoadKolsResult> {
 }
 
 export type ServerSaveResult =
-  | { ok: true; count: number; updatedAt: string }
+  | { ok: true; count: number; updatedAt: string; kols: Kol[] }
   | { ok: false; error: string; status?: number }
 
 /**
@@ -356,6 +356,7 @@ export async function saveKolsToServer(
       ok: true,
       count: body.count ?? merged.length,
       updatedAt: body.updatedAt || payload.updatedAt,
+      kols: merged,
     }
   } catch (e) {
     return {

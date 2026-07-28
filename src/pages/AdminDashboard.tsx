@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import type { Kol, KolRank, Niche, StatusLabel } from '../types'
 import {
   applyKolRank,
@@ -98,6 +98,11 @@ export function AdminDashboard() {
   const [savingServer, setSavingServer] = useState(false)
   const [tokenInput, setTokenInput] = useState(() => getAdminToken())
   const [uploadingSurf, setUploadingSurf] = useState(false)
+  const dirtyRef = useRef(dirty)
+
+  useEffect(() => {
+    dirtyRef.current = dirty
+  }, [dirty])
 
   useEffect(() => {
     const onHash = () => setTab(tabFromHash())
@@ -111,6 +116,11 @@ export function AdminDashboard() {
     void (async () => {
       const { kols: list, source } = await loadKolsWithSource()
       if (cancelled) return
+      // Don't wipe in-progress local edits if user already changed something
+      if (dirtyRef.current) {
+        setKolSource(source)
+        return
+      }
       setKols(list)
       setKolSource(source)
     })()
@@ -146,17 +156,35 @@ export function AdminDashboard() {
 
   const meta = getStoreMeta()
 
-  const selected = useMemo(
-    () => kols.find((k) => k.id === selectedId) ?? null,
-    [kols, selectedId],
-  )
-
+  // Keep draft in sync when list updates from R2 (only if not dirty)
   useEffect(() => {
-    if (selected) {
-      setDraft(JSON.parse(JSON.stringify(selected)) as Kol)
-      setTab('edit')
+    if (!selectedId || dirty) return
+    const sel = kols.find((k) => k.id === selectedId)
+    if (!sel) return
+    setDraft((prev) => {
+      if (prev && prev.id === sel.id && JSON.stringify(prev) === JSON.stringify(sel)) {
+        return prev
+      }
+      return JSON.parse(JSON.stringify(sel)) as Kol
+    })
+  }, [kols, selectedId, dirty])
+
+  const openKol = (id: string) => {
+    if (dirty && draft && draft.id !== id) {
+      if (
+        !confirm(
+          'Có thay đổi chưa Save (R2). Bỏ qua và chuyển sang KOL khác?',
+        )
+      ) {
+        return
+      }
+      setDirty(false)
     }
-  }, [selectedId]) // eslint-disable-line react-hooks/exhaustive-deps
+    setSelectedId(id)
+    const sel = kols.find((k) => k.id === id)
+    if (sel) setDraft(JSON.parse(JSON.stringify(sel)) as Kol)
+    goTab('edit')
+  }
 
   const filtered = useMemo(() => {
     return kols
@@ -192,10 +220,10 @@ export function AdminDashboard() {
           flash(`Publish R2 thất bại: ${result.error}`)
           return false
         }
-        setKols(next)
+        setKols(result.kols)
         setDirty(false)
         setKolSource('server')
-        const withPdf = next.filter((k) => (k.surfReportPdfUrl || '').trim())
+        const withPdf = result.kols.filter((k) => (k.surfReportPdfUrl || '').trim())
           .length
         flash(
           `Đã publish R2 (${result.count} KOLs · ${withPdf} có Surf PDF) — hard-refresh map để thấy.`,
@@ -251,7 +279,7 @@ export function AdminDashboard() {
     setSelectedId(k.id)
     setDraft(k)
     setDirty(true)
-    setTab('edit')
+    goTab('edit')
     flash('Đã tạo KOL mới — nhớ Save')
   }
 
@@ -262,7 +290,7 @@ export function AdminDashboard() {
     void persistServer(next, 'admin delete')
     setSelectedId(null)
     setDraft(null)
-    setTab('list')
+    goTab('list')
   }
 
   const onResetSeed = () => {
@@ -477,7 +505,7 @@ export function AdminDashboard() {
         >
           Apply token
         </button>
-        <button type="button" className="btn" onClick={() => setTab('legend')}>
+        <button type="button" className="btn" onClick={() => goTab('legend')}>
           Field legend
         </button>
       </div>
@@ -500,8 +528,22 @@ export function AdminDashboard() {
           <span>Hot</span>
         </div>
         <div className="admin-stat glass">
-          <em>{meta.updatedAt ? 'Local' : 'Seed'}</em>
-          <span>{meta.updatedAt ? formatTime(meta.updatedAt) : 'sheetKols.ts'}</span>
+          <em>
+            {kolSource === 'loading'
+              ? '…'
+              : kolSource === 'server'
+                ? 'R2'
+                : kolSource === 'local'
+                  ? 'Local'
+                  : 'Seed'}
+          </em>
+          <span>
+            {kolSource === 'server'
+              ? 'Shared'
+              : meta.updatedAt
+                ? formatTime(meta.updatedAt)
+                : 'sheetKols.ts'}
+          </span>
         </div>
       </div>
 
@@ -637,7 +679,10 @@ export function AdminDashboard() {
             </label>
             <span className="admin-count">
               {filtered.length}
-              {query.trim() || filterRank !== 'All' || filterStatus !== 'All'
+              {query.trim() ||
+              filterRank !== 'All' ||
+              filterStatus !== 'All' ||
+              !showHidden
                 ? ` / ${kols.length}`
                 : ''}{' '}
               rows
@@ -652,7 +697,8 @@ export function AdminDashboard() {
                   : 'Không có KOL khớp bộ lọc'}
                 {(query.trim() ||
                   filterRank !== 'All' ||
-                  filterStatus !== 'All') && (
+                  filterStatus !== 'All' ||
+                  !showHidden) && (
                   <button
                     type="button"
                     className="admin-empty__reset"
@@ -660,6 +706,7 @@ export function AdminDashboard() {
                       setQuery('')
                       setFilterRank('All')
                       setFilterStatus('All')
+                      setShowHidden(true)
                     }}
                   >
                     Xóa bộ lọc
@@ -691,7 +738,7 @@ export function AdminDashboard() {
                     <tr
                       key={k.id}
                       className={selectedId === k.id ? 'is-selected' : ''}
-                      onClick={() => setSelectedId(k.id)}
+                      onClick={() => openKol(k.id)}
                     >
                       <td>
                         <AvatarImg
@@ -787,7 +834,7 @@ export function AdminDashboard() {
                     key={k.id}
                     type="button"
                     className={`admin-side-item ${selectedId === k.id ? 'is-active' : ''}`}
-                    onClick={() => setSelectedId(k.id)}
+                    onClick={() => openKol(k.id)}
                   >
                     <AvatarImg
                       handle={k.handle}

@@ -41,6 +41,7 @@ import {
 } from '../lib/htmlToMarkdown'
 import { docxFileToReportMarkdown } from '../lib/docxToReportMarkdown'
 import { XProfileAvatar } from '../components/XProfileAvatar'
+import { EditableReportPreview } from '../components/EditableReportPreview'
 import { ReportMarkdown } from '../components/ReportMarkdown'
 import type { Kol } from '../types'
 import { resolveAvatarHandle } from '../lib/avatar'
@@ -1408,7 +1409,7 @@ export function AdminKolReportsEditor({ onToast, kols = [] }: Props) {
                     )}
                   </div>
                 </div>
-                {!readOnly && viewMode !== 'preview' ? (
+                {!readOnly ? (
                   <div className="akr-editor-chrome__row akr-editor-chrome__row--tools">
                     <div className="akr-md-tools">
                       <button
@@ -1594,7 +1595,7 @@ export function AdminKolReportsEditor({ onToast, kols = [] }: Props) {
                   >
                     {viewMode === 'split' && (
                       <div className="akr-pane-label akr-pane-label--preview">
-                        Preview
+                        {readOnly ? 'Preview' : 'Preview · edit'}
                         {scrollSync ? (
                           <span className="akr-sync-badge">synced</span>
                         ) : null}
@@ -1633,14 +1634,27 @@ export function AdminKolReportsEditor({ onToast, kols = [] }: Props) {
                           </div>
                         </header>
                       )}
-                      <ReportMarkdown
-                        text={draft.text}
-                        className={
-                          viewMode === 'preview'
-                            ? 'report-md--reader'
-                            : 'report-md--preview'
-                        }
-                      />
+                      {readOnly ? (
+                        <ReportMarkdown
+                          text={draft.text}
+                          className={
+                            viewMode === 'preview'
+                              ? 'report-md--reader'
+                              : 'report-md--preview'
+                          }
+                        />
+                      ) : (
+                        <EditableReportPreview
+                          text={draft.text}
+                          disabled={uploading || importingDocx}
+                          className={
+                            viewMode === 'preview'
+                              ? 'report-md--reader'
+                              : 'report-md--preview'
+                          }
+                          onChange={(md) => patchDraft({ text: md })}
+                        />
+                      )}
                     </div>
                   </div>
                 )}

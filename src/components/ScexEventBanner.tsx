@@ -1,31 +1,40 @@
 /**
- * Compact partner ribbon — formal, readable; photo as soft right accent only.
- * Assets: public/scex-banner (phocaptaisanso / @scexofficial).
+ * Partner event ribbon — loads config from R2 (Admin → Banner).
  */
-import { withBase } from '../lib/base'
+import { useEffect, useState } from 'react'
+import {
+  resolveBannerArt,
+  resolveBannerLogo,
+  type SiteBannerConfig,
+} from '../data/siteBanner'
+import {
+  getSiteBanner,
+  loadSiteBannerWithSource,
+  SITE_BANNER_EVENT,
+} from '../lib/siteBannerStore'
 
-const REF_URL = 'https://phocaptaisanso.com/r/Z7ii209XQTExj9Xd'
+export function SiteBannerRibbon({ config }: { config: SiteBannerConfig }) {
+  if (!config.enabled) return null
 
-function asset(path: string) {
-  return withBase(`/scex-banner/${path}`)
-}
+  const logoUrl = resolveBannerLogo(config)
+  const artUrl = resolveBannerArt(config)
 
-export function ScexEventBanner() {
   return (
     <a
       className="scex-event-banner"
-      href={REF_URL}
+      href={config.href}
       target="_blank"
       rel="noopener noreferrer"
-      aria-label="SCEX — Đấu trường Tài sản mã hóa. Mở trang đăng ký Simulator"
+      aria-label={
+        config.ariaLabel ||
+        `${config.title}. ${config.cta}`
+      }
     >
-      {/* Soft brand wash (left → center) */}
       <span className="scex-event-banner__base" aria-hidden />
 
-      {/* Official art — right panel only, masked so type stays crisp */}
       <span className="scex-event-banner__art" aria-hidden>
         <img
-          src={asset('x-banner.jpg')}
+          src={artUrl}
           alt=""
           width={1500}
           height={500}
@@ -38,31 +47,27 @@ export function ScexEventBanner() {
         <span className="scex-event-banner__left">
           <img
             className="scex-event-banner__logo"
-            src={asset('scex-logo.png')}
-            alt="SCEX"
+            src={logoUrl}
+            alt="Partner logo"
             width={140}
             height={40}
             decoding="async"
           />
           <span className="scex-event-banner__meta">
-            <span className="scex-event-banner__eyebrow">
-              Đối tác · Trading Simulator
-            </span>
-            <span className="scex-event-banner__title">
-              Đấu trường Tài sản mã hóa
-            </span>
-            <span className="scex-event-banner__sub">
-              Giao dịch mô phỏng · 5.000+ giải · quỹ thưởng 1,6+ tỷ đồng
-            </span>
+            <span className="scex-event-banner__eyebrow">{config.eyebrow}</span>
+            <span className="scex-event-banner__title">{config.title}</span>
+            <span className="scex-event-banner__sub">{config.subtitle}</span>
           </span>
         </span>
 
         <span className="scex-event-banner__right">
-          <span className="scex-event-banner__pills" aria-hidden>
-            <span>nhận ngay 1 tỷ VND</span>
-          </span>
+          {config.pill ? (
+            <span className="scex-event-banner__pills" aria-hidden>
+              <span>{config.pill}</span>
+            </span>
+          ) : null}
           <span className="scex-event-banner__cta">
-            Tham gia chương trình
+            {config.cta}
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden>
               <path
                 d="M5 12h14M13 6l6 6-6 6"
@@ -77,4 +82,28 @@ export function ScexEventBanner() {
       </span>
     </a>
   )
+}
+
+export function useSiteBanner(): SiteBannerConfig {
+  const [config, setConfig] = useState(() => getSiteBanner())
+
+  useEffect(() => {
+    let cancelled = false
+    void loadSiteBannerWithSource().then((r) => {
+      if (!cancelled) setConfig(r.config)
+    })
+    const onUpdate = () => setConfig(getSiteBanner())
+    window.addEventListener(SITE_BANNER_EVENT, onUpdate)
+    return () => {
+      cancelled = true
+      window.removeEventListener(SITE_BANNER_EVENT, onUpdate)
+    }
+  }, [])
+
+  return config
+}
+
+export function ScexEventBanner() {
+  const config = useSiteBanner()
+  return <SiteBannerRibbon config={config} />
 }

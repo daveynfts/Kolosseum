@@ -70,6 +70,19 @@ export const TWITTERSCORE_TOP100_OBJECT_KEY = 'internal/twitterscore-top100/v1.j
 export const SCEX_TRACKING_OBJECT_KEY = 'scex/tracking/v1.json'
 /** KOL evaluation reports (text from DOCX) + changelog — admin-editable */
 export const KOL_REPORTS_OBJECT_KEY = 'internal/kol-reports/v1.json'
+/** Partner event ribbon (text + image URLs) — admin-editable */
+export const SITE_BANNER_OBJECT_KEY = 'site/banner/v1.json'
+/** Prefix for banner image uploads (logo, art background) */
+export const BANNER_IMAGES_PREFIX = 'scex-banner'
+
+export function bannerImageObjectKey(
+  slot: 'logo' | 'art',
+  ext: string,
+): string {
+  const base = slot === 'logo' ? 'scex-logo' : 'x-banner'
+  const e = ext.replace(/^\./, '').toLowerCase()
+  return `${BANNER_IMAGES_PREFIX}/${base}.${e}`
+}
 
 export function mediaObjectKey(id: string) {
   return `media/${id}`

@@ -43,6 +43,7 @@ import { AdminRecentFollowersEditor } from './AdminRecentFollowersEditor'
 import { AdminTwitterScoreEditor } from './AdminTwitterScoreEditor'
 import { AdminScexEditor } from './AdminScexEditor'
 import { AdminKolReportsEditor } from './AdminKolReportsEditor'
+import { AdminBannerEditor } from './AdminBannerEditor'
 import './AdminDashboard.css'
 
 type Tab =
@@ -52,6 +53,7 @@ type Tab =
   | 'follows'
   | 'data'
   | 'scex'
+  | 'banner'
   | 'reports'
   | 'legend'
 
@@ -59,6 +61,7 @@ function tabFromHash(): Tab {
   const h = window.location.hash.replace(/^#\/?/, '').toLowerCase()
   // #/admin/feed or #/admin?tab=feed
   if (h.includes('scex') || h.includes('campaign')) return 'scex'
+  if (h.includes('banner') || h.includes('ribbon')) return 'banner'
   if (
     h.includes('reports') ||
     h.includes('kol-report') ||
@@ -127,7 +130,9 @@ export function AdminDashboard() {
             ? '#/admin/data'
             : t === 'scex'
               ? '#/admin/scex'
-              : t === 'reports'
+              : t === 'banner'
+                ? '#/admin/banner'
+                : t === 'reports'
                 ? '#/admin/reports'
                 : t === 'legend'
                   ? '#/admin/legend'
@@ -509,6 +514,7 @@ export function AdminDashboard() {
             'follows',
             'data',
             'scex',
+            'banner',
             'reports',
             'legend',
           ] as Tab[]
@@ -516,7 +522,7 @@ export function AdminDashboard() {
           <button
             key={t}
             type="button"
-            className={`admin-tab ${tab === t ? 'is-active' : ''} ${t === 'feed' || t === 'follows' || t === 'data' || t === 'scex' || t === 'reports' ? 'admin-tab--feed' : ''}`}
+            className={`admin-tab ${tab === t ? 'is-active' : ''} ${t === 'feed' || t === 'follows' || t === 'data' || t === 'scex' || t === 'banner' || t === 'reports' ? 'admin-tab--feed' : ''}`}
             onClick={() => goTab(t)}
           >
             {t === 'list'
@@ -531,7 +537,9 @@ export function AdminDashboard() {
                       ? '★ Data / TwitterScore'
                       : t === 'scex'
                         ? '★ SCEX Tracking'
-                        : t === 'reports'
+                        : t === 'banner'
+                          ? '★ Event Banner'
+                          : t === 'reports'
                           ? '★ KOL Reports'
                           : 'AI field legend'}
           </button>
@@ -553,6 +561,8 @@ export function AdminDashboard() {
       {tab === 'data' && <AdminTwitterScoreEditor onToast={flash} />}
 
       {tab === 'scex' && <AdminScexEditor onToast={flash} />}
+
+      {tab === 'banner' && <AdminBannerEditor onToast={flash} />}
 
       {tab === 'reports' && (
         <AdminKolReportsEditor onToast={flash} kols={kols} />

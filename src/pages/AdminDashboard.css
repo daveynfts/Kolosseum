@@ -2870,3 +2870,122 @@
 .akr-editor-shell.is-fullscreen .akr-preview {
   max-height: none;
 }
+
+/* ── Admin Event Banner tab ───────────────────────────── */
+.admin-banner-page {
+  padding-bottom: 24px;
+}
+
+.admin-banner-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.admin-banner-grid {
+  display: grid;
+  grid-template-columns: minmax(280px, 1fr) minmax(320px, 1.1fr);
+  gap: 16px;
+  align-items: start;
+}
+
+@media (max-width: 960px) {
+  .admin-banner-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.admin-banner-form h3,
+.admin-banner-preview h3 {
+  margin: 0 0 12px;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.admin-banner-form h3:not(:first-child) {
+  margin-top: 20px;
+}
+
+.admin-banner-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 12px;
+  font-size: 0.82rem;
+  color: rgba(255, 255, 255, 0.62);
+}
+
+.admin-banner-field input[type='text'],
+.admin-banner-field input[type='url'] {
+  padding: 9px 11px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(0, 0, 0, 0.28);
+  color: #fff;
+  font-size: 0.92rem;
+}
+
+.admin-banner-field--check {
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+}
+
+.admin-banner-upload {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+  align-items: flex-start;
+}
+
+.admin-banner-upload__thumb {
+  flex-shrink: 0;
+  width: 120px;
+  height: 48px;
+  border-radius: 10px;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.admin-banner-upload__thumb--wide {
+  width: 160px;
+  height: 54px;
+}
+
+.admin-banner-upload__thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+}
+
+.admin-banner-upload__actions {
+  flex: 1;
+  min-width: 0;
+}
+
+.admin-banner-upload__actions p {
+  margin: 0 0 8px;
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.55);
+  word-break: break-all;
+}
+
+.admin-banner-upload__actions .btn {
+  margin-right: 8px;
+  margin-bottom: 6px;
+}
+
+.admin-banner-preview__frame {
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: #050814;
+}
+
+.admin-banner-preview__frame .scex-event-banner {
+  position: relative;
+}

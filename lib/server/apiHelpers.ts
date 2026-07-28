@@ -96,7 +96,7 @@ export function enforcePublicRateLimit(
   pruneRateLimitBuckets()
   const key = `${routeKey}:${clientIp(req)}`
   const hit = checkRateLimit(key, maxPerMinute, 60_000)
-  if (hit.ok) return true
+  if (hit.ok === true) return true
   res.setHeader('Retry-After', String(hit.retryAfterSec))
   jsonError(res, 429, 'rate_limit_exceeded', {
     message: 'Too many requests — try again shortly.',

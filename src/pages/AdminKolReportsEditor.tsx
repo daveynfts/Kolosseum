@@ -10,8 +10,10 @@ import {
   useState,
   type ChangeEvent,
   type ClipboardEvent,
+  type CSSProperties,
   type DragEvent,
   type KeyboardEvent,
+  type PointerEvent as ReactPointerEvent,
 } from 'react'
 import { createPortal } from 'react-dom'
 import {
@@ -111,6 +113,22 @@ export function AdminKolReportsEditor({ onToast, kols = [] }: Props) {
   /** Split: fullscreen overlay + linked scroll Write ↔ Preview */
   const [splitFullscreen, setSplitFullscreen] = useState(false)
   const [scrollSync, setScrollSync] = useState(true)
+  /** Left (Live Preview) width % in split — drag / presets to align panes */
+  const [splitPreviewPct, setSplitPreviewPct] = useState(() => {
+    try {
+      const n = Number(localStorage.getItem('akr-split-preview-pct') || '')
+      if (Number.isFinite(n) && n >= 20 && n <= 80) return n
+    } catch {
+      /* ignore */
+    }
+    return 55
+  })
+  const splitDragRef = useRef<{
+    startX: number
+    startPct: number
+    width: number
+  } | null>(null)
+  const editorGridRef = useRef<HTMLDivElement | null>(null)
   /** Local draft of selected report — changelog only on commit/save */
   const [draft, setDraft] = useState<KolReport | null>(null)
   const baselineRef = useRef<KolReport | null>(null)
@@ -214,6 +232,55 @@ export function AdminKolReportsEditor({ onToast, kols = [] }: Props) {
   const exitSplitFullscreen = useCallback(() => {
     setSplitFullscreen(false)
   }, [])
+
+  const persistSplitPct = useCallback((pct: number) => {
+    const next = Math.min(80, Math.max(20, Math.round(pct)))
+    setSplitPreviewPct(next)
+    try {
+      localStorage.setItem('akr-split-preview-pct', String(next))
+    } catch {
+      /* ignore */
+    }
+  }, [])
+
+  const nudgeSplit = useCallback(
+    (delta: number) => {
+      persistSplitPct(splitPreviewPct + delta)
+    },
+    [persistSplitPct, splitPreviewPct],
+  )
+
+  const onSplitResizeStart = useCallback(
+    (e: ReactPointerEvent<HTMLDivElement>) => {
+      if (viewMode !== 'split') return
+      const grid = editorGridRef.current
+      if (!grid) return
+      e.preventDefault()
+      const rect = grid.getBoundingClientRect()
+      splitDragRef.current = {
+        startX: e.clientX,
+        startPct: splitPreviewPct,
+        width: rect.width,
+      }
+      document.body.classList.add('akr-split-resizing')
+      const onMove = (ev: PointerEvent) => {
+        const drag = splitDragRef.current
+        if (!drag || drag.width <= 0) return
+        const dx = ev.clientX - drag.startX
+        const deltaPct = (dx / drag.width) * 100
+        persistSplitPct(drag.startPct + deltaPct)
+      }
+      const onUp = () => {
+        splitDragRef.current = null
+        document.body.classList.remove('akr-split-resizing')
+        window.removeEventListener('pointermove', onMove)
+        window.removeEventListener('pointerup', onUp)
+      }
+      window.addEventListener('pointermove', onMove)
+      window.addEventListener('pointerup', onUp)
+    },
+    [persistSplitPct, splitPreviewPct, viewMode],
+  )
 
   /**
    * Sync scroll ratio between Write (textarea) and Preview pane.
@@ -1442,6 +1509,50 @@ export function AdminKolReportsEditor({ onToast, kols = [] }: Props) {
                   ) : null}
                   <div className="akr-split-controls">
                     {viewMode === 'split' && (
+                      <div className="akr-split-size" title="Điều chỉnh độ rộng 2 cột">
+                        <button
+                          type="button"
+                          className="akr-split-size__btn"
+                          title="Thu Preview (rộng Markdown)"
+                          onClick={() => nudgeSplit(-5)}
+                        >
+                          ◀
+                        </button>
+                        <button
+                          type="button"
+                          className="akr-split-size__btn"
+                          title="50 / 50"
+                          onClick={() => persistSplitPct(50)}
+                        >
+                          {Math.round(splitPreviewPct)}/{Math.round(100 - splitPreviewPct)}
+                        </button>
+                        <button
+                          type="button"
+                          className="akr-split-size__btn"
+                          title="Rộng Preview (thu Markdown)"
+                          onClick={() => nudgeSplit(5)}
+                        >
+                          ▶
+                        </button>
+                        <button
+                          type="button"
+                          className="akr-split-size__btn"
+                          title="Preview rộng (65%)"
+                          onClick={() => persistSplitPct(65)}
+                        >
+                          Prev+
+                        </button>
+                        <button
+                          type="button"
+                          className="akr-split-size__btn"
+                          title="Markdown rộng (40% preview)"
+                          onClick={() => persistSplitPct(40)}
+                        >
+                          MD+
+                        </button>
+                      </div>
+                    )}
+                    {viewMode === 'split' && (
                       <label
                         className={`akr-sync-toggle ${scrollSync ? 'is-on' : ''}`}
                         title="Đồng bộ scroll Edit ↔ Preview"
@@ -1607,6 +1718,7 @@ export function AdminKolReportsEditor({ onToast, kols = [] }: Props) {
               </div>
 
               <div
+                ref={editorGridRef}
                 className={`akr-editor ${
                   viewMode === 'split'
                     ? 'akr-editor--split akr-editor--preview-left'
@@ -1614,6 +1726,14 @@ export function AdminKolReportsEditor({ onToast, kols = [] }: Props) {
                       ? 'akr-editor--preview'
                       : 'akr-editor--write'
                 }${scrollSync && viewMode === 'split' ? ' akr-editor--sync' : ''}`}
+                style={
+                  viewMode === 'split'
+                    ? ({
+                        ['--akr-split-preview' as string]: `${splitPreviewPct}%`,
+                        ['--akr-split-write' as string]: `${100 - splitPreviewPct}%`,
+                      } as CSSProperties)
+                    : undefined
+                }
               >
                 {/* Split: WYSIWYG Live Preview LEFT · Markdown raw RIGHT */}
                 {viewMode !== 'write' && (
@@ -1691,6 +1811,22 @@ export function AdminKolReportsEditor({ onToast, kols = [] }: Props) {
                         />
                       )}
                     </div>
+                  </div>
+                )}
+                {viewMode === 'split' && (
+                  <div
+                    className="akr-split-resizer"
+                    role="separator"
+                    aria-orientation="vertical"
+                    aria-valuenow={Math.round(splitPreviewPct)}
+                    aria-valuemin={20}
+                    aria-valuemax={80}
+                    aria-label="Kéo để chỉnh tỉ lệ Live Preview / Markdown"
+                    title="Kéo để mở rộng / thu nhỏ · double-click = 50/50"
+                    onPointerDown={onSplitResizeStart}
+                    onDoubleClick={() => persistSplitPct(50)}
+                  >
+                    <span className="akr-split-resizer__grip" aria-hidden />
                   </div>
                 )}
                 {viewMode !== 'preview' && (

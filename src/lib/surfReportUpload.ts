@@ -1,5 +1,5 @@
 /**
- * Client helper: upload Surf report PDF to R2 via PUT /api/surf-report
+ * Client helper: upload Surf report PDF to R2 via PUT /api/kol-report-image?kind=surf
  * → key RadarKOLsReport/{filename}
  * DOCX is not accepted — convert to PDF first.
  */
@@ -90,7 +90,7 @@ export async function uploadSurfReport(
     }
   }
 
-  const url = `${withBase('/api/surf-report')}?filename=${encodeURIComponent(filename)}`
+  const url = `${withBase('/api/kol-report-image')}?kind=surf&filename=${encodeURIComponent(filename)}`
 
   try {
     const res = await fetch(url, {

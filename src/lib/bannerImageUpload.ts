@@ -60,7 +60,7 @@ export async function uploadBannerImage(
     }
   }
 
-  const apiUrl = `${withBase('/api/banner-image')}?slot=${encodeURIComponent(slot)}`
+  const apiUrl = `${withBase('/api/site-banner')}?slot=${encodeURIComponent(slot)}`
   try {
     const res = await fetch(apiUrl, {
       method: 'PUT',

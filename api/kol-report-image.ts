@@ -1,9 +1,13 @@
 /**
- * Upload KOL report image to R2 for markdown embedding.
+ * Upload assets to R2 (KOL report images + Surf PDFs) — one Hobby function.
  *
  * PUT /api/kol-report-image?filename=…&overwrite=1
  *   Authorization: Bearer FEED_ADMIN_TOKEN
  *   Body: raw image bytes
+ *
+ * PUT /api/kol-report-image?kind=surf&filename=Report.pdf
+ *   Authorization: Bearer FEED_ADMIN_TOKEN
+ *   Body: raw PDF bytes  (was /api/surf-report)
  *
  * Default: unique key (legacy one-shot uploads).
  * overwrite=1: stable path under kol-reports/images/{reportId}/{slot}.ext
@@ -31,6 +35,7 @@ export const config = {
 
 /** Always under this R2 prefix — durable public CDN path */
 const PREFIX = 'kol-reports/images'
+const SURF_PREFIX = 'RadarKOLsReport'
 const MAX_BYTES = 4.5 * 1024 * 1024
 const ALLOWED = new Set([
   'image/png',
@@ -142,6 +147,23 @@ function stableFilename(raw: string, contentType: string): string | null {
   return null
 }
 
+function sanitizeSurfFilename(raw: string): string {
+  let name = (raw || 'report.pdf').trim().replace(/\\/g, '/')
+  name = name.split('/').pop() || 'report.pdf'
+  name = name.replace(/[^\w.\-()+\s\u00C0-\u024F]/g, '_')
+  name = name.replace(/\s+/g, '_')
+  if (/\.docx$/i.test(name)) {
+    name = name.replace(/\.docx$/i, '.pdf')
+  }
+  if (!/\.pdf$/i.test(name)) {
+    name = `${name.replace(/\.[^.]+$/, '') || 'report'}.pdf`
+  }
+  if (name.length > 180) {
+    name = name.slice(0, 170) + '.pdf'
+  }
+  return name
+}
+
 async function readRawBody(req: VercelRequest): Promise<Buffer> {
   const raw = req.body
   if (raw && (Buffer.isBuffer(raw) || raw instanceof Uint8Array)) {
@@ -191,7 +213,80 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   try {
+    const kind = String(req.query.kind || '').toLowerCase()
     const body = await readRawBody(req)
+    const looksPdf =
+      body.length >= 4 &&
+      body[0] === 0x25 &&
+      body[1] === 0x50 &&
+      body[2] === 0x44 &&
+      body[3] === 0x46
+
+    // ── Surf PDF branch (formerly /api/surf-report) ─────────────
+    if (
+      kind === 'surf' ||
+      kind === 'surf-report' ||
+      kind === 'pdf' ||
+      looksPdf
+    ) {
+      const qName = String(req.query.filename || req.query.name || '')
+      const hName = String(req.headers['x-filename'] || '')
+      const rawName = (qName || hName || '').toLowerCase()
+      if (rawName.endsWith('.docx') || rawName.includes('.docx')) {
+        return res.status(415).json({
+          error: 'docx_not_allowed',
+          message:
+            'Chỉ nhận PDF. Export/convert DOCX → PDF rồi upload lại (không upload .docx lên R2).',
+        })
+      }
+      const filename = sanitizeSurfFilename(qName || hName || 'report.pdf')
+      const key = `${SURF_PREFIX}/${filename}`
+      if (!body.length || body.length < 64) {
+        return res.status(400).json({
+          error: 'empty_body',
+          message: 'Upload raw PDF bytes in request body',
+        })
+      }
+      if (body.length > MAX_BYTES) {
+        return res.status(413).json({
+          error: 'too_large',
+          message: `Max ${MAX_BYTES} bytes`,
+          bytes: body.length,
+        })
+      }
+      const isPdf =
+        body[0] === 0x25 &&
+        body[1] === 0x50 &&
+        body[2] === 0x44 &&
+        body[3] === 0x46
+      const isZip = body[0] === 0x50 && body[1] === 0x4b
+      if (isZip || !isPdf) {
+        return res.status(415).json({
+          error: isZip ? 'docx_not_allowed' : 'invalid_file',
+          message: isZip
+            ? 'DOCX/ZIP không được upload. Chỉ PDF (magic %PDF).'
+            : 'Expected a PDF file (starts with %PDF)',
+        })
+      }
+      await r2PutBytes(client, key, body, 'application/pdf')
+      const publicBase = r2PublicBase()
+      const encoded = key
+        .split('/')
+        .map((s) => encodeURIComponent(s))
+        .join('/')
+      const url = publicBase ? `${publicBase}/${encoded}` : `/r2/${encoded}`
+      return res.status(200).json({
+        ok: true,
+        key,
+        filename,
+        bytes: body.length,
+        contentType: 'application/pdf',
+        url,
+        prefix: SURF_PREFIX,
+        storage: 'r2',
+      })
+    }
+
     if (!body.length || body.length < 24) {
       return res.status(400).json({
         error: 'empty_body',

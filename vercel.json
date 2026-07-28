@@ -4,6 +4,14 @@
   "framework": "vite",
   "rewrites": [
     {
+      "source": "/api/banner-image",
+      "destination": "/api/site-banner"
+    },
+    {
+      "source": "/api/surf-report",
+      "destination": "/api/kol-report-image"
+    },
+    {
       "source": "/r2/:path*",
       "destination": "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/:path*"
     }

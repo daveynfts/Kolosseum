@@ -18,6 +18,7 @@ import {
 import {
   assertNotStale,
   bearer,
+  conflictResponse,
   cors,
   enforcePublicRateLimit,
   jsonError,
@@ -100,11 +101,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         current?.updatedAt,
         readBaseUpdatedAt(body as Record<string, unknown>),
       )
-      if (!stale.ok) {
-        return jsonError(res, 409, 'conflict', {
-          message: 'Server có banner mới hơn. Reload rồi Save lại.',
-          serverUpdatedAt: stale.serverUpdatedAt,
-        })
+      if (stale.ok === false) {
+        return conflictResponse(
+          res,
+          'Server có banner mới hơn. Reload rồi Save lại.',
+          stale.serverUpdatedAt,
+        )
       }
       const payload: Body = {
         ...body,

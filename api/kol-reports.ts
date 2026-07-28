@@ -122,7 +122,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         current?.updatedAt,
         readBaseUpdatedAt(body as Record<string, unknown>),
       )
-      if (!stale.ok) {
+      if (stale.ok === false) {
         return res.status(409).json({
           error: 'conflict',
           message: 'Server có reports mới hơn. Reload rồi Save lại.',

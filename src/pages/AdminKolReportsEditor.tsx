@@ -5,6 +5,7 @@
 import {
   useCallback,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -45,7 +46,9 @@ import {
 import { docxFileToReportMarkdown } from '../lib/docxToReportMarkdown'
 import { XProfileAvatar } from '../components/XProfileAvatar'
 import { EditableReportPreview, isPreviewEditFocused } from '../components/EditableReportPreview'
+import type { MdRange } from '../lib/previewSelectionToMd'
 import { ReportMarkdown } from '../components/ReportMarkdown'
+import { normalizeMarkdown } from '../lib/htmlToMarkdown'
 import type { Kol } from '../types'
 import { resolveAvatarHandle } from '../lib/avatar'
 import {
@@ -133,10 +136,13 @@ export function AdminKolReportsEditor({ onToast, kols = [] }: Props) {
   const [draft, setDraft] = useState<KolReport | null>(null)
   const baselineRef = useRef<KolReport | null>(null)
   const textareaRef = useRef<HTMLTextAreaElement | null>(null)
+  const mdBackdropRef = useRef<HTMLPreElement | null>(null)
   const previewRef = useRef<HTMLDivElement | null>(null)
   const editorShellRef = useRef<HTMLDivElement | null>(null)
   const [editorMount, setEditorMount] = useState<HTMLDivElement | null>(null)
   const scrollLockRef = useRef<'write' | 'preview' | null>(null)
+  /** Live Preview selection → highlight matching Markdown range */
+  const [linkedMdSel, setLinkedMdSel] = useState<MdRange | null>(null)
   const fileInputRef = useRef<HTMLInputElement | null>(null)
   const coverInputRef = useRef<HTMLInputElement | null>(null)
   const docxInputRef = useRef<HTMLInputElement | null>(null)
@@ -305,6 +311,9 @@ export function AdminKolReportsEditor({ onToast, kols = [] }: Props) {
       const ratio = Math.min(1, Math.max(0, a.scrollTop / aMax))
       scrollLockRef.current = source
       b.scrollTop = ratio * bMax
+      if (source === 'preview' && mdBackdropRef.current) {
+        mdBackdropRef.current.scrollTop = b.scrollTop
+      }
       // release lock after layout
       requestAnimationFrame(() => {
         scrollLockRef.current = null
@@ -321,11 +330,66 @@ export function AdminKolReportsEditor({ onToast, kols = [] }: Props) {
     syncScrollFrom('preview')
   }, [syncScrollFrom])
 
+  const scrollWriteToMdRange = useCallback(
+    (range: MdRange, opts?: { setNative?: boolean }) => {
+      const el = textareaRef.current
+      const backdrop = mdBackdropRef.current
+      if (!el) return
+      const len = Math.max(1, el.value.length)
+      const ratio = Math.min(1, Math.max(0, range.start / len))
+      const max = el.scrollHeight - el.clientHeight
+      if (max > 0) {
+        const nextTop = ratio * max
+        scrollLockRef.current = 'write'
+        el.scrollTop = nextTop
+        if (backdrop) backdrop.scrollTop = nextTop
+        requestAnimationFrame(() => {
+          scrollLockRef.current = null
+        })
+      }
+      // Only set native selection when safe (mouseup) — mid-drag would steal DOM selection
+      if (opts?.setNative) {
+        try {
+          el.setSelectionRange(range.start, range.end)
+        } catch {
+          /* ignore */
+        }
+      }
+    },
+    [],
+  )
+
+  const onPreviewSelectMdRange = useCallback(
+    (range: MdRange | null, meta?: { final?: boolean }) => {
+      if (viewMode !== 'split') {
+        setLinkedMdSel(null)
+        return
+      }
+      setLinkedMdSel(range)
+      if (range && range.end > range.start) {
+        scrollWriteToMdRange(range, { setNative: !!meta?.final })
+      }
+    },
+    [scrollWriteToMdRange, viewMode],
+  )
+
+  // Keep highlight backdrop scroll aligned when it mounts
+  useLayoutEffect(() => {
+    if (!linkedMdSel) return
+    const el = textareaRef.current
+    const backdrop = mdBackdropRef.current
+    if (el && backdrop) {
+      backdrop.scrollTop = el.scrollTop
+      backdrop.scrollLeft = el.scrollLeft
+    }
+  }, [linkedMdSel])
+
   // Sync draft when selection changes (flush previous dirty into dataset first if same session?)
   useEffect(() => {
     if (!dataset || !selectedId) {
       setDraft(null)
       baselineRef.current = null
+      setLinkedMdSel(null)
       return
     }
     const r =
@@ -340,6 +404,7 @@ export function AdminKolReportsEditor({ onToast, kols = [] }: Props) {
     const c = cloneReport(r)
     setDraft(c)
     baselineRef.current = cloneReport(r)
+    setLinkedMdSel(null)
     setMapKolQuery(c.handle || '')
     // Resume body image slot counter for stable overwrite paths
     const slot = Number(c.structured?.metrics?.r2BodySlot)
@@ -401,48 +466,54 @@ export function AdminKolReportsEditor({ onToast, kols = [] }: Props) {
   /** Commit draft into dataset with changelog (relative to baseline) */
   const commitDraftToDataset = useCallback(
     (ds: KolReportsDataset, d: KolReport): KolReportsDataset => {
+      const cleanedText = normalizeMarkdown(d.text || '')
+      const report = cleanedText === d.text ? d : { ...d, text: cleanedText }
       const base = baselineRef.current
-      if (!base || base.id !== d.id) {
+      if (!base || base.id !== report.id) {
         // new or unknown — replace as-is
-        const isTrash = !!d.deletedAt
+        const isTrash = !!report.deletedAt
         if (isTrash) {
           return {
             ...ds,
-            trash: (ds.trash || []).map((r) => (r.id === d.id ? d : r)),
+            trash: (ds.trash || []).map((r) =>
+              r.id === report.id ? report : r,
+            ),
             updatedAt: new Date().toISOString(),
           }
         }
         return {
           ...ds,
-          reports: ds.reports.map((r) => (r.id === d.id ? d : r)),
+          reports: ds.reports.map((r) => (r.id === report.id ? report : r)),
           updatedAt: new Date().toISOString(),
         }
       }
       const next = applyReportUpdate(base, {
-        handle: d.handle,
-        displayName: d.displayName,
-        title: d.title,
-        text: d.text,
-        visibility: d.visibility,
-        coverImage: d.coverImage,
-        notes: d.notes,
-        tags: normalizeTags(d.tags),
-        structured: d.structured,
+        handle: report.handle,
+        displayName: report.displayName,
+        title: report.title,
+        text: report.text,
+        visibility: report.visibility,
+        coverImage: report.coverImage,
+        notes: report.notes,
+        tags: normalizeTags(report.tags),
+        structured: report.structured,
       })
       // Preserve fields applyReportUpdate may not copy
-      next.coverImage = d.coverImage
-      next.sourceFilename = d.sourceFilename
+      next.coverImage = report.coverImage
+      next.sourceFilename = report.sourceFilename
       // Respect user-edited changelog (cleared / single deletes), then prepend this save's entry
       const head = next.changelog?.[0]
-      const userLog = Array.isArray(d.changelog) ? d.changelog : []
+      const userLog = Array.isArray(report.changelog) ? report.changelog : []
       next.changelog = head
         ? [head, ...userLog.filter((c) => c.id !== head.id)].slice(0, 200)
         : userLog.slice(0, 200)
-      if (d.deletedAt) {
+      if (report.deletedAt) {
         return {
           ...ds,
           trash: (ds.trash || []).map((r) =>
-            r.id === next.id ? { ...next, deletedAt: d.deletedAt } : r,
+            r.id === next.id
+              ? { ...next, deletedAt: report.deletedAt }
+              : r,
           ),
           updatedAt: new Date().toISOString(),
         }
@@ -1807,7 +1878,15 @@ export function AdminKolReportsEditor({ onToast, kols = [] }: Props) {
                               ? 'report-md--reader'
                               : 'report-md--preview'
                           }
-                          onChange={(md) => patchDraft({ text: md })}
+                          onChange={(md) => {
+                            setLinkedMdSel(null)
+                            patchDraft({ text: md })
+                          }}
+                          onSelectMdRange={
+                            viewMode === 'split'
+                              ? onPreviewSelectMdRange
+                              : undefined
+                          }
                         />
                       )}
                     </div>
@@ -1838,35 +1917,74 @@ export function AdminKolReportsEditor({ onToast, kols = [] }: Props) {
                       {viewMode === 'split' ? (
                         <span className="akr-sync-badge">optional</span>
                       ) : null}
+                      {linkedMdSel && viewMode === 'split' ? (
+                        <span className="akr-sync-badge akr-sync-badge--sel">
+                          matched
+                        </span>
+                      ) : null}
                     </div>
-                    <textarea
-                      ref={textareaRef}
-                      className="akr-textarea"
-                      disabled={readOnly || uploading || importingDocx}
-                      value={draft.text}
-                      onChange={(e) => patchDraft({ text: e.target.value })}
-                      onKeyDown={onMdKeyDown}
-                      onPaste={(e) => void onEditorPaste(e)}
-                      onScroll={onWriteScroll}
-                      onDragEnter={(e) => {
-                        e.preventDefault()
-                        if (!readOnly) setDragOver(true)
-                      }}
-                      onDragOver={(e) => {
-                        e.preventDefault()
-                        if (!readOnly) setDragOver(true)
-                      }}
-                      onDragLeave={() => setDragOver(false)}
-                      onDrop={(e) => void onEditorDrop(e)}
-                      spellCheck={false}
-                      placeholder={
-                        'Viết, dán, hoặc import DOCX…\n\n' +
-                        '• ⬆ DOCX → Markdown đẹp + ảnh đẩy thẳng R2\n' +
-                        '• Dán Word/Docs/Notion/ChatGPT → Markdown\n' +
-                        '• Ảnh: paste / kéo thả / ⬆ R2 Ảnh\n' +
-                        '• Split + Fullscreen + Sync scroll để chỉnh dễ'
-                      }
-                    />
+                    <div
+                      className={`akr-write-stack${
+                        linkedMdSel ? ' akr-write-stack--sel' : ''
+                      }`}
+                    >
+                      {linkedMdSel && viewMode === 'split' ? (
+                        <pre
+                          ref={mdBackdropRef}
+                          className="akr-textarea-backdrop"
+                          aria-hidden
+                        >
+                          {draft.text.slice(0, linkedMdSel.start)}
+                          <mark className="akr-md-mark">
+                            {draft.text.slice(
+                              linkedMdSel.start,
+                              linkedMdSel.end,
+                            )}
+                          </mark>
+                          {draft.text.slice(linkedMdSel.end)}
+                        </pre>
+                      ) : null}
+                      <textarea
+                        ref={textareaRef}
+                        className={`akr-textarea${
+                          linkedMdSel ? ' akr-textarea--ghost' : ''
+                        }`}
+                        disabled={readOnly || uploading || importingDocx}
+                        value={draft.text}
+                        onChange={(e) => {
+                          setLinkedMdSel(null)
+                          patchDraft({ text: e.target.value })
+                        }}
+                        onKeyDown={onMdKeyDown}
+                        onPaste={(e) => void onEditorPaste(e)}
+                        onScroll={(e) => {
+                          const backdrop = mdBackdropRef.current
+                          if (backdrop) {
+                            backdrop.scrollTop = e.currentTarget.scrollTop
+                            backdrop.scrollLeft = e.currentTarget.scrollLeft
+                          }
+                          onWriteScroll()
+                        }}
+                        onDragEnter={(e) => {
+                          e.preventDefault()
+                          if (!readOnly) setDragOver(true)
+                        }}
+                        onDragOver={(e) => {
+                          e.preventDefault()
+                          if (!readOnly) setDragOver(true)
+                        }}
+                        onDragLeave={() => setDragOver(false)}
+                        onDrop={(e) => void onEditorDrop(e)}
+                        spellCheck={false}
+                        placeholder={
+                          'Viết, dán, hoặc import DOCX…\n\n' +
+                          '• ⬆ DOCX → Markdown đẹp + ảnh đẩy thẳng R2\n' +
+                          '• Dán Word/Docs/Notion/ChatGPT → Markdown\n' +
+                          '• Ảnh: paste / kéo thả / ⬆ R2 Ảnh\n' +
+                          '• Split + Fullscreen + Sync scroll để chỉnh dễ'
+                        }
+                      />
+                    </div>
                     <div className="akr-write__hint">
                       {uploading || importingDocx ? (
                         <strong className="akr-uploading">

@@ -2380,6 +2380,66 @@ body.akr-split-resizing .report-md--editable {
   background: rgba(14, 165, 233, 0.14) !important;
   border-color: rgba(125, 211, 252, 0.35) !important;
 }
+.akr-sync-badge--sel {
+  color: #fde68a !important;
+  background: rgba(245, 158, 11, 0.16) !important;
+  border-color: rgba(251, 191, 36, 0.4) !important;
+}
+.akr-write-stack {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+.akr-write-stack .akr-textarea {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+.akr-textarea-backdrop {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  box-sizing: border-box;
+  overflow: auto;
+  pointer-events: none;
+  z-index: 0;
+  border: 0;
+  background: rgba(2, 6, 23, 0.45);
+  color: #e2e8f0;
+  font-family: ui-monospace, 'Cascadia Code', 'SF Mono', Menlo, monospace;
+  font-size: 13px;
+  line-height: 1.55;
+  padding: 12px 14px;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  overflow-wrap: anywhere;
+  tab-size: 2;
+  scrollbar-width: none;
+}
+.akr-textarea-backdrop::-webkit-scrollbar {
+  display: none;
+}
+.akr-md-mark {
+  color: inherit;
+  background: rgba(251, 191, 36, 0.38);
+  border-radius: 2px;
+  box-shadow: 0 0 0 1px rgba(251, 191, 36, 0.25);
+}
+.akr-textarea--ghost {
+  position: relative;
+  z-index: 1;
+  color: transparent;
+  caret-color: #7dd3fc;
+  background: transparent;
+}
+.akr-textarea--ghost::selection {
+  background: rgba(251, 191, 36, 0.35);
+  color: transparent;
+}
+.akr-textarea--ghost::placeholder {
+  color: transparent;
+}
 @media (max-width: 900px) {
   .akr-editor--split {
     grid-template-columns: 1fr;

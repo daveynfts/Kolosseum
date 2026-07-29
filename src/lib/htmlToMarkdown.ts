@@ -1,7 +1,9 @@
 /**
- * Browser HTML → Markdown for smart paste (Word / Docs / Notion / browser / ChatGPT).
- * Zero dependency — DOMParser only. Output stays AI-friendly plain markdown.
+ * Browser HTML → Markdown for smart paste (Word / Docs / Notion / browser / ChatGPT)
+ * and WYSIWYG contentEditable sync. Zero dependency — DOMParser only.
  */
+
+import { isGenericImageAlt } from './imageAlt'
 
 function cleanText(s: string): string {
   return s
@@ -12,6 +14,28 @@ function cleanText(s: string): string {
 
 function escapeMd(s: string): string {
   return s.replace(/([\\`*_[\]#])/g, '\\$1')
+}
+
+function imgAlt(el: HTMLElement): string {
+  // Preserve empty alt=""; only default when attribute is missing (paste).
+  const raw = el.getAttribute('alt')
+  if (raw == null) return 'image'
+  return raw
+}
+
+function mdImage(src: string, alt: string, block = false): string {
+  if (!src || src.startsWith('data:')) return ''
+  const body = `![${alt}](${src})`
+  return block ? `\n${body}\n\n` : body
+}
+
+function isAltMirrorCaption(cap: HTMLElement, alt: string): boolean {
+  if (cap.getAttribute('data-md-alt-mirror') === '1') return true
+  const text = cleanText(childrenInline(cap))
+  if (!text) return true
+  if (text === cleanText(alt)) return true
+  if (isGenericImageAlt(text) && isGenericImageAlt(alt)) return true
+  return false
 }
 
 function inlineFromNode(node: Node): string {
@@ -36,11 +60,11 @@ function inlineFromNode(node: Node): string {
 
   if (tag === 'br') return '\n'
   if (tag === 'img') {
-    const src = (el.getAttribute('src') || '').trim()
-    const alt = el.getAttribute('alt') || 'image'
-    // Skip empty / base64 (DOCX path uploads to R2 first)
-    if (!src || src.startsWith('data:')) return ''
-    return `![${alt}](${src})`
+    return mdImage(
+      (el.getAttribute('src') || '').trim(),
+      imgAlt(el),
+      false,
+    )
   }
   if (tag === 'a') {
     const href = el.getAttribute('href') || ''
@@ -63,12 +87,17 @@ function inlineFromNode(node: Node): string {
   if (tag === 'span' || tag === 'font') {
     // Word often wraps bold in span+style
     const style = (el.getAttribute('style') || '').toLowerCase()
-    const fw = style.includes('font-weight:bold') || style.includes('font-weight: 700')
+    const fw =
+      style.includes('font-weight:bold') || style.includes('font-weight: 700')
     const it = style.includes('font-style:italic')
     let inner = childrenInline(el)
     if (fw) inner = `**${cleanText(inner)}**`
     else if (it) inner = `*${cleanText(inner)}*`
     return inner
+  }
+  // Don't serialize display-only image captions as inline italics
+  if (tag === 'figcaption') {
+    return ''
   }
   return childrenInline(el)
 }
@@ -93,7 +122,8 @@ function blockFromElement(el: HTMLElement, listDepth = 0): string {
     tag === 'script' ||
     tag === 'meta' ||
     tag === 'link' ||
-    tag === 'head'
+    tag === 'head' ||
+    tag === 'figcaption'
   ) {
     return ''
   }
@@ -106,10 +136,14 @@ function blockFromElement(el: HTMLElement, listDepth = 0): string {
   if (tag === 'figure') {
     const img = el.querySelector('img')
     if (img) {
-      let out = blockFromElement(img as HTMLElement, listDepth)
+      const imgEl = img as HTMLElement
+      const src = (imgEl.getAttribute('src') || '').trim()
+      const alt = imgAlt(imgEl)
+      let out = mdImage(src, alt, true)
       const cap = el.querySelector('figcaption')
-      if (cap) {
+      if (cap && !isAltMirrorCaption(cap as HTMLElement, alt)) {
         const c = cleanText(childrenInline(cap as HTMLElement))
+        // Real extra caption (rare) — keep as italic line under image
         if (c) out += `*${c}*\n\n`
       }
       return out
@@ -125,12 +159,26 @@ function blockFromElement(el: HTMLElement, listDepth = 0): string {
       const table = el.querySelector('table')
       return table ? blockFromElement(table as HTMLElement, listDepth) : ''
     }
+    // Figure wrap (some browsers nest oddly)
+    if (el.classList.contains('report-md__figure')) {
+      return blockFromElement(
+        (el.querySelector('img') as HTMLElement) || el,
+        listDepth,
+      )
+    }
     // Mammoth often wraps a lone image in <p>
     const elementChildren = Array.from(el.children)
     if (
       elementChildren.length === 1 &&
       elementChildren[0].tagName.toLowerCase() === 'img' &&
       cleanText(el.textContent || '') === ''
+    ) {
+      return blockFromElement(elementChildren[0] as HTMLElement, listDepth)
+    }
+    // Lone figure inside p/div
+    if (
+      elementChildren.length === 1 &&
+      elementChildren[0].tagName.toLowerCase() === 'figure'
     ) {
       return blockFromElement(elementChildren[0] as HTMLElement, listDepth)
     }
@@ -155,7 +203,9 @@ function blockFromElement(el: HTMLElement, listDepth = 0): string {
     }
     // Nested blocks inside div
     const hasBlock = Array.from(el.children).some((c) =>
-      /^(UL|OL|TABLE|H1|H2|H3|H4|PRE|BLOCKQUOTE|P|DIV|IMG)$/i.test(c.tagName),
+      /^(UL|OL|TABLE|H1|H2|H3|H4|PRE|BLOCKQUOTE|P|DIV|IMG|FIGURE|HR)$/i.test(
+        c.tagName,
+      ),
     )
     if (hasBlock) {
       let out = ''
@@ -178,6 +228,17 @@ function blockFromElement(el: HTMLElement, listDepth = 0): string {
   if (tag === 'hr') return '\n---\n\n'
 
   if (tag === 'blockquote') {
+    // Prefer block children (p) so multi-line quotes survive roundtrip
+    const blockKids = Array.from(el.children).filter((c) =>
+      /^(P|DIV)$/i.test(c.tagName),
+    )
+    if (blockKids.length) {
+      const lines = blockKids
+        .map((c) => cleanText(childrenInline(c as HTMLElement)))
+        .filter(Boolean)
+        .map((l) => `> ${l}`)
+      return lines.length ? `\n${lines.join('\n')}\n\n` : ''
+    }
     const inner = cleanText(childrenInline(el))
       .split(/\n+/)
       .filter(Boolean)
@@ -251,10 +312,7 @@ function blockFromElement(el: HTMLElement, listDepth = 0): string {
   }
 
   if (tag === 'img') {
-    const src = (el.getAttribute('src') || '').trim()
-    const alt = el.getAttribute('alt') || 'image'
-    if (!src || src.startsWith('data:')) return ''
-    return `\n![${alt}](${src})\n\n`
+    return mdImage((el.getAttribute('src') || '').trim(), imgAlt(el), true)
   }
 
   // body/html/section/article — recurse
@@ -285,13 +343,59 @@ function blockFromElement(el: HTMLElement, listDepth = 0): string {
   return t ? `${t}\n\n` : ''
 }
 
+/**
+ * Remove italic lines that merely repeat the preceding image's alt
+ * (legacy WYSIWYG bug: figcaption(alt) → *alt* on every save).
+ */
+export function scrubMirroredImageCaptions(md: string): string {
+  const lines = (md || '').replace(/\r\n/g, '\n').split('\n')
+  const out: string[] = []
+  let i = 0
+  while (i < lines.length) {
+    const line = lines[i]
+    out.push(line)
+    const m = line
+      .trim()
+      .match(/^!\[([^\]]*)\]\(([^)\s]+)(?:\s+"[^"]*")?\)$/)
+    i++
+    if (!m) continue
+    const alt = m[1]
+    if (!alt) continue
+    // Drop following blank + *alt* / _alt_ mirrors (possibly repeated)
+    while (i < lines.length) {
+      let k = i
+      while (k < lines.length && lines[k].trim() === '') k++
+      if (k >= lines.length) break
+      const t = lines[k].trim()
+      const isMirror =
+        t === `*${alt}*` ||
+        t === `_${alt}_` ||
+        (isGenericImageAlt(alt) &&
+          (t === '*image*' ||
+            t === '_image_' ||
+            t === '*img*' ||
+            t === '_img_'))
+      if (!isMirror) break
+      i = k + 1
+    }
+  }
+  return out.join('\n')
+}
+
 /** Normalize markdown whitespace after conversion */
 export function normalizeMarkdown(md: string): string {
-  return md
+  let out = scrubMirroredImageCaptions(md)
+  out = out
     .replace(/\r\n/g, '\n')
     .replace(/[ \t]+\n/g, '\n')
+    // blank line before/after images
+    .replace(/([^\n])\n(!\[)/g, '$1\n\n$2')
+    .replace(/(!\[[^\]]*\]\([^)]+\))\n([^\n])/g, '$1\n\n$2')
     .replace(/\n{3,}/g, '\n\n')
     .trim()
+  // Second scrub after blank-line polish (mirrors may have been separated)
+  out = scrubMirroredImageCaptions(out)
+  return out.replace(/\n{3,}/g, '\n\n').trim()
 }
 
 /**

@@ -1,4 +1,5 @@
 import { Fragment, type ReactNode } from 'react'
+import { isGenericImageAlt } from '../lib/imageAlt'
 
 interface Props {
   text: string
@@ -99,7 +100,7 @@ export function ReportMarkdown({ text, className = '' }: Props) {
                     Invalid image URL
                   </div>
                 )}
-                {b.alt ? (
+                {b.alt && !isGenericImageAlt(b.alt) ? (
                   <figcaption className="report-md__caption">
                     {b.alt}
                   </figcaption>

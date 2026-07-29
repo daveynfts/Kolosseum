@@ -2655,6 +2655,7 @@ body.akr-split-resizing .report-md--editable {
   padding: 12px 14px;
   outline: none;
   overflow: auto;
+  overflow-anchor: none;
   tab-size: 2;
 }
 .akr-textarea:disabled {
@@ -2676,6 +2677,7 @@ body.akr-split-resizing .report-md--editable {
   flex-direction: column;
   padding: 0;
   overflow: auto;
+  overflow-anchor: none;
   background:
     radial-gradient(ellipse 80% 50% at 50% 0%, rgba(99, 102, 241, 0.08), transparent),
     rgba(8, 12, 24, 0.35);
@@ -2685,7 +2687,9 @@ body.akr-split-resizing .report-md--editable {
 }
 .akr-preview-body {
   padding: 10px 14px 20px;
-  flex: 1;
+  flex: 1 0 auto;
+  min-height: 0;
+  overflow-anchor: none;
 }
 .akr-reader {
   max-width: 720px;
@@ -2857,6 +2861,7 @@ body.akr-split-resizing .report-md--editable {
   min-height: 220px;
   cursor: text;
   caret-color: #7dd3fc;
+  overflow-anchor: none;
 }
 .report-md--editable:focus {
   box-shadow: inset 0 0 0 1px rgba(125, 211, 252, 0.45);

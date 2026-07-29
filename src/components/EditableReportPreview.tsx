@@ -25,6 +25,35 @@ interface Props {
   ) => void
 }
 
+function getPreviewScroller(el: HTMLElement | null): HTMLElement | null {
+  if (!el) return null
+  return (el.closest('.akr-preview') as HTMLElement | null) || el.parentElement
+}
+
+/** Keep caret visible without letting the browser yank the pane to the end. */
+function ensureCaretVisible(scroller: HTMLElement) {
+  const sel = window.getSelection()
+  if (!sel || sel.rangeCount === 0) return
+  const range = sel.getRangeAt(0)
+  let rect = range.getBoundingClientRect()
+  if (rect.height === 0 && rect.width === 0) {
+    const node = range.startContainer
+    const el =
+      node.nodeType === Node.ELEMENT_NODE
+        ? (node as Element)
+        : node.parentElement
+    if (el) rect = el.getBoundingClientRect()
+  }
+  if (rect.height === 0 && rect.top === 0 && rect.bottom === 0) return
+  const box = scroller.getBoundingClientRect()
+  const pad = 28
+  if (rect.top < box.top + pad) {
+    scroller.scrollTop -= box.top + pad - rect.top
+  } else if (rect.bottom > box.bottom - pad) {
+    scroller.scrollTop += rect.bottom - (box.bottom - pad)
+  }
+}
+
 export function EditableReportPreview({
   text,
   onChange,
@@ -39,6 +68,7 @@ export function EditableReportPreview({
   const lastMdRef = useRef(text)
   const debounceRef = useRef<number | null>(null)
   const seededKeyRef = useRef('')
+  const pinnedScrollRef = useRef<number | null>(null)
   const onSelectRef = useRef(onSelectMdRange)
   onSelectRef.current = onSelectMdRange
   const onChangeRef = useRef(onChange)
@@ -47,9 +77,12 @@ export function EditableReportPreview({
   const seedHtml = (md: string) => {
     const el = ref.current
     if (!el) return
+    const scroller = getPreviewScroller(el)
+    const top = scroller?.scrollTop ?? 0
     const cleaned = normalizeMarkdown(md)
     lastMdRef.current = cleaned
     el.innerHTML = markdownToHtml(cleaned)
+    if (scroller) scroller.scrollTop = top
     if (cleaned !== md) {
       onSelectRef.current?.(null)
       onChangeRef.current(cleaned)
@@ -147,6 +180,26 @@ export function EditableReportPreview({
     debounceRef.current = window.setTimeout(run, 320)
   }
 
+  const pinScroll = () => {
+    const scroller = getPreviewScroller(ref.current)
+    pinnedScrollRef.current = scroller?.scrollTop ?? null
+  }
+
+  const restoreScroll = () => {
+    const scroller = getPreviewScroller(ref.current)
+    const top = pinnedScrollRef.current
+    if (!scroller || top == null) return
+    scroller.scrollTop = top
+    // If browser yanked to the end, keep pinned position then nudge caret into view
+    requestAnimationFrame(() => {
+      if (pinnedScrollRef.current != null) {
+        scroller.scrollTop = pinnedScrollRef.current
+      }
+      ensureCaretVisible(scroller)
+      pinnedScrollRef.current = null
+    })
+  }
+
   return (
     <div
       ref={ref}
@@ -165,9 +218,32 @@ export function EditableReportPreview({
         focusedRef.current = false
         commitFromDom(true)
       }}
-      onInput={() => commitFromDom(false)}
+      onKeyDown={(e) => {
+        if (
+          e.key === 'Enter' ||
+          e.key === 'Backspace' ||
+          e.key === 'Delete'
+        ) {
+          pinScroll()
+        }
+        if ((e.metaKey || e.ctrlKey) && e.key === 'b') {
+          e.preventDefault()
+          document.execCommand('bold')
+          commitFromDom(false)
+        }
+        if ((e.metaKey || e.ctrlKey) && e.key === 'i') {
+          e.preventDefault()
+          document.execCommand('italic')
+          commitFromDom(false)
+        }
+      }}
+      onInput={() => {
+        if (pinnedScrollRef.current != null) restoreScroll()
+        commitFromDom(false)
+      }}
       onPaste={(e) => {
         e.preventDefault()
+        pinScroll()
         const html = e.clipboardData.getData('text/html')
         const plain = e.clipboardData.getData('text/plain')
         if (html && html.trim()) {
@@ -180,19 +256,8 @@ export function EditableReportPreview({
         } else {
           document.execCommand('insertText', false, plain || '')
         }
+        restoreScroll()
         commitFromDom(true)
-      }}
-      onKeyDown={(e) => {
-        if ((e.metaKey || e.ctrlKey) && e.key === 'b') {
-          e.preventDefault()
-          document.execCommand('bold')
-          commitFromDom(false)
-        }
-        if ((e.metaKey || e.ctrlKey) && e.key === 'i') {
-          e.preventDefault()
-          document.execCommand('italic')
-          commitFromDom(false)
-        }
       }}
     />
   )

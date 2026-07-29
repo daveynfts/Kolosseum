@@ -143,6 +143,9 @@ export function AdminKolReportsEditor({ onToast, kols = [] }: Props) {
   const scrollLockRef = useRef<'write' | 'preview' | null>(null)
   /** Live Preview selection → highlight matching Markdown range */
   const [linkedMdSel, setLinkedMdSel] = useState<MdRange | null>(null)
+  /** Restore pane scroll after React value/DOM updates (prevents jump-to-end). */
+  const pinnedWriteScrollRef = useRef<number | null>(null)
+  const pinnedPreviewScrollRef = useRef<number | null>(null)
   const fileInputRef = useRef<HTMLInputElement | null>(null)
   const coverInputRef = useRef<HTMLInputElement | null>(null)
   const docxInputRef = useRef<HTMLInputElement | null>(null)
@@ -330,6 +333,43 @@ export function AdminKolReportsEditor({ onToast, kols = [] }: Props) {
     syncScrollFrom('preview')
   }, [syncScrollFrom])
 
+  const pinEditorScrolls = useCallback(() => {
+    pinnedWriteScrollRef.current = textareaRef.current?.scrollTop ?? null
+    pinnedPreviewScrollRef.current = previewRef.current?.scrollTop ?? null
+    // Block reciprocal sync while we restore after paint
+    scrollLockRef.current = 'preview'
+  }, [])
+
+  const restorePinnedEditorScrolls = useCallback(() => {
+    const writeEl = textareaRef.current
+    const prevEl = previewRef.current
+    const writeTop = pinnedWriteScrollRef.current
+    const prevTop = pinnedPreviewScrollRef.current
+    if (writeEl != null && writeTop != null) {
+      writeEl.scrollTop = writeTop
+      if (mdBackdropRef.current) mdBackdropRef.current.scrollTop = writeTop
+    }
+    if (prevEl != null && prevTop != null) {
+      prevEl.scrollTop = prevTop
+    }
+    pinnedWriteScrollRef.current = null
+    pinnedPreviewScrollRef.current = null
+    requestAnimationFrame(() => {
+      scrollLockRef.current = null
+    })
+  }, [])
+
+  // After draft/selection UI updates, put scroll back (Chrome resets textarea on value change)
+  useLayoutEffect(() => {
+    if (
+      pinnedWriteScrollRef.current == null &&
+      pinnedPreviewScrollRef.current == null
+    ) {
+      return
+    }
+    restorePinnedEditorScrolls()
+  })
+
   const scrollWriteToMdRange = useCallback(
     (range: MdRange, opts?: { setNative?: boolean }) => {
       const el = textareaRef.current
@@ -365,12 +405,16 @@ export function AdminKolReportsEditor({ onToast, kols = [] }: Props) {
         setLinkedMdSel(null)
         return
       }
-      setLinkedMdSel(range)
-      if (range && range.end > range.start) {
-        scrollWriteToMdRange(range, { setNative: !!meta?.final })
+      if (!range || range.end <= range.start) {
+        // Clearing highlight can remount ghost backdrop — pin scroll first
+        if (linkedMdSel) pinEditorScrolls()
+        setLinkedMdSel(null)
+        return
       }
+      setLinkedMdSel(range)
+      scrollWriteToMdRange(range, { setNative: !!meta?.final })
     },
-    [scrollWriteToMdRange, viewMode],
+    [linkedMdSel, pinEditorScrolls, scrollWriteToMdRange, viewMode],
   )
 
   // Keep highlight backdrop scroll aligned when it mounts
@@ -451,6 +495,16 @@ export function AdminKolReportsEditor({ onToast, kols = [] }: Props) {
     })
     setDirty(true)
   }, [])
+
+  /** WYSIWYG → markdown: update text without yanking either pane to the end */
+  const patchDraftFromPreview = useCallback(
+    (md: string) => {
+      pinEditorScrolls()
+      setLinkedMdSel(null)
+      patchDraft({ text: md })
+    },
+    [patchDraft, pinEditorScrolls],
+  )
 
   const patchStructured = useCallback((patch: Partial<KolReportStructured>) => {
     setDraft((prev) => {
@@ -772,14 +826,18 @@ export function AdminKolReportsEditor({ onToast, kols = [] }: Props) {
       const ol = line.match(/^(\s*)(\d+)[.)]\s+(.*)$/)
       if (ul) {
         e.preventDefault()
+        const keepTop = el.scrollTop
+        pinEditorScrolls()
         if (!ul[3].trim()) {
           // empty bullet → exit list
           const next =
             draft.text.slice(0, lineStart) + draft.text.slice(pos)
           patchDraft({ text: next })
           requestAnimationFrame(() => {
-            el.focus()
+            el.focus({ preventScroll: true })
             el.setSelectionRange(lineStart, lineStart)
+            el.scrollTop = keepTop
+            if (mdBackdropRef.current) mdBackdropRef.current.scrollTop = keepTop
           })
           return
         }
@@ -789,13 +847,17 @@ export function AdminKolReportsEditor({ onToast, kols = [] }: Props) {
       }
       if (ol) {
         e.preventDefault()
+        const keepTop = el.scrollTop
+        pinEditorScrolls()
         if (!ol[3].trim()) {
           const next =
             draft.text.slice(0, lineStart) + draft.text.slice(pos)
           patchDraft({ text: next })
           requestAnimationFrame(() => {
-            el.focus()
+            el.focus({ preventScroll: true })
             el.setSelectionRange(lineStart, lineStart)
+            el.scrollTop = keepTop
+            if (mdBackdropRef.current) mdBackdropRef.current.scrollTop = keepTop
           })
           return
         }
@@ -1878,10 +1940,7 @@ export function AdminKolReportsEditor({ onToast, kols = [] }: Props) {
                               ? 'report-md--reader'
                               : 'report-md--preview'
                           }
-                          onChange={(md) => {
-                            setLinkedMdSel(null)
-                            patchDraft({ text: md })
-                          }}
+                          onChange={patchDraftFromPreview}
                           onSelectMdRange={
                             viewMode === 'split'
                               ? onPreviewSelectMdRange
@@ -1952,6 +2011,7 @@ export function AdminKolReportsEditor({ onToast, kols = [] }: Props) {
                         disabled={readOnly || uploading || importingDocx}
                         value={draft.text}
                         onChange={(e) => {
+                          if (linkedMdSel) pinEditorScrolls()
                           setLinkedMdSel(null)
                           patchDraft({ text: e.target.value })
                         }}

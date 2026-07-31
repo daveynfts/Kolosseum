@@ -151,33 +151,41 @@ export async function uploadKolReportImageBytes(
     }
   }
 
+  // Normalize mammoth / Word content-types (image/jpg, image/pjpeg, …)
+  const hintedNorm =
+    hinted === 'image/jpg' || hinted === 'image/pjpeg'
+      ? 'image/jpeg'
+      : hinted
+
   const contentType =
-    hinted && ALLOWED_TYPES.has(hinted)
-      ? hinted === 'image/jpg'
-        ? 'image/jpeg'
-        : hinted
+    hintedNorm && ALLOWED_TYPES.has(hintedNorm)
+      ? hintedNorm
       : blob.type && ALLOWED_TYPES.has(blob.type.toLowerCase())
-        ? blob.type
-        : `image/${extFromContentType(hinted || blob.type || 'image/png') === 'jpg' ? 'jpeg' : extFromContentType(hinted || blob.type || 'image/png')}`
+        ? blob.type.toLowerCase() === 'image/jpg'
+          ? 'image/jpeg'
+          : blob.type
+        : `image/${extFromContentType(hintedNorm || blob.type || 'image/png') === 'jpg' ? 'jpeg' : extFromContentType(hintedNorm || blob.type || 'image/png')}`
 
   // Server sniffs magic bytes; content-type is a hint
   const ext = extFromContentType(contentType)
   const stem = options?.stem || options?.handle || 'img'
   const overwrite = !!options?.overwrite && !!options?.reportId
+  const slot = options?.slot || options?.stem || 'img'
   const filename = overwrite
-    ? stableReportImagePath(
-        options!.reportId!,
-        options?.slot || options?.stem || 'img',
-        ext,
-      )
+    ? stableReportImagePath(options!.reportId!, slot, ext)
     : options?.filename ||
       `${String(stem)
         .replace(/[^\w.\-]+/g, '_')
         .slice(0, 60)}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 6)}.${ext}`
 
-  const apiUrl = `${withBase('/api/kol-report-image')}?filename=${encodeURIComponent(filename)}${
-    overwrite ? '&overwrite=1' : ''
-  }`
+  // Avoid "/" inside query filename (%2F is mangled by some proxies).
+  // Overwrite uses reportId + slot; path still sent via X-Filename.
+  const apiUrl = overwrite
+    ? `${withBase('/api/kol-report-image')}?overwrite=1` +
+      `&reportId=${encodeURIComponent(options!.reportId!)}` +
+      `&slot=${encodeURIComponent(slot)}` +
+      `&ext=${encodeURIComponent(ext)}`
+    : `${withBase('/api/kol-report-image')}?filename=${encodeURIComponent(filename)}`
 
   try {
     const res = await fetch(apiUrl, {

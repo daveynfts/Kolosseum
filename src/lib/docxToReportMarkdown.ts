@@ -23,6 +23,7 @@ export type DocxImportResult =
       warnings: string[]
       sourceFilename: string
       chars: number
+      imageErrors: string[]
     }
   | { ok: false; error: string }
 
@@ -37,6 +38,23 @@ const STYLE_MAP = [
   "p[style-name='Quote'] => blockquote > p:fresh",
   "p[style-name='Block Text'] => blockquote > p:fresh",
 ]
+
+const R2_OK_TYPES = new Set([
+  'image/png',
+  'image/jpeg',
+  'image/jpg',
+  'image/webp',
+  'image/gif',
+])
+
+type MammothImage = {
+  contentType?: string
+  altText?: string
+  readAsArrayBuffer?: () => Promise<ArrayBuffer>
+  readAsBase64String?: () => Promise<string>
+  readAsBuffer?: () => Promise<ArrayBuffer | Uint8Array | { buffer: ArrayBuffer }>
+  read?: (enc?: string) => Promise<string | ArrayBuffer | Uint8Array>
+}
 
 /** Post-process markdown for nicer report layout */
 function polishReportMarkdown(md: string, sourceName: string): string {
@@ -57,6 +75,86 @@ function polishReportMarkdown(md: string, sourceName: string): string {
     if (title) out = `# ${title}\n\n${out}`
   }
   return out
+}
+
+async function readMammothImageBytes(image: MammothImage): Promise<ArrayBuffer> {
+  if (typeof image.readAsArrayBuffer === 'function') {
+    return image.readAsArrayBuffer.call(image)
+  }
+  if (typeof image.readAsBuffer === 'function') {
+    const buf = await image.readAsBuffer.call(image)
+    if (buf instanceof ArrayBuffer) return buf
+    if (buf instanceof Uint8Array) {
+      const ab = new ArrayBuffer(buf.byteLength)
+      new Uint8Array(ab).set(buf)
+      return ab
+    }
+    if (buf && typeof buf === 'object' && 'buffer' in buf) {
+      return (buf as { buffer: ArrayBuffer }).buffer
+    }
+  }
+  if (typeof image.readAsBase64String === 'function') {
+    const b64 = await image.readAsBase64String.call(image)
+    const bin = atob(b64)
+    const u8 = new Uint8Array(bin.length)
+    for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i)
+    return u8.buffer
+  }
+  if (typeof image.read === 'function') {
+    const raw = await image.read.call(image, 'base64')
+    if (typeof raw === 'string') {
+      const bin = atob(raw)
+      const u8 = new Uint8Array(bin.length)
+      for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i)
+      return u8.buffer
+    }
+    if (raw instanceof ArrayBuffer) return raw
+    if (raw instanceof Uint8Array) {
+      const ab = new ArrayBuffer(raw.byteLength)
+      new Uint8Array(ab).set(raw)
+      return ab
+    }
+  }
+  throw new Error('mammoth image: no readable bytes API')
+}
+
+/** Re-encode via canvas when Word embeds TIFF/odd types the R2 API rejects. */
+async function reencodeToPng(
+  bytes: ArrayBuffer,
+  contentType: string,
+): Promise<ArrayBuffer | null> {
+  if (typeof createImageBitmap !== 'function' || typeof document === 'undefined') {
+    return null
+  }
+  try {
+    const blob = new Blob([bytes], {
+      type: contentType || 'application/octet-stream',
+    })
+    const bmp = await createImageBitmap(blob)
+    const canvas = document.createElement('canvas')
+    canvas.width = bmp.width
+    canvas.height = bmp.height
+    const ctx = canvas.getContext('2d')
+    if (!ctx) {
+      bmp.close()
+      return null
+    }
+    ctx.drawImage(bmp, 0, 0)
+    bmp.close()
+    const png = await new Promise<Blob | null>((resolve) =>
+      canvas.toBlob((b) => resolve(b), 'image/png'),
+    )
+    if (!png) return null
+    return png.arrayBuffer()
+  } catch {
+    return null
+  }
+}
+
+function normalizeDocxContentType(ct: string): string {
+  const t = (ct || '').toLowerCase().split(';')[0].trim()
+  if (t === 'image/jpg' || t === 'image/pjpeg') return 'image/jpeg'
+  return t
 }
 
 /**
@@ -108,6 +206,7 @@ export async function docxFileToReportMarkdown(
 
   const imageUrls: string[] = []
   const imageKeys: string[] = []
+  const imageErrors: string[] = []
   let imagesUploaded = 0
   let imagesFailed = 0
   let imgIndex = 0
@@ -135,57 +234,72 @@ export async function docxFileToReportMarkdown(
         styleMap: STYLE_MAP,
         convertImage: mammoth.images.imgElement(async (image) => {
           imgIndex += 1
-          progress(`Upload ảnh ${imgIndex} → R2…`)
+          const label = `ảnh ${imgIndex}`
+          progress(`Upload ${label} → R2…`)
           try {
-            const contentType =
-              (image as { contentType?: string }).contentType || 'image/png'
-            // Prefer array buffer for binary fidelity
-            const readAsArrayBuffer = (
-              image as {
-                readAsArrayBuffer?: () => Promise<ArrayBuffer>
-                read?: (enc: string) => Promise<string>
-              }
-            ).readAsArrayBuffer
-            let bytes: ArrayBuffer
-            if (typeof readAsArrayBuffer === 'function') {
-              bytes = await readAsArrayBuffer.call(image)
-            } else {
-              const b64 = await (
-                image as { read: (enc: string) => Promise<string> }
-              ).read('base64')
-              const bin = atob(b64)
-              const u8 = new Uint8Array(bin.length)
-              for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i)
-              bytes = u8.buffer
-            }
+            let contentType = normalizeDocxContentType(
+              (image as MammothImage).contentType || 'image/png',
+            )
+            let bytes = await readMammothImageBytes(image as MammothImage)
 
             // Skip tiny decorative artifacts
             if (bytes.byteLength < 80) {
               imagesFailed++
+              imageErrors.push(`${label}: quá nhỏ / decorative`)
               return { src: '' }
             }
 
-            const up = await uploadKolReportImageBytes(bytes, {
-              token: options?.token,
-              handle: options?.handle || 'docx',
-              contentType,
-              stem: `docx_${options?.handle || 'report'}_${imgIndex}`,
-              // Same reportId + slot → overwrite previous DOCX image on R2
-              overwrite: !!options?.reportId,
-              reportId: options?.reportId,
-              slot: `docx_${imgIndex}`,
-            })
+            // Re-encode unsupported Word types (tiff/…) when the browser can decode
+            if (!R2_OK_TYPES.has(contentType)) {
+              const png = await reencodeToPng(bytes, contentType)
+              if (png) {
+                bytes = png
+                contentType = 'image/png'
+              } else {
+                imagesFailed++
+                imageErrors.push(
+                  `${label}: định dạng ${contentType || '?'} không hỗ trợ (cần PNG/JPEG/WebP/GIF)`,
+                )
+                return { src: '' }
+              }
+            }
+
+            const uploadOnce = async (overwrite: boolean) =>
+              uploadKolReportImageBytes(bytes, {
+                token: options?.token,
+                handle: options?.handle || 'docx',
+                contentType,
+                stem: `docx_${options?.handle || 'report'}_${imgIndex}`,
+                overwrite,
+                reportId: options?.reportId,
+                slot: `docx_${imgIndex}`,
+              })
+
+            // Prefer stable overwrite path; fall back to unique key if that fails
+            let up = options?.reportId
+              ? await uploadOnce(true)
+              : await uploadOnce(false)
+            if (!up.ok && options?.reportId) {
+              console.warn('[docx→r2] overwrite failed, retry unique', up.error)
+              up = await uploadOnce(false)
+            }
             if (!up.ok) {
               imagesFailed++
+              imageErrors.push(`${label}: ${up.error}`)
               console.warn('[docx→r2]', up.error)
               return { src: '' }
             }
             imagesUploaded++
             imageUrls.push(up.url)
             imageKeys.push(up.key)
-            return { src: up.url }
+            return {
+              src: up.url,
+              alt: (image as MammothImage).altText || 'image',
+            }
           } catch (err) {
             imagesFailed++
+            const msg = err instanceof Error ? err.message : String(err)
+            imageErrors.push(`${label}: ${msg}`)
             console.warn('[docx image]', err)
             return { src: '' }
           }
@@ -200,12 +314,12 @@ export async function docxFileToReportMarkdown(
     )
 
     progress('Chuyển HTML → Markdown…')
-    // Strip empty img tags (failed uploads)
+    // Strip empty / failed img tags only (keep successful R2 URLs)
     const cleanedHtml = html
-      .replace(/<img[^>]+src=["']\s*["'][^>]*>/gi, '')
-      .replace(/<img[^>]+src=["']data:[^"']+["'][^>]*>/gi, '')
+      .replace(/<img\b[^>]*\bsrc=["']\s*["'][^>]*>/gi, '')
+      .replace(/<img\b[^>]*\bsrc=["']data:[^"']+["'][^>]*>/gi, '')
 
-    let markdown = htmlToMarkdown(cleanedHtml)
+    let markdown = htmlToMarkdown(cleanedHtml, { loose: true })
     if (!markdown || markdown.trim().length < 8) {
       // Fallback: raw text if HTML path produced little
       const raw = await mammoth.extractRawText({ arrayBuffer })
@@ -226,7 +340,9 @@ export async function docxFileToReportMarkdown(
       const missing = imageUrls.slice(mdImgCount)
       markdown +=
         '\n\n## Hình ảnh đính kèm\n\n' +
-        missing.map((u, i) => `![Hình ${mdImgCount + i + 1}](${u})`).join('\n\n') +
+        missing
+          .map((u, i) => `![Hình ${mdImgCount + i + 1}](${u})`)
+          .join('\n\n') +
         '\n'
     }
 
@@ -242,6 +358,7 @@ export async function docxFileToReportMarkdown(
       warnings,
       sourceFilename: name,
       chars: markdown.length,
+      imageErrors,
     }
   } catch (e) {
     return {

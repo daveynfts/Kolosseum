@@ -1198,10 +1198,20 @@ export function AdminKolReportsEditor({ onToast, kols = [] }: Props) {
     })
     setDirty(true)
     setViewMode('split')
+    const errHint =
+      result.imagesFailed && result.imageErrors?.length
+        ? ` · ${result.imageErrors[0]}${
+            result.imageErrors.length > 1
+              ? ` (+${result.imageErrors.length - 1})`
+              : ''
+          }`
+        : result.imagesFailed
+          ? ` · ${result.imagesFailed} ảnh lỗi`
+          : ''
     onToast(
       `DOCX → MD · ${result.chars.toLocaleString()} chars · ` +
         `${result.imagesUploaded} ảnh R2` +
-        (result.imagesFailed ? ` · ${result.imagesFailed} ảnh lỗi` : ''),
+        errHint,
     )
   }
 

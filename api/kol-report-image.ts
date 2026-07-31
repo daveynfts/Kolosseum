@@ -27,9 +27,8 @@ import {
 
 export const config = {
   api: {
-    bodyParser: {
-      sizeLimit: '4.5mb',
-    },
+    // Raw binary PUT — parser would corrupt image bytes / break magic sniff
+    bodyParser: false,
   },
 }
 
@@ -50,7 +49,7 @@ function cors(res: VercelResponse) {
   res.setHeader('Access-Control-Allow-Methods', 'PUT, OPTIONS')
   res.setHeader(
     'Access-Control-Allow-Headers',
-    'Content-Type, Authorization, X-Filename',
+    'Content-Type, Authorization, X-Filename, X-Overwrite',
   )
   res.setHeader('Cache-Control', 'no-store')
 }
@@ -165,6 +164,7 @@ function sanitizeSurfFilename(raw: string): string {
 }
 
 async function readRawBody(req: VercelRequest): Promise<Buffer> {
+  // Prefer streaming the request (bodyParser: false). Fall back if already buffered.
   const raw = req.body
   if (raw && (Buffer.isBuffer(raw) || raw instanceof Uint8Array)) {
     return Buffer.from(raw)
@@ -174,14 +174,13 @@ async function readRawBody(req: VercelRequest): Promise<Buffer> {
       const b64 = raw.split('base64,')[1] || ''
       return Buffer.from(b64, 'base64')
     }
-    return Buffer.from(raw, 'binary')
+    // latin1 preserves byte values 0–255 (utf8 would corrupt binary)
+    return Buffer.from(raw, 'latin1')
   }
   const chunks: Buffer[] = []
-  await new Promise<void>((resolve, reject) => {
-    req.on('data', (c: Buffer) => chunks.push(Buffer.from(c)))
-    req.on('end', () => resolve())
-    req.on('error', reject)
-  })
+  for await (const chunk of req) {
+    chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk))
+  }
   return Buffer.concat(chunks)
 }
 
@@ -312,7 +311,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     const qName = String(req.query.filename || req.query.name || '')
     const hName = String(req.headers['x-filename'] || '')
-    const rawName = qName || hName
+    // Prefer header for paths with "/" — some proxies mangle %2F in query strings
+    const rawName = hName || qName
     const overwrite =
       String(req.query.overwrite || '') === '1' ||
       String(req.query.overwrite || '').toLowerCase() === 'true' ||
@@ -321,12 +321,24 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     let rel: string
     let wasOverwrite = false
     if (overwrite) {
-      const stable = stableFilename(rawName, contentType)
+      const reportId = String(req.query.reportId || '').trim()
+      const slot = String(req.query.slot || '').trim()
+      const extQ = String(req.query.ext || '')
+        .trim()
+        .replace(/^\./, '')
+      const fromParts =
+        reportId && slot
+          ? stableFilename(
+              `${reportId}/${slot}${extQ ? `.${extQ}` : ''}`,
+              contentType,
+            )
+          : null
+      const stable = fromParts || stableFilename(rawName, contentType)
       if (!stable) {
         return res.status(400).json({
           error: 'invalid_stable_path',
           message:
-            'overwrite=1 requires filename like {reportId}/cover.png or {reportId}/body_1.png',
+            'overwrite=1 requires reportId+slot query params, or filename/X-Filename like {reportId}/cover.png',
         })
       }
       rel = stable

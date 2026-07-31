@@ -4,6 +4,8 @@ import { isGenericImageAlt } from '../lib/imageAlt'
 interface Props {
   text: string
   className?: string
+  /** Prefer eager load (admin Live Preview) to avoid lazy bugs in nested scrollers */
+  eagerImages?: boolean
 }
 
 /**
@@ -11,8 +13,13 @@ interface Props {
  * Supports headings, bold/italic/code, links, images, lists, tables,
  * blockquotes, hr, fenced code. Escapes raw HTML (no XSS).
  */
-export function ReportMarkdown({ text, className = '' }: Props) {
+export function ReportMarkdown({
+  text,
+  className = '',
+  eagerImages = false,
+}: Props) {
   const blocks = parseBlocks(text || '')
+  const imgLoading = eagerImages ? 'eager' : 'lazy'
   return (
     <div className={`report-md ${className}`.trim()}>
       {blocks.map((b, i) => {
@@ -92,14 +99,30 @@ export function ReportMarkdown({ text, className = '' }: Props) {
                   <img
                     src={b.src}
                     alt={b.alt || ''}
-                    loading="lazy"
+                    loading={imgLoading}
+                    decoding="async"
+                    referrerPolicy="no-referrer"
                     className="report-md__img"
+                    onError={(e) => {
+                      const el = e.currentTarget
+                      el.style.display = 'none'
+                      const sib = el.nextElementSibling
+                      if (
+                        sib &&
+                        sib.classList.contains('report-md__img-fallback')
+                      ) {
+                        ;(sib as HTMLElement).hidden = false
+                      }
+                    }}
                   />
-                ) : (
-                  <div className="report-md__img-blocked">
-                    Invalid image URL
-                  </div>
-                )}
+                ) : null}
+                <div
+                  className="report-md__img-blocked report-md__img-fallback"
+                  hidden={isSafeUrl(b.src)}
+                >
+                  Không tải được ảnh
+                  {b.src ? `: ${b.src.slice(0, 72)}` : ''}
+                </div>
                 {b.alt && !isGenericImageAlt(b.alt) ? (
                   <figcaption className="report-md__caption">
                     {b.alt}

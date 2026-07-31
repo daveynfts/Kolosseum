@@ -1,8 +1,10 @@
 /**
- * WYSIWYG report body — edit rendered preview, sync back to markdown.
- * Selection in preview can map to markdown offsets via onSelectMdRange.
+ * Live Preview for KOL reports.
+ * Images are rendered via React (ReportMarkdown) so they always show.
+ * Optional WYSIWYG mode uses contentEditable for text tweaks.
  */
-import { useEffect, useLayoutEffect, useRef } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { ReportMarkdown } from './ReportMarkdown'
 import { htmlToMarkdown, normalizeMarkdown } from '../lib/htmlToMarkdown'
 import { markdownToHtml } from '../lib/markdownToHtml'
 import {
@@ -16,9 +18,9 @@ interface Props {
   className?: string
   disabled?: boolean
   placeholder?: string
-  /** Remount/resync key when switching reports */
   docKey?: string
-  /** Fired when user selects text in the preview (or null when cleared). */
+  /** Prefer React render (images reliable). WYSIWYG is opt-in. */
+  wysiwyg?: boolean
   onSelectMdRange?: (
     range: MdRange | null,
     meta?: { final?: boolean },
@@ -30,7 +32,6 @@ function getPreviewScroller(el: HTMLElement | null): HTMLElement | null {
   return (el.closest('.akr-preview') as HTMLElement | null) || el.parentElement
 }
 
-/** Keep caret visible without letting the browser yank the pane to the end. */
 function ensureCaretVisible(scroller: HTMLElement) {
   const sel = window.getSelection()
   if (!sel || sel.rangeCount === 0) return
@@ -54,21 +55,22 @@ function ensureCaretVisible(scroller: HTMLElement) {
   }
 }
 
-export function EditableReportPreview({
+function WysiwygBody({
   text,
   onChange,
-  className = '',
-  disabled = false,
-  placeholder = 'Click vào đây để sửa nội dung…',
-  docKey = '',
+  className,
+  disabled,
+  placeholder,
+  docKey,
   onSelectMdRange,
 }: Props) {
   const ref = useRef<HTMLDivElement>(null)
-  const focusedRef = useRef(false)
   const lastMdRef = useRef(text)
   const debounceRef = useRef<number | null>(null)
   const seededKeyRef = useRef('')
   const pinnedScrollRef = useRef<number | null>(null)
+  const userEditedRef = useRef(false)
+  const seedingRef = useRef(false)
   const onSelectRef = useRef(onSelectMdRange)
   onSelectRef.current = onSelectMdRange
   const onChangeRef = useRef(onChange)
@@ -81,40 +83,31 @@ export function EditableReportPreview({
     const top = scroller?.scrollTop ?? 0
     const cleaned = normalizeMarkdown(md)
     lastMdRef.current = cleaned
+    seedingRef.current = true
+    userEditedRef.current = false
     el.innerHTML = markdownToHtml(cleaned)
     if (scroller) scroller.scrollTop = top
+    // Ignore browser "input" events caused by innerHTML assignment
+    requestAnimationFrame(() => {
+      seedingRef.current = false
+    })
     if (cleaned !== md) {
       onSelectRef.current?.(null)
       onChangeRef.current(cleaned)
     }
   }
 
-  // Seed when report changes or external markdown updates.
-  // Do NOT skip while focused: DOCX import / raw MD edits must refresh Live Preview.
-  // Echoes from our own onChange are ignored via lastMdRef equality.
   useLayoutEffect(() => {
     const el = ref.current
     if (!el) return
     const keyChanged = seededKeyRef.current !== docKey
     if (keyChanged) {
-      seededKeyRef.current = docKey
-      focusedRef.current = false
+      seededKeyRef.current = docKey || ''
       seedHtml(text)
       return
     }
     if (text === lastMdRef.current && el.innerHTML.trim()) return
-    const hadFocus = focusedRef.current
-    const scroller = getPreviewScroller(el)
-    const top = scroller?.scrollTop ?? 0
     seedHtml(text)
-    if (scroller) scroller.scrollTop = top
-    if (hadFocus) {
-      try {
-        el.focus({ preventScroll: true })
-      } catch {
-        el.focus()
-      }
-    }
   }, [text, docKey])
 
   useLayoutEffect(() => {
@@ -123,7 +116,6 @@ export function EditableReportPreview({
     }
   }, [])
 
-  // Live selection → markdown range (while dragging / after mouseup)
   useEffect(() => {
     let raf = 0
     const emit = (final = false) => {
@@ -141,7 +133,6 @@ export function EditableReportPreview({
       }
       cb(previewSelectionToMdRange(el, lastMdRef.current), { final })
     }
-
     const onSelChange = () => {
       if (raf) cancelAnimationFrame(raf)
       raf = requestAnimationFrame(() => {
@@ -156,7 +147,6 @@ export function EditableReportPreview({
       }
       emit(true)
     }
-
     document.addEventListener('selectionchange', onSelChange)
     document.addEventListener('mouseup', onMouseUp)
     return () => {
@@ -168,7 +158,7 @@ export function EditableReportPreview({
 
   const commitFromDom = (immediate = false) => {
     const el = ref.current
-    if (!el || disabled) return
+    if (!el || disabled || !userEditedRef.current || seedingRef.current) return
     const run = () => {
       const md = htmlToMarkdown(el.innerHTML, { loose: true })
       const next = normalizeMarkdown(
@@ -202,7 +192,6 @@ export function EditableReportPreview({
     const top = pinnedScrollRef.current
     if (!scroller || top == null) return
     scroller.scrollTop = top
-    // If browser yanked to the end, keep pinned position then nudge caret into view
     requestAnimationFrame(() => {
       if (pinnedScrollRef.current != null) {
         scroller.scrollTop = pinnedScrollRef.current
@@ -215,21 +204,15 @@ export function EditableReportPreview({
   return (
     <div
       ref={ref}
-      className={`report-md report-md--editable ${className}`.trim()}
+      className={`report-md report-md--editable ${className || ''}`.trim()}
       contentEditable={!disabled}
       suppressContentEditableWarning
       data-placeholder={placeholder}
       role="textbox"
       aria-multiline="true"
-      aria-label="Sửa nội dung báo cáo (Live Preview)"
+      aria-label="Sửa nội dung báo cáo (WYSIWYG)"
       spellCheck={false}
-      onFocus={() => {
-        focusedRef.current = true
-      }}
-      onBlur={() => {
-        focusedRef.current = false
-        commitFromDom(true)
-      }}
+      onBlur={() => commitFromDom(true)}
       onKeyDown={(e) => {
         if (
           e.key === 'Enter' ||
@@ -240,21 +223,27 @@ export function EditableReportPreview({
         }
         if ((e.metaKey || e.ctrlKey) && e.key === 'b') {
           e.preventDefault()
+          userEditedRef.current = true
           document.execCommand('bold')
           commitFromDom(false)
         }
         if ((e.metaKey || e.ctrlKey) && e.key === 'i') {
           e.preventDefault()
+          userEditedRef.current = true
           document.execCommand('italic')
           commitFromDom(false)
         }
       }}
       onInput={() => {
+        if (seedingRef.current) return
+        userEditedRef.current = true
         if (pinnedScrollRef.current != null) restoreScroll()
         commitFromDom(false)
       }}
       onPaste={(e) => {
         e.preventDefault()
+        if (seedingRef.current) return
+        userEditedRef.current = true
         pinScroll()
         const html = e.clipboardData.getData('text/html')
         const plain = e.clipboardData.getData('text/plain')
@@ -271,6 +260,64 @@ export function EditableReportPreview({
         restoreScroll()
         commitFromDom(true)
       }}
+    />
+  )
+}
+
+export function EditableReportPreview({
+  text,
+  onChange,
+  className = '',
+  disabled = false,
+  placeholder = 'Click vào đây để sửa nội dung…',
+  docKey = '',
+  wysiwyg = false,
+  onSelectMdRange,
+}: Props) {
+  // Default: React markdown renderer — images always visible (same as public report)
+  if (!wysiwyg) {
+    return (
+      <div
+        className={`akr-live-md ${className}`.trim()}
+        data-doc-key={docKey}
+        // Selection sync still works on rendered DOM
+        onMouseUp={() => {
+          if (!onSelectMdRange) return
+          const root = document.querySelector(
+            '.akr-live-md .report-md',
+          ) as HTMLElement | null
+          if (!root) return
+          const sel = window.getSelection()
+          if (!sel || sel.isCollapsed || !sel.rangeCount) {
+            onSelectMdRange(null)
+            return
+          }
+          if (!root.contains(sel.anchorNode) && !root.contains(sel.focusNode)) {
+            return
+          }
+          onSelectMdRange(previewSelectionToMdRange(root, text), {
+            final: true,
+          })
+        }}
+      >
+        <ReportMarkdown
+          text={text}
+          className="report-md--preview report-md--live"
+          eagerImages
+        />
+      </div>
+    )
+  }
+
+  return (
+    <WysiwygBody
+      text={text}
+      onChange={onChange}
+      className={className}
+      disabled={disabled}
+      placeholder={placeholder}
+      docKey={docKey}
+      onSelectMdRange={onSelectMdRange}
     />
   )
 }

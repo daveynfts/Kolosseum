@@ -1897,10 +1897,12 @@ export function AdminKolReportsEditor({ onToast, kols = [] }: Props) {
                     onScroll={onPreviewScroll}
                   >
                     <div className="akr-pane-label akr-pane-label--preview">
-                      {readOnly ? 'Live preview' : 'Live Preview · click to edit'}
+                      {readOnly
+                        ? 'Live preview'
+                        : 'Live Preview · ảnh + markdown'}
                       {!readOnly ? (
                         <span className="akr-sync-badge akr-sync-badge--edit">
-                          WYSIWYG
+                          React
                         </span>
                       ) : null}
                       {scrollSync && viewMode === 'split' ? (
@@ -1954,6 +1956,7 @@ export function AdminKolReportsEditor({ onToast, kols = [] }: Props) {
                           docKey={`${draft.id}:${previewNonce}`}
                           text={draft.text}
                           disabled={uploading || importingDocx}
+                          wysiwyg={false}
                           className={
                             viewMode === 'preview'
                               ? 'report-md--reader'

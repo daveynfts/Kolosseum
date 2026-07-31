@@ -2881,10 +2881,21 @@ body.akr-split-resizing .report-md--editable {
   user-select: none;
 }
 .akr-preview--wysiwyg {
-  cursor: text;
+  cursor: default;
 }
 .akr-preview--wysiwyg .akr-pane-label--preview {
   color: #7dd3fc;
+}
+.akr-live-md {
+  min-height: 220px;
+}
+.akr-live-md .report-md__img {
+  background: rgba(15, 23, 42, 0.5);
+  min-height: 48px;
+}
+.report-md__img-fallback:not([hidden]) {
+  display: block;
+  margin-top: 8px;
 }
 .report-md__h1,
 .report-md__h2,

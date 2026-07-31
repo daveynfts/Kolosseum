@@ -3,7 +3,7 @@
  * Images are rendered via React (ReportMarkdown) so they always show.
  * Optional WYSIWYG mode uses contentEditable for text tweaks.
  */
-import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef } from 'react'
 import { ReportMarkdown } from './ReportMarkdown'
 import { htmlToMarkdown, normalizeMarkdown } from '../lib/htmlToMarkdown'
 import { markdownToHtml } from '../lib/markdownToHtml'

@@ -334,15 +334,26 @@ export async function docxFileToReportMarkdown(
 
     markdown = polishReportMarkdown(markdown, name)
 
-    // Append image gallery section if images exist but markdown lost some
-    const mdImgCount = (markdown.match(/!\[[^\]]*\]\([^)]+\)/g) || []).length
-    if (imageUrls.length > mdImgCount) {
-      const missing = imageUrls.slice(mdImgCount)
+    // Ensure every uploaded R2 URL appears in markdown (html→md can drop some)
+    const present = new Set(
+      [...markdown.matchAll(/!\[[^\]]*\]\((<)?([^)\s>]+)(?:>)?/g)].map((m) =>
+        (m[2] || '').trim(),
+      ),
+    )
+    const missing = imageUrls.filter((u) => {
+      if (present.has(u)) return false
+      // also match without cache-buster
+      const base = u.split('?')[0]
+      for (const p of present) {
+        if (p === base || p.split('?')[0] === base) return false
+      }
+      return true
+    })
+    if (missing.length) {
+      const start = present.size
       markdown +=
         '\n\n## Hình ảnh đính kèm\n\n' +
-        missing
-          .map((u, i) => `![Hình ${mdImgCount + i + 1}](${u})`)
-          .join('\n\n') +
+        missing.map((u, i) => `![Hình ${start + i + 1}](${u})`).join('\n\n') +
         '\n'
     }
 

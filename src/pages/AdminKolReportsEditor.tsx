@@ -154,6 +154,8 @@ export function AdminKolReportsEditor({ onToast, kols = [] }: Props) {
   const [tagFilter, setTagFilter] = useState<string | null>(null)
   const [tagDraft, setTagDraft] = useState('')
   const bodySlotRef = useRef(1)
+  /** Bump to force Live Preview remount after DOCX / bulk text replace */
+  const [previewNonce, setPreviewNonce] = useState(0)
 
   const mapKolsSorted = useMemo(() => {
     return [...kols]
@@ -1198,6 +1200,13 @@ export function AdminKolReportsEditor({ onToast, kols = [] }: Props) {
     })
     setDirty(true)
     setViewMode('split')
+    setPreviewNonce((n) => n + 1)
+    // Drop focus so contentEditable definitely picks up the new HTML
+    try {
+      ;(document.activeElement as HTMLElement | null)?.blur?.()
+    } catch {
+      /* ignore */
+    }
     const errHint =
       result.imagesFailed && result.imageErrors?.length
         ? ` · ${result.imageErrors[0]}${
@@ -1942,7 +1951,7 @@ export function AdminKolReportsEditor({ onToast, kols = [] }: Props) {
                         />
                       ) : (
                         <EditableReportPreview
-                          docKey={draft.id}
+                          docKey={`${draft.id}:${previewNonce}`}
                           text={draft.text}
                           disabled={uploading || importingDocx}
                           className={

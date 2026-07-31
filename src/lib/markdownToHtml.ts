@@ -31,7 +31,7 @@ function inlineToHtml(text: string): string {
   if (!text) return ''
   const parts: string[] = []
   const re =
-    /(!\[([^\]]*)\]\(([^)\s]+)(?:\s+"[^"]*")?\)|\[([^\]]+)\]\(([^)\s]+)(?:\s+"[^"]*")?\)|\*\*([^*]+)\*\*|\*([^*\n]+)\*|`([^`]+)`)/g
+    /(!\[([^\]]*)\]\((?:<)?([^)\s>]+)(?:>)?(?:\s+"[^"]*")?\)|\[([^\]]+)\]\(([^)\s]+)(?:\s+"[^"]*")?\)|\*\*([^*]+)\*\*|\*([^*\n]+)\*|`([^`]+)`)/g
   let last = 0
   let m: RegExpExecArray | null
   while ((m = re.exec(text)) !== null) {
@@ -43,7 +43,7 @@ function inlineToHtml(text: string): string {
       const src = m[3] || ''
       if (isSafeUrl(src)) {
         parts.push(
-          `<img src="${escapeHtml(src)}" alt="${escapeHtml(alt)}" class="report-md__inline-img" />`,
+          `<img src="${escapeHtml(src)}" alt="${escapeHtml(alt)}" class="report-md__inline-img" loading="eager" decoding="async" contenteditable="false" />`,
         )
       } else {
         parts.push(escapeHtml(m[0]))
@@ -182,11 +182,11 @@ export function markdownToHtml(raw: string): string {
     }
 
     const imgOnly = trimmed.match(
-      /^!\[([^\]]*)\]\(([^)\s]+)(?:\s+"[^"]*")?\)$/,
+      /^!\[([^\]]*)\]\((<)?([^)\s>]+)(?:>)?(?:\s+"[^"]*")?\)$/,
     )
     if (imgOnly) {
       const alt = imgOnly[1]
-      const src = imgOnly[2]
+      const src = (imgOnly[3] || '').trim()
       const { start, end } = spanRange(lines, i, i + 1)
       if (isSafeUrl(src)) {
         // Alt mirrored into figcaption is display-only (data-md-alt-mirror).
@@ -197,7 +197,12 @@ export function markdownToHtml(raw: string): string {
             ? `<figcaption class="report-md__caption" data-md-alt-mirror="1" contenteditable="false">${escapeHtml(alt)}</figcaption>`
             : ''
         out.push(
-          `<figure class="report-md__figure"${mdAttr(start, end)}><img src="${escapeHtml(src)}" alt="${escapeHtml(alt)}" class="report-md__img" loading="lazy" contenteditable="false" />${caption}</figure>`,
+          `<figure class="report-md__figure"${mdAttr(start, end)}><img src="${escapeHtml(src)}" alt="${escapeHtml(alt)}" class="report-md__img" loading="eager" decoding="async" contenteditable="false" />${caption}</figure>`,
+        )
+      } else {
+        // Never silently drop image lines — show why preview blocked them
+        out.push(
+          `<figure class="report-md__figure"${mdAttr(start, end)}><div class="report-md__img-blocked" contenteditable="false">Ảnh bị chặn (URL không hợp lệ): ${escapeHtml(src || trimmed.slice(0, 120))}</div></figure>`,
         )
       }
       i++

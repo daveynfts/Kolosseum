@@ -170,9 +170,11 @@ function parseBlocks(raw: string): Block[] {
     }
 
     // Standalone image line: ![alt](url)
-    const imgOnly = trimmed.match(/^!\[([^\]]*)\]\(([^)\s]+)(?:\s+"[^"]*")?\)$/)
+    const imgOnly = trimmed.match(
+      /^!\[([^\]]*)\]\((<)?([^)\s>]+)(?:>)?(?:\s+"[^"]*")?\)$/,
+    )
     if (imgOnly) {
-      out.push({ type: 'image', alt: imgOnly[1], src: imgOnly[2] })
+      out.push({ type: 'image', alt: imgOnly[1], src: (imgOnly[3] || '').trim() })
       i++
       continue
     }

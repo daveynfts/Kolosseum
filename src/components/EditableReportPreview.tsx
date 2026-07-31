@@ -89,7 +89,9 @@ export function EditableReportPreview({
     }
   }
 
-  // Seed when report changes or external markdown updates (and not typing)
+  // Seed when report changes or external markdown updates.
+  // Do NOT skip while focused: DOCX import / raw MD edits must refresh Live Preview.
+  // Echoes from our own onChange are ignored via lastMdRef equality.
   useLayoutEffect(() => {
     const el = ref.current
     if (!el) return
@@ -100,9 +102,19 @@ export function EditableReportPreview({
       seedHtml(text)
       return
     }
-    if (focusedRef.current) return
     if (text === lastMdRef.current && el.innerHTML.trim()) return
+    const hadFocus = focusedRef.current
+    const scroller = getPreviewScroller(el)
+    const top = scroller?.scrollTop ?? 0
     seedHtml(text)
+    if (scroller) scroller.scrollTop = top
+    if (hadFocus) {
+      try {
+        el.focus({ preventScroll: true })
+      } catch {
+        el.focus()
+      }
+    }
   }, [text, docKey])
 
   useLayoutEffect(() => {

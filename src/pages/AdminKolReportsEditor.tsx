@@ -887,7 +887,8 @@ export function AdminKolReportsEditor({ onToast, kols = [] }: Props) {
         onToast('Chỉ PNG / JPEG / WebP / GIF — upload thẳng R2')
         return null
       }
-      if (!tokenInput.trim()) {
+      const token = normalizeAdminToken(tokenInput || getAdminToken())
+      if (!token) {
         onToast('Dán FEED_ADMIN_TOKEN trước khi upload ảnh lên R2')
         return null
       }
@@ -895,7 +896,8 @@ export function AdminKolReportsEditor({ onToast, kols = [] }: Props) {
         onToast('Chưa có report id')
         return null
       }
-      setAdminToken(tokenInput)
+      setTokenInput(token)
+      setAdminToken(token)
       setUploading(true)
       setUploadLabel(file.name || 'image')
 
@@ -910,7 +912,7 @@ export function AdminKolReportsEditor({ onToast, kols = [] }: Props) {
 
       // overwrite=1 → same key kol-reports/images/{reportId}/{slot}.ext
       const r = await uploadKolReportImage(file, {
-        token: tokenInput,
+        token,
         handle: draft.handle,
         overwrite: true,
         reportId: draft.id,

@@ -227,9 +227,22 @@ export async function docxFileToReportMarkdown(
   progress('Trích xuất nội dung + upload ảnh R2…')
 
   try {
+    // Node/vitest: prefer Buffer. Browser: ArrayBuffer.
+    // Mammoth errors with "Could not find file in options" if input shape is wrong.
+    const u8 = new Uint8Array(arrayBuffer)
+    const mammothInput =
+      typeof Buffer !== 'undefined'
+        ? { buffer: Buffer.from(u8) }
+        : {
+            arrayBuffer: u8.buffer.slice(
+              u8.byteOffset,
+              u8.byteOffset + u8.byteLength,
+            ),
+          }
+
     // mammoth types are loose; convertImage returns Promise<{src}>
     const result = await mammoth.convertToHtml(
-      { arrayBuffer },
+      mammothInput as { arrayBuffer: ArrayBuffer },
       {
         styleMap: STYLE_MAP,
         convertImage: mammoth.images.imgElement(async (image) => {

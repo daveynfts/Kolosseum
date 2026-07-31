@@ -22,6 +22,15 @@ export interface LoadFeedResult {
   source: FeedSource
 }
 
+/** Strip paste artifacts so client token matches Vercel FEED_ADMIN_TOKEN. */
+export function normalizeAdminToken(token: string): string {
+  return String(token || '')
+    .replace(/^\uFEFF/, '')
+    .replace(/[\u200B-\u200D\uFEFF]/g, '')
+    .trim()
+    .replace(/^["']|["']$/g, '')
+}
+
 export function getAdminToken(): string {
   try {
     let t = sessionStorage.getItem(TOKEN_KEY) || ''
@@ -33,7 +42,7 @@ export function getAdminToken(): string {
         t = legacy
       }
     }
-    return t
+    return normalizeAdminToken(t)
   } catch {
     return ''
   }
@@ -41,8 +50,9 @@ export function getAdminToken(): string {
 
 export function setAdminToken(token: string): void {
   try {
-    if (token.trim()) {
-      sessionStorage.setItem(TOKEN_KEY, token.trim())
+    const t = normalizeAdminToken(token)
+    if (t) {
+      sessionStorage.setItem(TOKEN_KEY, t)
       localStorage.removeItem(TOKEN_KEY)
     } else {
       sessionStorage.removeItem(TOKEN_KEY)

@@ -32,7 +32,11 @@ import {
   loadKolReportsWithSource,
   saveKolReportsToServer,
 } from '../lib/kolReportsStore'
-import { getAdminToken, setAdminToken } from '../lib/feedStore'
+import {
+  getAdminToken,
+  normalizeAdminToken,
+  setAdminToken,
+} from '../lib/feedStore'
 import {
   fileFromClipboardItem,
   isImageFile,
@@ -1148,15 +1152,18 @@ export function AdminKolReportsEditor({ onToast, kols = [] }: Props) {
       onToast('Chọn / tạo report trước khi import DOCX')
       return
     }
-    if (!tokenInput.trim()) {
+    // Prefer field → sessionStorage (AdminGate). Always normalize paste artifacts.
+    const token = normalizeAdminToken(tokenInput || getAdminToken())
+    if (!token) {
       onToast('Dán FEED_ADMIN_TOKEN trước — ảnh DOCX cần upload R2')
       return
     }
-    setAdminToken(tokenInput)
+    setTokenInput(token)
+    setAdminToken(token)
     setImportingDocx(true)
     setUploadLabel(file.name)
     const result = await docxFileToReportMarkdown(file, {
-      token: tokenInput,
+      token,
       handle: draft.handle,
       reportId: draft.id,
       onProgress: (msg) => setUploadLabel(msg),
@@ -1206,6 +1213,15 @@ export function AdminKolReportsEditor({ onToast, kols = [] }: Props) {
       ;(document.activeElement as HTMLElement | null)?.blur?.()
     } catch {
       /* ignore */
+    }
+    const authFail = result.imageErrors?.some((e) =>
+      /unauthorized/i.test(e),
+    )
+    if (authFail && result.imagesUploaded === 0) {
+      onToast(
+        'DOCX: ảnh bị Unauthorized — dán đúng FEED_ADMIN_TOKEN (trùng Vercel env) vào ô token rồi import lại',
+      )
+      return
     }
     const errHint =
       result.imagesFailed && result.imageErrors?.length
@@ -1302,7 +1318,13 @@ export function AdminKolReportsEditor({ onToast, kols = [] }: Props) {
             placeholder="FEED_ADMIN_TOKEN"
             value={tokenInput}
             onChange={(e) => setTokenInput(e.target.value)}
+            onBlur={() => {
+              const t = normalizeAdminToken(tokenInput || getAdminToken())
+              setTokenInput(t)
+              setAdminToken(t)
+            }}
             autoComplete="off"
+            title="Phải trùng FEED_ADMIN_TOKEN trên Vercel — dùng cho Save R2 / upload ảnh DOCX"
           />
           <button
             type="button"

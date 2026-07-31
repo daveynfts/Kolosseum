@@ -67,7 +67,7 @@ function AdminGate({ children }: { children: ReactNode }) {
         type="button"
         className="btn btn--primary"
         onClick={() => {
-          const t = input.trim()
+          const t = input.trim().replace(/^["']|["']$/g, '')
           if (!t) return
           setAdminToken(t)
           setToken(t)

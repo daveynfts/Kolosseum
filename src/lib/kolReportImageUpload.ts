@@ -4,7 +4,7 @@
  * → returns public CDN URL for markdown ![alt](url)
  */
 import { withBase } from './base'
-import { getAdminToken } from './feedStore'
+import { getAdminToken, normalizeAdminToken } from './feedStore'
 
 export type KolReportImageUploadResult =
   | {
@@ -115,7 +115,7 @@ export async function uploadKolReportImageBytes(
     slot?: string
   },
 ): Promise<KolReportImageUploadResult> {
-  const token = (options?.token || getAdminToken()).trim()
+  const token = normalizeAdminToken(options?.token || getAdminToken())
   if (!token) {
     return {
       ok: false,
@@ -206,12 +206,16 @@ export async function uploadKolReportImageBytes(
       /* ignore */
     }
     if (!res.ok) {
+      const raw = String(data.message || data.error || text.slice(0, 160) || '')
+      const isAuth =
+        res.status === 401 ||
+        /unauthorized|forbidden/i.test(raw)
       return {
         ok: false,
         status: res.status,
-        error:
-          String(data.message || data.error || text.slice(0, 160)) ||
-          `HTTP ${res.status}`,
+        error: isAuth
+          ? 'Unauthorized — FEED_ADMIN_TOKEN sai hoặc không khớp Vercel. Dán lại token rồi Save/import.'
+          : raw || `HTTP ${res.status}`,
       }
     }
 

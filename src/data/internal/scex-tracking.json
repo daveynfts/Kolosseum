@@ -1,9 +1,9 @@
 {
   "version": 1,
   "kind": "scex-tracking",
-  "asOf": "2026-07-23T18:00:00.000Z",
-  "updatedAt": "2026-07-23T10:50:20.183Z",
-  "note": "SCEX mention export sync · 133 accounts · 82 original posts linked · matrix volume = gốc+reply · views → reach7d. Livefeed filter by KOL. Tone Hỗn hợp/Trung lập → neutral. Media on R2: 74/82 posts (hydrate_scex_media). Batch posts +32 (KT, shuigvn, SucVat, bachkhoabnb, KienGold, …). Media on R2: 102/114 posts (hydrate_scex_media). Batch posts +19 (KhiemBNB, dinhthang97, Blockmedia, KaiBGR, Lens, …). Media on R2: 118/133 posts (hydrate_scex_media). Batch posts +27 (PeterTran, htp96, RiceFarmer, Liquid100x, …). Media on R2: 140/160 posts (hydrate_scex_media). Batch posts +28 (tdcrypto, NickyPham, BiCanTho, GF_Capital, …). Media on R2: 168/188 posts (hydrate_scex_media). Batch posts +25 (vangemxin1, TranNinh9, maybach, PTGinKing, …). Media on R2: 192/213 posts (hydrate_scex_media). Batch posts +26 (Tungthuocno, DaveyNFTsAI, VnInvestBlogger, hang1856, …). Media on R2: 214/239 posts (hydrate_scex_media). Scores recomputed (log volume + map-tier quality; eng weight low). Scores recomputed (log volume + map-tier quality; eng weight low).",
+  "asOf": "2026-08-03",
+  "updatedAt": "2026-08-03T02:51:41.671Z",
+  "note": "SCEX mention export sync · 133 accounts · 82 original posts linked · matrix volume = gốc+reply · views → reach7d. Livefeed filter by KOL. Tone Hỗn hợp/Trung lập → neutral. Media on R2: 74/82 posts (hydrate_scex_media). Batch posts +32 (KT, shuigvn, SucVat, bachkhoabnb, KienGold, …). Media on R2: 102/114 posts (hydrate_scex_media). Batch posts +19 (KhiemBNB, dinhthang97, Blockmedia, KaiBGR, Lens, …). Media on R2: 118/133 posts (hydrate_scex_media). Batch posts +27 (PeterTran, htp96, RiceFarmer, Liquid100x, …). Media on R2: 140/160 posts (hydrate_scex_media). Batch posts +28 (tdcrypto, NickyPham, BiCanTho, GF_Capital, …). Media on R2: 168/188 posts (hydrate_scex_media). Batch posts +25 (vangemxin1, TranNinh9, maybach, PTGinKing, …). Media on R2: 192/213 posts (hydrate_scex_media). Batch posts +26 (Tungthuocno, DaveyNFTsAI, VnInvestBlogger, hang1856, …). Media on R2: 214/239 posts (hydrate_scex_media). Scores recomputed (log volume + map-tier quality; eng weight low). Scores recomputed (log volume + map-tier quality; eng weight low). · Official @scexofficial posts upsert since:2026-07-27 until:2026-08-03 (+7/~0 upd, 7 posts; no post 30/07).",
   "config": {
     "brandName": "SCEX",
     "brandHandle": "scexofficial",
@@ -26,32 +26,32 @@
     "volumeAxis": {
       "min": 0,
       "max": 100,
-      "label": "Tần suất mention"
+      "label": "Điểm tần suất (log activity)"
     },
     "qualityAxis": {
       "min": 0,
       "max": 100,
-      "label": "Chất lượng"
+      "label": "Điểm chất lượng (tier + signal)"
     },
     "sizeMetric": "followers",
     "volumeSplit": 42,
     "qualitySplit": 50,
     "quadrantLabels": {
       "stars": {
-        "title": "Ưu tiên hợp tác",
-        "subtitle": "Hay mention · chất lượng cao — nên ưu tiên tiếp cận"
+        "title": "TRỌNG ĐIỂM",
+        "subtitle": "Tần suất cao · chất lượng cao — ưu tiên theo dõi"
       },
       "nurture": {
-        "title": "Có tiềm năng",
-        "subtitle": "Chất lượng cao · ít mention — nên khuyến khích tương tác"
+        "title": "TIỀM NĂNG",
+        "subtitle": "Chất lượng cao · tần suất thấp — khuyến khích tương tác"
       },
       "noise": {
-        "title": "Cần rà soát",
-        "subtitle": "Hay mention · chất lượng thấp — lọc và đánh giá lại"
+        "title": "CẦN RÀ SOÁT",
+        "subtitle": "Tần suất cao · chất lượng thấp — lọc và đánh giá lại"
       },
       "ignore": {
-        "title": "Ít ưu tiên",
-        "subtitle": "Ít mention · chất lượng thấp — không cần ưu tiên"
+        "title": "TÍN HIỆU YẾU",
+        "subtitle": "Tần suất thấp · chất lượng thấp — không ưu tiên"
       }
     },
     "sentimentLabels": {
@@ -3055,6 +3055,121 @@
     }
   ],
   "posts": [
+    {
+      "id": "p_2083734533610885231",
+      "handle": "scexofficial",
+      "url": "https://x.com/scexofficial/status/2083734533610885231",
+      "text": "🚨 CHỈ CÒN 1 NGÀY!\n\nĐấu trường Tài sản mã hóa sẽ chính thức kết thúc vào 23:59 hôm nay.\n\n👉 Rà soát lần cuối và hoàn thành các nhiệm vụ còn thiếu tại: https://phocaptaisanso.com/vi/learning-challenge\n\n⚠️ Hãy thực hiện đầy đủ các bước theo yêu cầu của từng nhiệm vụ. Ban Tổ chức sẽ kiểm tra và đối chiếu trước khi xác nhận kết quả chung cuộc.\n\nThông tin thêm: SCEX Trading Simulator là nền tảng giao dịch mô phỏng. Mọi giao dịch trên hệ thống đều nhằm mục đích học tập và thực hành, không phát sinh giao dịch tài sản mã hóa thực tế.\n\n──────────\nSCEX - Công ty Cổ phần Sàn giao dịch Tài sản mã hoá SACOM.\nSàn đang trong quá trình nộp hồ sơ cấp phép và xét duyệt từ Bộ Tài Chính, tuân thủ pháp luật Việt Nam và Nghị quyết 05/2025/NQ-CP.\n\n#SCEX #SCEXSimulator #Dautruongtaisanmahoa",
+      "postedAt": "2026-08-02T02:00:01.000Z",
+      "sentiment": "bullish",
+      "hidden": false,
+      "notes": "Official · CHỈ CÒN 1 NGÀY · since:2026-07-27 until:2026-08-03",
+      "media": [
+        "https://pbs.twimg.com/media/HOpO5CDbgAEiKZO.jpg?name=orig"
+      ],
+      "likes": 11,
+      "replies": 1,
+      "views": 584
+    },
+    {
+      "id": "p_2083372149381669315",
+      "handle": "scexofficial",
+      "url": "https://x.com/scexofficial/status/2083372149381669315",
+      "text": "⏳ CHỈ CÒN 2 NGÀY!\n\nĐấu trường Tài sản mã hóa chỉ còn 2 ngày trước khi chính thức khép lại.\n\nKhối lượng giao dịch mô phỏng đã tăng mạnh trong Tuần 4, cho thấy sức nóng của chặng chung cuộc.\n\n⏰ Chốt kết quả: 23:59 Chủ Nhật, 02/08/2026.\n\n👉 Kiểm tra và hoàn thành các nhiệm vụ còn thiếu tại: https://phocaptaisanso.com/vi/learning-challenge\n\n⚠️ Hãy thực hiện đầy đủ các bước theo yêu cầu của từng nhiệm vụ. Ban Tổ chức sẽ kiểm tra và đối chiếu trước khi xác nhận kết quả chung cuộc.\n\nThông tin thêm: SCEX Trading Simulator là nền tảng giao dịch mô phỏng. Mọi giao dịch trên hệ thống đều nhằm mục đích học tập và thực hành, không phát sinh giao dịch tài sản mã hóa thực tế.\n\n──────────\nSCEX - Công ty Cổ phần Sàn giao dịch Tài sản mã hoá SACOM.\nSàn đang trong quá trình nộp hồ sơ cấp phép và xét duyệt từ Bộ Tài Chính, tuân thủ pháp luật Việt Nam và Nghị quyết 05/2025/NQ-CP.\n\n#SCEX #SCEXSimulator #Dautruongtaisanmahoa",
+      "postedAt": "2026-08-01T02:00:02.000Z",
+      "sentiment": "bullish",
+      "hidden": false,
+      "notes": "Official · CHỈ CÒN 2 NGÀY · since:2026-07-27 until:2026-08-03",
+      "media": [
+        "https://pbs.twimg.com/media/HOkgMajaMAAztSt.jpg?name=orig"
+      ],
+      "likes": 18,
+      "reposts": 1,
+      "replies": 1,
+      "views": 1060
+    },
+    {
+      "id": "p_2083120067462705466",
+      "handle": "scexofficial",
+      "url": "https://x.com/scexofficial/status/2083120067462705466",
+      "text": "📌 CHECKLIST CHẶNG NƯỚC RÚT – BẠN ĐÃ HOÀN THÀNH ĐỦ?\n\nĐấu trường Tài sản mã hóa đang bước vào những ngày cuối cùng. Trước khi chương trình chính thức chốt điểm, hãy kiểm tra:\n\n✅ Tối ưu kết quả giao dịch mô phỏng để cạnh tranh BXH Tuần 4 \n✅ Hoàn thành đầy đủ 6 module học tập \n✅ Rà soát các nhiệm vụ lan tỏa trên mạng xã hội \n✅ Đảm bảo đã Follow các kênh chính thức của SCEX \n✅ Gửi form đóng góp ý kiến về trải nghiệm SCEX Simulator\n\n⚠️ Hãy thực hiện đầy đủ các bước của từng nhiệm vụ. Ban Tổ chức sẽ kiểm tra và đối chiếu trước khi xác nhận kết quả chung cuộc.\n\n⏳ Thời gian chốt kết quả: 23:59 Chủ Nhật, ngày 02/08/2026.\n\n👉 Kiểm tra ngay tại: https://phocaptaisanso.com/vi/learning-challenge\n\nThông tin thêm: SCEX Trading Simulator là nền tảng giao dịch mô phỏng. Mọi giao dịch trên hệ thống đều nhằm mục đích học tập và thực hành, không phát sinh giao dịch tài sản mã hóa thực tế.\n\n──────────\nSCEX - Công ty Cổ phần Sàn giao dịch Tài sản mã hoá SACOM.\nSàn đang trong quá trình nộp hồ sơ cấp phép và xét duyệt từ Bộ Tài Chính, tuân thủ pháp luật Việt Nam và Nghị quyết 05/2025/NQ-CP.\n\n#SCEX #SCEXSimulator #Dautruongtaisanmahoa",
+      "postedAt": "2026-07-31T09:18:21.000Z",
+      "sentiment": "bullish",
+      "hidden": false,
+      "notes": "Official · Checklist chặng nước rút · since:2026-07-27 until:2026-08-03",
+      "media": [
+        "https://pbs.twimg.com/media/HOi6deoaIAAjnZz.jpg?name=orig"
+      ],
+      "likes": 8,
+      "views": 739
+    },
+    {
+      "id": "p_2082458625214169277",
+      "handle": "scexofficial",
+      "url": "https://x.com/scexofficial/status/2082458625214169277",
+      "text": "🔥 ĐẤU TRƯỜNG SAU 3 TUẦN – NHỮNG CON SỐ NỔI BẬT!\n\nSau 3 tuần diễn ra, Đấu trường Tài sản mã hóa đã thu hút đông đảo người dùng tham gia. Cùng điểm lại những con số nổi bật:\n\n👥 52K+ lượt đăng ký\n📈 222K+ lệnh giao dịch mô phỏng\n📊 91K+ tỷ VNĐ volume mô phỏng\n\n⏳ Tuần 4 - chặng chung cuộc đang bước vào những ngày cuối, mọi vị trí vẫn có thể thay đổi.\n\n👉 Tham gia ngay tại: https://phocaptaisanso.com/vi\n\nThông tin thêm: SCEX Trading Simulator là nền tảng giao dịch mô phỏng. Mọi giao dịch trên hệ thống đều nhằm mục đích học tập và thực hành, không phát sinh giao dịch tài sản mã hóa thực tế.\n\n──────────\nSCEX - Công ty Cổ phần Sàn giao dịch Tài sản mã hoá SACOM.\nSàn đang trong quá trình nộp hồ sơ cấp phép và xét duyệt từ Bộ Tài Chính, tuân thủ pháp luật Việt Nam và Nghị quyết 05/2025/NQ-CP.\n\n#SCEX #SCEXSimulator #Dautruongtaisanmahoa",
+      "postedAt": "2026-07-29T13:30:01.000Z",
+      "sentiment": "bullish",
+      "hidden": false,
+      "notes": "Official · Tổng kết Đấu trường sau 3 tuần · since:2026-07-27 until:2026-08-03",
+      "media": [
+        "https://pbs.twimg.com/media/HOZSThMaAAEk57a.jpg?name=orig"
+      ],
+      "likes": 7,
+      "reposts": 2,
+      "replies": 1,
+      "views": 624
+    },
+    {
+      "id": "p_2082371403920400524",
+      "handle": "scexofficial",
+      "url": "https://x.com/scexofficial/status/2082371403920400524",
+      "text": "🏆 BXH TUẦN 3 ĐÃ CHÍNH THỨC LỘ DIỆN!\n\nChúc mừng Top 3 người chơi xuất sắc nhất của Đấu trường Tài sản mã hóa - Tuần 3:\n\n🥇: ph***8@gmail.com – 1.880 điểm \n\n🥈: ti***1@gmail.com – 1.780 điểm \n\n🥉: no***b@gmail.com – 1.780 điểm \n\n🔗 Xem BXH đầy đủ tại: https://phocaptaisanso.com/vi/leaderboard \n\n👉 Tuần 4 - Chặng chung cuộc sẽ kết thúc sau hơn 4 ngày nữa. Tham gia ngay: https://phocaptaisanso.com/vi\n\n#SCEX #SCEXSimulator #Dautruongtaisanmahoa",
+      "postedAt": "2026-07-29T07:43:25.000Z",
+      "sentiment": "bullish",
+      "hidden": false,
+      "notes": "Official · Công bố BXH tuần 3 · since:2026-07-27 until:2026-08-03",
+      "media": [
+        "https://pbs.twimg.com/media/HOYRpBIbAAA0ILr.png?name=orig"
+      ],
+      "likes": 12,
+      "reposts": 1,
+      "views": 1050
+    },
+    {
+      "id": "p_2081924512917115155",
+      "handle": "scexofficial",
+      "url": "https://x.com/scexofficial/status/2081924512917115155",
+      "text": "❗️ ĐIỂM CHUNG CUỘC KHÔNG CHỈ ĐẾN TỪ GIAO DỊCH!\n\nNgoài kết quả giao dịch mô phỏng, người tham gia còn có thể gia tăng điểm số qua 2 nhóm nhiệm vụ:\n\n📈 Nhiệm vụ tích lũy\n\n• Hoàn thành 6 module học tập\n• Lan tỏa thông qua các kênh mạng xã hội\n• Gửi phản hồi trải nghiệm về SCEX Simulator\n\n🤝 Nhiệm vụ mời bạn\n\nMỗi lượt mời hợp lệ qua link giới thiệu được cộng 50 điểm, tối đa 1.000 điểm.\n\n👉 Kiểm tra và hoàn thành các nhiệm vụ còn thiếu ngay tại: https://phocaptaisanso.com/vi/learning-challenge\n\n⚠️ Lưu ý: Người tham gia cần thực hiện đầy đủ các bước theo yêu cầu của từng nhiệm vụ. Ban Tổ chức sẽ tiến hành kiểm tra, đối chiếu trước khi xác nhận kết quả.\n\nThông tin thêm: SCEX Trading Simulator là nền tảng giao dịch mô phỏng. Mọi giao dịch trên hệ thống đều nhằm mục đích học tập và thực hành, không phát sinh giao dịch tài sản mã hóa thực tế.\n\n──────────\nSCEX - Công ty Cổ phần Sàn giao dịch Tài sản mã hoá SACOM.\nSàn đang trong quá trình nộp hồ sơ cấp phép và xét duyệt từ Bộ Tài Chính, tuân thủ pháp luật Việt Nam và Nghị quyết 05/2025/NQ-CP.\n\n#SCEX #SCEXSimulator #Dautruongtaisanmahoa",
+      "postedAt": "2026-07-28T02:07:38.000Z",
+      "sentiment": "bullish",
+      "hidden": false,
+      "notes": "Official · Điểm chung cuộc không chỉ từ giao dịch · since:2026-07-27 until:2026-08-03",
+      "media": [
+        "https://pbs.twimg.com/media/HOR5JYVasAAL8SX.jpg?name=orig"
+      ],
+      "likes": 18,
+      "reposts": 1,
+      "replies": 3,
+      "views": 913
+    },
+    {
+      "id": "p_2081575260126912874",
+      "handle": "scexofficial",
+      "url": "https://x.com/scexofficial/status/2081575260126912874",
+      "text": "🔥 TUẦN QUYẾT ĐỊNH ĐÃ BẮT ĐẦU - CƠ HỘI CUỐI ĐỂ BỨT PHÁ!\n\nĐấu trường Tài sản mã hóa chính thức bước vào Tuần 4 - tuần thi đấu cuối cùng của toàn bộ chương trình.\n\n🗓 Thời gian: 00:00 Thứ Hai (27/07) – 23:59 Chủ Nhật (02/08)\n\nSau 23:59 Chủ Nhật, đấu trường sẽ chính thức khép lại. Không còn tuần sau, không còn thêm cơ hội nào khác.\n\nĐây là chặng nước rút cuối cùng để tăng tốc, bứt phá trên bảng xếp hạng và cạnh tranh tổng giải thưởng hơn 1,6 tỷ VNĐ.\n\n⚠️ 7 ngày cuối. Một cơ hội cuối. Vào đấu trường ngay:\n👉 https://phocaptaisanso.com/vi\n\nThông tin thêm: SCEX Trading Simulator là nền tảng giao dịch mô phỏng. Mọi giao dịch trên hệ thống đều nhằm mục đích học tập và thực hành, không phát sinh giao dịch tài sản mã hóa thực tế.\n\n──────────\nSCEX - Công ty Cổ phần Sàn giao dịch Tài sản mã hoá SACOM.\nSàn đang trong quá trình nộp hồ sơ cấp phép và xét duyệt từ Bộ Tài Chính, tuân thủ pháp luật Việt Nam và Nghị quyết 05/2025/NQ-CP.\n\n#SCEX #SCEXSimulator #Dautruongtaisanmahoa",
+      "postedAt": "2026-07-27T02:59:50.000Z",
+      "sentiment": "bullish",
+      "hidden": false,
+      "notes": "Official · Tuần quyết định bắt đầu · since:2026-07-27 until:2026-08-03 · không có bài 30/07",
+      "media": [
+        "https://pbs.twimg.com/media/HOM9AZuaEAAtlKo.jpg?name=orig"
+      ],
+      "likes": 19,
+      "reposts": 1,
+      "replies": 2,
+      "views": 1138
+    },
     {
       "id": "p_2080124599636004870",
       "handle": "qwarm1990",

@@ -64,13 +64,13 @@ export type SideEventDataset = {
   note?: string
 }
 
-/** Thiskyhall Sala — Conviction main venue. */
+/** Thiskyhall Sala — Conviction main venue (10 Mai Chí Thọ, Sala). */
 export const SALA_VENUE: MainVenue = {
   name: 'Thiskyhall Sala',
   address:
-    'Thiskyhall Sala Convention Center, Cổng D6/10 Mai Chí Thọ, An Khánh, TP. Hồ Chí Minh',
-  lat: 10.7269,
-  lng: 106.7204,
+    'Thiskyhall Sala Convention Center, 10 Mai Chí Thọ, KĐT Sala, An Khánh, TP. Hồ Chí Minh',
+  lat: 10.771895,
+  lng: 106.721066,
 }
 
 export const EVENT_TYPE_LABELS: Record<SideEventType, string> = {
@@ -113,23 +113,31 @@ function lumaImg(pathId: string): string {
  * Official side events from Luma calendar (excl. main Conviction forum).
  * https://luma.com/conviction-2026 — snapshot 2026-08-03
  */
+/**
+ * Coords notes (2026-08-03):
+ * - Sala: 10times / venue listing 10.771895, 106.721066
+ * - Hilton Saigon: Nominatim
+ * - Chill Skybar / A&B Tower: Photon OSM
+ * - 219 Nguyễn Trãi (Cầu Ông Lãnh): street segment approx.
+ * - 22B Nguyễn Thị Diệu: street geocode D3
+ * - locationTbd: lat/lng kept as Sala placeholder but markers are hidden on map
+ */
 const SIDE_EVENTS: SideEvent[] = [
   {
     id: 'quantum-founder-summit-2026',
     title: 'Quantum Founder Summit 2026: Build. Pitch. Raise.',
     host: 'Moon Ventures',
     venue: 'TP.HCM — TBD',
-    address: 'TP. Hồ Chí Minh (đăng ký Luma để xem địa điểm)',
-    lat: 10.7728,
-    lng: 106.6985,
+    address: 'Chưa công khai — xem trên Luma khi đăng ký',
+    lat: SALA_VENUE.lat,
+    lng: SALA_VENUE.lng,
     date: '2026-08-13',
-    endDate: '2026-08-15',
     startTime: '09:00',
     type: 'conference',
     link: 'https://luma.com/9t56rzat',
     imageUrl: lumaImg('event-social/97/c4f15105-15bd-4239-b355-b0791092d54d.png'),
     description:
-      'Chương trình 3 ngày: networking founder–VC, demo sản phẩm, investor matchmaking, workshop và chung kết Quantum Founder Challenge. Ngày/địa điểm cụ thể hiện trên Luma khi đăng ký.',
+      'Chương trình 3 ngày: networking founder–VC, demo, investor matchmaking, workshop và chung kết Quantum Founder Challenge. Ngày/địa điểm chỉ hiện sau khi đăng ký Luma.',
     dateTbd: true,
     locationTbd: true,
     featured: true,
@@ -139,9 +147,9 @@ const SIDE_EVENTS: SideEvent[] = [
     title: 'Vietnam Onchain',
     host: 'Vietnam Onchain',
     venue: 'TP.HCM — TBD',
-    address: 'TP. Hồ Chí Minh (địa điểm TBD)',
-    lat: 10.7755,
-    lng: 106.7012,
+    address: 'Chưa công khai địa điểm (ngày 13/08 đã xác nhận)',
+    lat: SALA_VENUE.lat,
+    lng: SALA_VENUE.lng,
     date: '2026-08-13',
     startTime: '16:00',
     endTime: '20:00',
@@ -149,7 +157,7 @@ const SIDE_EVENTS: SideEvent[] = [
     link: 'https://luma.com/2cwc66wt',
     imageUrl: lumaImg('event-social/qm/000bf9c4-4dce-4813-8722-d7f8ed05a75c.png'),
     description:
-      'Digital assets, stablecoins, payment infrastructure, DeFi và AI × Crypto.',
+      'Digital assets, stablecoins, payment infrastructure, DeFi và AI × Crypto. Pin map ẩn tới khi có địa điểm.',
     locationTbd: true,
     featured: true,
   },
@@ -159,8 +167,8 @@ const SIDE_EVENTS: SideEvent[] = [
     host: 'Kanga Global University',
     venue: 'ZumWhere Nguyễn Trãi',
     address: '219 Nguyễn Trãi, Cầu Ông Lãnh, TP. Hồ Chí Minh',
-    lat: 10.7668,
-    lng: 106.6908,
+    lat: 10.7635,
+    lng: 106.6868,
     date: '2026-08-13',
     startTime: '18:30',
     endTime: '21:30',
@@ -178,16 +186,16 @@ const SIDE_EVENTS: SideEvent[] = [
       "Building Vietnam's Tokenised Capital Markets: Lessons from Singapore",
     host: 'Hydra X',
     venue: 'TP.HCM — TBD',
-    address: 'TP. Hồ Chí Minh (chưa công khai)',
-    lat: 10.7782,
-    lng: 106.7028,
+    address: 'Chưa công khai ngày giờ địa điểm',
+    lat: SALA_VENUE.lat,
+    lng: SALA_VENUE.lng,
     date: '2026-08-14',
     startTime: '14:00',
     type: 'conference',
     link: 'https://luma.com/kfl0ulwv',
     imageUrl: lumaImg('event-social/i2/7bcd82ac-6f73-4370-9000-b0e37cf413b3.png'),
     description:
-      'Sự kiện riêng cho ngân hàng, công ty chứng khoán và hệ sinh thái tài sản số — bài học từ thị trường tokenised Singapore. Ngày/giờ/địa điểm chưa công khai.',
+      'Sự kiện riêng cho ngân hàng, chứng khoán và hệ sinh thái tài sản số — bài học từ Singapore. Pin map ẩn tới khi công khai.',
     dateTbd: true,
     locationTbd: true,
   },
@@ -196,9 +204,9 @@ const SIDE_EVENTS: SideEvent[] = [
     title: 'Builders Happy Hours HCMC',
     host: 'APAC DAO · Utila · ETHGlobal',
     venue: 'TP.HCM — TBD',
-    address: 'TP. Hồ Chí Minh (địa điểm TBD)',
-    lat: 10.7740,
-    lng: 106.7055,
+    address: 'Chưa công khai ngày/địa điểm (khung giờ dự kiến 16:00–19:00)',
+    lat: SALA_VENUE.lat,
+    lng: SALA_VENUE.lng,
     date: '2026-08-14',
     startTime: '16:00',
     endTime: '19:00',
@@ -206,7 +214,7 @@ const SIDE_EVENTS: SideEvent[] = [
     link: 'https://luma.com/jjnzcz06',
     imageUrl: lumaImg('event-social/3n/e5ca8ad8-03eb-40fd-a0e9-4689182de514.png'),
     description:
-      'Side event buổi tối chính thức: workshop, Q&A và networking. Ngày và địa điểm vẫn TBD trên Luma.',
+      'Side event buổi tối: workshop, Q&A và networking. Ngày + địa điểm vẫn TBD trên Luma.',
     dateTbd: true,
     locationTbd: true,
     featured: true,
@@ -215,10 +223,10 @@ const SIDE_EVENTS: SideEvent[] = [
     id: 'lbank-labs-vip-saigon-nights',
     title: 'LBANK Labs VIP Saigon Nights',
     host: 'LBank Labs',
-    venue: 'Chill Skybar',
-    address: 'Tầng 26–27, AB Tower, 76A Lê Lai, Bến Thành, TP. Hồ Chí Minh',
-    lat: 10.771,
-    lng: 106.698,
+    venue: 'Chill Skybar · A&B Tower',
+    address: 'Tầng 26–27, A&B Tower, 76A Lê Lai, Bến Thành, TP. Hồ Chí Minh',
+    lat: 10.770425,
+    lng: 106.694336,
     date: '2026-08-14',
     startTime: '19:00',
     endTime: '22:00',
@@ -234,16 +242,16 @@ const SIDE_EVENTS: SideEvent[] = [
     title: 'Vietnam Connect by Superteam Vietnam',
     host: 'Superteam Vietnam',
     venue: 'TP.HCM — TBD',
-    address: 'TP. Hồ Chí Minh (cần duyệt đăng ký)',
-    lat: 10.7805,
-    lng: 106.6995,
+    address: 'Chưa công khai — cần duyệt đăng ký Luma',
+    lat: SALA_VENUE.lat,
+    lng: SALA_VENUE.lng,
     date: '2026-08-14',
     startTime: '18:00',
     type: 'meetup',
     link: 'https://luma.com/4cqom8cq',
     imageUrl: lumaImg('event-social/az/f161a0d1-fcf0-4877-a384-fd9c5735e0c9.png'),
     description:
-      'Networking dinner nhỏ cho builders, founders, investors và Solana ecosystem — không sân khấu/pitching. Ngày giờ địa điểm chưa công khai.',
+      'Networking dinner nhỏ cho builders/founders/investors Solana — không sân khấu/pitching.',
     dateTbd: true,
     locationTbd: true,
   },
@@ -253,7 +261,7 @@ const SIDE_EVENTS: SideEvent[] = [
     host: 'Nghiên AI & CONVICTION',
     venue: 'Nghiên AI Stage · Thiskyhall Sala',
     address:
-      'Phòng Solar, Tầng 5, Thiskyhall Sala, Cổng D6/10 Mai Chí Thọ, An Khánh, TP.HCM',
+      'Phòng Solar, Tầng 5, Thiskyhall Sala, 10 Mai Chí Thọ, An Khánh, TP.HCM',
     lat: SALA_VENUE.lat,
     lng: SALA_VENUE.lng,
     date: '2026-08-15',
@@ -263,7 +271,7 @@ const SIDE_EVENTS: SideEvent[] = [
     link: 'https://luma.com/09nj7hiv',
     imageUrl: lumaImg('event-social/t2/e9e790c0-2c9f-42a0-8447-4b2085a7c1e7.png'),
     description:
-      '5 phiên Media / Business / AI Agent với case study thực tế. Check-in từ 08:30. Approval required.',
+      '5 phiên Media / Business / AI Agent. Check-in từ 08:30. Approval required.',
     featured: true,
   },
   {
@@ -271,9 +279,9 @@ const SIDE_EVENTS: SideEvent[] = [
     title: 'OnlyDevs Vietnam',
     host: 'OnlyDevs',
     venue: '22B Nguyễn Thị Diệu',
-    address: '22B Nguyễn Thị Diệu, TP. Hồ Chí Minh',
-    lat: 10.7785,
-    lng: 106.6905,
+    address: '22B Nguyễn Thị Diệu, Quận 3, TP. Hồ Chí Minh',
+    lat: 10.77686,
+    lng: 106.68953,
     date: '2026-08-14',
     startTime: '09:30',
     endTime: '17:30',
@@ -281,7 +289,7 @@ const SIDE_EVENTS: SideEvent[] = [
     link: 'https://luma.com/izmstgd3',
     imageUrl: lumaImg('event-social/52/40f0e361-6a4e-403e-b807-dd02c74a5445.png'),
     description:
-      'Meetup developer: Solana, smart accounts, program security, infrastructure, compiler và AI × Crypto. Yêu cầu GitHub + approval. Ngày cụ thể xác nhận trên Luma.',
+      'Meetup developer: Solana, smart accounts, security, infrastructure, AI × Crypto. GitHub + approval. Ngày xác nhận trên Luma.',
     dateTbd: true,
     featured: true,
   },
@@ -291,8 +299,8 @@ const SIDE_EVENTS: SideEvent[] = [
     host: 'Metaverse Post',
     venue: 'Hilton Saigon',
     address: '11 Công trường Mê Linh, Quận 1, TP. Hồ Chí Minh',
-    lat: 10.7764,
-    lng: 106.7058,
+    lat: 10.775058,
+    lng: 106.705713,
     date: '2026-08-15',
     startTime: '11:00',
     endTime: '18:00',
@@ -311,10 +319,10 @@ export const CONVICTION_EVENTS_SEED: SideEventDataset = {
   event: 'conviction-2026',
   title: 'Conviction 2026 — Side Events Map',
   venue: SALA_VENUE,
-  dateRange: { start: '2026-08-13', end: '2026-08-16' },
+  dateRange: { start: '2026-08-13', end: '2026-08-15' },
   events: SIDE_EVENTS,
-  updatedAt: '2026-08-03T04:00:00.000Z',
-  note: 'Seed from luma.com/conviction-2026 · 2026-08-03 · 10 side events',
+  updatedAt: '2026-08-03T05:00:00.000Z',
+  note: 'Seed luma.com/conviction-2026 · coords verified 2026-08-03 · TBD pins hidden on map',
 }
 
 function isEventType(v: unknown): v is SideEventType {
@@ -427,15 +435,41 @@ export function datesInRange(start: string, end: string): string[] {
   return out
 }
 
+/** Confirmed calendar match only — dateTbd events never match a concrete day. */
 export function eventOccursOnDate(ev: SideEvent, date: string): boolean {
-  if (ev.dateTbd) return true
+  if (ev.dateTbd) return false
   if (ev.date === date) return true
   if (ev.endDate && ev.endDate >= date && ev.date <= date) return true
   return false
 }
 
+/**
+ * Date filter chip matcher.
+ * - `all`: everything
+ * - `tbd`: only events with dateTbd
+ * - `YYYY-MM-DD`: confirmed events on that day (excludes dateTbd)
+ */
+export function matchesDateFilter(ev: SideEvent, filter: string): boolean {
+  if (!filter || filter === 'all') return true
+  if (filter === 'tbd') return !!ev.dateTbd
+  return eventOccursOnDate(ev, filter)
+}
+
 export function eventsOnDate(events: SideEvent[], date: string): SideEvent[] {
   return events.filter((e) => eventOccursOnDate(e, date))
+}
+
+/** Dates that actually have at least one confirmed (non-TBD) event. */
+export function confirmedEventDates(events: SideEvent[]): string[] {
+  const set = new Set<string>()
+  for (const ev of events) {
+    if (ev.dateTbd) continue
+    set.add(ev.date)
+    if (ev.endDate) {
+      for (const d of datesInRange(ev.date, ev.endDate)) set.add(d)
+    }
+  }
+  return [...set].sort()
 }
 
 export function sortEvents(events: SideEvent[]): SideEvent[] {

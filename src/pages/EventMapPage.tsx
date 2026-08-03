@@ -12,11 +12,13 @@ import {
   EVENT_TYPE_COLORS,
   EVENT_TYPE_LABELS,
   EVENT_TYPES,
-  datesInRange,
+  SALA_VENUE,
+  confirmedEventDates,
   directionsUrl,
   eventOccursOnDate,
   eventToIcs,
   formatShortDate,
+  matchesDateFilter,
   shortEventTitle,
   sortEvents,
   toSquareImageUrl,
@@ -271,6 +273,9 @@ function popupHtml(ev: SideEvent, opts: { live: boolean; today: boolean }): stri
   const reg = ev.link
     ? `<a href="${ev.link}" target="_blank" rel="noopener noreferrer">Đăng ký Luma</a>`
     : ''
+  const directions = ev.locationTbd
+    ? ''
+    : `<a href="${directionsUrl(ev.lat, ev.lng)}" target="_blank" rel="noopener noreferrer">Chỉ đường</a>`
   const img = ev.imageUrl
     ? `<img class="emp-popup__img" src="${escapeHtml(toSquareImageUrl(ev.imageUrl, 320))}" alt="" loading="lazy" referrerpolicy="no-referrer" />`
     : ''
@@ -284,7 +289,7 @@ function popupHtml(ev: SideEvent, opts: { live: boolean; today: boolean }): stri
       <p class="emp-popup__row">${escapeHtml([ev.venue, ev.address].filter(Boolean).join(' — '))}</p>
       ${ev.description ? `<p class="emp-popup__row">${escapeHtml(ev.description)}</p>` : ''}
       <div class="emp-popup__actions">
-        <a href="${directionsUrl(ev.lat, ev.lng)}" target="_blank" rel="noopener noreferrer">Chỉ đường</a>
+        ${directions}
         ${reg}
         <button type="button" data-ics="${escapeHtml(ev.id)}">Thêm lịch</button>
       </div>
@@ -356,7 +361,11 @@ export function EventMapPage() {
   const [mapReady, setMapReady] = useState(false)
   const [view3d, setView3d] = useState(true)
   const view3dRef = useRef(true)
-  const venueRef = useRef({ lng: 106.7204, lat: 10.7269, name: 'Thiskyhall Sala' })
+  const venueRef = useRef({
+    lng: SALA_VENUE.lng,
+    lat: SALA_VENUE.lat,
+    name: SALA_VENUE.name,
+  })
 
   const today = todayVn()
   const nowHm = nowHmVn()
@@ -376,7 +385,25 @@ export function EventMapPage() {
 
   const dates = useMemo(() => {
     if (!dataset) return []
-    return datesInRange(dataset.dateRange.start, dataset.dateRange.end)
+    const fromEvents = confirmedEventDates(dataset.events)
+    return fromEvents.length
+      ? fromEvents
+      : [dataset.dateRange.start, dataset.dateRange.end].filter(Boolean)
+  }, [dataset])
+
+  const tbdDateCount = useMemo(
+    () => (dataset ? dataset.events.filter((e) => e.dateTbd).length : 0),
+    [dataset],
+  )
+
+  const typeCounts = useMemo(() => {
+    const m = new Map<SideEventType, number>()
+    if (!dataset) return m
+    for (const t of EVENT_TYPES) m.set(t, 0)
+    for (const ev of dataset.events) {
+      m.set(ev.type, (m.get(ev.type) || 0) + 1)
+    }
+    return m
   }, [dataset])
 
   const filtered = useMemo(() => {
@@ -384,7 +411,7 @@ export function EventMapPage() {
     const q = query.trim().toLowerCase()
     return sortEvents(
       dataset.events.filter((ev) => {
-        if (dateFilter !== 'all' && !eventOccursOnDate(ev, dateFilter)) return false
+        if (!matchesDateFilter(ev, dateFilter)) return false
         if (typeFilter !== 'all' && ev.type !== typeFilter) return false
         if (freeOnly && !ev.free) return false
         if (q) {
@@ -396,14 +423,26 @@ export function EventMapPage() {
     )
   }, [dataset, dateFilter, typeFilter, freeOnly, query])
 
+  /** Only pin events with a public venue — never fake TBD locations. */
+  const mapEvents = useMemo(
+    () => filtered.filter((ev) => !ev.locationTbd),
+    [filtered],
+  )
+
   const grouped = useMemo(() => {
     const map = new Map<string, SideEvent[]>()
     for (const ev of filtered) {
-      const list = map.get(ev.date) || []
+      const key = ev.dateTbd ? 'tbd' : ev.date
+      const list = map.get(key) || []
       list.push(ev)
-      map.set(ev.date, list)
+      map.set(key, list)
     }
-    return [...map.entries()]
+    const keys = [...map.keys()].sort((a, b) => {
+      if (a === 'tbd') return 1
+      if (b === 'tbd') return -1
+      return a.localeCompare(b)
+    })
+    return keys.map((k) => [k, map.get(k)!] as const)
   }, [filtered])
 
   const countsByDate = useMemo(() => {
@@ -425,8 +464,8 @@ export function EventMapPage() {
     const map = new maplibregl.Map({
       container,
       style: MAP_STYLE,
-      center: [106.7204, 10.7269],
-      zoom: 13.2,
+      center: [SALA_VENUE.lng, SALA_VENUE.lat],
+      zoom: 12.4,
       pitch: 48,
       bearing: -20,
       maxPitch: 70,
@@ -544,10 +583,20 @@ export function EventMapPage() {
   const selectEvent = (ev: SideEvent, fly = true) => {
     setSelectedId(ev.id)
     const map = mapRef.current
-    if (map && fly) {
-      map.flyTo({ center: [ev.lng, ev.lat], zoom: Math.max(map.getZoom(), 14), speed: 1.1 })
+    if (map && fly && !ev.locationTbd) {
+      map.flyTo({
+        center: [ev.lng, ev.lat],
+        zoom: Math.max(map.getZoom(), 14.2),
+        speed: 1.1,
+        pitch: view3dRef.current ? 52 : 0,
+      })
+      openPopup(ev)
+    } else if (ev.locationTbd) {
+      popupRef.current?.remove()
+      popupRef.current = null
+    } else if (map) {
+      openPopup(ev)
     }
-    openPopup(ev)
     const el = listRefs.current.get(ev.id)
     el?.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
   }
@@ -597,7 +646,7 @@ export function EventMapPage() {
       venueMarkerRef.current.setLngLat([dataset.venue.lng, dataset.venue.lat])
     }
 
-    const keep = new Set(filtered.map((e) => e.id))
+    const keep = new Set(mapEvents.map((e) => e.id))
     for (const [id, marker] of markersRef.current) {
       if (!keep.has(id)) {
         marker.remove()
@@ -605,7 +654,7 @@ export function EventMapPage() {
       }
     }
 
-    for (const ev of filtered) {
+    for (const ev of mapEvents) {
       const existing = markersRef.current.get(ev.id)
       const pinKey = `${ev.imageUrl || ''}|${ev.title}|${ev.type}|${ev.featured ? 1 : 0}`
       if (!existing || existing.getElement().dataset.pinKey !== pinKey) {
@@ -626,8 +675,25 @@ export function EventMapPage() {
         existing.getElement().classList.toggle('is-active', selectedId === ev.id)
       }
     }
+
+    // Fit map to visible confirmed pins + main venue (skip while a pin is selected).
+    if (!selectedId && mapEvents.length) {
+      const bounds = new maplibregl.LngLatBounds()
+      bounds.extend([dataset.venue.lng, dataset.venue.lat])
+      for (const ev of mapEvents) bounds.extend([ev.lng, ev.lat])
+      try {
+        map.fitBounds(bounds, {
+          padding: { top: 72, bottom: 72, left: 48, right: 48 },
+          maxZoom: 14.2,
+          duration: 700,
+          pitch: view3dRef.current ? 48 : 0,
+        })
+      } catch {
+        /* ignore */
+      }
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- selectEvent closes over latest; markers sync on filter/selection
-  }, [dataset, filtered, mapReady, selectedId])
+  }, [dataset, mapEvents, mapReady, selectedId])
 
   return (
     <div className="emp">
@@ -686,7 +752,7 @@ export function EventMapPage() {
             className={`emp__chip ${dateFilter === 'all' ? 'is-active' : ''}`}
             onClick={() => setDateFilter('all')}
           >
-            Tất cả ngày
+            Tất cả ({dataset?.events.length ?? 0})
           </button>
           {dates.map((d) => (
             <button
@@ -695,11 +761,19 @@ export function EventMapPage() {
               className={`emp__chip ${dateFilter === d ? 'is-active is-active--gold' : ''}`}
               onClick={() => setDateFilter(d)}
             >
-              {formatShortDate(d)}
-              {countsByDate.get(d) ? ` (${countsByDate.get(d)})` : ''}
+              {formatShortDate(d)} ({countsByDate.get(d) || 0})
               {d === today ? ' · hôm nay' : ''}
             </button>
           ))}
+          {tbdDateCount > 0 && (
+            <button
+              type="button"
+              className={`emp__chip ${dateFilter === 'tbd' ? 'is-active' : ''}`}
+              onClick={() => setDateFilter('tbd')}
+            >
+              Ngày TBD ({tbdDateCount})
+            </button>
+          )}
         </div>
         <div className="emp__filter-row">
           <button
@@ -709,7 +783,7 @@ export function EventMapPage() {
           >
             Mọi loại
           </button>
-          {EVENT_TYPES.map((t) => (
+          {EVENT_TYPES.filter((t) => (typeCounts.get(t) || 0) > 0).map((t) => (
             <button
               key={t}
               type="button"
@@ -721,7 +795,7 @@ export function EventMapPage() {
                   : undefined
               }
             >
-              {EVENT_TYPE_LABELS[t]}
+              {EVENT_TYPE_LABELS[t]} ({typeCounts.get(t)})
             </button>
           ))}
           <button
@@ -738,7 +812,12 @@ export function EventMapPage() {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
           />
-          <span className="emp__meta">{filtered.length} sự kiện</span>
+          <span className="emp__meta">
+            {filtered.length} sự kiện
+            {mapEvents.length < filtered.length
+              ? ` · ${mapEvents.length} trên map`
+              : ''}
+          </span>
         </div>
       </div>
 
@@ -754,28 +833,22 @@ export function EventMapPage() {
           <div className="emp__panel-head">
             <h2>Lịch side events</h2>
             <p>
-              10 side events từ{' '}
-              <a
-                href="https://luma.com/conviction-2026"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                Luma calendar
-              </a>{' '}
-              · Chỉ đường / Đăng ký / .ics
+              Luma calendar · sự kiện chưa có địa điểm chỉ hiện trong list (không
+              pin giả trên map)
             </p>
           </div>
           <div className="emp__list">
             {!filtered.length && (
               <div className="emp__empty">
-                Không có sự kiện khớp bộ lọc. Thử đổi ngày hoặc bỏ “Chỉ Free”.
+                Không có sự kiện khớp bộ lọc. Thử “Tất cả” hoặc bỏ “Chỉ Free”.
               </div>
             )}
             {grouped.map(([date, list]) => (
               <div key={date}>
                 <div className="emp__day-label">
-                  {formatShortDate(date)}
-                  {date === today ? ' · Hôm nay' : ''}
+                  {date === 'tbd'
+                    ? 'Ngày TBD'
+                    : `${formatShortDate(date)}${date === today ? ' · Hôm nay' : ''}`}
                 </div>
                 {list.map((ev) => {
                   const live = isLive(ev, today, nowHm)

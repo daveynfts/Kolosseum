@@ -1802,22 +1802,118 @@
 
 .emp-popup__actions {
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.4rem;
-  margin-top: 0.75rem;
+  justify-content: center;
+  align-items: stretch;
+  gap: 0.55rem;
+  margin-top: 0.85rem;
   position: sticky;
   bottom: 0;
-  padding-top: 0.35rem;
+  padding-top: 0.45rem;
   background: linear-gradient(
     180deg,
     transparent 0%,
-    rgba(8, 8, 12, 0.92) 28%
+    rgba(8, 8, 12, 0.94) 32%
   );
 }
 
-.emp-popup__actions a,
-.emp-popup__actions button {
+.emp-popup__act {
   appearance: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
+  width: 84px;
+  height: 84px;
+  flex: 0 0 84px;
+  padding: 0.45rem 0.35rem;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  text-decoration: none;
+  cursor: pointer;
+  font-family: var(--emp-font);
+  box-sizing: border-box;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    transform 0.1s ease,
+    box-shadow 0.15s ease;
+  background:
+    linear-gradient(
+      160deg,
+      rgba(255, 255, 255, 0.1) 0%,
+      rgba(255, 255, 255, 0.03) 100%
+    ),
+    rgba(255, 255, 255, 0.04);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.14),
+    0 4px 12px rgba(0, 0, 0, 0.18);
+}
+
+.emp-popup__act-ico {
+  font-size: 1.15rem;
+  line-height: 1;
+  font-weight: 600;
+  opacity: 0.95;
+}
+
+.emp-popup__act-label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.15;
+  text-align: center;
+}
+
+.emp-popup__act--map {
+  color: #9ec9ff;
+  border-color: rgba(0, 145, 255, 0.28);
+  background:
+    linear-gradient(
+      160deg,
+      rgba(0, 145, 255, 0.22) 0%,
+      rgba(0, 113, 227, 0.1) 100%
+    ),
+    rgba(0, 60, 140, 0.12);
+}
+
+.emp-popup__act--reg {
+  color: #d4f5e0;
+  border-color: rgba(52, 199, 89, 0.3);
+  background:
+    linear-gradient(
+      160deg,
+      rgba(52, 199, 89, 0.2) 0%,
+      rgba(52, 199, 89, 0.08) 100%
+    ),
+    rgba(20, 80, 40, 0.12);
+}
+
+.emp-popup__act--disabled {
+  color: var(--emp-muted);
+  cursor: default;
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+.emp-popup__act:hover:not(.emp-popup__act--disabled) {
+  transform: translateY(-1px);
+  border-color: rgba(255, 255, 255, 0.28);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.22),
+    0 8px 18px rgba(0, 0, 0, 0.28);
+}
+
+.emp-popup__act:active:not(.emp-popup__act--disabled) {
+  transform: scale(0.97);
+}
+
+/* Venue popup: keep compact pill links if plain <a> without act class */
+.emp-popup__actions > a:not(.emp-popup__act) {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   border: 1px solid var(--emp-border);
   background: var(--emp-surface-2);
   color: var(--emp-text);
@@ -1826,20 +1922,9 @@
   font-size: 0.78rem;
   font-weight: 650;
   text-decoration: none;
-  cursor: pointer;
-  font-family: var(--emp-font);
-}
-
-.emp-popup__actions a:first-child {
-  background: var(--emp-accent-soft);
-  border-color: rgba(0, 113, 227, 0.35);
-  color: #9ec9ff;
-}
-
-.emp-popup__actions a:hover,
-.emp-popup__actions button:hover {
-  border-color: rgba(0, 113, 227, 0.45);
-  background: var(--emp-accent-soft);
+  aspect-ratio: auto;
+  max-height: none;
+  min-height: 0;
 }
 
 .emp-toggle-list {

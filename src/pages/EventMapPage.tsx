@@ -187,11 +187,11 @@ function popupHtml(
     .filter(Boolean)
     .join(' ')
   const reg = ev.link
-    ? `<a href="${ev.link}" target="_blank" rel="noopener noreferrer">Đăng ký Luma</a>`
-    : ''
+    ? `<a class="emp-popup__act emp-popup__act--reg" href="${ev.link}" target="_blank" rel="noopener noreferrer"><span class="emp-popup__act-ico" aria-hidden="true">✦</span><span class="emp-popup__act-label">Đăng ký</span></a>`
+    : `<span class="emp-popup__act emp-popup__act--disabled"><span class="emp-popup__act-ico" aria-hidden="true">✦</span><span class="emp-popup__act-label">Đăng ký</span></span>`
   const directions = ev.locationTbd
-    ? `<a href="${directionsUrl(SALA_VENUE.lat, SALA_VENUE.lng)}" target="_blank" rel="noopener noreferrer">Chỉ đường (venue chính)</a>`
-    : `<a href="${directionsUrl(ev.lat, ev.lng)}" target="_blank" rel="noopener noreferrer">Chỉ đường</a>`
+    ? `<a class="emp-popup__act emp-popup__act--map" href="${directionsUrl(SALA_VENUE.lat, SALA_VENUE.lng)}" target="_blank" rel="noopener noreferrer"><span class="emp-popup__act-ico" aria-hidden="true">↗</span><span class="emp-popup__act-label">Chỉ đường</span></a>`
+    : `<a class="emp-popup__act emp-popup__act--map" href="${directionsUrl(ev.lat, ev.lng)}" target="_blank" rel="noopener noreferrer"><span class="emp-popup__act-ico" aria-hidden="true">↗</span><span class="emp-popup__act-label">Chỉ đường</span></a>`
   const img = ev.imageUrl
     ? `<img class="emp-popup__img" src="${escapeHtml(toSquareImageUrl(ev.imageUrl, 640))}" alt="" loading="lazy" referrerpolicy="no-referrer" />`
     : ''
@@ -220,7 +220,6 @@ function popupHtml(
         <div class="emp-popup__actions">
           ${directions}
           ${reg}
-          <button type="button" data-ics="${escapeHtml(ev.id)}">Thêm lịch</button>
         </div>
       </div>
     </div>
@@ -790,14 +789,6 @@ export function EventMapPage() {
         }),
       )
       .addTo(map)
-    popup.getElement()?.addEventListener('click', (e: MouseEvent) => {
-      const t = e.target as HTMLElement | null
-      const btn = t?.closest?.('[data-ics]') as HTMLElement | null
-      if (btn) {
-        e.preventDefault()
-        downloadIcs(ev)
-      }
-    })
     popupRef.current = popup
     // Layout then pan so card is not clipped by edges / sheet
     requestAnimationFrame(() => {

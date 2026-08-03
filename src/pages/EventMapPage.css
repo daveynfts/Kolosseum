@@ -1,3 +1,61 @@
+/* Distance spokes / midpoint labels on map */
+.emp-dist-label {
+  pointer-events: none;
+  z-index: 1;
+}
+
+.emp-dist-label__text {
+  display: inline-block;
+  padding: 0.2rem 0.45rem;
+  border-radius: 980px;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
+  color: #eaf3ff;
+  white-space: nowrap;
+  background: rgba(0, 113, 227, 0.88);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.emp-dist-origin {
+  width: 22px;
+  height: 22px;
+  position: relative;
+  pointer-events: none;
+}
+
+.emp-dist-origin__core {
+  position: absolute;
+  inset: 5px;
+  border-radius: 50%;
+  background: #0071e3;
+  border: 2px solid rgba(255, 255, 255, 0.9);
+  box-shadow: 0 0 0 2px rgba(0, 113, 227, 0.35);
+}
+
+.emp-dist-origin__ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px solid rgba(0, 113, 227, 0.55);
+  animation: emp-dist-pulse 1.8s ease-out infinite;
+}
+
+@keyframes emp-dist-pulse {
+  0% {
+    transform: scale(0.7);
+    opacity: 0.9;
+  }
+  100% {
+    transform: scale(1.85);
+    opacity: 0;
+  }
+}
+
 /**
  * DaveyNFTs Hub design language (daveynfts.com)
  * Tokens mirrored from production CSS: Inter + Be Vietnam Pro, #030305,

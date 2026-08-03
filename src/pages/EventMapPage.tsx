@@ -1,6 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import * as maplibregl from 'maplibre-gl'
-import type { Map as MapLibreMap, Marker, Popup } from 'maplibre-gl'
+import type {
+  GeoJSONSource,
+  Map as MapLibreMap,
+  Marker,
+  Popup,
+} from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import {
   EVENT_TYPE_COLORS,
@@ -12,7 +17,9 @@ import {
   eventDistanceKm,
   eventOccursOnDate,
   formatDayNum,
+  formatDistanceKm,
   formatDistanceWithWalk,
+  formatWalkEta,
   formatLumaDay,
   formatLumaTime,
   formatMonthYearVi,
@@ -316,10 +323,13 @@ export function EventMapPage() {
   const mapEl = useRef<HTMLDivElement>(null)
   const mapRef = useRef<MapLibreMap | null>(null)
   const markersRef = useRef<Map<string, Marker>>(new Map())
+  const distLabelMarkersRef = useRef<Map<string, Marker>>(new Map())
+  const originHubRef = useRef<Marker | null>(null)
   const venueMarkerRef = useRef<Marker | null>(null)
   const popupRef = useRef<Popup | null>(null)
   const listRefs = useRef<Map<string, HTMLElement>>(new Map())
   const deepLinkApplied = useRef(false)
+  const distLayersReady = useRef(false)
   /** Only auto-fit when filter set changes — never fight user zoom/pan. */
   const lastFitKeyRef = useRef<string>('')
   const userMovedMapRef = useRef(false)
@@ -535,6 +545,34 @@ export function EventMapPage() {
     [filtered],
   )
 
+  /** Spokes origin → visible events (for on-map lines + midpoint labels). */
+  const distanceSpokes = useMemo(() => {
+    const origin = distanceFrom
+    const rows: Array<{
+      id: string
+      lng: number
+      lat: number
+      km: number
+      shortLabel: string
+      fullLabel: string
+    }> = []
+    for (const ev of mapEvents) {
+      if (distOrigin === 'selected' && ev.id === selectedId) continue
+      const km = eventDistanceKm(origin, ev)
+      if (km == null) continue
+      rows.push({
+        id: ev.id,
+        lng: ev.lng,
+        lat: ev.lat,
+        km,
+        shortLabel: `${formatDistanceKm(km)} · ${formatWalkEta(km)}`,
+        fullLabel: formatDistanceWithWalk(km, origin.label),
+      })
+    }
+    rows.sort((a, b) => a.km - b.km)
+    return rows
+  }, [mapEvents, distanceFrom, distOrigin, selectedId])
+
   const grouped = useMemo(() => {
     const map = new Map<string, SideEvent[]>()
     for (const ev of filtered) {
@@ -685,8 +723,13 @@ export function EventMapPage() {
       popupRef.current = null
       for (const m of markers.values()) m.remove()
       markers.clear()
+      for (const m of distLabelMarkersRef.current.values()) m.remove()
+      distLabelMarkersRef.current.clear()
+      originHubRef.current?.remove()
+      originHubRef.current = null
       venueMarkerRef.current?.remove()
       venueMarkerRef.current = null
+      distLayersReady.current = false
       map.remove()
       mapRef.current = null
       setMapReady(false)
@@ -809,6 +852,151 @@ export function EventMapPage() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dataset, mapReady])
+
+  function ensureDistanceLayers(map: MapLibreMap) {
+    if (distLayersReady.current && map.getSource('emp-dist')) return
+    if (!map.getSource('emp-dist')) {
+      map.addSource('emp-dist', {
+        type: 'geojson',
+        data: { type: 'FeatureCollection', features: [] },
+      })
+    }
+    if (!map.getLayer('emp-dist-glow')) {
+      map.addLayer({
+        id: 'emp-dist-glow',
+        type: 'line',
+        source: 'emp-dist',
+        filter: ['==', ['get', 'kind'], 'line'],
+        paint: {
+          'line-color': '#0071e3',
+          'line-width': 4,
+          'line-opacity': 0.18,
+          'line-blur': 2,
+        },
+      })
+    }
+    if (!map.getLayer('emp-dist-line')) {
+      map.addLayer({
+        id: 'emp-dist-line',
+        type: 'line',
+        source: 'emp-dist',
+        filter: ['==', ['get', 'kind'], 'line'],
+        paint: {
+          'line-color': '#5eb0ff',
+          'line-width': 1.6,
+          'line-opacity': 0.72,
+          'line-dasharray': [1.2, 1.6],
+        },
+      })
+    }
+    distLayersReady.current = true
+  }
+
+  // Draw distance spokes + midpoint labels on map
+  useEffect(() => {
+    const map = mapRef.current
+    if (!map || !mapReady) return
+
+    try {
+      ensureDistanceLayers(map)
+    } catch {
+      /* style not ready */
+      return
+    }
+
+    const originLng = distanceFrom.lng
+    const originLat = distanceFrom.lat
+    const features: GeoJSON.Feature[] = []
+
+    // Cap labels to nearest N to keep map readable; still draw all lines
+    const labelCap = 14
+    const labelIds = new Set(
+      distanceSpokes.slice(0, labelCap).map((s) => s.id),
+    )
+
+    for (const s of distanceSpokes) {
+      features.push({
+        type: 'Feature',
+        properties: { kind: 'line', id: s.id, km: s.km },
+        geometry: {
+          type: 'LineString',
+          coordinates: [
+            [originLng, originLat],
+            [s.lng, s.lat],
+          ],
+        },
+      })
+    }
+
+    const src = map.getSource('emp-dist') as GeoJSONSource | undefined
+    src?.setData({ type: 'FeatureCollection', features })
+
+    // HTML midpoint labels (reliable without map glyphs)
+    const keep = new Set(Array.from(labelIds))
+    for (const [id, marker] of distLabelMarkersRef.current) {
+      if (!keep.has(id)) {
+        marker.remove()
+        distLabelMarkersRef.current.delete(id)
+      }
+    }
+
+    for (const s of distanceSpokes) {
+      if (!labelIds.has(s.id)) continue
+      const midLng = (originLng + s.lng) / 2
+      const midLat = (originLat + s.lat) / 2
+      let marker = distLabelMarkersRef.current.get(s.id)
+      if (!marker) {
+        const el = document.createElement('div')
+        el.className = 'emp-dist-label'
+        el.innerHTML = `<span class="emp-dist-label__text"></span>`
+        marker = new maplibregl.Marker({
+          element: el,
+          anchor: 'center',
+        })
+          .setLngLat([midLng, midLat])
+          .addTo(map)
+        distLabelMarkersRef.current.set(s.id, marker)
+      } else {
+        marker.setLngLat([midLng, midLat])
+      }
+      const text = marker
+        .getElement()
+        .querySelector('.emp-dist-label__text') as HTMLElement | null
+      if (text) {
+        text.textContent = s.shortLabel
+        marker.getElement().title = s.fullLabel
+      }
+    }
+  }, [mapReady, distanceSpokes, distanceFrom])
+
+  // Origin hub only when measuring from "me" or selected event
+  // (Conviction venue already has the gold pin)
+  useEffect(() => {
+    const map = mapRef.current
+    if (!map || !mapReady) return
+    const showHub = distOrigin === 'me' || distOrigin === 'selected'
+    if (!showHub) {
+      originHubRef.current?.remove()
+      originHubRef.current = null
+      return
+    }
+    if (!originHubRef.current) {
+      const el = document.createElement('div')
+      el.className = 'emp-dist-origin'
+      el.innerHTML =
+        '<span class="emp-dist-origin__ring"></span><span class="emp-dist-origin__core"></span>'
+      el.title = `Gốc đo: ${distanceFrom.label}`
+      originHubRef.current = new maplibregl.Marker({
+        element: el,
+        anchor: 'center',
+      })
+        .setLngLat([distanceFrom.lng, distanceFrom.lat])
+        .addTo(map)
+    } else {
+      originHubRef.current.setLngLat([distanceFrom.lng, distanceFrom.lat])
+      originHubRef.current.getElement().title = `Gốc đo: ${distanceFrom.label}`
+    }
+  }, [mapReady, distanceFrom, distOrigin])
 
   // Sync markers
   useEffect(() => {
@@ -1252,7 +1440,13 @@ export function EventMapPage() {
             <div className="emp__loading">Đang tải bản đồ…</div>
           )}
           <div className="emp__map-hint" aria-hidden>
-            Pin vàng = Thiskyhall Sala · Click pin / list để chỉ đường
+            Đường nét đứt = khoảng cách từ{' '}
+            {distOrigin === 'me'
+              ? 'bạn'
+              : distOrigin === 'selected'
+                ? 'event đang chọn'
+                : 'Conviction'}{' '}
+            · nhãn km + phút đi bộ
           </div>
         </div>
 

@@ -188,14 +188,23 @@ function popupHtml(
   `
 }
 
+/**
+ * Marker DOM for MapLibre.
+ * IMPORTANT: never set CSS `transform` on the root element — MapLibre owns
+ * that for lat/lng placement. Hover/scale only on an inner wrapper.
+ */
 function buildLumaPinEl(ev: SideEvent, live: boolean): HTMLDivElement {
   const root = document.createElement('div')
   root.className = `emp-pin${ev.featured ? ' emp-pin--featured' : ''}${live ? ' emp-pin--live' : ''}`
   root.title = ev.title
 
+  const visual = document.createElement('div')
+  visual.className = 'emp-pin__visual'
+
   const imgWrap = document.createElement('div')
   imgWrap.className = 'emp-pin__img'
-  imgWrap.style.borderColor = EVENT_TYPE_COLORS[ev.type] || EVENT_TYPE_COLORS.other
+  imgWrap.style.borderColor =
+    EVENT_TYPE_COLORS[ev.type] || EVENT_TYPE_COLORS.other
 
   if (ev.imageUrl) {
     const img = document.createElement('img')
@@ -219,8 +228,9 @@ function buildLumaPinEl(ev: SideEvent, live: boolean): HTMLDivElement {
   label.className = 'emp-pin__label'
   label.textContent = shortEventTitle(ev.title, 26)
 
-  root.appendChild(imgWrap)
-  root.appendChild(label)
+  visual.appendChild(imgWrap)
+  visual.appendChild(label)
+  root.appendChild(visual)
   return root
 }
 
@@ -244,6 +254,9 @@ export function EventMapPage() {
   const popupRef = useRef<Popup | null>(null)
   const listRefs = useRef<Map<string, HTMLButtonElement>>(new Map())
   const deepLinkApplied = useRef(false)
+  /** Only auto-fit when filter set changes — never fight user zoom/pan. */
+  const lastFitKeyRef = useRef<string>('')
+  const userMovedMapRef = useRef(false)
 
   const initialParams = useMemo(() => parseEventMapParams(), [])
 
@@ -459,6 +472,26 @@ export function EventMapPage() {
     return m
   }, [dataset, dates])
 
+  // Lock page scroll while on event map (pinch-zoom was scrolling the whole UI)
+  useEffect(() => {
+    const html = document.documentElement
+    const body = document.body
+    const prevHtml = html.style.overflow
+    const prevBody = body.style.overflow
+    const prevHtmlH = html.style.height
+    const prevBodyH = body.style.height
+    html.style.overflow = 'hidden'
+    body.style.overflow = 'hidden'
+    html.style.height = '100%'
+    body.style.height = '100%'
+    return () => {
+      html.style.overflow = prevHtml
+      body.style.overflow = prevBody
+      html.style.height = prevHtmlH
+      body.style.height = prevBodyH
+    }
+  }, [])
+
   // Init map — 2D only
   useEffect(() => {
     const container = mapEl.current
@@ -476,7 +509,15 @@ export function EventMapPage() {
       maxPitch: 0,
       maxBounds: HCMC_BOUNDS,
       attributionControl: { compact: true },
+      // Avoid browser page zoom fighting map zoom on some trackpads
+      cooperativeGestures: false,
+      dragRotate: false,
+      pitchWithRotate: false,
+      touchPitch: false,
     })
+    map.dragRotate.disable()
+    map.touchZoomRotate.disableRotation()
+
     map.addControl(
       new maplibregl.NavigationControl({
         showCompass: false,
@@ -492,18 +533,31 @@ export function EventMapPage() {
       'top-right',
     )
 
+    const safeResize = () => {
+      try {
+        map.resize()
+      } catch {
+        /* ignore */
+      }
+    }
+
     const markReady = () => {
       if (cancelled || ready) return
       ready = true
       setMapReady(true)
-      requestAnimationFrame(() => {
-        try {
-          map.resize()
-        } catch {
-          /* ignore */
-        }
-      })
+      requestAnimationFrame(safeResize)
     }
+
+    // User zoom/pan → stop auto fitBounds until filters change
+    const onUserMove = () => {
+      userMovedMapRef.current = true
+    }
+    map.on('dragstart', onUserMove)
+    map.on('zoomstart', (e) => {
+      // programmatic zoom also fires; only flag if originalEvent from user
+      if (e.originalEvent) userMovedMapRef.current = true
+    })
+    map.on('rotatestart', onUserMove)
 
     map.once('load', markReady)
     map.once('idle', markReady)
@@ -516,19 +570,29 @@ export function EventMapPage() {
     mapRef.current = map
     const markers = markersRef.current
 
-    const onWinResize = () => {
-      try {
-        map.resize()
-      } catch {
-        /* ignore */
-      }
-    }
+    const onWinResize = () => safeResize()
     window.addEventListener('resize', onWinResize)
+    window.addEventListener('orientationchange', onWinResize)
+
+    // Container size changes (mobile sheet open/close) without window resize
+    let ro: ResizeObserver | null = null
+    if (typeof ResizeObserver !== 'undefined') {
+      ro = new ResizeObserver(() => {
+        // rAF: wait for layout paint after sheet max-height transition
+        requestAnimationFrame(safeResize)
+      })
+      ro.observe(container)
+      const body = container.closest('.emp__body')
+      if (body) ro.observe(body)
+    }
 
     return () => {
       cancelled = true
       window.clearTimeout(fallbackTimer)
       window.removeEventListener('resize', onWinResize)
+      window.removeEventListener('orientationchange', onWinResize)
+      ro?.disconnect()
+      map.off('dragstart', onUserMove)
       popupRef.current?.remove()
       popupRef.current = null
       for (const m of markers.values()) m.remove()
@@ -578,12 +642,15 @@ export function EventMapPage() {
     if (isMobileViewport() && sheetMode === 'peek') setSheetMode('half')
     const map = mapRef.current
     if (map && fly && !ev.locationTbd) {
+      // Programmatic camera — don't treat as user-break of fit
+      userMovedMapRef.current = false
       map.flyTo({
         center: [ev.lng, ev.lat],
         zoom: Math.max(map.getZoom(), 14.4),
         speed: 1.15,
         pitch: 0,
         bearing: 0,
+        essential: true,
       })
       openPopup(ev)
     } else if (ev.locationTbd) {
@@ -595,6 +662,20 @@ export function EventMapPage() {
     const el = listRefs.current.get(ev.id)
     el?.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
   }
+
+  // When mobile sheet height changes, resize map canvas
+  useEffect(() => {
+    const map = mapRef.current
+    if (!map || !mapReady) return
+    const t = window.setTimeout(() => {
+      try {
+        map.resize()
+      } catch {
+        /* ignore */
+      }
+    }, 300)
+    return () => window.clearTimeout(t)
+  }, [sheetMode, mapReady])
 
   // Apply deep-link selection once data + map ready
   useEffect(() => {
@@ -677,20 +758,44 @@ export function EventMapPage() {
       }
     }
 
-    if (!selectedId && mapEvents.length) {
-      const bounds = new maplibregl.LngLatBounds()
-      bounds.extend([dataset.venue.lng, dataset.venue.lat])
-      for (const ev of mapEvents) bounds.extend([ev.lng, ev.lat])
-      try {
-        map.fitBounds(bounds, {
-          padding: { top: 64, bottom: isMobileViewport() ? 220 : 64, left: 40, right: 40 },
-          maxZoom: 14.2,
-          duration: 650,
-          pitch: 0,
-          bearing: 0,
-        })
-      } catch {
-        /* ignore */
+    // Auto-fit only when filter set changes (not after user zoom/pan)
+    const fitKey = `${dateFilter}|${typeFilter}|${freeOnly}|${query}|${mapEvents.map((e) => e.id).join(',')}`
+    const shouldFit =
+      mapEvents.length > 0 &&
+      !selectedId &&
+      fitKey !== lastFitKeyRef.current &&
+      !userMovedMapRef.current
+
+    if (shouldFit || (mapEvents.length > 0 && lastFitKeyRef.current === '')) {
+      // Always fit on first paint; later only when filter key changes and user hasn't moved
+      const first = lastFitKeyRef.current === ''
+      if (first || fitKey !== lastFitKeyRef.current) {
+        if (first || !userMovedMapRef.current) {
+          lastFitKeyRef.current = fitKey
+          userMovedMapRef.current = false
+          const bounds = new maplibregl.LngLatBounds()
+          bounds.extend([dataset.venue.lng, dataset.venue.lat])
+          for (const ev of mapEvents) bounds.extend([ev.lng, ev.lat])
+          try {
+            map.fitBounds(bounds, {
+              padding: {
+                top: 64,
+                bottom: isMobileViewport() ? 200 : 64,
+                left: 40,
+                right: 40,
+              },
+              maxZoom: 14.2,
+              duration: first ? 650 : 500,
+              pitch: 0,
+              bearing: 0,
+              essential: true,
+            })
+          } catch {
+            /* ignore */
+          }
+        } else {
+          lastFitKeyRef.current = fitKey
+        }
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -699,6 +804,8 @@ export function EventMapPage() {
   const setDate = (d: string) => {
     setDateFilter(d)
     setSelectedId(null)
+    userMovedMapRef.current = false
+    lastFitKeyRef.current = '' // force re-fit for new day filter
   }
 
   const cycleSheet = () => {
@@ -848,7 +955,11 @@ export function EventMapPage() {
           <button
             type="button"
             className={`emp__chip ${typeFilter === 'all' ? 'is-active' : ''}`}
-            onClick={() => setTypeFilter('all')}
+            onClick={() => {
+              setTypeFilter('all')
+              userMovedMapRef.current = false
+              lastFitKeyRef.current = ''
+            }}
           >
             Mọi loại
           </button>
@@ -857,7 +968,11 @@ export function EventMapPage() {
               key={t}
               type="button"
               className={`emp__chip ${typeFilter === t ? 'is-active' : ''}`}
-              onClick={() => setTypeFilter(t)}
+              onClick={() => {
+                setTypeFilter(t)
+                userMovedMapRef.current = false
+                lastFitKeyRef.current = ''
+              }}
               style={
                 typeFilter === t
                   ? { background: EVENT_TYPE_COLORS[t], color: '#0f172a' }
@@ -870,7 +985,11 @@ export function EventMapPage() {
           <button
             type="button"
             className={`emp__chip ${freeOnly ? 'is-active' : ''}`}
-            onClick={() => setFreeOnly((v) => !v)}
+            onClick={() => {
+              setFreeOnly((v) => !v)
+              userMovedMapRef.current = false
+              lastFitKeyRef.current = ''
+            }}
           >
             Chỉ Free
           </button>

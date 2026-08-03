@@ -6,7 +6,11 @@
   --emp-muted: #94a3b8;
   --emp-accent: #38bdf8;
   --emp-gold: #fbbf24;
-  min-height: 100dvh;
+  /* Fixed viewport shell — pinch-zoom must not reflow/scroll the whole page */
+  height: 100dvh;
+  max-height: 100dvh;
+  min-height: 0;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
   background:
@@ -15,6 +19,8 @@
     var(--emp-bg);
   color: var(--emp-text);
   font-family: 'Segoe UI', system-ui, sans-serif;
+  overscroll-behavior: none;
+  touch-action: manipulation;
 }
 
 .emp__header {
@@ -27,6 +33,7 @@
   background: rgba(2, 6, 23, 0.55);
   backdrop-filter: blur(10px);
   z-index: 3;
+  flex: 0 0 auto;
 }
 
 .emp__brand {
@@ -103,6 +110,7 @@
   border-bottom: 1px solid var(--emp-border);
   background: rgba(2, 6, 23, 0.35);
   z-index: 2;
+  flex: 0 0 auto;
 }
 
 .emp__filter-row {
@@ -164,17 +172,22 @@
 
 .emp__body {
   flex: 1 1 auto;
-  min-height: min(70dvh, 720px);
+  min-height: 0;
   display: grid;
   grid-template-columns: 1fr minmax(320px, 420px);
   position: relative;
+  overflow: hidden;
 }
 
 .emp__map {
   position: relative;
-  min-height: 420px;
+  min-height: 0;
   height: 100%;
+  width: 100%;
+  overflow: hidden;
   background: #0b1220;
+  /* Let map own pinch/wheel; don't scroll page underneath */
+  touch-action: none;
 }
 
 .emp__map-hint {
@@ -193,9 +206,18 @@
   backdrop-filter: blur(8px);
 }
 
-.emp__map .maplibregl-map {
+.emp__map .maplibregl-map,
+.emp__map .maplibregl-canvas-container,
+.emp__map .maplibregl-canvas {
   position: absolute;
   inset: 0;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* MapLibre sets transform on marker root — never override it */
+.emp__map .maplibregl-marker {
+  will-change: transform;
 }
 
 .emp__map .maplibregl-ctrl-group {
@@ -389,20 +411,27 @@
   color: var(--emp-muted);
 }
 
-/* Luma-style pins: square cover + event name */
+/* Luma-style pins — root has NO transform (MapLibre owns it) */
 .emp-pin {
+  cursor: pointer;
+  /* Outer box only; positioning via maplibregl-marker transform */
+  pointer-events: auto;
+}
+
+.emp-pin__visual {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 4px;
-  cursor: pointer;
-  transform: translateY(0);
-  transition: transform 0.15s ease;
+  /* Hover/active scale lives here, not on marker root */
+  transition: transform 0.15s ease, filter 0.15s ease;
   filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.45));
+  transform-origin: bottom center;
+  will-change: transform;
 }
 
-.emp-pin:hover,
-.emp-pin.is-active {
+.emp-pin:hover .emp-pin__visual,
+.emp-pin.is-active .emp-pin__visual {
   transform: translateY(-2px) scale(1.06);
   z-index: 2;
 }
@@ -456,6 +485,10 @@
   height: 100%;
   object-fit: cover;
   display: block;
+  /* Avoid image drag interfering with map pan */
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-drag: none;
 }
 
 .emp-pin__img--fallback {
@@ -486,29 +519,39 @@
   background: rgba(14, 165, 233, 0.22);
 }
 
-/* Legacy venue dot (main hall) */
+/* Venue marker — no transform on root */
 .emp-marker {
-  width: 16px;
-  height: 16px;
+  width: 26px;
+  height: 26px;
   border-radius: 50%;
-  border: 2px solid #0f172a;
+  border: 3px solid #0f172a;
   cursor: pointer;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.45);
-  transition: transform 0.15s;
+  box-shadow:
+    0 0 0 4px rgba(251, 191, 36, 0.28),
+    0 4px 14px rgba(0, 0, 0, 0.45);
+  background: var(--emp-gold);
+  /* Use outline/shadow for hover, not transform */
+  transition: box-shadow 0.15s ease;
 }
 
 .emp-marker:hover,
 .emp-marker.is-active {
-  transform: scale(1.25);
+  box-shadow:
+    0 0 0 6px rgba(251, 191, 36, 0.4),
+    0 4px 16px rgba(0, 0, 0, 0.5);
 }
 
 .emp-marker--featured {
   width: 22px;
   height: 22px;
   border-width: 3px;
-  box-shadow:
-    0 0 0 3px rgba(251, 191, 36, 0.25),
-    0 2px 10px rgba(0, 0, 0, 0.5);
+}
+
+.emp-marker--venue {
+  width: 26px;
+  height: 26px;
+  background: var(--emp-gold);
+  border: 3px solid #0f172a;
 }
 
 .emp__thumb {
@@ -519,16 +562,6 @@
   flex: 0 0 auto;
   border: 1px solid rgba(148, 163, 184, 0.35);
   background: #1e293b;
-}
-
-.emp-marker--venue {
-  width: 26px;
-  height: 26px;
-  background: var(--emp-gold);
-  border: 3px solid #0f172a;
-  box-shadow:
-    0 0 0 4px rgba(251, 191, 36, 0.28),
-    0 4px 14px rgba(0, 0, 0, 0.45);
 }
 
 /* Popup */

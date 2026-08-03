@@ -1163,7 +1163,19 @@ export function EventMapPage() {
         <div className="emp-week" role="group" aria-label="Lọc theo ngày">
           <div className="emp-week__bar">
             <div className="emp-week__meta">
-              <span className="emp-week__month">{calMonthLabel}</span>
+              <div className="emp-week__title-row">
+                <span className="emp-week__month">{calMonthLabel}</span>
+                <div className="emp-week__seg" role="tablist" aria-label="Phạm vi">
+                  <button
+                    type="button"
+                    role="tab"
+                    className={`emp-week__seg-btn ${dateFilter === 'all' ? 'is-on' : ''}`}
+                    onClick={() => setDate('all')}
+                  >
+                    Tất cả
+                  </button>
+                </div>
+              </div>
               {dateFilter !== 'all' && dateFilter !== 'tbd' && dateFilter !== '__default__' ? (
                 <span className="emp-week__selected-label">
                   {formatWeekdayShortVi(dateFilter)} · {formatShortDate(dateFilter)}
@@ -1178,16 +1190,6 @@ export function EventMapPage() {
                     : `${totalEvents} sự kiện trong tuần`}
                 </span>
               )}
-            </div>
-            <div className="emp-week__seg" role="tablist" aria-label="Phạm vi">
-              <button
-                type="button"
-                role="tab"
-                className={`emp-week__seg-btn ${dateFilter === 'all' ? 'is-on' : ''}`}
-                onClick={() => setDate('all')}
-              >
-                Tất cả
-              </button>
             </div>
           </div>
 

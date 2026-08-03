@@ -448,7 +448,6 @@
 .emp-week__bar {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: 0.75rem;
   min-height: 1.5rem;
   padding: 0.15rem 0.1rem;
@@ -457,8 +456,17 @@
 .emp-week__meta {
   display: flex;
   flex-direction: column;
-  gap: 0.1rem;
+  gap: 0.12rem;
   min-width: 0;
+  flex: 1 1 auto;
+}
+
+.emp-week__title-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+  flex-wrap: wrap;
 }
 
 .emp-week__month {
@@ -467,6 +475,7 @@
   letter-spacing: -0.03em;
   color: var(--emp-text);
   line-height: 1.2;
+  flex: 0 0 auto;
 }
 
 .emp-week__selected-label {
@@ -481,14 +490,16 @@
 
 .emp-week__seg {
   flex: 0 0 auto;
+  display: flex;
+  align-items: center;
 }
 
 .emp-week__seg-btn {
   appearance: none;
   border: 1px solid var(--lg-border);
   border-radius: var(--emp-radius-pill);
-  padding: 0.4rem 0.9rem;
-  font-size: 0.78rem;
+  padding: 0.22rem 0.65rem;
+  font-size: 0.7rem;
   font-weight: 600;
   letter-spacing: -0.01em;
   color: var(--emp-text-2);

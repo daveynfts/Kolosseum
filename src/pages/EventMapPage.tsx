@@ -1234,28 +1234,14 @@ export function EventMapPage() {
                   </span>
                   <span className="emp-week__num">{formatDayNum(d)}</span>
                   <span className="emp-week__foot">
-                    {isMain && !thumbs.length ? (
-                      <span className="emp-week__main-label">
-                        {main!.day === 1 ? 'Main 1' : 'Main 2'}
-                      </span>
-                    ) : empty ? (
+                    {empty && !isMain ? (
                       <span className="emp-week__thumbs emp-week__thumbs--empty" />
-                    ) : (
+                    ) : thumbs.length ? (
                       <span className="emp-week__thumbs" aria-hidden>
-                        {isMain ? (
-                          <span className="emp-week__main-chip">
-                            {main!.day === 1 ? 'M1' : 'M2'}
-                          </span>
-                        ) : null}
                         {thumbs.map((ev) => (
                           <span
                             key={ev.id}
                             className="emp-week__thumb"
-                            style={{
-                              borderColor:
-                                EVENT_TYPE_COLORS[ev.type] ||
-                                EVENT_TYPE_COLORS.other,
-                            }}
                             title={ev.title}
                           >
                             {ev.imageUrl ? (
@@ -1279,6 +1265,12 @@ export function EventMapPage() {
                           </span>
                         ) : null}
                       </span>
+                    ) : isMain ? (
+                      <span className="emp-week__main-label">
+                        {main!.day === 1 ? 'Main 1' : 'Main 2'}
+                      </span>
+                    ) : (
+                      <span className="emp-week__thumbs emp-week__thumbs--empty" />
                     )}
                   </span>
                 </button>

@@ -31,7 +31,11 @@ import {
   eventToIcs,
 } from '../data/convictionEvents'
 import { loadEventsWithSource } from '../lib/convictionEventsStore'
+import { withBase } from '../lib/base'
 import './EventMapPage.css'
+
+const CONVICTION_LOGO = withBase('/conviction/logo-full.svg')
+const CONVICTION_HOME = 'https://www.conviction.vn/vi'
 
 /** Raster dark tiles — avoids CARTO vector TileJSON hangs with MapLibre v6. */
 const MAP_STYLE: maplibregl.StyleSpecification = {
@@ -984,12 +988,21 @@ export function EventMapPage() {
             Luma
           </a>
           <a
-            className="emp__btn"
-            href="https://www.conviction.vn/vi"
+            className="emp__btn emp__btn--logo"
+            href={CONVICTION_HOME}
             target="_blank"
             rel="noopener noreferrer"
+            title="Conviction 2026"
+            aria-label="Conviction 2026 — conviction.vn"
           >
-            conviction.vn
+            <img
+              className="emp__conviction-logo"
+              src={CONVICTION_LOGO}
+              alt="Conviction"
+              width={120}
+              height={20}
+              decoding="async"
+            />
           </a>
           <a className="emp__btn emp__btn--primary" href="#/">
             ← Radar

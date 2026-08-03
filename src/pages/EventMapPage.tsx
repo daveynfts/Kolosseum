@@ -1,6 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import * as maplibregl from 'maplibre-gl'
-import type { Map as MapLibreMap, Marker, Popup, StyleSpecification } from 'maplibre-gl'
+import type {
+  GeoJSONSource,
+  Map as MapLibreMap,
+  Marker,
+  Popup,
+  StyleSpecification,
+} from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import {
   EVENT_TYPE_COLORS,
@@ -51,6 +57,153 @@ const HCMC_BOUNDS: [[number, number], [number, number]] = [
   [106.35, 10.35],
   [107.05, 11.05],
 ]
+
+/** Approx. Thiskyhall Sala footprint for gold 3D highlight (not survey-accurate). */
+function salaFootprint(lng: number, lat: number) {
+  // ~90m × 140m rectangle
+  const dLng = 0.00042
+  const dLat = 0.00062
+  return [
+    [
+      [lng - dLng, lat - dLat],
+      [lng + dLng, lat - dLat],
+      [lng + dLng, lat + dLat],
+      [lng - dLng, lat + dLat],
+      [lng - dLng, lat - dLat],
+    ],
+  ]
+}
+
+function addVenue3dLayers(map: MapLibreMap, venue: { lng: number; lat: number; name: string }) {
+  if (!map.getSource('ofm-buildings')) {
+    map.addSource('ofm-buildings', {
+      type: 'vector',
+      url: 'https://tiles.openfreemap.org/planet',
+      attribution: '© OpenFreeMap © OpenMapTiles © OpenStreetMap',
+    })
+  }
+
+  if (!map.getLayer('hcmc-3d-buildings')) {
+    map.addLayer({
+      id: 'hcmc-3d-buildings',
+      source: 'ofm-buildings',
+      'source-layer': 'building',
+      type: 'fill-extrusion',
+      minzoom: 14,
+      filter: ['!', ['has', 'hide_3d']],
+      paint: {
+        'fill-extrusion-color': [
+          'interpolate',
+          ['linear'],
+          ['coalesce', ['get', 'render_height'], ['get', 'height'], 16],
+          0,
+          '#1e293b',
+          20,
+          '#334155',
+          60,
+          '#475569',
+        ],
+        'fill-extrusion-height': [
+          'interpolate',
+          ['linear'],
+          ['zoom'],
+          14,
+          0,
+          14.8,
+          [
+            'coalesce',
+            ['get', 'render_height'],
+            ['get', 'height'],
+            ['*', ['coalesce', ['get', 'levels'], 3], 3.2],
+            14,
+          ],
+        ],
+        'fill-extrusion-base': [
+          'coalesce',
+          ['get', 'render_min_height'],
+          ['get', 'min_height'],
+          0,
+        ],
+        'fill-extrusion-opacity': 0.78,
+      },
+    })
+  }
+
+  const footprint = {
+    type: 'Feature' as const,
+    properties: {
+      name: venue.name,
+      height: 48,
+      base: 0,
+    },
+    geometry: {
+      type: 'Polygon' as const,
+      coordinates: salaFootprint(venue.lng, venue.lat),
+    },
+  }
+
+  const existing = map.getSource('main-venue-3d') as GeoJSONSource | undefined
+  if (existing) {
+    existing.setData({ type: 'FeatureCollection', features: [footprint] })
+  } else {
+    map.addSource('main-venue-3d', {
+      type: 'geojson',
+      data: { type: 'FeatureCollection', features: [footprint] },
+    })
+  }
+
+  if (!map.getLayer('main-venue-3d-extrusion')) {
+    map.addLayer({
+      id: 'main-venue-3d-extrusion',
+      type: 'fill-extrusion',
+      source: 'main-venue-3d',
+      minzoom: 13,
+      paint: {
+        'fill-extrusion-color': '#fbbf24',
+        'fill-extrusion-height': ['get', 'height'],
+        'fill-extrusion-base': ['get', 'base'],
+        'fill-extrusion-opacity': 0.92,
+        'fill-extrusion-vertical-gradient': true,
+      },
+    })
+  }
+
+  if (!map.getLayer('main-venue-3d-outline')) {
+    map.addLayer({
+      id: 'main-venue-3d-outline',
+      type: 'line',
+      source: 'main-venue-3d',
+      minzoom: 13,
+      paint: {
+        'line-color': '#fde68a',
+        'line-width': 2,
+        'line-opacity': 0.9,
+      },
+    })
+  }
+}
+
+function setMap3dCamera(
+  map: MapLibreMap,
+  enabled: boolean,
+  center: [number, number],
+) {
+  if (enabled) {
+    map.easeTo({
+      center,
+      zoom: Math.max(map.getZoom(), 15.6),
+      pitch: 58,
+      bearing: -28,
+      duration: 900,
+    })
+  } else {
+    map.easeTo({
+      pitch: 0,
+      bearing: 0,
+      duration: 700,
+    })
+  }
+}
 
 function todayVn(): string {
   try {
@@ -155,6 +308,9 @@ export function EventMapPage() {
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [listOpen, setListOpen] = useState(true)
   const [mapReady, setMapReady] = useState(false)
+  const [view3d, setView3d] = useState(true)
+  const view3dRef = useRef(true)
+  const venueRef = useRef({ lng: 106.7204, lat: 10.7269, name: 'Thiskyhall Sala' })
 
   const today = todayVn()
   const nowHm = nowHmVn()
@@ -224,11 +380,20 @@ export function EventMapPage() {
       container,
       style: MAP_STYLE,
       center: [106.7204, 10.7269],
-      zoom: 12,
+      zoom: 15.4,
+      pitch: 58,
+      bearing: -28,
+      maxPitch: 70,
       maxBounds: HCMC_BOUNDS,
       attributionControl: { compact: true },
     })
-    map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right')
+    map.addControl(
+      new maplibregl.NavigationControl({
+        showCompass: true,
+        visualizePitch: true,
+      }),
+      'top-right',
+    )
     map.addControl(
       new maplibregl.GeolocateControl({
         positionOptions: { enableHighAccuracy: true },
@@ -237,14 +402,30 @@ export function EventMapPage() {
       'top-right',
     )
 
+    const setup3d = () => {
+      if (cancelled) return
+      try {
+        addVenue3dLayers(map, venueRef.current)
+      } catch (err) {
+        console.warn('[EventMap] 3D buildings unavailable', err)
+      }
+    }
+
     const markReady = () => {
       if (cancelled || ready) return
       ready = true
       setMapReady(true)
+      setup3d()
       // Container may have been 0-height during init (flex layout).
       requestAnimationFrame(() => {
         try {
           map.resize()
+          if (view3dRef.current) {
+            setMap3dCamera(map, true, [
+              venueRef.current.lng,
+              venueRef.current.lat,
+            ])
+          }
         } catch {
           /* ignore */
         }
@@ -325,6 +506,23 @@ export function EventMapPage() {
     el?.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
   }
 
+  // Keep venue 3D footprint in sync with admin dataset
+  useEffect(() => {
+    if (!dataset) return
+    venueRef.current = {
+      lng: dataset.venue.lng,
+      lat: dataset.venue.lat,
+      name: dataset.venue.name,
+    }
+    const map = mapRef.current
+    if (!map || !mapReady) return
+    try {
+      addVenue3dLayers(map, venueRef.current)
+    } catch {
+      /* ignore */
+    }
+  }, [dataset, mapReady])
+
   // Sync markers with filtered events
   useEffect(() => {
     const map = mapRef.current
@@ -399,6 +597,24 @@ export function EventMapPage() {
           </p>
         </div>
         <div className="emp__header-actions">
+          <button
+            type="button"
+            className={`emp__btn ${view3d ? 'emp__btn--primary' : ''}`}
+            onClick={() => {
+              const next = !view3d
+              setView3d(next)
+              view3dRef.current = next
+              const map = mapRef.current
+              if (!map) return
+              setMap3dCamera(map, next, [
+                venueRef.current.lng,
+                venueRef.current.lat,
+              ])
+            }}
+            title="Bật/tắt góc nhìn 3D quanh Thiskyhall Sala"
+          >
+            {view3d ? '3D · Sala' : '2D'}
+          </button>
           <button
             type="button"
             className="emp__btn emp-toggle-list"

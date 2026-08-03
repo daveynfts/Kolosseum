@@ -998,101 +998,112 @@ export function EventMapPage() {
       </header>
 
       <div className="emp__filters">
-        <div className="emp-widget" role="group" aria-label="Lọc theo ngày">
-          <div className="emp-widget__chrome">
-            <div className="emp-widget__title-row">
-              <div className="emp-widget__titles">
-                <p className="emp-widget__app">Calendar</p>
-                <h2 className="emp-widget__headline">{calMonthLabel}</h2>
-              </div>
-              <button
-                type="button"
-                className={`emp-widget__pill ${dateFilter === 'all' ? 'is-on' : ''}`}
-                onClick={() => setDate('all')}
-              >
-                All
-                <span className="emp-widget__pill-count">{totalEvents}</span>
-              </button>
-            </div>
-
-            <div className="emp-widget__week" role="listbox" aria-label="Chọn ngày">
-              {dates.map((d) => {
-                const count = countsByDate.get(d) || 0
-                const isToday = d === today
-                const isSelected = dateFilter === d
-                const empty = count === 0
-                const main = mainForumMeta(d)
-                const isMain = Boolean(main)
-                return (
-                  <button
-                    key={d}
-                    type="button"
-                    role="option"
-                    className={[
-                      'emp-widget__cell',
-                      isMain ? 'emp-widget__cell--featured' : '',
-                      main?.day === 1 ? 'emp-widget__cell--d1' : '',
-                      main?.day === 2 ? 'emp-widget__cell--d2' : '',
-                      isSelected ? 'is-selected' : '',
-                      isToday ? 'is-today' : '',
-                      empty && !isMain ? 'is-muted' : '',
-                    ]
-                      .filter(Boolean)
-                      .join(' ')}
-                    onClick={() => setDate(d)}
-                    disabled={empty && !isMain}
-                    aria-pressed={isSelected}
-                    aria-selected={isSelected}
-                    title={
-                      main
-                        ? `${main.short} · ${main.track} · ${count} side events`
-                        : `${formatShortDate(d)} · ${count} side events`
-                    }
-                  >
-                    <span className="emp-widget__dow">
-                      {formatWeekdayShortVi(d)}
-                    </span>
-                    <span className="emp-widget__date">
-                      <span className="emp-widget__date-num">
-                        {formatDayNum(d)}
-                      </span>
-                    </span>
-                    <span className="emp-widget__caption">
-                      {main
-                        ? main.short
-                        : empty
-                          ? '—'
-                          : count === 1
-                            ? '1 event'
-                            : `${count} events`}
-                    </span>
-                    {isMain && <span className="emp-widget__dot" aria-hidden />}
-                  </button>
-                )
-              })}
-
-              {tbdDateCount > 0 && (
-                <button
-                  type="button"
-                  role="option"
-                  className={`emp-widget__cell emp-widget__cell--tbd ${dateFilter === 'tbd' ? 'is-selected' : ''}`}
-                  onClick={() => setDate('tbd')}
-                  aria-pressed={dateFilter === 'tbd'}
-                  aria-selected={dateFilter === 'tbd'}
-                  title="Chưa chốt ngày"
-                >
-                  <span className="emp-widget__dow">TBD</span>
-                  <span className="emp-widget__date">
-                    <span className="emp-widget__date-num emp-widget__date-num--sm">
-                      ···
-                    </span>
-                  </span>
-                  <span className="emp-widget__caption">
-                    {tbdDateCount} events
-                  </span>
-                </button>
+        <div className="emp-week" role="group" aria-label="Lọc theo ngày">
+          <div className="emp-week__bar">
+            <div className="emp-week__meta">
+              <span className="emp-week__month">{calMonthLabel}</span>
+              {dateFilter !== 'all' && dateFilter !== 'tbd' && dateFilter !== '__default__' ? (
+                <span className="emp-week__selected-label">
+                  {formatWeekdayShortVi(dateFilter)} · {formatShortDate(dateFilter)}
+                  {mainForumMeta(dateFilter)
+                    ? ` · ${mainForumMeta(dateFilter)!.short}`
+                    : ''}
+                </span>
+              ) : (
+                <span className="emp-week__selected-label">
+                  {dateFilter === 'tbd'
+                    ? 'Ngày chưa chốt'
+                    : `${totalEvents} sự kiện trong tuần`}
+                </span>
               )}
             </div>
+            <div className="emp-week__seg" role="tablist" aria-label="Phạm vi">
+              <button
+                type="button"
+                role="tab"
+                className={`emp-week__seg-btn ${dateFilter === 'all' ? 'is-on' : ''}`}
+                onClick={() => setDate('all')}
+              >
+                Tất cả
+              </button>
+            </div>
+          </div>
+
+          <div className="emp-week__days" role="listbox" aria-label="Chọn ngày">
+            {dates.map((d) => {
+              const count = countsByDate.get(d) || 0
+              const isToday = d === today
+              const isSelected = dateFilter === d
+              const empty = count === 0
+              const main = mainForumMeta(d)
+              const isMain = Boolean(main)
+              const dots = Math.min(count, 3)
+              return (
+                <button
+                  key={d}
+                  type="button"
+                  role="option"
+                  className={[
+                    'emp-week__day',
+                    isMain ? 'emp-week__day--main' : '',
+                    main?.day === 1 ? 'emp-week__day--d1' : '',
+                    main?.day === 2 ? 'emp-week__day--d2' : '',
+                    isSelected ? 'is-selected' : '',
+                    isToday ? 'is-today' : '',
+                    empty && !isMain ? 'is-empty' : '',
+                  ]
+                    .filter(Boolean)
+                    .join(' ')}
+                  onClick={() => setDate(d)}
+                  disabled={empty && !isMain}
+                  aria-pressed={isSelected}
+                  aria-selected={isSelected}
+                  title={
+                    main
+                      ? `${main.short} · ${main.track}${count ? ` · ${count} side` : ''}`
+                      : `${formatShortDate(d)} · ${count} sự kiện`
+                  }
+                >
+                  <span className="emp-week__dow">
+                    {formatWeekdayShortVi(d)}
+                  </span>
+                  <span className="emp-week__num">{formatDayNum(d)}</span>
+                  <span className="emp-week__foot">
+                    {isMain ? (
+                      <span className="emp-week__main-label">
+                        {main!.day === 1 ? 'Main 1' : 'Main 2'}
+                      </span>
+                    ) : empty ? (
+                      <span className="emp-week__dots emp-week__dots--none" />
+                    ) : (
+                      <span className="emp-week__dots" aria-hidden>
+                        {Array.from({ length: dots }).map((_, i) => (
+                          <i key={i} />
+                        ))}
+                      </span>
+                    )}
+                  </span>
+                </button>
+              )
+            })}
+
+            {tbdDateCount > 0 && (
+              <button
+                type="button"
+                role="option"
+                className={`emp-week__day emp-week__day--tbd ${dateFilter === 'tbd' ? 'is-selected' : ''}`}
+                onClick={() => setDate('tbd')}
+                aria-pressed={dateFilter === 'tbd'}
+                aria-selected={dateFilter === 'tbd'}
+                title="Chưa chốt ngày"
+              >
+                <span className="emp-week__dow">TBD</span>
+                <span className="emp-week__num emp-week__num--tbd">?</span>
+                <span className="emp-week__foot">
+                  <span className="emp-week__main-label">{tbdDateCount}</span>
+                </span>
+              </button>
+            )}
           </div>
 
           {(() => {
@@ -1100,25 +1111,19 @@ export function EventMapPage() {
             if (!selectedMain) return null
             return (
               <div
-                className={`emp-widget__detail emp-widget__detail--d${selectedMain.day}`}
+                className={`emp-week__main-card emp-week__main-card--d${selectedMain.day}`}
               >
-                <div className="emp-widget__detail-icon" aria-hidden>
-                  {selectedMain.day}
-                </div>
-                <div className="emp-widget__detail-text">
-                  <p className="emp-widget__detail-kicker">
-                    Main Event · Thiskyhall Sala
-                  </p>
-                  <p className="emp-widget__detail-title">
-                    {selectedMain.track}
-                  </p>
-                  <p className="emp-widget__detail-sub">
-                    {formatShortDate(dateFilter)} · side events cùng ngày trên
-                    map
+                <div className="emp-week__main-left">
+                  <span className="emp-week__main-badge">
+                    Main · Day {selectedMain.day}
+                  </span>
+                  <p className="emp-week__main-title">{selectedMain.track}</p>
+                  <p className="emp-week__main-sub">
+                    Thiskyhall Sala · {formatShortDate(dateFilter)}
                   </p>
                 </div>
                 <a
-                  className="emp-widget__detail-btn"
+                  className="emp-week__main-link"
                   href={
                     selectedMain.day === 1
                       ? 'https://www.conviction.vn/vi/day-1'

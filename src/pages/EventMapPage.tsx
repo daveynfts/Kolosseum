@@ -193,7 +193,7 @@ function popupHtml(
     ? `<a href="${directionsUrl(SALA_VENUE.lat, SALA_VENUE.lng)}" target="_blank" rel="noopener noreferrer">Chỉ đường (venue chính)</a>`
     : `<a href="${directionsUrl(ev.lat, ev.lng)}" target="_blank" rel="noopener noreferrer">Chỉ đường</a>`
   const img = ev.imageUrl
-    ? `<img class="emp-popup__img" src="${escapeHtml(toSquareImageUrl(ev.imageUrl, 320))}" alt="" loading="lazy" referrerpolicy="no-referrer" />`
+    ? `<img class="emp-popup__img" src="${escapeHtml(toSquareImageUrl(ev.imageUrl, 640))}" alt="" loading="lazy" referrerpolicy="no-referrer" />`
     : ''
   const dist = opts.distanceLabel
     ? `<p class="emp-popup__row emp-popup__dist">${escapeHtml(opts.distanceLabel)}</p>`
@@ -204,22 +204,24 @@ function popupHtml(
   return `
     <div class="emp-popup__inner">
       ${img}
-      <h3 class="emp-popup__title">${escapeHtml(ev.title)}</h3>
-      <div class="emp__badges" style="margin:0 0 0.4rem">${badges}</div>
-      <p class="emp-popup__row">${escapeHtml(when)}</p>
-      ${dist}
-      <p class="emp-popup__row">${escapeHtml(ev.host || '')}</p>
-      <p class="emp-popup__row">${escapeHtml(placeLine)}</p>
-      ${
-        ev.locationTbd
-          ? '<p class="emp-popup__row emp-popup__note">Pin tạm tại Thiskyhall Sala · tọa độ thật chưa public</p>'
-          : ''
-      }
-      ${ev.description ? `<p class="emp-popup__row">${escapeHtml(ev.description)}</p>` : ''}
-      <div class="emp-popup__actions">
-        ${directions}
-        ${reg}
-        <button type="button" data-ics="${escapeHtml(ev.id)}">Thêm lịch</button>
+      <div class="emp-popup__body">
+        <h3 class="emp-popup__title">${escapeHtml(ev.title)}</h3>
+        <div class="emp__badges emp-popup__badges">${badges}</div>
+        <p class="emp-popup__row emp-popup__when">${escapeHtml(when)}</p>
+        ${dist}
+        ${ev.host ? `<p class="emp-popup__row"><span class="emp-popup__k">Host</span> ${escapeHtml(ev.host)}</p>` : ''}
+        <p class="emp-popup__row"><span class="emp-popup__k">Địa điểm</span> ${escapeHtml(placeLine)}</p>
+        ${
+          ev.locationTbd
+            ? '<p class="emp-popup__row emp-popup__note">Pin tạm tại Thiskyhall Sala · tọa độ thật chưa public</p>'
+            : ''
+        }
+        ${ev.description ? `<p class="emp-popup__desc">${escapeHtml(ev.description)}</p>` : ''}
+        <div class="emp-popup__actions">
+          ${directions}
+          ${reg}
+          <button type="button" data-ics="${escapeHtml(ev.id)}">Thêm lịch</button>
+        </div>
       </div>
     </div>
   `
@@ -700,6 +702,57 @@ export function EventMapPage() {
     }
   }, [])
 
+  /** Keep popup fully visible inside map (above mobile sheet / side panel). */
+  const panPopupIntoView = (map: MapLibreMap) => {
+    const el = popupRef.current?.getElement()
+    if (!el) return
+    const mapRect = map.getContainer().getBoundingClientRect()
+    let topLimit = mapRect.top + 10
+    let bottomLimit = mapRect.bottom - 12
+    let leftLimit = mapRect.left + 10
+    let rightLimit = mapRect.right - 10
+
+    // Mobile bottom sheet covers lower map
+    if (isMobileViewport()) {
+      const panel = document.querySelector('.emp__panel') as HTMLElement | null
+      if (panel) {
+        const pr = panel.getBoundingClientRect()
+        if (pr.top < mapRect.bottom - 4) {
+          bottomLimit = Math.min(bottomLimit, pr.top - 10)
+        }
+      }
+    } else {
+      // Desktop list panel on the right
+      const panel = document.querySelector('.emp__panel') as HTMLElement | null
+      if (panel) {
+        const pr = panel.getBoundingClientRect()
+        if (pr.left < mapRect.right && pr.left > mapRect.left) {
+          rightLimit = Math.min(rightLimit, pr.left - 10)
+        }
+      }
+    }
+
+    const pop = el.getBoundingClientRect()
+    // Available band may be short — clamp max height so content scrolls
+    const availH = Math.max(160, bottomLimit - topLimit)
+    const content = el.querySelector(
+      '.maplibregl-popup-content',
+    ) as HTMLElement | null
+    if (content) {
+      content.style.maxHeight = `${Math.min(availH, 520)}px`
+    }
+
+    let dx = 0
+    let dy = 0
+    if (pop.left < leftLimit) dx = pop.left - leftLimit
+    if (pop.right > rightLimit) dx = pop.right - rightLimit
+    if (pop.top < topLimit) dy = pop.top - topLimit
+    if (pop.bottom > bottomLimit) dy = pop.bottom - bottomLimit
+    if (dx !== 0 || dy !== 0) {
+      map.panBy([dx, dy], { duration: 280 })
+    }
+  }
+
   const openPopup = (ev: SideEvent) => {
     const map = mapRef.current
     if (!map) return
@@ -714,11 +767,16 @@ export function EventMapPage() {
     const lat = ev.locationTbd
       ? (dataset?.venue.lat ?? SALA_VENUE.lat)
       : ev.lat
+    const wide = isMobileViewport()
+      ? Math.min(360, Math.max(280, map.getContainer().clientWidth - 24))
+      : Math.min(400, Math.max(320, map.getContainer().clientWidth - 48))
     const popup = new maplibregl.Popup({
-      offset: 88,
-      maxWidth: '300px',
-      className: 'emp-popup',
+      offset: 96,
+      maxWidth: `${wide}px`,
+      className: 'emp-popup emp-popup--detail',
       closeButton: true,
+      anchor: 'bottom',
+      focusAfterOpen: false,
     })
       .setLngLat([lng, lat])
       .setHTML(
@@ -740,40 +798,49 @@ export function EventMapPage() {
       }
     })
     popupRef.current = popup
+    // Layout then pan so card is not clipped by edges / sheet
+    requestAnimationFrame(() => {
+      panPopupIntoView(map)
+      window.setTimeout(() => panPopupIntoView(map), 320)
+    })
   }
 
   const selectEvent = (ev: SideEvent, fly = true) => {
     setSelectedId(ev.id)
-    // Always open list enough to show detail (esp. TBD location events)
+    // On mobile: peek sheet so popup has room above the list
     if (isMobileViewport()) {
-      if (sheetMode === 'peek' || ev.locationTbd) setSheetMode('half')
+      setSheetMode('peek')
     }
     const map = mapRef.current
+    const target = ev.locationTbd
+      ? (dataset?.venue ?? SALA_VENUE)
+      : { lng: ev.lng, lat: ev.lat }
+    const zoom = ev.locationTbd
+      ? Math.max(map?.getZoom() ?? 13, 13.2)
+      : Math.max(map?.getZoom() ?? 14, 14.4)
+
     if (map && fly) {
       userMovedMapRef.current = false
-      if (ev.locationTbd) {
-        // No real pin — focus main venue + popup with full event info
-        const v = dataset?.venue ?? SALA_VENUE
-        map.flyTo({
-          center: [v.lng, v.lat],
-          zoom: Math.max(map.getZoom(), 13.2),
-          speed: 1.1,
-          pitch: 0,
-          bearing: 0,
-          essential: true,
-        })
-        openPopup(ev)
-      } else {
-        map.flyTo({
-          center: [ev.lng, ev.lat],
-          zoom: Math.max(map.getZoom(), 14.4),
-          speed: 1.15,
-          pitch: 0,
-          bearing: 0,
-          essential: true,
-        })
+      let opened = false
+      const openAfter = () => {
+        if (opened) return
+        opened = true
         openPopup(ev)
       }
+      map.once('moveend', openAfter)
+      map.flyTo({
+        center: [target.lng, target.lat],
+        zoom,
+        speed: 1.15,
+        pitch: 0,
+        bearing: 0,
+        essential: true,
+      })
+      // If already near target, moveend may not fire
+      window.setTimeout(() => {
+        map.off('moveend', openAfter)
+        openAfter()
+      }, 850)
     } else if (map) {
       openPopup(ev)
     }
@@ -859,9 +926,9 @@ export function EventMapPage() {
         .setLngLat([dataset.venue.lng, dataset.venue.lat])
         .setPopup(
           new maplibregl.Popup({
-            offset: 18,
-            className: 'emp-popup',
-            maxWidth: '260px',
+            offset: 24,
+            className: 'emp-popup emp-popup--detail',
+            maxWidth: '360px',
           }).setHTML(
             `<h3 class="emp-popup__title">${escapeHtml(dataset.venue.name)}</h3>
              <p class="emp-popup__row">Địa điểm chính · Conviction 2026</p>

@@ -1371,54 +1371,131 @@
   background: #1e293b;
 }
 
-/* Popup */
+/* Popup — larger, scrollable, stays readable on mobile */
+.emp-popup.maplibregl-popup {
+  z-index: 12;
+  max-width: min(400px, calc(100vw - 20px)) !important;
+}
+
 .emp-popup .maplibregl-popup-content {
-  background: rgba(10, 10, 12, 0.94);
+  background: rgba(8, 8, 12, 0.96);
   color: var(--emp-text);
-  border: 1px solid var(--emp-border-strong);
-  border-radius: var(--emp-radius-lg);
-  padding: 0.75rem 0.85rem;
-  box-shadow: var(--emp-shadow);
-  min-width: 220px;
-  max-width: 280px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 16px;
+  padding: 0;
+  box-shadow:
+    0 12px 40px rgba(0, 0, 0, 0.55),
+    0 0 0 1px rgba(0, 113, 227, 0.12);
+  min-width: min(300px, calc(100vw - 28px));
+  max-width: min(400px, calc(100vw - 20px));
+  max-height: min(58dvh, 520px);
+  overflow: hidden;
   font-family: var(--emp-font);
-  backdrop-filter: blur(20px);
+  backdrop-filter: blur(24px) saturate(150%);
+  -webkit-backdrop-filter: blur(24px) saturate(150%);
 }
 
 .emp-popup .maplibregl-popup-tip {
-  border-top-color: rgba(10, 10, 12, 0.94);
-  border-bottom-color: rgba(10, 10, 12, 0.94);
+  border-top-color: rgba(8, 8, 12, 0.96);
+  border-bottom-color: rgba(8, 8, 12, 0.96);
 }
 
 .emp-popup .maplibregl-popup-close-button {
-  color: var(--emp-text-2);
-  font-size: 1.1rem;
-  padding: 0.2rem 0.45rem;
+  color: #fff;
+  font-size: 1.35rem;
+  font-weight: 500;
+  line-height: 1;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  right: 8px;
+  top: 8px;
+  z-index: 2;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.emp-popup .maplibregl-popup-close-button:hover {
+  background: rgba(0, 113, 227, 0.55);
+  color: #fff;
+}
+
+.emp-popup__inner {
+  display: flex;
+  flex-direction: column;
+  max-height: inherit;
+  overflow: hidden;
+}
+
+.emp-popup__body {
+  padding: 0.85rem 1rem 1rem;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  flex: 1 1 auto;
+  min-height: 0;
 }
 
 .emp-popup__img {
   width: 100%;
-  aspect-ratio: 1;
+  aspect-ratio: 16 / 9;
+  max-height: 148px;
   object-fit: cover;
-  border-radius: var(--emp-radius-md);
-  margin: 0 0 0.55rem;
+  border-radius: 16px 16px 0 0;
+  margin: 0;
   display: block;
   background: var(--emp-surface-2);
+  flex: 0 0 auto;
 }
 
 .emp-popup__title {
-  margin: 0 0 0.35rem;
-  font-size: 0.9rem;
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  line-height: 1.3;
-  padding-right: 1rem;
+  margin: 0 0 0.45rem;
+  font-size: 1.05rem;
+  font-weight: 750;
+  letter-spacing: -0.025em;
+  line-height: 1.28;
+  padding-right: 1.6rem;
   color: var(--emp-text);
+}
+
+.emp-popup__badges {
+  margin: 0 0 0.55rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.28rem;
+}
+
+.emp-popup__when {
+  font-weight: 650 !important;
+  color: var(--emp-text) !important;
+  font-size: 0.86rem !important;
+}
+
+.emp-popup__k {
+  display: inline-block;
+  min-width: 4.2em;
+  margin-right: 0.25rem;
+  color: var(--emp-muted);
+  font-weight: 600;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.emp-popup__desc {
+  margin: 0.55rem 0 0;
+  font-size: 0.84rem;
+  line-height: 1.45;
+  color: var(--emp-text-2);
 }
 
 .emp-popup__dist {
   color: #7eb8ff !important;
-  font-weight: 650;
+  font-weight: 700;
+  font-size: 0.84rem !important;
 }
 
 .emp__card-dist {
@@ -1435,17 +1512,25 @@
 }
 
 .emp-popup__row {
-  margin: 0.15rem 0;
-  font-size: 0.75rem;
+  margin: 0.28rem 0;
+  font-size: 0.84rem;
   color: var(--emp-text-2);
-  line-height: 1.35;
+  line-height: 1.4;
 }
 
 .emp-popup__actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.35rem;
-  margin-top: 0.55rem;
+  gap: 0.4rem;
+  margin-top: 0.75rem;
+  position: sticky;
+  bottom: 0;
+  padding-top: 0.35rem;
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    rgba(8, 8, 12, 0.92) 28%
+  );
 }
 
 .emp-popup__actions a,
@@ -1454,18 +1539,24 @@
   border: 1px solid var(--emp-border);
   background: var(--emp-surface-2);
   color: var(--emp-text);
-  border-radius: var(--emp-radius-sm);
-  padding: 0.28rem 0.55rem;
-  font-size: 0.72rem;
-  font-weight: 600;
+  border-radius: var(--emp-radius-pill);
+  padding: 0.42rem 0.75rem;
+  font-size: 0.78rem;
+  font-weight: 650;
   text-decoration: none;
   cursor: pointer;
   font-family: var(--emp-font);
 }
 
+.emp-popup__actions a:first-child {
+  background: var(--emp-accent-soft);
+  border-color: rgba(0, 113, 227, 0.35);
+  color: #9ec9ff;
+}
+
 .emp-popup__actions a:hover,
 .emp-popup__actions button:hover {
-  border-color: rgba(0, 113, 227, 0.4);
+  border-color: rgba(0, 113, 227, 0.45);
   background: var(--emp-accent-soft);
 }
 
@@ -1725,6 +1816,29 @@
     bottom: auto;
     top: 10px;
     font-size: 0.64rem;
+  }
+
+  .emp-popup.maplibregl-popup {
+    max-width: min(360px, calc(100vw - 16px)) !important;
+  }
+
+  .emp-popup .maplibregl-popup-content {
+    min-width: min(300px, calc(100vw - 20px));
+    max-width: min(360px, calc(100vw - 16px));
+    max-height: min(48dvh, 420px);
+    border-radius: 14px;
+  }
+
+  .emp-popup__img {
+    max-height: 120px;
+  }
+
+  .emp-popup__title {
+    font-size: 0.98rem;
+  }
+
+  .emp-popup__body {
+    padding: 0.75rem 0.85rem 0.9rem;
   }
 
   .emp__panel {

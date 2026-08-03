@@ -566,6 +566,27 @@ export function EventMapPage() {
     return m
   }, [dataset, dates])
 
+  /** Up to 3 Luma covers per day for calendar foot (replaces dots). */
+  const thumbsByDate = useMemo(() => {
+    const m = new Map<string, SideEvent[]>()
+    if (!dataset) return m
+    for (const d of dates) {
+      const list = dataset.events
+        .filter((e) => eventOccursOnDate(e, d))
+        .sort((a, b) => {
+          // Prefer events with image, then featured, then earlier start
+          const ai = a.imageUrl ? 0 : 1
+          const bi = b.imageUrl ? 0 : 1
+          if (ai !== bi) return ai - bi
+          if (a.featured !== b.featured) return a.featured ? -1 : 1
+          return (a.startTime || '').localeCompare(b.startTime || '')
+        })
+        .slice(0, 3)
+      m.set(d, list)
+    }
+    return m
+  }, [dataset, dates])
+
   // Lock page scroll while on event map (pinch-zoom was scrolling the whole UI)
   useEffect(() => {
     const html = document.documentElement
@@ -1178,7 +1199,8 @@ export function EventMapPage() {
               const empty = count === 0
               const main = mainForumMeta(d)
               const isMain = Boolean(main)
-              const dots = Math.min(count, 3)
+              const thumbs = thumbsByDate.get(d) || []
+              const extra = Math.max(0, count - thumbs.length)
               return (
                 <button
                   key={d}
@@ -1210,17 +1232,50 @@ export function EventMapPage() {
                   </span>
                   <span className="emp-week__num">{formatDayNum(d)}</span>
                   <span className="emp-week__foot">
-                    {isMain ? (
+                    {isMain && !thumbs.length ? (
                       <span className="emp-week__main-label">
                         {main!.day === 1 ? 'Main 1' : 'Main 2'}
                       </span>
                     ) : empty ? (
-                      <span className="emp-week__dots emp-week__dots--none" />
+                      <span className="emp-week__thumbs emp-week__thumbs--empty" />
                     ) : (
-                      <span className="emp-week__dots" aria-hidden>
-                        {Array.from({ length: dots }).map((_, i) => (
-                          <i key={i} />
+                      <span className="emp-week__thumbs" aria-hidden>
+                        {isMain ? (
+                          <span className="emp-week__main-chip">
+                            {main!.day === 1 ? 'M1' : 'M2'}
+                          </span>
+                        ) : null}
+                        {thumbs.map((ev) => (
+                          <span
+                            key={ev.id}
+                            className="emp-week__thumb"
+                            style={{
+                              borderColor:
+                                EVENT_TYPE_COLORS[ev.type] ||
+                                EVENT_TYPE_COLORS.other,
+                            }}
+                            title={ev.title}
+                          >
+                            {ev.imageUrl ? (
+                              <img
+                                src={toSquareImageUrl(ev.imageUrl, 72)}
+                                alt=""
+                                loading="lazy"
+                                decoding="async"
+                                referrerPolicy="no-referrer"
+                              />
+                            ) : (
+                              <span className="emp-week__thumb-fb">
+                                {(ev.title || '?').slice(0, 1).toUpperCase()}
+                              </span>
+                            )}
+                          </span>
                         ))}
+                        {extra > 0 ? (
+                          <span className="emp-week__thumb emp-week__thumb--more">
+                            +{extra}
+                          </span>
+                        ) : null}
                       </span>
                     )}
                   </span>

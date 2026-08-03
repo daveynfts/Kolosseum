@@ -244,35 +244,72 @@ export function Hud({
           </div>
         </div>
 
-        <div className="hud-bar__actions">
-          {hotCount > 0 && (
-            <span className="pill pill--hot pill--sm">{hotCount} hot</span>
-          )}
-          <button
-            type="button"
-            className={`pill pill--btn pill--sm ${feedOpen ? 'pill--live' : ''}`}
-            onClick={onToggleFeed}
-            title="X Feed"
-            aria-pressed={feedOpen}
-          >
-            <span className="live-dot live-dot--sm" />
-            Feed
-          </button>
-          <button
-            type="button"
-            className={`pill pill--btn pill--sm ${compareOpen ? 'pill--live pill--star' : ''}`}
-            onClick={onToggleCompare}
-            title="Shortlist / Compare"
-            aria-pressed={compareOpen}
-          >
-            <span className="pill-star" aria-hidden>
-              ★
-            </span>
-            Shortlist
-            {shortlistIds.length > 0 && (
-              <span className="pill-count">{shortlistIds.length}</span>
+        <div className="hud-bar__actions" role="toolbar" aria-label="Live tools">
+          <div className="hud-actions">
+            {hotCount > 0 && (
+              <span
+                className="hud-action hud-action--hot"
+                title={`${hotCount} KOL đang Hot (pace / 7d)`}
+              >
+                <span className="hud-action__icon" aria-hidden>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+                    <path
+                      d="M12 2s4 4.2 4 8a4 4 0 1 1-8 0c0-2.4 1.6-4.6 4-8z"
+                      fill="currentColor"
+                      opacity="0.95"
+                    />
+                    <path
+                      d="M12 14c1.6 0 2.8 1.1 2.8 2.6S13.6 19.2 12 19.2 9.2 18 9.2 16.6 10.4 14 12 14z"
+                      fill="currentColor"
+                      opacity="0.55"
+                    />
+                  </svg>
+                </span>
+                <span className="hud-action__label">Hot</span>
+                <span className="hud-action__badge">{hotCount}</span>
+              </span>
             )}
-          </button>
+            <button
+              type="button"
+              className={`hud-action hud-action--feed ${feedOpen ? 'is-on' : ''}`}
+              onClick={onToggleFeed}
+              title="X Feed — bài đăng gần đây"
+              aria-pressed={feedOpen}
+            >
+              <span className="hud-action__icon" aria-hidden>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+                  <path
+                    d="M4 6h16M4 12h12M4 18h8"
+                    stroke="currentColor"
+                    strokeWidth="2.2"
+                    strokeLinecap="round"
+                  />
+                </svg>
+              </span>
+              <span className="hud-action__label">Feed</span>
+              {feedOpen && <span className="hud-action__live" aria-hidden />}
+            </button>
+            <button
+              type="button"
+              className={`hud-action hud-action--list ${compareOpen ? 'is-on' : ''} ${shortlistIds.length > 0 ? 'has-items' : ''}`}
+              onClick={onToggleCompare}
+              title="Shortlist / so sánh KOL"
+              aria-pressed={compareOpen}
+            >
+              <span className="hud-action__icon" aria-hidden>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+                  <path
+                    d="M12 3.5l2.4 4.9 5.4.8-3.9 3.8.9 5.4L12 15.8 7.2 18.4l.9-5.4L4.2 9.2l5.4-.8L12 3.5z"
+                    fill="currentColor"
+                  />
+                </svg>
+              </span>
+              <span className="hud-action__label">Shortlist</span>
+              {shortlistIds.length > 0 && (
+                <span className="hud-action__badge">{shortlistIds.length}</span>
+              )}
+            </button>
+          </div>
         </div>
       </header>
 

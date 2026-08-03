@@ -103,6 +103,140 @@ export function mainForumMeta(isoDate: string) {
   return MAIN_FORUM_DAYS[isoDate] || null
 }
 
+/**
+ * Main forum wall-clock (Asia/Ho_Chi_Minh).
+ * Day 1 opens ~08:00 14/08 · forum closes ~18:00 15/08.
+ */
+export const MAIN_FORUM_SCHEDULE = {
+  startIso: '2026-08-14T08:00:00+07:00',
+  endIso: '2026-08-15T18:00:00+07:00',
+  day1StartIso: '2026-08-14T08:00:00+07:00',
+  day1EndIso: '2026-08-14T22:00:00+07:00',
+  day2StartIso: '2026-08-15T08:00:00+07:00',
+  day2EndIso: '2026-08-15T18:00:00+07:00',
+  venue: 'Thiskyhall Sala',
+  title: 'Conviction 2026',
+} as const
+
+export type MainForumPhase = 'upcoming' | 'live' | 'ended'
+
+export type MainForumCountdownParts = {
+  days: number
+  hours: number
+  minutes: number
+  seconds: number
+  totalMs: number
+}
+
+export type MainForumStatus = {
+  phase: MainForumPhase
+  /** Target of the countdown: start (upcoming) or end of forum/day (live) */
+  target: 'start' | 'end'
+  parts: MainForumCountdownParts
+  /** Short badge: Sắp diễn ra / LIVE / Đã kết thúc */
+  badge: string
+  /** Primary line */
+  title: string
+  /** Secondary line */
+  subtitle: string
+  liveDay?: 1 | 2
+  liveTrack?: string
+}
+
+function splitMs(ms: number): MainForumCountdownParts {
+  const totalMs = Math.max(0, ms)
+  const sec = Math.floor(totalMs / 1000)
+  const days = Math.floor(sec / 86400)
+  const hours = Math.floor((sec % 86400) / 3600)
+  const minutes = Math.floor((sec % 3600) / 60)
+  const seconds = sec % 60
+  return { days, hours, minutes, seconds, totalMs }
+}
+
+/** Live status + countdown for main forum (VN timezone via fixed offsets). */
+export function getMainForumStatus(now: Date = new Date()): MainForumStatus {
+  const t = now.getTime()
+  const start = new Date(MAIN_FORUM_SCHEDULE.startIso).getTime()
+  const end = new Date(MAIN_FORUM_SCHEDULE.endIso).getTime()
+  const d1s = new Date(MAIN_FORUM_SCHEDULE.day1StartIso).getTime()
+  const d1e = new Date(MAIN_FORUM_SCHEDULE.day1EndIso).getTime()
+  const d2s = new Date(MAIN_FORUM_SCHEDULE.day2StartIso).getTime()
+  const d2e = new Date(MAIN_FORUM_SCHEDULE.day2EndIso).getTime()
+
+  if (t < start) {
+    return {
+      phase: 'upcoming',
+      target: 'start',
+      parts: splitMs(start - t),
+      badge: 'Sắp diễn ra',
+      title: MAIN_FORUM_SCHEDULE.title,
+      subtitle: `${MAIN_FORUM_SCHEDULE.venue} · 14–15/08 · Main forum`,
+    }
+  }
+
+  if (t >= end) {
+    return {
+      phase: 'ended',
+      target: 'end',
+      parts: splitMs(0),
+      badge: 'Đã kết thúc',
+      title: MAIN_FORUM_SCHEDULE.title,
+      subtitle: 'Cảm ơn đã đồng hành · Xem lại side events trên map',
+    }
+  }
+
+  // Live window
+  let liveDay: 1 | 2 = 1
+  let liveTrack = MAIN_FORUM_DAYS['2026-08-14'].track
+  let dayEnd = d1e
+  if (t >= d2s || (t >= d1e && t < d2s)) {
+    // Between day1 evening and day2 morning still "live week" — treat as day 2 prep
+    if (t >= d2s) {
+      liveDay = 2
+      liveTrack = MAIN_FORUM_DAYS['2026-08-15'].track
+      dayEnd = d2e
+    } else {
+      liveDay = 1
+      liveTrack = MAIN_FORUM_DAYS['2026-08-14'].track
+      dayEnd = d2s // countdown to day 2 open
+    }
+  } else if (t >= d1s && t < d1e) {
+    liveDay = 1
+    liveTrack = MAIN_FORUM_DAYS['2026-08-14'].track
+    dayEnd = d1e
+  }
+
+  const untilForumEnd = end - t
+  const untilDayEnd = Math.max(0, dayEnd - t)
+  // Prefer day-end when still on that day block; else forum end
+  const useDay = untilDayEnd > 0 && untilDayEnd < untilForumEnd
+  const remaining = useDay ? untilDayEnd : untilForumEnd
+
+  return {
+    phase: 'live',
+    target: 'end',
+    parts: splitMs(remaining),
+    badge: 'LIVE',
+    title: `Ngày ${liveDay} · ${liveTrack}`,
+    subtitle: useDay
+      ? `Đang diễn ra · còn lại đến hết block · ${MAIN_FORUM_SCHEDULE.venue}`
+      : `Đang diễn ra · còn lại đến đóng cửa forum · ${MAIN_FORUM_SCHEDULE.venue}`,
+    liveDay,
+    liveTrack,
+  }
+}
+
+export function formatCountdownParts(p: MainForumCountdownParts): string {
+  const pad = (n: number) => String(n).padStart(2, '0')
+  if (p.days > 0) {
+    return `${p.days}d ${pad(p.hours)}h ${pad(p.minutes)}m ${pad(p.seconds)}s`
+  }
+  if (p.hours > 0) {
+    return `${pad(p.hours)}:${pad(p.minutes)}:${pad(p.seconds)}`
+  }
+  return `${pad(p.minutes)}:${pad(p.seconds)}`
+}
+
 export const EVENT_TYPE_LABELS: Record<SideEventType, string> = {
   mixer: 'Mixer',
   workshop: 'Workshop',

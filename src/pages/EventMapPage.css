@@ -102,6 +102,186 @@
   color: #e0f2fe;
 }
 
+/* —— Main forum countdown / live / ended bar —— */
+.emp-status {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  grid-template-areas:
+    'badge body clock'
+    'hint hint hint';
+  align-items: center;
+  gap: 0.35rem 0.85rem;
+  padding: 0.55rem 1rem 0.6rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(22, 22, 24, 0.92);
+  backdrop-filter: blur(20px) saturate(150%);
+  -webkit-backdrop-filter: blur(20px) saturate(150%);
+  flex: 0 0 auto;
+  z-index: 3;
+}
+
+.emp-status--upcoming {
+  background: linear-gradient(
+    90deg,
+    rgba(10, 132, 255, 0.12),
+    rgba(22, 22, 24, 0.92) 42%
+  );
+}
+
+.emp-status--live {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 69, 58, 0.14),
+    rgba(22, 22, 24, 0.92) 48%
+  );
+}
+
+.emp-status--ended {
+  background: linear-gradient(
+    90deg,
+    rgba(120, 120, 128, 0.16),
+    rgba(22, 22, 24, 0.92) 45%
+  );
+}
+
+.emp-status__badge {
+  grid-area: badge;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.28rem 0.6rem;
+  border-radius: 980px;
+  font-size: 0.68rem;
+  font-weight: 750;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: #fff;
+  background: #0a84ff;
+}
+
+.emp-status--live .emp-status__badge {
+  background: #ff453a;
+}
+
+.emp-status--ended .emp-status__badge {
+  background: rgba(120, 120, 128, 0.45);
+  color: #f5f5f7;
+}
+
+.emp-status__live-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.6);
+  animation: emp-status-pulse 1.4s ease-out infinite;
+}
+
+@keyframes emp-status-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.55);
+  }
+  70% {
+    box-shadow: 0 0 0 8px rgba(255, 255, 255, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
+  }
+}
+
+.emp-status__body {
+  grid-area: body;
+  min-width: 0;
+}
+
+.emp-status__title {
+  margin: 0;
+  font-size: 0.88rem;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+  color: #f5f5f7;
+  line-height: 1.25;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.emp-status__sub {
+  margin: 0.12rem 0 0;
+  font-size: 0.7rem;
+  color: rgba(235, 235, 245, 0.48);
+  line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.emp-status__clock {
+  grid-area: clock;
+  display: flex;
+  align-items: flex-end;
+  gap: 0.2rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.emp-status__unit {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 2.1rem;
+}
+
+.emp-status__unit strong {
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: #f5f5f7;
+  line-height: 1.1;
+}
+
+.emp-status__unit span {
+  font-size: 0.55rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: rgba(235, 235, 245, 0.4);
+  line-height: 1.2;
+}
+
+.emp-status__sep {
+  font-size: 1rem;
+  font-weight: 600;
+  color: rgba(235, 235, 245, 0.35);
+  padding-bottom: 0.7rem;
+  line-height: 1;
+}
+
+.emp-status__ended-label {
+  grid-area: clock;
+  font-size: 0.78rem;
+  font-weight: 750;
+  letter-spacing: 0.12em;
+  color: rgba(235, 235, 245, 0.45);
+}
+
+.emp-status__hint {
+  grid-area: hint;
+  margin: 0;
+  font-size: 0.62rem;
+  font-weight: 500;
+  color: rgba(235, 235, 245, 0.36);
+  letter-spacing: 0.01em;
+}
+
+.emp-status--live .emp-status__unit strong {
+  color: #ffd6d3;
+}
+
+.emp-status--upcoming .emp-status__unit strong {
+  color: #cce5ff;
+}
+
 .emp__filters {
   display: flex;
   flex-direction: column;
@@ -1171,6 +1351,37 @@
   .emp__header-actions {
     margin-left: 0;
     width: 100%;
+  }
+
+  .emp-status {
+    grid-template-columns: auto 1fr;
+    grid-template-areas:
+      'badge clock'
+      'body body'
+      'hint hint';
+    gap: 0.35rem 0.55rem;
+    padding: 0.5rem 0.75rem 0.55rem;
+  }
+
+  .emp-status__clock {
+    justify-self: end;
+  }
+
+  .emp-status__unit {
+    min-width: 1.85rem;
+  }
+
+  .emp-status__unit strong {
+    font-size: 0.95rem;
+  }
+
+  .emp-status__title {
+    font-size: 0.8rem;
+    white-space: normal;
+  }
+
+  .emp-status__sub {
+    white-space: normal;
   }
 
   .emp__filters {

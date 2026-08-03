@@ -18,12 +18,14 @@ import {
   formatMonthYearVi,
   formatShortDate,
   formatWeekdayShortVi,
+  getMainForumStatus,
   mainForumMeta,
   matchesDateFilter,
   shortEventTitle,
   sortEvents,
   sortEventsUpcoming,
   toSquareImageUrl,
+  type MainForumStatus,
   type SideEvent,
   type SideEventDataset,
   type SideEventType,
@@ -288,9 +290,21 @@ export function EventMapPage() {
   const [sheetMode, setSheetMode] = useState<SheetMode>(() =>
     isMobileViewport() ? 'half' : 'full',
   )
+  const [forumStatus, setForumStatus] = useState<MainForumStatus>(() =>
+    getMainForumStatus(),
+  )
 
   const today = todayVn()
   const nowHm = nowHmVn()
+
+  // Live countdown tick (main forum status bar)
+  useEffect(() => {
+    setForumStatus(getMainForumStatus())
+    const id = window.setInterval(() => {
+      setForumStatus(getMainForumStatus())
+    }, 1000)
+    return () => window.clearInterval(id)
+  }, [])
 
   useEffect(() => {
     let cancelled = false
@@ -930,6 +944,68 @@ export function EventMapPage() {
           </a>
         </div>
       </header>
+
+      <div
+        className={`emp-status emp-status--${forumStatus.phase}`}
+        role="status"
+        aria-live="polite"
+      >
+        <div className="emp-status__badge">
+          {forumStatus.phase === 'live' && (
+            <span className="emp-status__live-dot" aria-hidden />
+          )}
+          {forumStatus.badge}
+        </div>
+        <div className="emp-status__body">
+          <p className="emp-status__title">{forumStatus.title}</p>
+          <p className="emp-status__sub">{forumStatus.subtitle}</p>
+        </div>
+        {forumStatus.phase !== 'ended' ? (
+          <div className="emp-status__clock" aria-label="Đếm ngược">
+            {forumStatus.parts.days > 0 && (
+              <div className="emp-status__unit">
+                <strong>{forumStatus.parts.days}</strong>
+                <span>ngày</span>
+              </div>
+            )}
+            <div className="emp-status__unit">
+              <strong>
+                {String(forumStatus.parts.hours).padStart(2, '0')}
+              </strong>
+              <span>giờ</span>
+            </div>
+            <div className="emp-status__sep" aria-hidden>
+              :
+            </div>
+            <div className="emp-status__unit">
+              <strong>
+                {String(forumStatus.parts.minutes).padStart(2, '0')}
+              </strong>
+              <span>phút</span>
+            </div>
+            <div className="emp-status__sep" aria-hidden>
+              :
+            </div>
+            <div className="emp-status__unit">
+              <strong>
+                {String(forumStatus.parts.seconds).padStart(2, '0')}
+              </strong>
+              <span>giây</span>
+            </div>
+          </div>
+        ) : (
+          <div className="emp-status__ended-label">END</div>
+        )}
+        <p className="emp-status__hint">
+          {forumStatus.phase === 'upcoming'
+            ? 'Đến giờ mở cửa main forum'
+            : forumStatus.phase === 'live'
+              ? forumStatus.target === 'end'
+                ? 'Còn lại trong block / forum'
+                : ''
+              : 'Forum đã đóng'}
+        </p>
+      </div>
 
       <div className="emp__filters">
         <div className="emp-widget" role="group" aria-label="Lọc theo ngày">

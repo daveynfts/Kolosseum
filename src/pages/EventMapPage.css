@@ -426,11 +426,22 @@
   padding-top: 0.1rem;
 }
 
-/* —— Week calendar (clean iOS-like strip) —— */
+/* —— Week calendar · liquid glass grid —— */
 .emp-week {
+  --lg-fill: linear-gradient(
+    155deg,
+    rgba(255, 255, 255, 0.14) 0%,
+    rgba(255, 255, 255, 0.05) 42%,
+    rgba(255, 255, 255, 0.02) 100%
+  );
+  --lg-border: rgba(255, 255, 255, 0.16);
+  --lg-border-soft: rgba(255, 255, 255, 0.1);
+  --lg-shine: inset 0 1px 0 rgba(255, 255, 255, 0.22),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.18);
+  --lg-blur: blur(18px) saturate(165%);
   display: flex;
   flex-direction: column;
-  gap: 0.55rem;
+  gap: 0.6rem;
   font-family: var(--emp-font);
 }
 
@@ -440,6 +451,7 @@
   justify-content: space-between;
   gap: 0.75rem;
   min-height: 1.5rem;
+  padding: 0.15rem 0.1rem;
 }
 
 .emp-week__meta {
@@ -473,26 +485,34 @@
 
 .emp-week__seg-btn {
   appearance: none;
-  border: 1px solid var(--emp-border);
+  border: 1px solid var(--lg-border);
   border-radius: var(--emp-radius-pill);
-  padding: 0.38rem 0.85rem;
+  padding: 0.4rem 0.9rem;
   font-size: 0.78rem;
   font-weight: 600;
   letter-spacing: -0.01em;
   color: var(--emp-text-2);
-  background: var(--emp-surface-2);
+  background: var(--lg-fill);
+  box-shadow: var(--lg-shine), 0 4px 14px rgba(0, 0, 0, 0.22);
+  backdrop-filter: var(--lg-blur);
+  -webkit-backdrop-filter: var(--lg-blur);
   cursor: pointer;
   transition:
-    background 0.15s ease,
-    color 0.15s ease,
-    border-color 0.15s ease,
+    background 0.18s ease,
+    color 0.18s ease,
+    border-color 0.18s ease,
+    box-shadow 0.18s ease,
     transform 0.1s ease;
 }
 
 .emp-week__seg-btn:hover {
-  background: var(--emp-surface-hover);
   color: var(--emp-text);
-  border-color: var(--emp-border-strong);
+  border-color: rgba(255, 255, 255, 0.28);
+  background: linear-gradient(
+    155deg,
+    rgba(255, 255, 255, 0.2) 0%,
+    rgba(255, 255, 255, 0.08) 100%
+  );
 }
 
 .emp-week__seg-btn:active {
@@ -500,43 +520,133 @@
 }
 
 .emp-week__seg-btn.is-on {
-  background: var(--emp-accent);
-  border-color: transparent;
+  background: linear-gradient(
+    160deg,
+    rgba(0, 145, 255, 0.92) 0%,
+    rgba(0, 113, 227, 0.88) 55%,
+    rgba(0, 90, 200, 0.9) 100%
+  );
+  border-color: rgba(160, 210, 255, 0.45);
   color: #fff;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.35),
+    0 6px 18px rgba(0, 113, 227, 0.4);
 }
 
-/* Equal-width day strip — fills row */
+/* Liquid glass tray holding day tiles */
 .emp-week__days {
   display: grid;
   grid-auto-flow: column;
   grid-auto-columns: minmax(0, 1fr);
-  gap: 0.28rem;
+  gap: 0.35rem;
   width: 100%;
+  padding: 0.4rem;
+  border-radius: 18px;
+  background:
+    linear-gradient(
+      165deg,
+      rgba(255, 255, 255, 0.1) 0%,
+      rgba(255, 255, 255, 0.03) 48%,
+      rgba(255, 255, 255, 0.015) 100%
+    ),
+    rgba(12, 14, 22, 0.45);
+  border: 1px solid var(--lg-border-soft);
+  box-shadow:
+    var(--lg-shine),
+    0 10px 28px rgba(0, 0, 0, 0.32),
+    0 0 0 1px rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(22px) saturate(170%);
+  -webkit-backdrop-filter: blur(22px) saturate(170%);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Soft specular wash across the tray */
+.emp-week__days::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(
+    115deg,
+    rgba(255, 255, 255, 0.14) 0%,
+    transparent 28%,
+    transparent 62%,
+    rgba(0, 113, 227, 0.06) 100%
+  );
+  z-index: 0;
 }
 
 .emp-week__day {
   appearance: none;
-  border: none;
+  border: 1px solid rgba(255, 255, 255, 0.08);
   margin: 0;
-  padding: 0.45rem 0.15rem 0.4rem;
-  border-radius: var(--emp-radius-md);
-  background: transparent;
+  padding: 0.5rem 0.2rem 0.42rem;
+  border-radius: 14px;
+  background:
+    linear-gradient(
+      160deg,
+      rgba(255, 255, 255, 0.12) 0%,
+      rgba(255, 255, 255, 0.04) 45%,
+      rgba(255, 255, 255, 0.02) 100%
+    ),
+    rgba(255, 255, 255, 0.03);
   color: var(--emp-text);
   cursor: pointer;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.22rem;
+  gap: 0.24rem;
   min-width: 0;
-  transition:
-    background 0.16s ease,
-    box-shadow 0.16s ease,
-    transform 0.1s ease;
   position: relative;
+  z-index: 1;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.16),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.12),
+    0 2px 8px rgba(0, 0, 0, 0.12);
+  backdrop-filter: blur(12px) saturate(150%);
+  -webkit-backdrop-filter: blur(12px) saturate(150%);
+  transition:
+    background 0.18s ease,
+    border-color 0.18s ease,
+    box-shadow 0.18s ease,
+    transform 0.12s ease;
+}
+
+/* Tiny highlight bead on each tile */
+.emp-week__day::after {
+  content: '';
+  position: absolute;
+  top: 1px;
+  left: 18%;
+  right: 18%;
+  height: 1px;
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.45),
+    transparent
+  );
+  pointer-events: none;
+  opacity: 0.7;
 }
 
 .emp-week__day:hover:not(:disabled):not(.is-selected) {
-  background: var(--emp-surface);
+  border-color: rgba(255, 255, 255, 0.22);
+  background:
+    linear-gradient(
+      160deg,
+      rgba(255, 255, 255, 0.2) 0%,
+      rgba(255, 255, 255, 0.08) 50%,
+      rgba(255, 255, 255, 0.04) 100%
+    ),
+    rgba(255, 255, 255, 0.05);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.28),
+    0 6px 16px rgba(0, 0, 0, 0.22);
+  transform: translateY(-1px);
 }
 
 .emp-week__day:active:not(:disabled) {
@@ -545,13 +655,14 @@
 
 .emp-week__day:disabled,
 .emp-week__day.is-empty {
-  opacity: 0.32;
+  opacity: 0.38;
   cursor: default;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
 
 .emp-week__dow {
   font-size: 0.62rem;
-  font-weight: 600;
+  font-weight: 650;
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--emp-muted);
@@ -565,12 +676,18 @@
   display: grid;
   place-items: center;
   font-size: 1.05rem;
-  font-weight: 600;
+  font-weight: 650;
   letter-spacing: -0.03em;
   font-variant-numeric: tabular-nums;
   line-height: 1;
   color: var(--emp-text);
-  transition: background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  transition:
+    background 0.16s ease,
+    color 0.16s ease,
+    box-shadow 0.16s ease,
+    border-color 0.16s ease;
 }
 
 .emp-week__num--tbd {
@@ -598,9 +715,10 @@
   width: 4px;
   height: 4px;
   border-radius: 50%;
-  background: var(--emp-accent);
+  background: rgba(126, 184, 255, 0.95);
   display: block;
-  opacity: 0.9;
+  opacity: 0.95;
+  box-shadow: 0 0 6px rgba(0, 145, 255, 0.55);
 }
 
 .emp-week__dots--none {
@@ -619,51 +737,128 @@
 }
 
 /* Today */
+.emp-week__day.is-today {
+  border-color: rgba(255, 59, 48, 0.28);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.18),
+    0 0 0 1px rgba(255, 59, 48, 0.12),
+    0 4px 14px rgba(255, 59, 48, 0.12);
+}
+
 .emp-week__day.is-today .emp-week__dow {
   color: var(--emp-live);
 }
 
 .emp-week__day.is-today:not(.is-selected) .emp-week__num {
   color: var(--emp-live);
-  background: rgba(255, 59, 48, 0.12);
+  background: rgba(255, 59, 48, 0.14);
+  border-color: rgba(255, 59, 48, 0.25);
 }
 
-/* Selected */
+/* Selected liquid glass tile */
+.emp-week__day.is-selected {
+  border-color: rgba(120, 190, 255, 0.45);
+  background:
+    linear-gradient(
+      165deg,
+      rgba(80, 170, 255, 0.28) 0%,
+      rgba(0, 113, 227, 0.16) 48%,
+      rgba(255, 255, 255, 0.06) 100%
+    ),
+    rgba(0, 90, 200, 0.12);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.35),
+    inset 0 -1px 0 rgba(0, 60, 140, 0.15),
+    0 8px 22px rgba(0, 113, 227, 0.28),
+    0 0 0 1px rgba(0, 145, 255, 0.15);
+}
+
 .emp-week__day.is-selected .emp-week__num {
-  background: var(--emp-accent);
+  background: linear-gradient(
+    160deg,
+    #4da3ff 0%,
+    var(--emp-accent) 55%,
+    #005bb8 100%
+  );
   color: #fff;
-  box-shadow: 0 3px 12px rgba(0, 113, 227, 0.35);
+  border-color: rgba(200, 230, 255, 0.45);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.4),
+    0 4px 14px rgba(0, 113, 227, 0.45);
 }
 
 .emp-week__day.is-selected .emp-week__dow {
-  color: var(--emp-accent);
+  color: #9ec9ff;
   font-weight: 700;
 }
 
 .emp-week__day.is-selected.is-today .emp-week__dow {
-  color: var(--emp-live);
+  color: #ff8a82;
+}
+
+.emp-week__day.is-selected.is-today {
+  border-color: rgba(255, 100, 90, 0.4);
+  background:
+    linear-gradient(
+      165deg,
+      rgba(255, 90, 80, 0.28) 0%,
+      rgba(255, 59, 48, 0.14) 50%,
+      rgba(255, 255, 255, 0.05) 100%
+    ),
+    rgba(120, 20, 16, 0.12);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.28),
+    0 8px 22px rgba(255, 59, 48, 0.22);
 }
 
 .emp-week__day.is-selected.is-today .emp-week__num {
-  background: var(--emp-live);
-  box-shadow: 0 3px 12px rgba(255, 59, 48, 0.35);
+  background: linear-gradient(160deg, #ff6b62 0%, var(--emp-live) 100%);
+  border-color: rgba(255, 200, 196, 0.4);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.35),
+    0 4px 14px rgba(255, 59, 48, 0.4);
 }
 
 .emp-week__day.is-selected .emp-week__dots i {
-  background: rgba(255, 255, 255, 0.85);
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 0 6px rgba(255, 255, 255, 0.4);
 }
 
 .emp-week__day.is-selected .emp-week__main-label {
-  color: rgba(235, 235, 245, 0.78);
+  color: rgba(235, 235, 245, 0.88);
 }
 
-/* Main forum days */
+/* Main forum days — tinted liquid glass */
 .emp-week__day--main {
-  background: var(--emp-surface);
+  border-color: rgba(255, 255, 255, 0.14);
 }
 
 .emp-week__day--main:hover:not(:disabled):not(.is-selected) {
-  background: var(--emp-surface-2);
+  border-color: rgba(255, 255, 255, 0.26);
+}
+
+.emp-week__day--d1 {
+  background:
+    linear-gradient(
+      160deg,
+      rgba(255, 200, 100, 0.16) 0%,
+      rgba(255, 159, 10, 0.08) 50%,
+      rgba(255, 255, 255, 0.03) 100%
+    ),
+    rgba(255, 159, 10, 0.05);
+  border-color: rgba(255, 159, 10, 0.22);
+}
+
+.emp-week__day--d2 {
+  background:
+    linear-gradient(
+      160deg,
+      rgba(140, 230, 255, 0.16) 0%,
+      rgba(100, 210, 255, 0.08) 50%,
+      rgba(255, 255, 255, 0.03) 100%
+    ),
+    rgba(100, 210, 255, 0.05);
+  border-color: rgba(100, 210, 255, 0.22);
 }
 
 .emp-week__day--d1 .emp-week__main-label {
@@ -674,66 +869,153 @@
   color: var(--emp-cyan);
 }
 
+.emp-week__day--d1.is-selected {
+  border-color: rgba(255, 200, 100, 0.5);
+  background:
+    linear-gradient(
+      165deg,
+      rgba(255, 200, 80, 0.32) 0%,
+      rgba(255, 159, 10, 0.16) 50%,
+      rgba(255, 255, 255, 0.05) 100%
+    ),
+    rgba(120, 70, 0, 0.12);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.3),
+    0 8px 22px rgba(255, 159, 10, 0.25);
+}
+
 .emp-week__day--d1.is-selected .emp-week__num {
-  background: var(--emp-gold);
-  box-shadow: 0 3px 12px rgba(255, 159, 10, 0.35);
+  background: linear-gradient(160deg, #ffc14d 0%, var(--emp-gold) 100%);
+  color: #1a1200;
+  border-color: rgba(255, 240, 200, 0.5);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.45),
+    0 4px 14px rgba(255, 159, 10, 0.4);
 }
 
 .emp-week__day--d1.is-selected .emp-week__dow {
   color: var(--emp-gold);
 }
 
+.emp-week__day--d2.is-selected {
+  border-color: rgba(140, 230, 255, 0.5);
+  background:
+    linear-gradient(
+      165deg,
+      rgba(140, 230, 255, 0.3) 0%,
+      rgba(100, 210, 255, 0.14) 50%,
+      rgba(255, 255, 255, 0.05) 100%
+    ),
+    rgba(0, 70, 100, 0.12);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.3),
+    0 8px 22px rgba(100, 210, 255, 0.22);
+}
+
 .emp-week__day--d2.is-selected .emp-week__num {
-  background: var(--emp-cyan);
-  color: #000;
-  box-shadow: 0 3px 12px rgba(100, 210, 255, 0.28);
+  background: linear-gradient(160deg, #9ae4ff 0%, var(--emp-cyan) 100%);
+  color: #001820;
+  border-color: rgba(220, 250, 255, 0.5);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.45),
+    0 4px 14px rgba(100, 210, 255, 0.35);
 }
 
 .emp-week__day--d2.is-selected .emp-week__dow {
   color: var(--emp-cyan);
 }
 
-.emp-week__day--main.is-selected {
-  background: var(--emp-surface-2);
+.emp-week__day--tbd {
+  background:
+    linear-gradient(
+      160deg,
+      rgba(255, 255, 255, 0.1) 0%,
+      rgba(255, 255, 255, 0.03) 100%
+    ),
+    rgba(255, 255, 255, 0.02);
+  border-style: dashed;
+  border-color: rgba(255, 255, 255, 0.16);
 }
 
-.emp-week__day--d1.is-selected {
-  background: rgba(255, 159, 10, 0.08);
+.emp-week__day--tbd.is-selected {
+  border-style: solid;
+  border-color: rgba(180, 180, 200, 0.4);
+  background:
+    linear-gradient(
+      165deg,
+      rgba(255, 255, 255, 0.16) 0%,
+      rgba(255, 255, 255, 0.06) 100%
+    ),
+    rgba(80, 80, 100, 0.12);
 }
 
-.emp-week__day--d2.is-selected {
-  background: rgba(100, 210, 255, 0.08);
-}
-
-/* Main detail card */
+/* Main detail card — liquid glass */
 .emp-week__main-card {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  padding: 0.65rem 0.75rem;
-  border-radius: var(--emp-radius-lg);
-  background: var(--emp-glass);
-  border: 1px solid var(--emp-border);
-  box-shadow: var(--emp-shadow);
+  padding: 0.7rem 0.85rem;
+  border-radius: 16px;
+  background:
+    linear-gradient(
+      145deg,
+      rgba(255, 255, 255, 0.12) 0%,
+      rgba(255, 255, 255, 0.04) 50%,
+      rgba(255, 255, 255, 0.02) 100%
+    ),
+    rgba(12, 14, 22, 0.5);
+  border: 1px solid var(--lg-border);
+  box-shadow:
+    var(--lg-shine),
+    0 10px 28px rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
   animation: emp-week-in 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.emp-week__main-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    105deg,
+    rgba(255, 255, 255, 0.12) 0%,
+    transparent 35%,
+    transparent 100%
+  );
 }
 
 .emp-week__main-card--d1 {
-  border-color: rgba(255, 159, 10, 0.22);
-  background: linear-gradient(
-    90deg,
-    rgba(255, 159, 10, 0.1),
-    rgba(255, 255, 255, 0.03) 55%
-  );
+  border-color: rgba(255, 159, 10, 0.32);
+  background:
+    linear-gradient(
+      120deg,
+      rgba(255, 159, 10, 0.18) 0%,
+      rgba(255, 255, 255, 0.05) 45%,
+      rgba(255, 255, 255, 0.02) 100%
+    ),
+    rgba(30, 20, 6, 0.45);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 220, 160, 0.25),
+    0 10px 28px rgba(255, 159, 10, 0.12);
 }
 
 .emp-week__main-card--d2 {
-  border-color: rgba(100, 210, 255, 0.2);
-  background: linear-gradient(
-    90deg,
-    rgba(100, 210, 255, 0.08),
-    rgba(255, 255, 255, 0.03) 55%
-  );
+  border-color: rgba(100, 210, 255, 0.3);
+  background:
+    linear-gradient(
+      120deg,
+      rgba(100, 210, 255, 0.16) 0%,
+      rgba(255, 255, 255, 0.05) 45%,
+      rgba(255, 255, 255, 0.02) 100%
+    ),
+    rgba(6, 22, 30, 0.45);
+  box-shadow:
+    inset 0 1px 0 rgba(180, 240, 255, 0.22),
+    0 10px 28px rgba(100, 210, 255, 0.1);
 }
 
 @keyframes emp-week-in {
@@ -1777,8 +2059,14 @@
     font-size: 0.88rem;
   }
 
+  .emp-week__days {
+    gap: 0.28rem;
+    padding: 0.32rem;
+    border-radius: 16px;
+  }
+
   .emp-week__day {
-    padding: 0.35rem 0.1rem 0.32rem;
+    padding: 0.38rem 0.08rem 0.32rem;
     border-radius: 12px;
   }
 
@@ -1793,7 +2081,8 @@
   }
 
   .emp-week__main-card {
-    padding: 0.55rem 0.6rem;
+    padding: 0.55rem 0.65rem;
+    border-radius: 14px;
   }
 
   .emp-week__main-title {

@@ -16,7 +16,7 @@ import {
   eventDistanceKm,
   eventOccursOnDate,
   formatDayNum,
-  formatDistanceWithWalk,
+  formatDistanceWithDrive,
   formatLumaDay,
   formatLumaTime,
   formatMonthYearVi,
@@ -513,7 +513,7 @@ export function EventMapPage() {
     if (distOrigin === 'selected' && ev.id === selectedId) return 'Đang chọn'
     const km = eventDistanceKm(distanceFrom, ev)
     if (km == null) return null
-    return formatDistanceWithWalk(km, distanceFrom.label)
+    return formatDistanceWithDrive(km, distanceFrom.label)
   }
 
   const requestMyLocation = () => {
@@ -1379,7 +1379,7 @@ export function EventMapPage() {
                     ? 'Mọi ngày · live / sắp tới ưu tiên'
                     : `Ngày ${formatShortDate(dateFilter)}`}
                 {' · '}
-                khoảng cách + phút đi bộ từ{' '}
+                khoảng cách + phút đi xe từ{' '}
                 {distOrigin === 'me'
                   ? 'bạn'
                   : distOrigin === 'selected'

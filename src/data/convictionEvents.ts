@@ -918,26 +918,32 @@ export function formatDistanceKm(km: number): string {
 }
 
 /**
- * Walking ETA at ~4.5 km/h (urban stroll).
- * `~12 phút đi bộ` / `~1h15m đi bộ`
+ * Driving / xe máy ETA at ~20 km/h (urban traffic, HCMC-ish).
+ * `~12 phút đi xe` / `~1h15m đi xe`
  */
-export function formatWalkEta(km: number): string {
+export function formatDriveEta(km: number): string {
   if (!Number.isFinite(km) || km < 0) return '—'
-  const min = Math.max(1, Math.round((km / 4.5) * 60))
-  if (km < 0.05) return '< 1 phút đi bộ'
-  if (min < 60) return `~${min} phút đi bộ`
+  const min = Math.max(1, Math.round((km / 20) * 60))
+  if (km < 0.05) return '< 1 phút đi xe'
+  if (min < 60) return `~${min} phút đi xe`
   const h = Math.floor(min / 60)
   const m = min % 60
-  return m ? `~${h}h${String(m).padStart(2, '0')}m đi bộ` : `~${h}h đi bộ`
+  return m ? `~${h}h${String(m).padStart(2, '0')}m đi xe` : `~${h}h đi xe`
 }
 
-/** Combined: `1.2 km · ~16 phút đi bộ từ Sala` */
-export function formatDistanceWithWalk(
+/** @deprecated Use formatDriveEta — kept for call-site compatibility */
+export const formatWalkEta = formatDriveEta
+
+/** Combined: `1.2 km · ~4 phút đi xe từ Sala` */
+export function formatDistanceWithDrive(
   km: number,
   fromLabel = 'Sala',
 ): string {
-  return `${formatDistanceKm(km)} · ${formatWalkEta(km)} từ ${fromLabel}`
+  return `${formatDistanceKm(km)} · ${formatDriveEta(km)} từ ${fromLabel}`
 }
+
+/** @deprecated Use formatDistanceWithDrive */
+export const formatDistanceWithWalk = formatDistanceWithDrive
 
 function hmToMinutes(hm: string): number {
   const m = /^(\d{1,2}):(\d{2})$/.exec((hm || '').trim())
@@ -1006,7 +1012,7 @@ export type RouteSegment = {
 
 /**
  * Open tour via nearest-neighbour from `start` through all points.
- * Easy-to-read “optimal enough” walking order between nearby events.
+ * Easy-to-read “optimal enough” drive order between nearby events.
  */
 export function buildNearestNeighborRoute(
   start: RoutePoint,
@@ -1044,8 +1050,8 @@ export function buildNearestNeighborRoute(
       from: { lat: cur.lat, lng: cur.lng },
       to: { lat: next.lat, lng: next.lng },
       km: bestKm,
-      shortLabel: `${formatDistanceKm(bestKm)} · ${formatWalkEta(bestKm)}`,
-      fullLabel: `Chặng ${step}: ${formatDistanceKm(bestKm)} · ${formatWalkEta(bestKm)} (đi bộ)`,
+      shortLabel: `${formatDistanceKm(bestKm)} · ${formatDriveEta(bestKm)}`,
+      fullLabel: `Chặng ${step}: ${formatDistanceKm(bestKm)} · ${formatDriveEta(bestKm)} (đi xe)`,
       step,
     })
     order.push(next)

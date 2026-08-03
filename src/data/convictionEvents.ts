@@ -349,6 +349,14 @@ export const EVENT_TYPE_COLORS: Record<SideEventType, string> = {
 export function toSquareImageUrl(url: string, size = 400): string {
   const u = (url || '').trim()
   if (!u) return ''
+  // Already on our R2 / media proxy — do not rewrite
+  if (
+    /\/api\/media\?id=/i.test(u) ||
+    /\.r2\.dev\/media\//i.test(u) ||
+    /\/media\/[a-f0-9]{16,}/i.test(u)
+  ) {
+    return u
+  }
   // Already a Cloudflare image transform URL
   if (u.includes('lumacdn.com/cdn-cgi/image/')) {
     return u

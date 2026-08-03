@@ -21,6 +21,7 @@ import {
   enforcePublicRateLimit,
   readBaseUpdatedAt,
 } from '../lib/server/apiHelpers.js'
+import { cacheEventImageUrls } from '../lib/server/mediaCache.js'
 
 type SideEventBody = {
   id?: string
@@ -139,12 +140,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           serverUpdatedAt: stale.serverUpdatedAt,
         })
       }
+      // Best-effort: pull Luma covers onto R2 so map pins load from CDN
+      const imagePass = await cacheEventImageUrls(
+        client,
+        (body.events || []) as Array<SideEventBody & { imageUrl?: string }>,
+        { deadlineMs: 8_000 },
+      )
       const payload: Body = {
         ...body,
         version: 1,
         kind: 'conviction-side-events',
         event: 'conviction-2026',
-        events: body.events,
+        events: imagePass.events,
         updatedAt: new Date().toISOString(),
       }
       delete (payload as { baseUpdatedAt?: string }).baseUpdatedAt
@@ -155,6 +162,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         updatedAt: payload.updatedAt,
         storage: 'r2',
         key: EVENT_SIDE_EVENTS_OBJECT_KEY,
+        imagesCached: imagePass.cached,
+        imagesFailed: imagePass.failed,
       })
     }
 

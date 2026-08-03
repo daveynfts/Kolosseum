@@ -7,15 +7,19 @@ import {
   r2PutBytes,
 } from './r2.js'
 
-/** Soft cap ~2MB per image for admin-curated feed */
-const MAX_BYTES = 2_000_000
+/** Soft cap ~3MB (tweet media + Luma event covers) */
+const MAX_BYTES = 3_000_000
 
-/** Only cache images from known tweet/CDN hosts (blocks open fetch-to-R2 abuse). */
+/** Only cache images from known hosts (blocks open fetch-to-R2 abuse). */
 const ALLOWED_IMAGE_HOSTS = new Set([
   'pbs.twimg.com',
   'video.twimg.com',
   'abs.twimg.com',
   'ton.twimg.com',
+  // Luma event covers (Conviction side events)
+  'images.lumacdn.com',
+  'cdn.lu.ma',
+  'images.luma.com',
 ])
 
 function isAllowedImageUrl(sourceUrl: string): boolean {
@@ -34,6 +38,44 @@ export function hashUrl(url: string): string {
 }
 
 /**
+ * Normalize Luma CDN URL to a stable 1:1 square cover for caching.
+ * Different width/height query params map to the same R2 object.
+ */
+export function normalizeEventImageFetchUrl(
+  sourceUrl: string,
+  size = 640,
+): string {
+  const u = (sourceUrl || '').trim()
+  if (!u) return u
+  if (u.includes('lumacdn.com/cdn-cgi/image/')) {
+    return u
+      .replace(/width=\d+(\.\d+)?/gi, `width=${size}`)
+      .replace(/height=\d+(\.\d+)?/gi, `height=${size}`)
+  }
+  const m = u.match(
+    /images\.lumacdn\.com\/((?:uploads|gallery-images|event-covers)\/[^?#]+)/i,
+  )
+  if (m) {
+    const path = m[1].replace(/^\//, '')
+    return (
+      `https://images.lumacdn.com/cdn-cgi/image/` +
+      `format=auto,fit=cover,dpr=1,background=white,quality=75,` +
+      `width=${size},height=${size}/${path}`
+    )
+  }
+  return u
+}
+
+/** Stable hash key for cache identity (Luma asset path without size). */
+function cacheIdentityKey(sourceUrl: string): string {
+  const m = sourceUrl.match(
+    /images\.lumacdn\.com\/(?:cdn-cgi\/image\/[^/]+\/)?((?:uploads|gallery-images|event-covers)\/[^?#]+)/i,
+  )
+  if (m) return `luma:${m[1].toLowerCase()}`
+  return sourceUrl
+}
+
+/**
  * Download remote image → store on R2 → return public/proxy URL.
  * On failure returns original URL.
  */
@@ -44,6 +86,10 @@ export async function cacheRemoteImage(
   if (!sourceUrl || !/^https?:\/\//i.test(sourceUrl)) {
     return { cachedUrl: sourceUrl, id: null, cached: false, error: 'invalid_url' }
   }
+  // Already our cached media (proxy or R2). Do NOT match pbs.twimg.com/media/…
+  if (isOurMediaUrl(sourceUrl)) {
+    return { cachedUrl: sourceUrl, id: null, cached: true }
+  }
   if (!isAllowedImageUrl(sourceUrl)) {
     return {
       cachedUrl: sourceUrl,
@@ -52,12 +98,9 @@ export async function cacheRemoteImage(
       error: 'host_not_allowed',
     }
   }
-  // Already our cached media (proxy or R2). Do NOT match pbs.twimg.com/media/…
-  if (isOurMediaUrl(sourceUrl)) {
-    return { cachedUrl: sourceUrl, id: null, cached: true }
-  }
 
-  const id = hashUrl(sourceUrl)
+  const fetchUrl = normalizeEventImageFetchUrl(sourceUrl, 640)
+  const id = hashUrl(cacheIdentityKey(fetchUrl))
   const key = mediaObjectKey(id)
 
   try {
@@ -69,12 +112,14 @@ export async function cacheRemoteImage(
   }
 
   try {
-    const res = await fetch(sourceUrl, {
+    const res = await fetch(fetchUrl, {
       headers: {
         'User-Agent':
           'Mozilla/5.0 (compatible; VNKolMap/1.0; +https://github.com/daveynfts/VietNamKOLsRadar)',
         Accept: 'image/*,*/*',
+        Referer: 'https://lu.ma/',
       },
+      signal: AbortSignal.timeout(12000),
     })
     if (!res.ok) {
       return {
@@ -99,7 +144,7 @@ export async function cacheRemoteImage(
 
     const contentType =
       res.headers.get('content-type')?.split(';')[0]?.trim() ||
-      guessType(sourceUrl) ||
+      guessType(fetchUrl) ||
       'image/jpeg'
 
     if (!contentType.startsWith('image/')) {
@@ -123,6 +168,51 @@ export async function cacheRemoteImage(
   }
 }
 
+/**
+ * Cache Luma (or other allowed) imageUrls on side-event objects.
+ * Best-effort: keeps original URL if cache fails. Time-budget for serverless.
+ */
+export async function cacheEventImageUrls<
+  T extends { imageUrl?: string | null },
+>(
+  client: S3Client,
+  events: T[],
+  opts?: { deadlineMs?: number },
+): Promise<{ events: T[]; cached: number; failed: number }> {
+  const deadline = Date.now() + (opts?.deadlineMs ?? 8_000)
+  let cached = 0
+  let failed = 0
+  const out: T[] = []
+  for (const ev of events) {
+    const url = typeof ev.imageUrl === 'string' ? ev.imageUrl.trim() : ''
+    if (!url) {
+      out.push(ev)
+      continue
+    }
+    if (isOurMediaUrl(url)) {
+      out.push(ev)
+      cached++
+      continue
+    }
+    if (Date.now() > deadline) {
+      out.push(ev)
+      continue
+    }
+    const result = await cacheRemoteImage(client, url)
+    if (result.cached && result.cachedUrl && result.cachedUrl !== url) {
+      out.push({ ...ev, imageUrl: result.cachedUrl })
+      cached++
+    } else if (result.cached) {
+      out.push(ev)
+      cached++
+    } else {
+      out.push(ev)
+      failed++
+    }
+  }
+  return { events: out, cached, failed }
+}
+
 function guessType(url: string): string | null {
   const u = url.toLowerCase()
   if (u.includes('.png')) return 'image/png'
@@ -132,13 +222,17 @@ function guessType(url: string): string | null {
   return null
 }
 
-/** True only for our R2/proxy media URLs — not Twitter pbs.twimg.com/media/… */
+/** True only for our R2/proxy media URLs — not Twitter / Luma CDN. */
 export function isOurMediaUrl(sourceUrl: string): boolean {
   if (!sourceUrl) return false
   // Same-origin API proxy
   if (/\/api\/media\?id=/i.test(sourceUrl)) return true
   // Known third-party hosts that are NOT ours
-  if (/pbs\.twimg\.com|twimg\.com|video\.twimg\.com/i.test(sourceUrl)) {
+  if (
+    /pbs\.twimg\.com|twimg\.com|video\.twimg\.com|lumacdn\.com|lu\.ma|luma\.com/i.test(
+      sourceUrl,
+    )
+  ) {
     return false
   }
   try {
@@ -147,6 +241,10 @@ export function isOurMediaUrl(sourceUrl: string): boolean {
     if (/^\/media\/[a-f0-9]{16,}(?:\.[a-z0-9]+)?$/i.test(u.pathname)) return true
     // Relative /api/media?id=
     if (u.pathname === '/api/media' && u.searchParams.has('id')) return true
+    // Cloudflare R2.dev public buckets
+    if (/\.r2\.dev$/i.test(u.hostname) && /\/media\//i.test(u.pathname)) {
+      return true
+    }
   } catch {
     /* ignore */
   }

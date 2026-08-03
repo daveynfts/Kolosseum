@@ -18,7 +18,6 @@ import {
   formatMonthYearVi,
   formatShortDate,
   formatWeekdayShortVi,
-  isMainForumDay,
   mainForumMeta,
   matchesDateFilter,
   shortEventTitle,

@@ -18,6 +18,8 @@ import {
   formatMonthYearVi,
   formatShortDate,
   formatWeekdayShortVi,
+  isMainForumDay,
+  mainForumMeta,
   matchesDateFilter,
   shortEventTitle,
   sortEvents,
@@ -938,8 +940,14 @@ export function EventMapPage() {
                 ▦
               </span>
               <div>
-                <p className="emp-cal__title">Lịch side events</p>
-                <p className="emp-cal__month">{calMonthLabel}</p>
+                <p className="emp-cal__title">Lịch Conviction week</p>
+                <p className="emp-cal__month">
+                  {calMonthLabel}
+                  <span className="emp-cal__month-sep">·</span>
+                  <span className="emp-cal__month-hint">
+                    Vàng = Main forum · Sala
+                  </span>
+                </p>
               </div>
             </div>
             <button
@@ -953,18 +961,24 @@ export function EventMapPage() {
             </button>
           </div>
 
-          <div className="emp-cal__strip">
+          <div className="emp-cal__strip" role="listbox" aria-label="Chọn ngày">
             {dates.map((d) => {
               const count = countsByDate.get(d) || 0
               const isToday = d === today
               const isSelected = dateFilter === d
               const empty = count === 0
+              const main = mainForumMeta(d)
+              const isMain = Boolean(main)
               return (
                 <button
                   key={d}
                   type="button"
+                  role="option"
                   className={[
                     'emp-cal__day',
+                    isMain ? 'emp-cal__day--main' : '',
+                    main?.day === 1 ? 'emp-cal__day--main-1' : '',
+                    main?.day === 2 ? 'emp-cal__day--main-2' : '',
                     isSelected ? 'is-selected' : '',
                     isToday ? 'is-today' : '',
                     empty ? 'is-empty' : '',
@@ -972,15 +986,37 @@ export function EventMapPage() {
                     .filter(Boolean)
                     .join(' ')}
                   onClick={() => setDate(d)}
-                  disabled={empty}
+                  disabled={empty && !isMain}
                   aria-pressed={isSelected}
-                  aria-label={`${formatWeekdayShortVi(d)} ${formatShortDate(d)}, ${count} sự kiện${isToday ? ', hôm nay' : ''}`}
+                  aria-selected={isSelected}
+                  title={
+                    main
+                      ? `${main.label} · ${main.track} · ${count} side events`
+                      : `${formatShortDate(d)} · ${count} side events`
+                  }
+                  aria-label={`${formatWeekdayShortVi(d)} ${formatShortDate(d)}, ${count} side events${main ? `, ${main.label} ${main.track}` : ''}${isToday ? ', hôm nay' : ''}`}
                 >
-                  <span className="emp-cal__wd">{formatWeekdayShortVi(d)}</span>
-                  <span className="emp-cal__num">{formatDayNum(d)}</span>
-                  <span className="emp-cal__count">
-                    {empty ? '—' : count}
+                  {isMain && (
+                    <span className="emp-cal__ribbon" aria-hidden>
+                      MAIN
+                    </span>
+                  )}
+                  <span className="emp-cal__wd">
+                    {formatWeekdayShortVi(d)}
+                    {isToday ? ' · nay' : ''}
                   </span>
+                  <span className="emp-cal__num">{formatDayNum(d)}</span>
+                  {main ? (
+                    <span className="emp-cal__main-tag">{main.short}</span>
+                  ) : (
+                    <span className="emp-cal__side-tag">Side</span>
+                  )}
+                  <span className="emp-cal__count">
+                    {empty ? (isMain ? 'Sala' : '—') : `${count} evt`}
+                  </span>
+                  {isMain && (
+                    <span className="emp-cal__track">{main!.track}</span>
+                  )}
                   {isToday && <span className="emp-cal__today-dot" />}
                 </button>
               )
@@ -989,17 +1025,53 @@ export function EventMapPage() {
             {tbdDateCount > 0 && (
               <button
                 type="button"
+                role="option"
                 className={`emp-cal__day emp-cal__day--tbd ${dateFilter === 'tbd' ? 'is-selected' : ''}`}
                 onClick={() => setDate('tbd')}
                 aria-pressed={dateFilter === 'tbd'}
+                aria-selected={dateFilter === 'tbd'}
                 title="Sự kiện chưa chốt ngày"
               >
                 <span className="emp-cal__wd">TBD</span>
                 <span className="emp-cal__num">?</span>
-                <span className="emp-cal__count">{tbdDateCount}</span>
+                <span className="emp-cal__side-tag">Pending</span>
+                <span className="emp-cal__count">{tbdDateCount} evt</span>
               </button>
             )}
           </div>
+
+          {(() => {
+            const selectedMain = mainForumMeta(dateFilter)
+            if (!selectedMain) return null
+            return (
+              <div
+                className={`emp-cal__banner emp-cal__banner--day${selectedMain.day}`}
+              >
+                <div className="emp-cal__banner-badge">
+                  Main forum · Ngày {selectedMain.day}
+                </div>
+                <div className="emp-cal__banner-body">
+                  <strong>{selectedMain.track}</strong>
+                  <span>
+                    Thiskyhall Sala · {formatShortDate(dateFilter)} · Side
+                    events cùng ngày hiển thị bên dưới map
+                  </span>
+                </div>
+                <a
+                  className="emp-cal__banner-link"
+                  href={
+                    selectedMain.day === 1
+                      ? 'https://www.conviction.vn/vi/day-1'
+                      : 'https://www.conviction.vn/vi/day-2'
+                  }
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Agenda →
+                </a>
+              </div>
+            )
+          })()}
         </div>
 
         <div className="emp__filter-row emp__filter-row--types">

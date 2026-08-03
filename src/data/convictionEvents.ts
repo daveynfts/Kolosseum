@@ -73,6 +73,36 @@ export const SALA_VENUE: MainVenue = {
   lng: 106.721066,
 }
 
+/**
+ * Main forum days at Thiskyhall (not side events).
+ * Day 1 · 14/08 Blockchain & Tài sản số · Day 2 · 15/08 AI
+ */
+export const MAIN_FORUM_DAYS: Record<
+  string,
+  { day: 1 | 2; label: string; track: string; short: string }
+> = {
+  '2026-08-14': {
+    day: 1,
+    label: 'Main · Ngày 1',
+    track: 'Blockchain & Tài sản số',
+    short: 'Ngày 1',
+  },
+  '2026-08-15': {
+    day: 2,
+    label: 'Main · Ngày 2',
+    track: 'Trí tuệ nhân tạo',
+    short: 'Ngày 2',
+  },
+}
+
+export function isMainForumDay(isoDate: string): boolean {
+  return Boolean(MAIN_FORUM_DAYS[isoDate])
+}
+
+export function mainForumMeta(isoDate: string) {
+  return MAIN_FORUM_DAYS[isoDate] || null
+}
+
 export const EVENT_TYPE_LABELS: Record<SideEventType, string> = {
   mixer: 'Mixer',
   workshop: 'Workshop',

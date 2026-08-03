@@ -187,11 +187,11 @@ function popupHtml(
     .filter(Boolean)
     .join(' ')
   const reg = ev.link
-    ? `<a class="emp-popup__act emp-popup__act--reg" href="${ev.link}" target="_blank" rel="noopener noreferrer"><span class="emp-popup__act-ico" aria-hidden="true">✦</span><span class="emp-popup__act-label">Đăng ký</span></a>`
-    : `<span class="emp-popup__act emp-popup__act--disabled"><span class="emp-popup__act-ico" aria-hidden="true">✦</span><span class="emp-popup__act-label">Đăng ký</span></span>`
+    ? `<a class="emp-popup__act emp-popup__act--reg" href="${ev.link}" target="_blank" rel="noopener noreferrer">Đăng ký</a>`
+    : `<span class="emp-popup__act emp-popup__act--disabled">Đăng ký</span>`
   const directions = ev.locationTbd
-    ? `<a class="emp-popup__act emp-popup__act--map" href="${directionsUrl(SALA_VENUE.lat, SALA_VENUE.lng)}" target="_blank" rel="noopener noreferrer"><span class="emp-popup__act-ico" aria-hidden="true">↗</span><span class="emp-popup__act-label">Chỉ đường</span></a>`
-    : `<a class="emp-popup__act emp-popup__act--map" href="${directionsUrl(ev.lat, ev.lng)}" target="_blank" rel="noopener noreferrer"><span class="emp-popup__act-ico" aria-hidden="true">↗</span><span class="emp-popup__act-label">Chỉ đường</span></a>`
+    ? `<a class="emp-popup__act emp-popup__act--map" href="${directionsUrl(SALA_VENUE.lat, SALA_VENUE.lng)}" target="_blank" rel="noopener noreferrer">Chỉ đường</a>`
+    : `<a class="emp-popup__act emp-popup__act--map" href="${directionsUrl(ev.lat, ev.lng)}" target="_blank" rel="noopener noreferrer">Chỉ đường</a>`
   const img = ev.imageUrl
     ? `<img class="emp-popup__img" src="${escapeHtml(toSquareImageUrl(ev.imageUrl, 640))}" alt="" loading="lazy" referrerpolicy="no-referrer" />`
     : ''

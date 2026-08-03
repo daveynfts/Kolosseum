@@ -38,16 +38,17 @@ const CONVICTION_LOGO = withBase('/conviction/logo-full.svg')
 const CONVICTION_HOME = 'https://www.conviction.vn/vi'
 
 /** Raster dark tiles — avoids CARTO vector TileJSON hangs with MapLibre v6. */
+/** Near-black basemap aligned with DaveyNFTs Hub (#030305). */
 const MAP_STYLE: maplibregl.StyleSpecification = {
   version: 8,
-  name: 'Carto Dark All',
+  name: 'Carto Dark Matter',
   sources: {
     'carto-dark': {
       type: 'raster',
       tiles: [
-        'https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png',
-        'https://b.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png',
-        'https://c.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png',
+        'https://a.basemaps.cartocdn.com/dark_matter/{z}/{x}/{y}@2x.png',
+        'https://b.basemaps.cartocdn.com/dark_matter/{z}/{x}/{y}@2x.png',
+        'https://c.basemaps.cartocdn.com/dark_matter/{z}/{x}/{y}@2x.png',
       ],
       tileSize: 256,
       attribution:

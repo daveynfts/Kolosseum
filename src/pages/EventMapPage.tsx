@@ -906,30 +906,29 @@ export function EventMapPage() {
 
     const originLng = distanceFrom.lng
     const originLat = distanceFrom.lat
-    const features: GeoJSON.Feature[] = []
-
     // Cap labels to nearest N to keep map readable; still draw all lines
     const labelCap = 14
     const labelIds = new Set(
       distanceSpokes.slice(0, labelCap).map((s) => s.id),
     )
 
-    for (const s of distanceSpokes) {
-      features.push({
-        type: 'Feature',
-        properties: { kind: 'line', id: s.id, km: s.km },
-        geometry: {
-          type: 'LineString',
-          coordinates: [
-            [originLng, originLat],
-            [s.lng, s.lat],
-          ],
-        },
-      })
-    }
+    const features = distanceSpokes.map((s) => ({
+      type: 'Feature' as const,
+      properties: { kind: 'line', id: s.id, km: s.km },
+      geometry: {
+        type: 'LineString' as const,
+        coordinates: [
+          [originLng, originLat],
+          [s.lng, s.lat],
+        ],
+      },
+    }))
 
     const src = map.getSource('emp-dist') as GeoJSONSource | undefined
-    src?.setData({ type: 'FeatureCollection', features })
+    src?.setData({
+      type: 'FeatureCollection',
+      features,
+    })
 
     // HTML midpoint labels (reliable without map glyphs)
     const keep = new Set(Array.from(labelIds))

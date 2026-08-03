@@ -16,7 +16,6 @@ import {
   directionsUrl,
   eventDistanceKm,
   eventOccursOnDate,
-  buildNearestNeighborRoute,
   formatDayNum,
   formatDistanceKm,
   formatDistanceWithWalk,
@@ -39,6 +38,7 @@ import {
   eventToIcs,
 } from '../data/convictionEvents'
 import { loadEventsWithSource } from '../lib/convictionEventsStore'
+import { fetchOsrmRoutesBatch, type RoadRouteResult } from '../lib/osrmRoute'
 import { withBase } from '../lib/base'
 import './EventMapPage.css'
 
@@ -547,32 +547,63 @@ export function EventMapPage() {
   )
 
   /**
-   * Optimal-ish walking tour: nearest-neighbour from origin through
-   * visible events. Segments = consecutive hops (only nearest next each time).
+   * Road routes (OSRM walking) from main hub / me / selected → each side event.
+   * Like Google Maps directions, not a tour between side events.
    */
-  const routePlan = useMemo(() => {
-    const startId =
-      distOrigin === 'selected' && selectedId
-        ? selectedId
-        : distOrigin === 'me'
-          ? 'origin-me'
-          : 'origin-conviction'
-    const start = {
-      id: startId,
-      lat: distanceFrom.lat,
-      lng: distanceFrom.lng,
-      label: distanceFrom.label,
+  const [roadRoutes, setRoadRoutes] = useState<RoadRouteResult[]>([])
+  const [routesLoading, setRoutesLoading] = useState(false)
+  const routeFetchGen = useRef(0)
+
+  useEffect(() => {
+    if (!mapReady || !mapEvents.length) {
+      setRoadRoutes([])
+      return
     }
-    const points = mapEvents
-      .filter((ev) => ev.id !== startId)
+    const gen = ++routeFetchGen.current
+    // Prefer selected + nearest by air distance (cap for OSRM rate limits)
+    const ranked = [...mapEvents]
       .map((ev) => ({
-        id: ev.id,
-        lat: ev.lat,
-        lng: ev.lng,
-        label: ev.title,
+        ev,
+        km: eventDistanceKm(distanceFrom, ev) ?? Infinity,
       }))
-    return buildNearestNeighborRoute(start, points)
-  }, [mapEvents, distanceFrom, distOrigin, selectedId])
+      .sort((a, b) => a.km - b.km)
+
+    const dests: Array<{ id: string; lat: number; lng: number }> = []
+    const seen = new Set<string>()
+    // Always include selected first if on map
+    if (selectedEvent && !selectedEvent.locationTbd) {
+      dests.push({
+        id: selectedEvent.id,
+        lat: selectedEvent.lat,
+        lng: selectedEvent.lng,
+      })
+      seen.add(selectedEvent.id)
+    }
+    for (const { ev } of ranked) {
+      if (seen.has(ev.id)) continue
+      if (dests.length >= 12) break
+      dests.push({ id: ev.id, lat: ev.lat, lng: ev.lng })
+      seen.add(ev.id)
+    }
+
+    setRoutesLoading(true)
+    void fetchOsrmRoutesBatch(
+      { lat: distanceFrom.lat, lng: distanceFrom.lng },
+      dests,
+      'foot',
+      (one) => {
+        if (routeFetchGen.current !== gen) return
+        setRoadRoutes((prev) => {
+          const rest = prev.filter((r) => r.id !== one.id)
+          return [...rest, one]
+        })
+      },
+    ).then((all) => {
+      if (routeFetchGen.current !== gen) return
+      setRoadRoutes(all)
+      setRoutesLoading(false)
+    })
+  }, [mapReady, mapEvents, distanceFrom, selectedEvent?.id])
 
   const grouped = useMemo(() => {
     const map = new Map<string, SideEvent[]>()
@@ -868,11 +899,20 @@ export function EventMapPage() {
         type: 'line',
         source: 'emp-dist',
         filter: ['==', ['get', 'kind'], 'line'],
+        layout: {
+          'line-cap': 'round',
+          'line-join': 'round',
+        },
         paint: {
           'line-color': '#0071e3',
-          'line-width': 6,
-          'line-opacity': 0.2,
-          'line-blur': 1.5,
+          'line-width': [
+            'case',
+            ['==', ['get', 'active'], 1],
+            10,
+            6,
+          ],
+          'line-opacity': 0.22,
+          'line-blur': 1.2,
         },
       })
     }
@@ -887,22 +927,26 @@ export function EventMapPage() {
           'line-join': 'round',
         },
         paint: {
-          'line-color': '#5eb0ff',
-          // First hop (to nearest) thicker; later hops thinner
+          'line-color': [
+            'case',
+            ['==', ['get', 'active'], 1],
+            '#ffffff',
+            '#5eb0ff',
+          ],
           'line-width': [
             'case',
-            ['==', ['get', 'step'], 1],
-            3.2,
-            2.2,
+            ['==', ['get', 'active'], 1],
+            4.5,
+            3,
           ],
-          'line-opacity': 0.9,
+          'line-opacity': 0.92,
         },
       })
     }
     distLayersReady.current = true
   }
 
-  // Draw optimal nearest-neighbour tour + segment labels
+  // Draw OSRM road routes (main hub → each side event) + labels
   useEffect(() => {
     const map = mapRef.current
     if (!map || !mapReady) return
@@ -913,21 +957,16 @@ export function EventMapPage() {
       return
     }
 
-    const segs = routePlan.segments
-    const features = segs.map((s) => ({
+    const features = roadRoutes.map((r) => ({
       type: 'Feature' as const,
       properties: {
         kind: 'line',
-        id: s.id,
-        km: s.km,
-        step: s.step,
+        id: r.id,
+        active: selectedId === r.id ? 1 : 0,
       },
       geometry: {
         type: 'LineString' as const,
-        coordinates: [
-          [s.from.lng, s.from.lat],
-          [s.to.lng, s.to.lat],
-        ],
+        coordinates: r.coordinates,
       },
     }))
 
@@ -937,7 +976,7 @@ export function EventMapPage() {
       features,
     })
 
-    const keep = new Set(segs.map((s) => s.id))
+    const keep = new Set(roadRoutes.map((r) => r.id))
     for (const [id, marker] of distLabelMarkersRef.current) {
       if (!keep.has(id)) {
         marker.remove()
@@ -945,43 +984,36 @@ export function EventMapPage() {
       }
     }
 
-    for (const s of segs) {
-      const midLng = (s.from.lng + s.to.lng) / 2
-      const midLat = (s.from.lat + s.to.lat) / 2
-      let marker = distLabelMarkersRef.current.get(s.id)
+    for (const r of roadRoutes) {
+      const [midLng, midLat] = r.mid
+      let marker = distLabelMarkersRef.current.get(r.id)
+      const active = selectedId === r.id
       if (!marker) {
         const el = document.createElement('div')
-        el.className =
-          s.step === 1
-            ? 'emp-dist-label emp-dist-label--nearest'
-            : 'emp-dist-label'
-        el.innerHTML = `<span class="emp-dist-label__step"></span><span class="emp-dist-label__text"></span>`
+        el.className = active
+          ? 'emp-dist-label emp-dist-label--nearest'
+          : 'emp-dist-label'
+        el.innerHTML = `<span class="emp-dist-label__text"></span>`
         marker = new maplibregl.Marker({
           element: el,
           anchor: 'center',
         })
           .setLngLat([midLng, midLat])
           .addTo(map)
-        distLabelMarkersRef.current.set(s.id, marker)
+        distLabelMarkersRef.current.set(r.id, marker)
       } else {
         marker.setLngLat([midLng, midLat])
-        marker.getElement().className =
-          s.step === 1
-            ? 'emp-dist-label emp-dist-label--nearest'
-            : 'emp-dist-label'
+        marker.getElement().className = active
+          ? 'emp-dist-label emp-dist-label--nearest'
+          : 'emp-dist-label'
       }
-      const root = marker.getElement()
-      const stepEl = root.querySelector(
-        '.emp-dist-label__step',
-      ) as HTMLElement | null
-      const text = root.querySelector(
-        '.emp-dist-label__text',
-      ) as HTMLElement | null
-      if (stepEl) stepEl.textContent = String(s.step)
-      if (text) text.textContent = s.shortLabel
-      root.title = s.fullLabel
+      const text = marker
+        .getElement()
+        .querySelector('.emp-dist-label__text') as HTMLElement | null
+      if (text) text.textContent = r.shortLabel
+      marker.getElement().title = r.fullLabel
     }
-  }, [mapReady, routePlan])
+  }, [mapReady, roadRoutes, selectedId])
 
   // Origin hub only when measuring from "me" or selected event
   // (Conviction venue already has the gold pin)
@@ -1454,15 +1486,17 @@ export function EventMapPage() {
             <div className="emp__loading">Đang tải bản đồ…</div>
           )}
           <div className="emp__map-hint" aria-hidden>
-            Tuyến tối ưu (gần nhất lần lượt) từ{' '}
-            {distOrigin === 'me'
-              ? 'bạn'
-              : distOrigin === 'selected'
-                ? 'event đang chọn'
-                : 'Conviction'}
-            {routePlan.segments.length
-              ? ` · ${routePlan.segments.length} chặng · ~${formatDistanceKm(routePlan.totalKm)} · ${formatWalkEta(routePlan.totalKm)}`
-              : ''}
+            {routesLoading
+              ? 'Đang tải đường đi (OSRM)…'
+              : roadRoutes.length
+                ? `Đường đi bộ từ ${
+                    distOrigin === 'me'
+                      ? 'bạn'
+                      : distOrigin === 'selected'
+                        ? 'event đang chọn'
+                        : 'Conviction'
+                  } → side event · ${roadRoutes.length} tuyến`
+                : 'Chọn event / đợi tải đường đi như Google Maps'}
           </div>
         </div>
 

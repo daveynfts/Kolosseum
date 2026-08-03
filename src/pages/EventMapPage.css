@@ -155,7 +155,7 @@
   flex: 1 1 auto;
   min-height: min(70dvh, 720px);
   display: grid;
-  grid-template-columns: 1fr minmax(280px, 360px);
+  grid-template-columns: 1fr minmax(320px, 420px);
   position: relative;
 }
 
@@ -488,6 +488,24 @@
   font-weight: 700;
   line-height: 1.3;
   padding-right: 1rem;
+}
+
+.emp-popup__dist {
+  color: #7dd3fc !important;
+  font-weight: 650;
+}
+
+.emp__card-dist {
+  margin: 0.3rem 0 0;
+  font-size: 0.72rem;
+  font-weight: 650;
+  color: #7dd3fc;
+  line-height: 1.3;
+}
+
+.emp__card-dist--muted {
+  color: #64748b;
+  font-weight: 500;
 }
 
 .emp-popup__row {

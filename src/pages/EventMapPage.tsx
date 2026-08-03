@@ -15,8 +15,12 @@ import {
   SALA_VENUE,
   confirmedEventDates,
   directionsUrl,
+  eventDistanceKm,
   eventOccursOnDate,
   eventToIcs,
+  formatDistanceKm,
+  formatLumaDay,
+  formatLumaTime,
   formatShortDate,
   matchesDateFilter,
   shortEventTitle,
@@ -253,7 +257,10 @@ function downloadIcs(ev: SideEvent) {
   URL.revokeObjectURL(url)
 }
 
-function popupHtml(ev: SideEvent, opts: { live: boolean; today: boolean }): string {
+function popupHtml(
+  ev: SideEvent,
+  opts: { live: boolean; today: boolean; distanceLabel?: string },
+): string {
   const typeLabel = EVENT_TYPE_LABELS[ev.type] || ev.type
   const when = ev.dateTbd
     ? `Ngày TBD · ${ev.startTime}${ev.endTime ? `–${ev.endTime}` : ''}`
@@ -279,12 +286,16 @@ function popupHtml(ev: SideEvent, opts: { live: boolean; today: boolean }): stri
   const img = ev.imageUrl
     ? `<img class="emp-popup__img" src="${escapeHtml(toSquareImageUrl(ev.imageUrl, 320))}" alt="" loading="lazy" referrerpolicy="no-referrer" />`
     : ''
+  const dist = opts.distanceLabel
+    ? `<p class="emp-popup__row emp-popup__dist">${escapeHtml(opts.distanceLabel)}</p>`
+    : ''
   return `
     <div class="emp-popup__inner">
       ${img}
       <h3 class="emp-popup__title">${escapeHtml(ev.title)}</h3>
       <div class="emp__badges" style="margin:0 0 0.4rem">${badges}</div>
       <p class="emp-popup__row">${escapeHtml(when)}</p>
+      ${dist}
       <p class="emp-popup__row">${escapeHtml(ev.host || '')}</p>
       <p class="emp-popup__row">${escapeHtml([ev.venue, ev.address].filter(Boolean).join(' — '))}</p>
       ${ev.description ? `<p class="emp-popup__row">${escapeHtml(ev.description)}</p>` : ''}
@@ -366,6 +377,13 @@ export function EventMapPage() {
     lat: SALA_VENUE.lat,
     name: SALA_VENUE.name,
   })
+  /** Distance origin: Sala hub, my GPS, or currently selected event. */
+  const [distOrigin, setDistOrigin] = useState<'sala' | 'me' | 'selected'>('sala')
+  const [userLoc, setUserLoc] = useState<{ lat: number; lng: number } | null>(
+    null,
+  )
+  const [geoBusy, setGeoBusy] = useState(false)
+  const [sortNearest, setSortNearest] = useState(false)
 
   const today = todayVn()
   const nowHm = nowHmVn()
@@ -406,22 +424,93 @@ export function EventMapPage() {
     return m
   }, [dataset])
 
+  const selectedEvent = useMemo(
+    () => dataset?.events.find((e) => e.id === selectedId) || null,
+    [dataset, selectedId],
+  )
+
+  const distanceFrom = useMemo(() => {
+    if (distOrigin === 'me' && userLoc) {
+      return { lat: userLoc.lat, lng: userLoc.lng, label: 'bạn' }
+    }
+    if (
+      distOrigin === 'selected' &&
+      selectedEvent &&
+      !selectedEvent.locationTbd
+    ) {
+      return {
+        lat: selectedEvent.lat,
+        lng: selectedEvent.lng,
+        label: shortEventTitle(selectedEvent.title, 18),
+      }
+    }
+    return {
+      lat: dataset?.venue.lat ?? SALA_VENUE.lat,
+      lng: dataset?.venue.lng ?? SALA_VENUE.lng,
+      label: 'Sala',
+    }
+  }, [distOrigin, userLoc, selectedEvent, dataset])
+
   const filtered = useMemo(() => {
     if (!dataset) return []
     const q = query.trim().toLowerCase()
-    return sortEvents(
-      dataset.events.filter((ev) => {
-        if (!matchesDateFilter(ev, dateFilter)) return false
-        if (typeFilter !== 'all' && ev.type !== typeFilter) return false
-        if (freeOnly && !ev.free) return false
-        if (q) {
-          const hay = `${ev.title} ${ev.host} ${ev.venue} ${ev.address}`.toLowerCase()
-          if (!hay.includes(q)) return false
-        }
-        return true
-      }),
+    const list = dataset.events.filter((ev) => {
+      if (!matchesDateFilter(ev, dateFilter)) return false
+      if (typeFilter !== 'all' && ev.type !== typeFilter) return false
+      if (freeOnly && !ev.free) return false
+      if (q) {
+        const hay = `${ev.title} ${ev.host} ${ev.venue} ${ev.address}`.toLowerCase()
+        if (!hay.includes(q)) return false
+      }
+      return true
+    })
+    if (!sortNearest) return sortEvents(list)
+    return [...list].sort((a, b) => {
+      const da = eventDistanceKm(distanceFrom, a)
+      const db = eventDistanceKm(distanceFrom, b)
+      if (da == null && db == null) return a.title.localeCompare(b.title)
+      if (da == null) return 1
+      if (db == null) return -1
+      return da - db
+    })
+  }, [
+    dataset,
+    dateFilter,
+    typeFilter,
+    freeOnly,
+    query,
+    sortNearest,
+    distanceFrom,
+  ])
+
+  const distanceLabelFor = (ev: SideEvent): string | null => {
+    if (ev.locationTbd) return null
+    if (distOrigin === 'selected' && ev.id === selectedId) return 'Đang chọn'
+    const km = eventDistanceKm(distanceFrom, ev)
+    if (km == null) return null
+    return `${formatDistanceKm(km)} từ ${distanceFrom.label}`
+  }
+
+  const requestMyLocation = () => {
+    if (!navigator.geolocation) {
+      setDistOrigin('sala')
+      return
+    }
+    setGeoBusy(true)
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setUserLoc({ lat: pos.coords.latitude, lng: pos.coords.longitude })
+        setDistOrigin('me')
+        setSortNearest(true)
+        setGeoBusy(false)
+      },
+      () => {
+        setGeoBusy(false)
+        setDistOrigin('sala')
+      },
+      { enableHighAccuracy: true, timeout: 12000, maximumAge: 60_000 },
     )
-  }, [dataset, dateFilter, typeFilter, freeOnly, query])
+  }
 
   /** Only pin events with a public venue — never fake TBD locations. */
   const mapEvents = useMemo(
@@ -567,7 +656,13 @@ export function EventMapPage() {
       closeButton: true,
     })
       .setLngLat([ev.lng, ev.lat])
-      .setHTML(popupHtml(ev, { live, today: isToday }))
+      .setHTML(
+        popupHtml(ev, {
+          live,
+          today: isToday,
+          distanceLabel: distanceLabelFor(ev) || undefined,
+        }),
+      )
       .addTo(map)
     popup.getElement()?.addEventListener('click', (e: MouseEvent) => {
       const t = e.target as HTMLElement | null
@@ -708,6 +803,51 @@ export function EventMapPage() {
         <div className="emp__header-actions">
           <button
             type="button"
+            className={`emp__btn ${distOrigin === 'sala' ? 'emp__btn--primary' : ''}`}
+            onClick={() => setDistOrigin('sala')}
+            title="Đo khoảng cách từ Thiskyhall Sala"
+          >
+            Từ Sala
+          </button>
+          <button
+            type="button"
+            className={`emp__btn ${distOrigin === 'me' ? 'emp__btn--primary' : ''}`}
+            disabled={geoBusy}
+            onClick={() => {
+              if (userLoc) {
+                setDistOrigin('me')
+                setSortNearest(true)
+              } else {
+                requestMyLocation()
+              }
+            }}
+            title="Đo khoảng cách từ vị trí của bạn"
+          >
+            {geoBusy ? 'Đang lấy…' : 'Từ tôi'}
+          </button>
+          <button
+            type="button"
+            className={`emp__btn ${distOrigin === 'selected' ? 'emp__btn--primary' : ''}`}
+            disabled={!selectedEvent || !!selectedEvent.locationTbd}
+            onClick={() => {
+              if (!selectedEvent || selectedEvent.locationTbd) return
+              setDistOrigin('selected')
+              setSortNearest(true)
+            }}
+            title="Đo khoảng cách từ sự kiện đang chọn tới các sự kiện khác"
+          >
+            Giữa events
+          </button>
+          <button
+            type="button"
+            className={`emp__btn ${sortNearest ? 'emp__btn--primary' : ''}`}
+            onClick={() => setSortNearest((v) => !v)}
+            title="Sắp xếp list theo khoảng cách gần → xa"
+          >
+            Gần nhất
+          </button>
+          <button
+            type="button"
             className={`emp__btn ${view3d ? 'emp__btn--primary' : ''}`}
             onClick={() => {
               const next = !view3d
@@ -844,73 +984,95 @@ export function EventMapPage() {
               </div>
             )}
             {grouped.map(([date, list]) => (
-              <div key={date}>
+              <div key={date} className="emp__day-group">
                 <div className="emp__day-label">
                   {date === 'tbd'
                     ? 'Ngày TBD'
-                    : `${formatShortDate(date)}${date === today ? ' · Hôm nay' : ''}`}
+                    : `${formatLumaDay(date)}${date === today ? ' · Hôm nay' : ''}`}
                 </div>
                 {list.map((ev) => {
                   const live = isLive(ev, today, nowHm)
                   const isToday = !ev.dateTbd && eventOccursOnDate(ev, today)
+                  const timeLabel = ev.endTime
+                    ? `${formatLumaTime(ev.startTime)} – ${formatLumaTime(ev.endTime)}`
+                    : formatLumaTime(ev.startTime)
+                  const place = ev.locationTbd
+                    ? 'Location Shown Upon Approval'
+                    : ev.venue || ev.address || 'TP. Hồ Chí Minh'
                   return (
                     <button
                       key={ev.id}
                       type="button"
-                      className={`emp__card ${selectedId === ev.id ? 'is-active' : ''}`}
+                      className={`emp__card emp__card--luma ${selectedId === ev.id ? 'is-active' : ''}`}
                       ref={(node) => {
                         if (node) listRefs.current.set(ev.id, node)
                         else listRefs.current.delete(ev.id)
                       }}
                       onClick={() => selectEvent(ev, true)}
                     >
-                      <div className="emp__card-top">
+                      <div className="emp__card-body">
+                        <p className="emp__card-time">
+                          {ev.dateTbd ? 'Time TBD' : timeLabel}
+                        </p>
+                        <p className="emp__card-title">{ev.title}</p>
+                        {ev.host ? (
+                          <p className="emp__card-host">
+                            <span className="emp__card-host-dot" aria-hidden />
+                            By {ev.host}
+                          </p>
+                        ) : null}
+                        <p className="emp__card-place">
+                          <span className="emp__card-pin" aria-hidden>
+                            ⌖
+                          </span>
+                          {place}
+                        </p>
+                        {distanceLabelFor(ev) ? (
+                          <p className="emp__card-dist">{distanceLabelFor(ev)}</p>
+                        ) : ev.locationTbd ? (
+                          <p className="emp__card-dist emp__card-dist--muted">
+                            Chưa có tọa độ
+                          </p>
+                        ) : null}
+                        <div className="emp__badges">
+                          {(ev.dateTbd || ev.locationTbd) && (
+                            <span className="emp__badge emp__badge--pending">
+                              Pending
+                            </span>
+                          )}
+                          {live && (
+                            <span className="emp__badge emp__badge--live">
+                              Đang diễn ra
+                            </span>
+                          )}
+                          {!live && isToday && (
+                            <span className="emp__badge emp__badge--today">
+                              Hôm nay
+                            </span>
+                          )}
+                          {ev.free && (
+                            <span className="emp__badge emp__badge--free">Free</span>
+                          )}
+                        </div>
+                      </div>
+                      <div className="emp__card-media">
                         {ev.imageUrl ? (
                           <img
-                            className="emp__thumb"
-                            src={toSquareImageUrl(ev.imageUrl, 96)}
+                            src={toSquareImageUrl(ev.imageUrl, 240)}
                             alt=""
                             loading="lazy"
                             referrerPolicy="no-referrer"
                           />
                         ) : (
-                          <span
-                            className="emp__dot"
-                            style={{ background: EVENT_TYPE_COLORS[ev.type] }}
-                          />
-                        )}
-                        <div>
-                          <p className="emp__card-title">{ev.title}</p>
-                          <p className="emp__card-meta">
-                            {ev.dateTbd ? 'Ngày TBD' : formatShortDate(ev.date)}
-                            {' · '}
-                            {ev.startTime}
-                            {ev.endTime ? `–${ev.endTime}` : ''}
-                            {ev.host ? ` · ${ev.host}` : ''}
-                            {ev.venue ? ` · ${ev.venue}` : ''}
-                          </p>
-                          <div className="emp__badges">
-                            {live && (
-                              <span className="emp__badge emp__badge--live">
-                                Đang diễn ra
-                              </span>
-                            )}
-                            {!live && isToday && (
-                              <span className="emp__badge emp__badge--today">
-                                Hôm nay
-                              </span>
-                            )}
-                            {ev.locationTbd && (
-                              <span className="emp__badge">Địa điểm TBD</span>
-                            )}
-                            {ev.free && (
-                              <span className="emp__badge emp__badge--free">Free</span>
-                            )}
-                            <span className="emp__badge">
-                              {EVENT_TYPE_LABELS[ev.type]}
-                            </span>
+                          <div
+                            className="emp__card-media-fallback"
+                            style={{
+                              background: EVENT_TYPE_COLORS[ev.type],
+                            }}
+                          >
+                            {(ev.title || '?').slice(0, 1)}
                           </div>
-                        </div>
+                        )}
                       </div>
                     </button>
                   )

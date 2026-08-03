@@ -603,6 +603,43 @@ export function directionsUrl(lat: number, lng: number): string {
   return `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`
 }
 
+/** Haversine distance in kilometers. */
+export function distanceKm(
+  aLat: number,
+  aLng: number,
+  bLat: number,
+  bLng: number,
+): number {
+  const toRad = (d: number) => (d * Math.PI) / 180
+  const R = 6371
+  const dLat = toRad(bLat - aLat)
+  const dLng = toRad(bLng - aLng)
+  const lat1 = toRad(aLat)
+  const lat2 = toRad(bLat)
+  const h =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLng / 2) ** 2
+  return 2 * R * Math.asin(Math.min(1, Math.sqrt(h)))
+}
+
+/** Compact VN distance label: `350 m` / `1.2 km`. */
+export function formatDistanceKm(km: number): string {
+  if (!Number.isFinite(km) || km < 0) return '—'
+  if (km < 0.05) return '< 50 m'
+  if (km < 1) return `${Math.round(km * 1000)} m`
+  if (km < 10) return `${km.toFixed(1)} km`
+  return `${Math.round(km)} km`
+}
+
+export function eventDistanceKm(
+  from: { lat: number; lng: number },
+  ev: SideEvent,
+): number | null {
+  if (ev.locationTbd) return null
+  if (!Number.isFinite(ev.lat) || !Number.isFinite(ev.lng)) return null
+  return distanceKm(from.lat, from.lng, ev.lat, ev.lng)
+}
+
 /** Simple .ics content for one event (local VN wall time as floating). */
 export function eventToIcs(ev: SideEvent): string {
   const stamp = new Date()

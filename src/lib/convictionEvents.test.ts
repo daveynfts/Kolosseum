@@ -3,8 +3,11 @@ import {
   CONVICTION_EVENTS_SEED,
   confirmedEventDates,
   datesInRange,
+  distanceKm,
+  eventDistanceKm,
   eventOccursOnDate,
   eventsOnDate,
+  formatDistanceKm,
   matchesDateFilter,
   normalizeDataset,
   normalizeSideEvent,
@@ -118,6 +121,20 @@ describe('convictionEvents helpers', () => {
         date: '2026-08-14',
       }),
     ).toBeNull()
+  })
+
+  it('formats haversine distances', () => {
+    const km = distanceKm(10.771895, 106.721066, 10.775058, 106.705713)
+    expect(km).toBeGreaterThan(1)
+    expect(km).toBeLessThan(3)
+    expect(formatDistanceKm(0.35)).toBe('350 m')
+    expect(formatDistanceKm(1.24)).toBe('1.2 km')
+    const hilton = CONVICTION_EVENTS_SEED.events.find(
+      (e) => e.id === 'hsc-conference-hcmc',
+    )!
+    const d = eventDistanceKm(CONVICTION_EVENTS_SEED.venue, hilton)
+    expect(d).not.toBeNull()
+    expect(d!).toBeGreaterThan(1)
   })
 
   it('seed locations for known venues look sane', () => {

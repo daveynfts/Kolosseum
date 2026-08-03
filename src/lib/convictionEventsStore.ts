@@ -9,7 +9,7 @@ import {
 import { withBase } from './base'
 import { getAdminToken } from './feedStore'
 
-const CACHE_KEY = 'vn-kol-map-conviction-events-v3'
+const CACHE_KEY = 'vn-kol-map-conviction-events-v4'
 export const CONVICTION_EVENTS_EVENT = 'vn-kol-conviction-events-updated'
 
 function apiUrl() {

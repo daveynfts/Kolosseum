@@ -93,20 +93,31 @@ export const EVENT_TYPE_COLORS: Record<SideEventType, string> = {
   other: '#94a3b8',
 }
 
-/** Prefer square crop from Luma CDN image URLs. */
-export function toSquareImageUrl(url: string, size = 160): string {
+/**
+ * Luma list thumbnails use square `uploads/` / `gallery-images/` covers
+ * (not wide `event-social/` OG banners).
+ */
+export function toSquareImageUrl(url: string, size = 400): string {
   const u = (url || '').trim()
   if (!u) return ''
+  // Already a Cloudflare image transform URL
   if (u.includes('lumacdn.com/cdn-cgi/image/')) {
     return u
-      .replace(/width=\d+/i, `width=${size}`)
-      .replace(/height=\d+/i, `height=${size}`)
+      .replace(/width=\d+(\.\d+)?/i, `width=${size}`)
+      .replace(/height=\d+(\.\d+)?/i, `height=${size}`)
   }
+  // Raw lumacdn asset → wrap as square cover (same params Luma calendar uses)
+  const m = u.match(
+    /images\.lumacdn\.com\/((?:uploads|gallery-images|event-covers)\/.+)$/i,
+  )
+  if (m) return lumaSquareCover(m[1], size)
   return u
 }
 
-function lumaImg(pathId: string): string {
-  return `https://images.lumacdn.com/cdn-cgi/image/format=auto,fit=cover,dpr=1,anim=false,background=white,quality=75,width=400,height=400/${pathId}`
+/** Square cover like Luma calendar cards. */
+function lumaSquareCover(assetPath: string, size = 400): string {
+  const path = assetPath.replace(/^\//, '')
+  return `https://images.lumacdn.com/cdn-cgi/image/format=auto,fit=cover,dpr=1,background=white,quality=75,width=${size},height=${size}/${path}`
 }
 
 /**
@@ -135,7 +146,9 @@ const SIDE_EVENTS: SideEvent[] = [
     startTime: '09:00',
     type: 'conference',
     link: 'https://luma.com/9t56rzat',
-    imageUrl: lumaImg('event-social/97/c4f15105-15bd-4239-b355-b0791092d54d.png'),
+    imageUrl: lumaSquareCover(
+      'uploads/yq/78eafb7b-e23f-42cb-8dfe-0c7533515f53.png',
+    ),
     description:
       'Chương trình 3 ngày: networking founder–VC, demo, investor matchmaking, workshop và chung kết Quantum Founder Challenge. Ngày/địa điểm chỉ hiện sau khi đăng ký Luma.',
     dateTbd: true,
@@ -155,7 +168,9 @@ const SIDE_EVENTS: SideEvent[] = [
     endTime: '20:00',
     type: 'meetup',
     link: 'https://luma.com/2cwc66wt',
-    imageUrl: lumaImg('event-social/qm/000bf9c4-4dce-4813-8722-d7f8ed05a75c.png'),
+    imageUrl: lumaSquareCover(
+      'uploads/pu/26ae8101-9d72-4148-a5a9-605158939f7a.png',
+    ),
     description:
       'Digital assets, stablecoins, payment infrastructure, DeFi và AI × Crypto. Pin map ẩn tới khi có địa điểm.',
     locationTbd: true,
@@ -174,7 +189,9 @@ const SIDE_EVENTS: SideEvent[] = [
     endTime: '21:30',
     type: 'meetup',
     link: 'https://luma.com/rmyweq6d',
-    imageUrl: lumaImg('event-social/b8/9823b0b7-8ff0-48e9-8b43-69b73950f463.png'),
+    imageUrl: lumaSquareCover(
+      'uploads/hn/6e7ca317-74ef-4c6a-af4e-08bf3f1808a3.webp',
+    ),
     description:
       'Ra mắt Kanga Global University — giao lưu cộng đồng và blockchain education. Approval required.',
     free: true,
@@ -193,7 +210,9 @@ const SIDE_EVENTS: SideEvent[] = [
     startTime: '14:00',
     type: 'conference',
     link: 'https://luma.com/kfl0ulwv',
-    imageUrl: lumaImg('event-social/i2/7bcd82ac-6f73-4370-9000-b0e37cf413b3.png'),
+    imageUrl: lumaSquareCover(
+      'gallery-images/6n/63fec81d-4939-46b0-89dc-dee963a97b5b.png',
+    ),
     description:
       'Sự kiện riêng cho ngân hàng, chứng khoán và hệ sinh thái tài sản số — bài học từ Singapore. Pin map ẩn tới khi công khai.',
     dateTbd: true,
@@ -212,7 +231,9 @@ const SIDE_EVENTS: SideEvent[] = [
     endTime: '19:00',
     type: 'mixer',
     link: 'https://luma.com/jjnzcz06',
-    imageUrl: lumaImg('event-social/3n/e5ca8ad8-03eb-40fd-a0e9-4689182de514.png'),
+    imageUrl: lumaSquareCover(
+      'uploads/xr/c0229197-d0cc-4cb9-98c1-dc5c367a6bac.png',
+    ),
     description:
       'Side event buổi tối: workshop, Q&A và networking. Ngày + địa điểm vẫn TBD trên Luma.',
     dateTbd: true,
@@ -232,7 +253,9 @@ const SIDE_EVENTS: SideEvent[] = [
     endTime: '22:00',
     type: 'party',
     link: 'https://luma.com/lbanklabs-vipsaigonnights',
-    imageUrl: lumaImg('event-social/g9/c59bd1c6-a147-444f-88a9-53fe7329d664.png'),
+    imageUrl: lumaSquareCover(
+      'uploads/ax/6d6a63e8-3508-4d42-b0fb-7bfae7fbb3e5.png',
+    ),
     description:
       'Networking, DJ, đồ uống, lucky draw. Invite-only · dress code Smart Casual.',
     featured: true,
@@ -249,7 +272,9 @@ const SIDE_EVENTS: SideEvent[] = [
     startTime: '18:00',
     type: 'meetup',
     link: 'https://luma.com/4cqom8cq',
-    imageUrl: lumaImg('event-social/az/f161a0d1-fcf0-4877-a384-fd9c5735e0c9.png'),
+    imageUrl: lumaSquareCover(
+      'gallery-images/n2/0a544d41-3888-47b5-bdbc-c5d8cc5131e6',
+    ),
     description:
       'Networking dinner nhỏ cho builders/founders/investors Solana — không sân khấu/pitching.',
     dateTbd: true,
@@ -269,7 +294,9 @@ const SIDE_EVENTS: SideEvent[] = [
     endTime: '15:00',
     type: 'conference',
     link: 'https://luma.com/09nj7hiv',
-    imageUrl: lumaImg('event-social/t2/e9e790c0-2c9f-42a0-8447-4b2085a7c1e7.png'),
+    imageUrl: lumaSquareCover(
+      'uploads/ji/008e31c4-8909-4839-a33a-d52423ba18be.png',
+    ),
     description:
       '5 phiên Media / Business / AI Agent. Check-in từ 08:30. Approval required.',
     featured: true,
@@ -287,7 +314,9 @@ const SIDE_EVENTS: SideEvent[] = [
     endTime: '17:30',
     type: 'meetup',
     link: 'https://luma.com/izmstgd3',
-    imageUrl: lumaImg('event-social/52/40f0e361-6a4e-403e-b807-dd02c74a5445.png'),
+    imageUrl: lumaSquareCover(
+      'uploads/zl/b0c2e514-a237-44b2-b8c9-9481cc89dd85.png',
+    ),
     description:
       'Meetup developer: Solana, smart accounts, security, infrastructure, AI × Crypto. GitHub + approval. Ngày xác nhận trên Luma.',
     dateTbd: true,
@@ -306,7 +335,9 @@ const SIDE_EVENTS: SideEvent[] = [
     endTime: '18:00',
     type: 'conference',
     link: 'https://luma.com/HSC_HoChiMinh',
-    imageUrl: lumaImg('event-social/xg/e5436302-2daf-486f-a529-ebd9b7d59e49.png'),
+    imageUrl: lumaSquareCover(
+      'uploads/r3/a23a0658-4378-41a9-8ad4-3955d2f08fd9.gif',
+    ),
     description:
       'AI, RWA, tokenisation, stablecoins, institutional finance và blockchain adoption.',
     featured: true,
@@ -321,8 +352,8 @@ export const CONVICTION_EVENTS_SEED: SideEventDataset = {
   venue: SALA_VENUE,
   dateRange: { start: '2026-08-13', end: '2026-08-15' },
   events: SIDE_EVENTS,
-  updatedAt: '2026-08-03T05:00:00.000Z',
-  note: 'Seed luma.com/conviction-2026 · coords verified 2026-08-03 · TBD pins hidden on map',
+  updatedAt: '2026-08-03T06:00:00.000Z',
+  note: 'Seed luma covers from uploads/ square assets · 2026-08-03',
 }
 
 function isEventType(v: unknown): v is SideEventType {
@@ -513,6 +544,52 @@ export function formatShortDate(isoDate: string): string {
   const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(isoDate)
   if (!m) return isoDate
   return `${m[3]}/${m[2]}`
+}
+
+/** Luma-style time: 4:00 PM */
+export function formatLumaTime(hhmm: string): string {
+  const m = /^(\d{1,2}):(\d{2})$/.exec((hhmm || '').trim())
+  if (!m) return hhmm || ''
+  let h = Number(m[1])
+  const min = m[2]
+  const ampm = h >= 12 ? 'PM' : 'AM'
+  h = h % 12
+  if (h === 0) h = 12
+  return `${h}:${min} ${ampm}`
+}
+
+const WEEKDAYS_VI = [
+  'Chủ Nhật',
+  'Thứ Hai',
+  'Thứ Ba',
+  'Thứ Tư',
+  'Thứ Năm',
+  'Thứ Sáu',
+  'Thứ Bảy',
+]
+
+/** Luma-style day header: Thursday, August 13 */
+export function formatLumaDay(isoDate: string): string {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(isoDate)
+  if (!m) return isoDate
+  const d = new Date(Date.UTC(Number(m[1]), Number(m[2]) - 1, Number(m[3])))
+  if (Number.isNaN(d.getTime())) return formatShortDate(isoDate)
+  const weekday = WEEKDAYS_VI[d.getUTCDay()] || ''
+  const months = [
+    'January',
+    'February',
+    'March',
+    'April',
+    'May',
+    'June',
+    'July',
+    'August',
+    'September',
+    'October',
+    'November',
+    'December',
+  ]
+  return `${weekday}, ${months[Number(m[2]) - 1]} ${Number(m[3])}`
 }
 
 export function shortEventTitle(title: string, max = 28): string {

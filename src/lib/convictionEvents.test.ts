@@ -19,6 +19,14 @@ describe('convictionEvents helpers', () => {
     expect(n!.event).toBe('conviction-2026')
     expect(n!.events).toHaveLength(10)
     expect(n!.events.every((e) => !!e.imageUrl && !!e.link)).toBe(true)
+    // Luma calendar uses square uploads/gallery covers, not event-social banners
+    expect(
+      n!.events.every(
+        (e) =>
+          /\/(uploads|gallery-images)\//.test(e.imageUrl || '') &&
+          !/event-social\//.test(e.imageUrl || ''),
+      ),
+    ).toBe(true)
     expect(n!.venue.lat).toBeCloseTo(10.772, 2)
     expect(n!.venue.lng).toBeCloseTo(106.721, 2)
   })

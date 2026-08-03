@@ -1679,41 +1679,6 @@
   background: rgba(14, 165, 233, 0.22);
 }
 
-/* Venue marker — no transform on root */
-.emp-marker {
-  width: 26px;
-  height: 26px;
-  border-radius: 50%;
-  border: 3px solid #0f172a;
-  cursor: pointer;
-  box-shadow:
-    0 0 0 4px rgba(251, 191, 36, 0.28),
-    0 4px 14px rgba(0, 0, 0, 0.45);
-  background: var(--emp-gold);
-  /* Use outline/shadow for hover, not transform */
-  transition: box-shadow 0.15s ease;
-}
-
-.emp-marker:hover,
-.emp-marker.is-active {
-  box-shadow:
-    0 0 0 6px rgba(251, 191, 36, 0.4),
-    0 4px 16px rgba(0, 0, 0, 0.5);
-}
-
-.emp-marker--featured {
-  width: 22px;
-  height: 22px;
-  border-width: 3px;
-}
-
-.emp-marker--venue {
-  width: 26px;
-  height: 26px;
-  background: var(--emp-gold);
-  border: 3px solid #0f172a;
-}
-
 .emp__thumb {
   width: 44px;
   height: 44px;

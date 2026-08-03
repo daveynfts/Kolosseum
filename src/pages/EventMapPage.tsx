@@ -322,7 +322,6 @@ export function EventMapPage() {
   const mapRef = useRef<MapLibreMap | null>(null)
   const markersRef = useRef<Map<string, Marker>>(new Map())
   const originHubRef = useRef<Marker | null>(null)
-  const venueMarkerRef = useRef<Marker | null>(null)
   const popupRef = useRef<Popup | null>(null)
   const listRefs = useRef<Map<string, HTMLElement>>(new Map())
   const deepLinkApplied = useRef(false)
@@ -714,8 +713,6 @@ export function EventMapPage() {
       markers.clear()
       originHubRef.current?.remove()
       originHubRef.current = null
-      venueMarkerRef.current?.remove()
-      venueMarkerRef.current = null
       map.remove()
       mapRef.current = null
       setMapReady(false)
@@ -926,36 +923,10 @@ export function EventMapPage() {
     }
   }, [mapReady, distanceFrom, distOrigin])
 
-  // Sync markers
+  // Sync side-event pin markers (no main venue gold dot)
   useEffect(() => {
     const map = mapRef.current
     if (!map || !mapReady || !dataset) return
-
-    if (!venueMarkerRef.current) {
-      const el = document.createElement('div')
-      el.className = 'emp-marker emp-marker--venue'
-      el.title = dataset.venue.name
-      venueMarkerRef.current = new maplibregl.Marker({ element: el })
-        .setLngLat([dataset.venue.lng, dataset.venue.lat])
-        .setPopup(
-          new maplibregl.Popup({
-            offset: 24,
-            className: 'emp-popup emp-popup--detail',
-            maxWidth: '360px',
-          }).setHTML(
-            `<h3 class="emp-popup__title">${escapeHtml(dataset.venue.name)}</h3>
-             <p class="emp-popup__row">Địa điểm chính · Conviction 2026</p>
-             <p class="emp-popup__row">${escapeHtml(dataset.venue.address)}</p>
-             <div class="emp-popup__actions">
-               <a href="${directionsUrl(dataset.venue.lat, dataset.venue.lng)}" target="_blank" rel="noopener noreferrer">Chỉ đường</a>
-               <a href="https://www.conviction.vn/vi" target="_blank" rel="noopener noreferrer">conviction.vn</a>
-             </div>`,
-          ),
-        )
-        .addTo(map)
-    } else {
-      venueMarkerRef.current.setLngLat([dataset.venue.lng, dataset.venue.lat])
-    }
 
     const keep = new Set(mapEvents.map((e) => e.id))
     for (const [id, marker] of markersRef.current) {

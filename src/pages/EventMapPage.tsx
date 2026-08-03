@@ -1249,7 +1249,7 @@ export function EventMapPage() {
                   ? 'bạn'
                   : distOrigin === 'selected'
                     ? 'event chọn'
-                    : 'Sala'}
+                    : 'Conviction'}
               </p>
             </div>
           </div>

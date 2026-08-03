@@ -44,6 +44,7 @@ import { AdminTwitterScoreEditor } from './AdminTwitterScoreEditor'
 import { AdminScexEditor } from './AdminScexEditor'
 import { AdminKolReportsEditor } from './AdminKolReportsEditor'
 import { AdminBannerEditor } from './AdminBannerEditor'
+import { AdminConvictionEventsEditor } from './AdminConvictionEventsEditor'
 import './AdminDashboard.css'
 
 type Tab =
@@ -55,6 +56,7 @@ type Tab =
   | 'scex'
   | 'banner'
   | 'reports'
+  | 'events'
   | 'legend'
 
 function tabFromHash(): Tab {
@@ -62,6 +64,13 @@ function tabFromHash(): Tab {
   // #/admin/feed or #/admin?tab=feed
   if (h.includes('scex') || h.includes('campaign')) return 'scex'
   if (h.includes('banner') || h.includes('ribbon')) return 'banner'
+  if (
+    h.includes('/events') ||
+    h.includes('conviction') ||
+    h.endsWith('events') ||
+    h.includes('side-event')
+  )
+    return 'events'
   if (
     h.includes('reports') ||
     h.includes('kol-report') ||
@@ -143,12 +152,14 @@ export function AdminDashboard() {
               : t === 'banner'
                 ? '#/admin/banner'
                 : t === 'reports'
-                ? '#/admin/reports'
-                : t === 'legend'
-                  ? '#/admin/legend'
-                  : t === 'edit'
-                    ? '#/admin/edit'
-                    : '#/admin'
+                  ? '#/admin/reports'
+                  : t === 'events'
+                    ? '#/admin/events'
+                    : t === 'legend'
+                      ? '#/admin/legend'
+                      : t === 'edit'
+                        ? '#/admin/edit'
+                        : '#/admin'
     if (window.location.hash !== path) {
       window.location.hash = path
     }
@@ -558,13 +569,14 @@ export function AdminDashboard() {
             'scex',
             'banner',
             'reports',
+            'events',
             'legend',
           ] as Tab[]
         ).map((t) => (
           <button
             key={t}
             type="button"
-            className={`admin-tab ${tab === t ? 'is-active' : ''} ${t === 'feed' || t === 'follows' || t === 'data' || t === 'scex' || t === 'banner' || t === 'reports' ? 'admin-tab--feed' : ''}`}
+            className={`admin-tab ${tab === t ? 'is-active' : ''} ${t === 'feed' || t === 'follows' || t === 'data' || t === 'scex' || t === 'banner' || t === 'reports' || t === 'events' ? 'admin-tab--feed' : ''}`}
             onClick={() => goTab(t)}
           >
             {t === 'list'
@@ -582,8 +594,10 @@ export function AdminDashboard() {
                         : t === 'banner'
                           ? '★ Event Banner'
                           : t === 'reports'
-                          ? '★ KOL Reports'
-                          : 'AI field legend'}
+                            ? '★ KOL Reports'
+                            : t === 'events'
+                              ? '★ Events Map'
+                              : 'AI field legend'}
           </button>
         ))}
       </div>
@@ -609,6 +623,8 @@ export function AdminDashboard() {
       {tab === 'reports' && (
         <AdminKolReportsEditor onToast={flash} kols={kols} />
       )}
+
+      {tab === 'events' && <AdminConvictionEventsEditor onToast={flash} />}
 
       {tab === 'legend' && <FieldLegend />}
 

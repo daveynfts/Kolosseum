@@ -3326,3 +3326,137 @@ body.akr-split-resizing .report-md--editable {
   font: inherit;
   max-width: 100%;
 }
+
+/* Conviction Events admin */
+.admin-events-page {
+  margin-top: 4px;
+}
+.admin-events-meta {
+  padding: 14px 16px 18px;
+  margin-bottom: 12px;
+}
+.admin-events-meta h3 {
+  margin: 0 0 12px;
+  font-size: 0.95rem;
+}
+.admin-events-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px 14px;
+}
+.admin-events-grid label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.75rem;
+  color: #94a3b8;
+}
+.admin-events-grid input,
+.admin-events-grid select,
+.admin-events-grid textarea {
+  background: rgba(15, 23, 42, 0.55);
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  border-radius: 8px;
+  color: #e2e8f0;
+  padding: 7px 10px;
+  font: inherit;
+}
+.admin-events-span2 {
+  grid-column: 1 / -1;
+}
+.admin-events-check {
+  flex-direction: row !important;
+  align-items: center;
+  gap: 8px !important;
+  margin-top: 8px;
+}
+.admin-events-check input {
+  width: auto !important;
+}
+.admin-events-geo {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+.admin-events-layout {
+  display: grid;
+  grid-template-columns: minmax(240px, 320px) 1fr;
+  gap: 12px;
+  align-items: start;
+}
+@media (max-width: 900px) {
+  .admin-events-layout {
+    grid-template-columns: 1fr;
+  }
+  .admin-events-grid {
+    grid-template-columns: 1fr;
+  }
+}
+.admin-events-list,
+.admin-events-form {
+  padding: 12px 14px 16px;
+  min-height: 320px;
+}
+.admin-events-list__head,
+.admin-events-form__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.admin-events-form__head h3 {
+  margin: 0;
+  font-size: 0.95rem;
+}
+.admin-events-form__actions {
+  display: flex;
+  gap: 6px;
+}
+.admin-events-list__scroll {
+  max-height: min(62vh, 640px);
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.admin-events-row {
+  appearance: none;
+  text-align: left;
+  width: 100%;
+  border: 1px solid transparent;
+  background: rgba(30, 41, 59, 0.45);
+  border-radius: 8px;
+  padding: 8px 10px;
+  color: #e2e8f0;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.admin-events-row:hover {
+  border-color: rgba(56, 189, 248, 0.35);
+}
+.admin-events-row.is-active {
+  border-color: rgba(56, 189, 248, 0.55);
+  background: rgba(14, 165, 233, 0.12);
+}
+.admin-events-row__date {
+  font-size: 0.7rem;
+  color: #fbbf24;
+  font-weight: 650;
+}
+.admin-events-row__title {
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+.admin-events-row__meta {
+  font-size: 0.7rem;
+  color: #94a3b8;
+}
+.admin-events-empty {
+  color: #94a3b8;
+  font-size: 0.85rem;
+  padding: 12px 4px;
+}

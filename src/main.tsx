@@ -15,6 +15,11 @@ const ScexTrackingPage = lazy(() =>
     default: m.ScexTrackingPage,
   })),
 )
+const EventMapPage = lazy(() =>
+  import('./pages/EventMapPage.tsx').then((m) => ({
+    default: m.EventMapPage,
+  })),
+)
 const ScexEventBanner = lazy(() =>
   import('./components/ScexEventBanner.tsx').then((m) => ({
     default: m.ScexEventBanner,
@@ -29,12 +34,16 @@ function RouteFallback() {
   )
 }
 
-function getRoute(): 'map' | 'admin' | 'scex' {
+function getRoute(): 'map' | 'admin' | 'scex' | 'event' {
+  const path = window.location.pathname.toLowerCase()
+  if (path.startsWith('/event')) return 'event'
   const h = window.location.hash.replace(/^#\/?/, '').toLowerCase()
   if (h === 'admin' || h.startsWith('admin/') || h.startsWith('admin?'))
     return 'admin'
   if (h === 'scex' || h.startsWith('scex/') || h.startsWith('scex?'))
     return 'scex'
+  if (h === 'event' || h.startsWith('event/') || h.startsWith('event?'))
+    return 'event'
   return 'map'
 }
 
@@ -87,8 +96,13 @@ function Root() {
 
   useEffect(() => {
     const onHash = () => setRoute(getRoute())
+    const onPop = () => setRoute(getRoute())
     window.addEventListener('hashchange', onHash)
-    return () => window.removeEventListener('hashchange', onHash)
+    window.addEventListener('popstate', onPop)
+    return () => {
+      window.removeEventListener('hashchange', onHash)
+      window.removeEventListener('popstate', onPop)
+    }
   }, [])
 
   if (route === 'admin') {
@@ -97,6 +111,14 @@ function Root() {
         <AdminGate>
           <AdminDashboard />
         </AdminGate>
+      </Suspense>
+    )
+  }
+
+  if (route === 'event') {
+    return (
+      <Suspense fallback={<RouteFallback />}>
+        <EventMapPage />
       </Suspense>
     )
   }

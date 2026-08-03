@@ -14,6 +14,10 @@
     {
       "source": "/r2/:path*",
       "destination": "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/:path*"
+    },
+    {
+      "source": "/event/:path*",
+      "destination": "/"
     }
   ],
   "headers": [

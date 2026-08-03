@@ -1437,17 +1437,99 @@
   display: none;
 }
 
-/* Luma-style card layout (if not already defined) */
+/* Luma-style card layout */
 .emp__card--luma {
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  overflow: hidden;
+}
+
+.emp__card-main {
+  appearance: none;
+  border: none;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  width: 100%;
   display: flex;
   gap: 0.65rem;
   align-items: stretch;
   padding: 0.7rem 0.75rem;
+  cursor: pointer;
+}
+
+.emp__card--tbd-loc.is-active {
+  border-color: rgba(255, 159, 10, 0.35);
 }
 
 .emp__card-body {
   flex: 1 1 auto;
   min-width: 0;
+}
+
+.emp__card-detail {
+  padding: 0 0.75rem 0.75rem;
+  border-top: 1px solid var(--emp-border);
+  animation: emp-week-in 0.22s ease;
+}
+
+.emp__card-detail-desc {
+  margin: 0.55rem 0 0;
+  font-size: 0.78rem;
+  line-height: 1.45;
+  color: var(--emp-text-2);
+}
+
+.emp__card-detail-meta {
+  margin: 0.4rem 0 0;
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: var(--emp-muted);
+  line-height: 1.35;
+}
+
+.emp__card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-top: 0.55rem;
+}
+
+.emp__card-action {
+  appearance: none;
+  border: 1px solid var(--emp-border);
+  background: var(--emp-surface-2);
+  color: var(--emp-text);
+  border-radius: var(--emp-radius-pill);
+  padding: 0.32rem 0.65rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.emp__card-action:hover {
+  background: var(--emp-surface-hover);
+  border-color: var(--emp-border-strong);
+}
+
+.emp__card-action--primary {
+  background: var(--emp-accent-soft);
+  border-color: rgba(0, 113, 227, 0.3);
+  color: #7eb8ff;
+}
+
+.emp__card-action--primary:hover {
+  background: rgba(0, 113, 227, 0.24);
+}
+
+.emp-popup__note {
+  color: var(--emp-gold) !important;
+  font-weight: 600;
 }
 
 .emp__card-time {

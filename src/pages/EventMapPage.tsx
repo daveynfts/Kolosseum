@@ -186,7 +186,7 @@ function popupHtml(
     ? `<a href="${ev.link}" target="_blank" rel="noopener noreferrer">Đăng ký Luma</a>`
     : ''
   const directions = ev.locationTbd
-    ? ''
+    ? `<a href="${directionsUrl(SALA_VENUE.lat, SALA_VENUE.lng)}" target="_blank" rel="noopener noreferrer">Chỉ đường (venue chính)</a>`
     : `<a href="${directionsUrl(ev.lat, ev.lng)}" target="_blank" rel="noopener noreferrer">Chỉ đường</a>`
   const img = ev.imageUrl
     ? `<img class="emp-popup__img" src="${escapeHtml(toSquareImageUrl(ev.imageUrl, 320))}" alt="" loading="lazy" referrerpolicy="no-referrer" />`
@@ -194,6 +194,9 @@ function popupHtml(
   const dist = opts.distanceLabel
     ? `<p class="emp-popup__row emp-popup__dist">${escapeHtml(opts.distanceLabel)}</p>`
     : ''
+  const placeLine = ev.locationTbd
+    ? 'Địa điểm sẽ công bố sau khi duyệt (Location TBD)'
+    : [ev.venue, ev.address].filter(Boolean).join(' — ')
   return `
     <div class="emp-popup__inner">
       ${img}
@@ -202,7 +205,12 @@ function popupHtml(
       <p class="emp-popup__row">${escapeHtml(when)}</p>
       ${dist}
       <p class="emp-popup__row">${escapeHtml(ev.host || '')}</p>
-      <p class="emp-popup__row">${escapeHtml([ev.venue, ev.address].filter(Boolean).join(' — '))}</p>
+      <p class="emp-popup__row">${escapeHtml(placeLine)}</p>
+      ${
+        ev.locationTbd
+          ? '<p class="emp-popup__row emp-popup__note">Pin tạm tại Thiskyhall Sala · tọa độ thật chưa public</p>'
+          : ''
+      }
       ${ev.description ? `<p class="emp-popup__row">${escapeHtml(ev.description)}</p>` : ''}
       <div class="emp-popup__actions">
         ${directions}
@@ -310,7 +318,7 @@ export function EventMapPage() {
   const markersRef = useRef<Map<string, Marker>>(new Map())
   const venueMarkerRef = useRef<Marker | null>(null)
   const popupRef = useRef<Popup | null>(null)
-  const listRefs = useRef<Map<string, HTMLButtonElement>>(new Map())
+  const listRefs = useRef<Map<string, HTMLElement>>(new Map())
   const deepLinkApplied = useRef(false)
   /** Only auto-fit when filter set changes — never fight user zoom/pan. */
   const lastFitKeyRef = useRef<string>('')
@@ -687,18 +695,25 @@ export function EventMapPage() {
 
   const openPopup = (ev: SideEvent) => {
     const map = mapRef.current
-    if (!map || ev.locationTbd) return
+    if (!map) return
     popupRef.current?.remove()
     const st = getSideEventStatus(ev)
     const live = st.phase === 'live'
     const isTodayEv = eventOccursOnDate(ev, today)
+    // TBD location: still show popup at main venue as approximate anchor
+    const lng = ev.locationTbd
+      ? (dataset?.venue.lng ?? SALA_VENUE.lng)
+      : ev.lng
+    const lat = ev.locationTbd
+      ? (dataset?.venue.lat ?? SALA_VENUE.lat)
+      : ev.lat
     const popup = new maplibregl.Popup({
       offset: 88,
       maxWidth: '300px',
       className: 'emp-popup',
       closeButton: true,
     })
-      .setLngLat([ev.lng, ev.lat])
+      .setLngLat([lng, lat])
       .setHTML(
         popupHtml(ev, {
           live,
@@ -722,28 +737,44 @@ export function EventMapPage() {
 
   const selectEvent = (ev: SideEvent, fly = true) => {
     setSelectedId(ev.id)
-    if (isMobileViewport() && sheetMode === 'peek') setSheetMode('half')
+    // Always open list enough to show detail (esp. TBD location events)
+    if (isMobileViewport()) {
+      if (sheetMode === 'peek' || ev.locationTbd) setSheetMode('half')
+    }
     const map = mapRef.current
-    if (map && fly && !ev.locationTbd) {
-      // Programmatic camera — don't treat as user-break of fit
+    if (map && fly) {
       userMovedMapRef.current = false
-      map.flyTo({
-        center: [ev.lng, ev.lat],
-        zoom: Math.max(map.getZoom(), 14.4),
-        speed: 1.15,
-        pitch: 0,
-        bearing: 0,
-        essential: true,
-      })
-      openPopup(ev)
-    } else if (ev.locationTbd) {
-      popupRef.current?.remove()
-      popupRef.current = null
+      if (ev.locationTbd) {
+        // No real pin — focus main venue + popup with full event info
+        const v = dataset?.venue ?? SALA_VENUE
+        map.flyTo({
+          center: [v.lng, v.lat],
+          zoom: Math.max(map.getZoom(), 13.2),
+          speed: 1.1,
+          pitch: 0,
+          bearing: 0,
+          essential: true,
+        })
+        openPopup(ev)
+      } else {
+        map.flyTo({
+          center: [ev.lng, ev.lat],
+          zoom: Math.max(map.getZoom(), 14.4),
+          speed: 1.15,
+          pitch: 0,
+          bearing: 0,
+          essential: true,
+        })
+        openPopup(ev)
+      }
     } else if (map) {
       openPopup(ev)
     }
-    const el = listRefs.current.get(ev.id)
-    el?.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
+    // After paint, scroll list card into view
+    requestAnimationFrame(() => {
+      const el = listRefs.current.get(ev.id)
+      el?.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
+    })
   }
 
   // When mobile sheet height changes, resize map canvas
@@ -1281,94 +1312,165 @@ export function EventMapPage() {
                     : `${formatLumaDay(date)}${date === today ? ' · Hôm nay' : ''}`}
                 </div>
                 {list.map((ev) => {
-                  const live = isLive(ev, today, nowHm)
+                  const st = getSideEventStatus(ev)
+                  const live = st.phase === 'live'
                   const isTodayEv = !ev.dateTbd && eventOccursOnDate(ev, today)
+                  const isActive = selectedId === ev.id
                   const timeLabel = ev.endTime
                     ? `${formatLumaTime(ev.startTime)} – ${formatLumaTime(ev.endTime)}`
                     : formatLumaTime(ev.startTime)
                   const place = ev.locationTbd
-                    ? 'Location Shown Upon Approval'
+                    ? 'Địa điểm sẽ công bố sau (TBD)'
                     : ev.venue || ev.address || 'TP. Hồ Chí Minh'
                   const dist = distanceLabelFor(ev)
                   return (
-                    <button
+                    <div
                       key={ev.id}
-                      type="button"
-                      className={`emp__card emp__card--luma ${selectedId === ev.id ? 'is-active' : ''}${live ? ' emp__card--live' : ''}`}
+                      className={`emp__card emp__card--luma ${isActive ? 'is-active' : ''}${live ? ' emp__card--live' : ''}${ev.locationTbd ? ' emp__card--tbd-loc' : ''}`}
                       ref={(node) => {
                         if (node) listRefs.current.set(ev.id, node)
                         else listRefs.current.delete(ev.id)
                       }}
-                      onClick={() => selectEvent(ev, true)}
                     >
-                      <div className="emp__card-body">
-                        <p className="emp__card-time">
-                          {ev.dateTbd ? 'Time TBD' : timeLabel}
-                          {live ? ' · LIVE' : ''}
-                        </p>
-                        <p className="emp__card-title">{ev.title}</p>
-                        {ev.host ? (
-                          <p className="emp__card-host">
-                            <span className="emp__card-host-dot" aria-hidden />
-                            By {ev.host}
+                      <button
+                        type="button"
+                        className="emp__card-main"
+                        onClick={() => selectEvent(ev, true)}
+                      >
+                        <div className="emp__card-body">
+                          <p className="emp__card-time">
+                            {ev.dateTbd ? 'Time TBD' : timeLabel}
+                            {live ? ' · LIVE' : ''}
+                            {!live && st.phase === 'upcoming'
+                              ? ` · ${st.pinLabel}`
+                              : ''}
+                            {st.phase === 'ended' ? ' · END' : ''}
                           </p>
-                        ) : null}
-                        <p className="emp__card-place">
-                          <span className="emp__card-pin" aria-hidden>
-                            ⌖
-                          </span>
-                          {place}
-                        </p>
-                        {dist ? (
-                          <p className="emp__card-dist">{dist}</p>
-                        ) : ev.locationTbd ? (
-                          <p className="emp__card-dist emp__card-dist--muted">
-                            Chưa có tọa độ
+                          <p className="emp__card-title">{ev.title}</p>
+                          {ev.host ? (
+                            <p className="emp__card-host">
+                              <span
+                                className="emp__card-host-dot"
+                                aria-hidden
+                              />
+                              By {ev.host}
+                            </p>
+                          ) : null}
+                          <p className="emp__card-place">
+                            <span className="emp__card-pin" aria-hidden>
+                              ⌖
+                            </span>
+                            {place}
                           </p>
-                        ) : null}
-                        <div className="emp__badges">
-                          {(ev.dateTbd || ev.locationTbd) && (
-                            <span className="emp__badge emp__badge--pending">
-                              Pending
-                            </span>
-                          )}
-                          {live && (
-                            <span className="emp__badge emp__badge--live">
-                              Đang diễn ra
-                            </span>
-                          )}
-                          {!live && isTodayEv && (
-                            <span className="emp__badge emp__badge--today">
-                              Hôm nay
-                            </span>
-                          )}
-                          {ev.free && (
-                            <span className="emp__badge emp__badge--free">
-                              Free
-                            </span>
+                          {dist ? (
+                            <p className="emp__card-dist">{dist}</p>
+                          ) : ev.locationTbd ? (
+                            <p className="emp__card-dist emp__card-dist--muted">
+                              Chưa có tọa độ · xem chi tiết bên dưới
+                            </p>
+                          ) : null}
+                          <div className="emp__badges">
+                            {(ev.dateTbd || ev.locationTbd) && (
+                              <span className="emp__badge emp__badge--pending">
+                                {ev.locationTbd
+                                  ? 'Location TBD'
+                                  : 'Date TBD'}
+                              </span>
+                            )}
+                            {live && (
+                              <span className="emp__badge emp__badge--live">
+                                Đang diễn ra
+                              </span>
+                            )}
+                            {!live && isTodayEv && (
+                              <span className="emp__badge emp__badge--today">
+                                Hôm nay
+                              </span>
+                            )}
+                            {ev.free && (
+                              <span className="emp__badge emp__badge--free">
+                                Free
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        <div className="emp__card-media">
+                          {ev.imageUrl ? (
+                            <img
+                              src={toSquareImageUrl(ev.imageUrl, 240)}
+                              alt=""
+                              loading="lazy"
+                              referrerPolicy="no-referrer"
+                            />
+                          ) : (
+                            <div
+                              className="emp__card-media-fallback"
+                              style={{
+                                background: EVENT_TYPE_COLORS[ev.type],
+                              }}
+                            >
+                              {(ev.title || '?').slice(0, 1)}
+                            </div>
                           )}
                         </div>
-                      </div>
-                      <div className="emp__card-media">
-                        {ev.imageUrl ? (
-                          <img
-                            src={toSquareImageUrl(ev.imageUrl, 240)}
-                            alt=""
-                            loading="lazy"
-                            referrerPolicy="no-referrer"
-                          />
-                        ) : (
-                          <div
-                            className="emp__card-media-fallback"
-                            style={{
-                              background: EVENT_TYPE_COLORS[ev.type],
-                            }}
-                          >
-                            {(ev.title || '?').slice(0, 1)}
+                      </button>
+                      {isActive && (
+                        <div className="emp__card-detail">
+                          {ev.description ? (
+                            <p className="emp__card-detail-desc">
+                              {ev.description}
+                            </p>
+                          ) : null}
+                          <p className="emp__card-detail-meta">
+                            {st.detail}
+                            {ev.locationTbd
+                              ? ' · Địa điểm public sau khi duyệt Luma'
+                              : ''}
+                          </p>
+                          <div className="emp__card-actions">
+                            {ev.link ? (
+                              <a
+                                className="emp__card-action emp__card-action--primary"
+                                href={ev.link}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                              >
+                                Đăng ký Luma
+                              </a>
+                            ) : null}
+                            {!ev.locationTbd ? (
+                              <a
+                                className="emp__card-action"
+                                href={directionsUrl(ev.lat, ev.lng)}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                              >
+                                Chỉ đường
+                              </a>
+                            ) : (
+                              <a
+                                className="emp__card-action"
+                                href={directionsUrl(
+                                  SALA_VENUE.lat,
+                                  SALA_VENUE.lng,
+                                )}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                              >
+                                Venue chính
+                              </a>
+                            )}
+                            <button
+                              type="button"
+                              className="emp__card-action"
+                              onClick={() => downloadIcs(ev)}
+                            >
+                              Thêm lịch
+                            </button>
                           </div>
-                        )}
-                      </div>
-                    </button>
+                        </div>
+                      )}
+                    </div>
                   )
                 })}
               </div>

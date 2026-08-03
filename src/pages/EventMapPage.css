@@ -1,41 +1,4 @@
-/* Distance spokes / midpoint labels on map */
-.emp-dist-label {
-  pointer-events: none;
-  z-index: 1;
-  display: flex;
-  align-items: center;
-  padding: 0.22rem 0.5rem;
-  border-radius: 980px;
-  background: rgba(0, 113, 227, 0.92);
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-}
-
-.emp-dist-label--nearest {
-  background: rgba(255, 255, 255, 0.95);
-  border-color: rgba(0, 113, 227, 0.45);
-  box-shadow:
-    0 0 0 2px rgba(0, 113, 227, 0.2),
-    0 6px 16px rgba(0, 113, 227, 0.3);
-}
-
-.emp-dist-label--nearest .emp-dist-label__text {
-  color: #0071e3;
-}
-
-.emp-dist-label__text {
-  display: inline-block;
-  font-size: 0.64rem;
-  font-weight: 700;
-  letter-spacing: -0.01em;
-  font-variant-numeric: tabular-nums;
-  color: #eaf3ff;
-  white-space: nowrap;
-  line-height: 1.2;
-}
-
+/* Origin hub when measuring from me / selected event */
 .emp-dist-origin {
   width: 22px;
   height: 22px;

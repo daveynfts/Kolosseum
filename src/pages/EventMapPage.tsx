@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import * as maplibregl from 'maplibre-gl'
 import type {
-  GeoJSONSource,
   Map as MapLibreMap,
   Marker,
   Popup,
@@ -36,7 +35,6 @@ import {
   eventToIcs,
 } from '../data/convictionEvents'
 import { loadEventsWithSource } from '../lib/convictionEventsStore'
-import { fetchOsrmRoutesBatch, type RoadRouteResult } from '../lib/osrmRoute'
 import { withBase } from '../lib/base'
 import './EventMapPage.css'
 
@@ -322,13 +320,11 @@ export function EventMapPage() {
   const mapEl = useRef<HTMLDivElement>(null)
   const mapRef = useRef<MapLibreMap | null>(null)
   const markersRef = useRef<Map<string, Marker>>(new Map())
-  const distLabelMarkersRef = useRef<Map<string, Marker>>(new Map())
   const originHubRef = useRef<Marker | null>(null)
   const venueMarkerRef = useRef<Marker | null>(null)
   const popupRef = useRef<Popup | null>(null)
   const listRefs = useRef<Map<string, HTMLElement>>(new Map())
   const deepLinkApplied = useRef(false)
-  const distLayersReady = useRef(false)
   /** Only auto-fit when filter set changes — never fight user zoom/pan. */
   const lastFitKeyRef = useRef<string>('')
   const userMovedMapRef = useRef(false)
@@ -544,65 +540,6 @@ export function EventMapPage() {
     [filtered],
   )
 
-  /**
-   * Road routes (OSRM walking) from main hub / me / selected → each side event.
-   * Like Google Maps directions, not a tour between side events.
-   */
-  const [roadRoutes, setRoadRoutes] = useState<RoadRouteResult[]>([])
-  const [routesLoading, setRoutesLoading] = useState(false)
-  const routeFetchGen = useRef(0)
-
-  useEffect(() => {
-    if (!mapReady || !mapEvents.length) {
-      setRoadRoutes([])
-      return
-    }
-    const gen = ++routeFetchGen.current
-    // Prefer selected + nearest by air distance (cap for OSRM rate limits)
-    const ranked = [...mapEvents]
-      .map((ev) => ({
-        ev,
-        km: eventDistanceKm(distanceFrom, ev) ?? Infinity,
-      }))
-      .sort((a, b) => a.km - b.km)
-
-    const dests: Array<{ id: string; lat: number; lng: number }> = []
-    const seen = new Set<string>()
-    // Always include selected first if on map
-    if (selectedEvent && !selectedEvent.locationTbd) {
-      dests.push({
-        id: selectedEvent.id,
-        lat: selectedEvent.lat,
-        lng: selectedEvent.lng,
-      })
-      seen.add(selectedEvent.id)
-    }
-    for (const { ev } of ranked) {
-      if (seen.has(ev.id)) continue
-      if (dests.length >= 12) break
-      dests.push({ id: ev.id, lat: ev.lat, lng: ev.lng })
-      seen.add(ev.id)
-    }
-
-    setRoutesLoading(true)
-    void fetchOsrmRoutesBatch(
-      { lat: distanceFrom.lat, lng: distanceFrom.lng },
-      dests,
-      'foot',
-      (one) => {
-        if (routeFetchGen.current !== gen) return
-        setRoadRoutes((prev) => {
-          const rest = prev.filter((r) => r.id !== one.id)
-          return [...rest, one]
-        })
-      },
-    ).then((all) => {
-      if (routeFetchGen.current !== gen) return
-      setRoadRoutes(all)
-      setRoutesLoading(false)
-    })
-  }, [mapReady, mapEvents, distanceFrom, selectedEvent?.id])
-
   const grouped = useMemo(() => {
     const map = new Map<string, SideEvent[]>()
     for (const ev of filtered) {
@@ -753,13 +690,10 @@ export function EventMapPage() {
       popupRef.current = null
       for (const m of markers.values()) m.remove()
       markers.clear()
-      for (const m of distLabelMarkersRef.current.values()) m.remove()
-      distLabelMarkersRef.current.clear()
       originHubRef.current?.remove()
       originHubRef.current = null
       venueMarkerRef.current?.remove()
       venueMarkerRef.current = null
-      distLayersReady.current = false
       map.remove()
       mapRef.current = null
       setMapReady(false)
@@ -882,136 +816,6 @@ export function EventMapPage() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dataset, mapReady])
-
-  function ensureDistanceLayers(map: MapLibreMap) {
-    if (distLayersReady.current && map.getSource('emp-dist')) return
-    if (!map.getSource('emp-dist')) {
-      map.addSource('emp-dist', {
-        type: 'geojson',
-        data: { type: 'FeatureCollection', features: [] },
-      })
-    }
-    if (!map.getLayer('emp-dist-glow')) {
-      map.addLayer({
-        id: 'emp-dist-glow',
-        type: 'line',
-        source: 'emp-dist',
-        filter: ['==', ['get', 'kind'], 'line'],
-        layout: {
-          'line-cap': 'round',
-          'line-join': 'round',
-        },
-        paint: {
-          'line-color': '#0071e3',
-          'line-width': [
-            'case',
-            ['==', ['get', 'active'], 1],
-            10,
-            6,
-          ],
-          'line-opacity': 0.22,
-          'line-blur': 1.2,
-        },
-      })
-    }
-    if (!map.getLayer('emp-dist-line')) {
-      map.addLayer({
-        id: 'emp-dist-line',
-        type: 'line',
-        source: 'emp-dist',
-        filter: ['==', ['get', 'kind'], 'line'],
-        layout: {
-          'line-cap': 'round',
-          'line-join': 'round',
-        },
-        paint: {
-          'line-color': [
-            'case',
-            ['==', ['get', 'active'], 1],
-            '#ffffff',
-            '#5eb0ff',
-          ],
-          'line-width': [
-            'case',
-            ['==', ['get', 'active'], 1],
-            4.5,
-            3,
-          ],
-          'line-opacity': 0.92,
-        },
-      })
-    }
-    distLayersReady.current = true
-  }
-
-  // Draw OSRM road routes (main hub → each side event) + labels
-  useEffect(() => {
-    const map = mapRef.current
-    if (!map || !mapReady) return
-
-    try {
-      ensureDistanceLayers(map)
-    } catch {
-      return
-    }
-
-    const features = roadRoutes.map((r) => ({
-      type: 'Feature' as const,
-      properties: {
-        kind: 'line',
-        id: r.id,
-        active: selectedId === r.id ? 1 : 0,
-      },
-      geometry: {
-        type: 'LineString' as const,
-        coordinates: r.coordinates,
-      },
-    }))
-
-    const src = map.getSource('emp-dist') as GeoJSONSource | undefined
-    src?.setData({
-      type: 'FeatureCollection',
-      features,
-    })
-
-    const keep = new Set(roadRoutes.map((r) => r.id))
-    for (const [id, marker] of distLabelMarkersRef.current) {
-      if (!keep.has(id)) {
-        marker.remove()
-        distLabelMarkersRef.current.delete(id)
-      }
-    }
-
-    for (const r of roadRoutes) {
-      const [midLng, midLat] = r.mid
-      let marker = distLabelMarkersRef.current.get(r.id)
-      const active = selectedId === r.id
-      if (!marker) {
-        const el = document.createElement('div')
-        el.className = active
-          ? 'emp-dist-label emp-dist-label--nearest'
-          : 'emp-dist-label'
-        el.innerHTML = `<span class="emp-dist-label__text"></span>`
-        marker = new maplibregl.Marker({
-          element: el,
-          anchor: 'center',
-        })
-          .setLngLat([midLng, midLat])
-          .addTo(map)
-        distLabelMarkersRef.current.set(r.id, marker)
-      } else {
-        marker.setLngLat([midLng, midLat])
-        marker.getElement().className = active
-          ? 'emp-dist-label emp-dist-label--nearest'
-          : 'emp-dist-label'
-      }
-      const text = marker
-        .getElement()
-        .querySelector('.emp-dist-label__text') as HTMLElement | null
-      if (text) text.textContent = r.shortLabel
-      marker.getElement().title = r.fullLabel
-    }
-  }, [mapReady, roadRoutes, selectedId])
 
   // Origin hub only when measuring from "me" or selected event
   // (Conviction venue already has the gold pin)
@@ -1484,17 +1288,7 @@ export function EventMapPage() {
             <div className="emp__loading">Đang tải bản đồ…</div>
           )}
           <div className="emp__map-hint" aria-hidden>
-            {routesLoading
-              ? 'Đang tải đường đi (OSRM)…'
-              : roadRoutes.length
-                ? `Đường đi bộ từ ${
-                    distOrigin === 'me'
-                      ? 'bạn'
-                      : distOrigin === 'selected'
-                        ? 'event đang chọn'
-                        : 'Conviction'
-                  } → side event · ${roadRoutes.length} tuyến`
-                : 'Chọn event / đợi tải đường đi như Google Maps'}
+            Chạm pin · xem chi tiết side event
           </div>
         </div>
 

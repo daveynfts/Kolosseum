@@ -448,7 +448,7 @@ export function EventMapPage() {
     return {
       lat: dataset?.venue.lat ?? SALA_VENUE.lat,
       lng: dataset?.venue.lng ?? SALA_VENUE.lng,
-      label: 'Sala',
+      label: 'Conviction',
     }
   }, [distOrigin, userLoc, selectedEvent, dataset])
 
@@ -921,9 +921,9 @@ export function EventMapPage() {
               type="button"
               className={`emp__btn ${distOrigin === 'sala' ? 'emp__btn--primary' : ''}`}
               onClick={() => setDistOrigin('sala')}
-              title="Từ Thiskyhall Sala"
+              title="Từ Thiskyhall Sala · Conviction main venue"
             >
-              Từ Sala
+              Từ Conviction
             </button>
             <button
               type="button"
@@ -1008,9 +1008,6 @@ export function EventMapPage() {
               height={20}
               decoding="async"
             />
-          </a>
-          <a className="emp__btn emp__btn--primary" href="#/">
-            ← Radar
           </a>
         </div>
       </header>

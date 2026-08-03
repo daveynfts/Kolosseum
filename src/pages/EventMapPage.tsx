@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import * as maplibregl from 'maplibre-gl'
-import type { Map as MapLibreMap, Marker, Popup } from 'maplibre-gl'
+import type { Map as MapLibreMap, Marker, Popup, StyleSpecification } from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import {
   EVENT_TYPE_COLORS,
@@ -19,7 +19,34 @@ import {
 import { loadEventsWithSource } from '../lib/convictionEventsStore'
 import './EventMapPage.css'
 
-const STYLE_URL = 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json'
+/** Raster dark tiles — avoids CARTO vector TileJSON hangs with MapLibre v6. */
+const MAP_STYLE: StyleSpecification = {
+  version: 8,
+  name: 'Carto Dark All',
+  sources: {
+    'carto-dark': {
+      type: 'raster',
+      tiles: [
+        'https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png',
+        'https://b.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png',
+        'https://c.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png',
+      ],
+      tileSize: 256,
+      attribution:
+        '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
+    },
+  },
+  layers: [
+    {
+      id: 'carto-dark',
+      type: 'raster',
+      source: 'carto-dark',
+      minzoom: 0,
+      maxzoom: 20,
+    },
+  ],
+}
+
 const HCMC_BOUNDS: [[number, number], [number, number]] = [
   [106.35, 10.35],
   [107.05, 11.05],
@@ -188,10 +215,14 @@ export function EventMapPage() {
 
   // Init map
   useEffect(() => {
-    if (!mapEl.current || mapRef.current) return
+    const container = mapEl.current
+    if (!container) return
+
+    let cancelled = false
+    let ready = false
     const map = new maplibregl.Map({
-      container: mapEl.current,
-      style: STYLE_URL,
+      container,
+      style: MAP_STYLE,
       center: [106.7204, 10.7269],
       zoom: 12,
       maxBounds: HCMC_BOUNDS,
@@ -205,10 +236,46 @@ export function EventMapPage() {
       }),
       'top-right',
     )
-    map.on('load', () => setMapReady(true))
+
+    const markReady = () => {
+      if (cancelled || ready) return
+      ready = true
+      setMapReady(true)
+      // Container may have been 0-height during init (flex layout).
+      requestAnimationFrame(() => {
+        try {
+          map.resize()
+        } catch {
+          /* ignore */
+        }
+      })
+    }
+
+    map.once('load', markReady)
+    map.once('idle', markReady)
+    map.on('error', (e) => {
+      console.warn('[EventMap] map error', e?.error || e)
+      // Still unblock UI so markers/list interaction work.
+      markReady()
+    })
+    const fallbackTimer = window.setTimeout(markReady, 2000)
+
     mapRef.current = map
     const markers = markersRef.current
+
+    const onWinResize = () => {
+      try {
+        map.resize()
+      } catch {
+        /* ignore */
+      }
+    }
+    window.addEventListener('resize', onWinResize)
+
     return () => {
+      cancelled = true
+      window.clearTimeout(fallbackTimer)
+      window.removeEventListener('resize', onWinResize)
       popupRef.current?.remove()
       popupRef.current = null
       for (const m of markers.values()) m.remove()

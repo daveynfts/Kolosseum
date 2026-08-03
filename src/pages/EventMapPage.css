@@ -153,7 +153,7 @@
 
 .emp__body {
   flex: 1 1 auto;
-  min-height: 0;
+  min-height: min(70dvh, 720px);
   display: grid;
   grid-template-columns: 1fr minmax(280px, 360px);
   position: relative;
@@ -163,6 +163,7 @@
   position: relative;
   min-height: 420px;
   height: 100%;
+  background: #0b1220;
 }
 
 .emp__map .maplibregl-map {

@@ -739,7 +739,7 @@ export function EventMapPage() {
       '.maplibregl-popup-content',
     ) as HTMLElement | null
     if (content) {
-      content.style.maxHeight = `${Math.min(availH, 520)}px`
+      content.style.maxHeight = `${Math.min(availH, 640)}px`
     }
 
     let dx = 0
@@ -767,9 +767,10 @@ export function EventMapPage() {
     const lat = ev.locationTbd
       ? (dataset?.venue.lat ?? SALA_VENUE.lat)
       : ev.lat
+    // Width matches Luma-style 1:1 cover (square image fills card width)
     const wide = isMobileViewport()
-      ? Math.min(360, Math.max(280, map.getContainer().clientWidth - 24))
-      : Math.min(400, Math.max(320, map.getContainer().clientWidth - 48))
+      ? Math.min(320, Math.max(280, map.getContainer().clientWidth - 24))
+      : Math.min(340, Math.max(300, map.getContainer().clientWidth - 48))
     const popup = new maplibregl.Popup({
       offset: 96,
       maxWidth: `${wide}px`,

@@ -1374,7 +1374,7 @@
 /* Popup — larger, scrollable, stays readable on mobile */
 .emp-popup.maplibregl-popup {
   z-index: 12;
-  max-width: min(400px, calc(100vw - 20px)) !important;
+  max-width: min(360px, calc(100vw - 20px)) !important;
 }
 
 .emp-popup .maplibregl-popup-content {
@@ -1387,8 +1387,8 @@
     0 12px 40px rgba(0, 0, 0, 0.55),
     0 0 0 1px rgba(0, 113, 227, 0.12);
   min-width: min(300px, calc(100vw - 28px));
-  max-width: min(400px, calc(100vw - 20px));
-  max-height: min(58dvh, 520px);
+  max-width: min(360px, calc(100vw - 20px));
+  max-height: min(72dvh, 640px);
   overflow: hidden;
   font-family: var(--emp-font);
   backdrop-filter: blur(24px) saturate(150%);
@@ -1441,9 +1441,9 @@
 
 .emp-popup__img {
   width: 100%;
-  aspect-ratio: 16 / 9;
-  max-height: 148px;
+  aspect-ratio: 1 / 1;
   object-fit: cover;
+  object-position: center;
   border-radius: 16px 16px 0 0;
   margin: 0;
   display: block;
@@ -1819,18 +1819,14 @@
   }
 
   .emp-popup.maplibregl-popup {
-    max-width: min(360px, calc(100vw - 16px)) !important;
+    max-width: min(320px, calc(100vw - 16px)) !important;
   }
 
   .emp-popup .maplibregl-popup-content {
-    min-width: min(300px, calc(100vw - 20px));
-    max-width: min(360px, calc(100vw - 16px));
-    max-height: min(48dvh, 420px);
+    min-width: min(280px, calc(100vw - 20px));
+    max-width: min(320px, calc(100vw - 16px));
+    max-height: min(68dvh, 560px);
     border-radius: 14px;
-  }
-
-  .emp-popup__img {
-    max-height: 120px;
   }
 
   .emp-popup__title {

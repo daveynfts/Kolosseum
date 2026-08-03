@@ -237,6 +237,91 @@ export function formatCountdownParts(p: MainForumCountdownParts): string {
   return `${pad(p.minutes)}:${pad(p.seconds)}`
 }
 
+/** Compact pin chip: `3d 4h` · `12h 05m` · `45:12` · `12m` */
+export function formatPinCountdown(ms: number): string {
+  const p = splitMs(ms)
+  if (p.days > 0) return `${p.days}d ${p.hours}h`
+  if (p.hours > 0) return `${p.hours}h ${String(p.minutes).padStart(2, '0')}m`
+  if (p.minutes > 0) return `${p.minutes}m ${String(p.seconds).padStart(2, '0')}s`
+  return `${p.seconds}s`
+}
+
+export type SideEventPhase = 'upcoming' | 'live' | 'ended' | 'tbd'
+
+export type SideEventStatus = {
+  phase: SideEventPhase
+  /** Short label on map pin */
+  pinLabel: string
+  detail: string
+}
+
+/** VN wall time → epoch ms for an event date + HH:mm */
+function eventInstantMs(date: string, hhmm: string): number | null {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return null
+  const m = /^(\d{1,2}):(\d{2})$/.exec((hhmm || '09:00').trim())
+  if (!m) return null
+  const h = String(Number(m[1])).padStart(2, '0')
+  const min = m[2]
+  const t = new Date(`${date}T${h}:${min}:00+07:00`).getTime()
+  return Number.isFinite(t) ? t : null
+}
+
+/**
+ * Per-side-event status for map pins: countdown / LIVE / END / TBD.
+ * Uses Asia/Ho_Chi_Minh wall times (date + startTime/endTime).
+ */
+export function getSideEventStatus(
+  ev: SideEvent,
+  now: Date = new Date(),
+): SideEventStatus {
+  if (ev.dateTbd || !ev.date) {
+    return {
+      phase: 'tbd',
+      pinLabel: 'TBD',
+      detail: 'Ngày chưa công bố',
+    }
+  }
+
+  const start = eventInstantMs(ev.date, ev.startTime || '09:00')
+  if (start == null) {
+    return { phase: 'tbd', pinLabel: 'TBD', detail: 'Thiếu giờ bắt đầu' }
+  }
+
+  let end =
+    eventInstantMs(ev.endDate || ev.date, ev.endTime || '') ??
+    // default duration 2h if no endTime
+    start + 2 * 60 * 60 * 1000
+  // if endTime parse failed but endDate/endTime empty, already defaulted
+  if (ev.endTime) {
+    const e = eventInstantMs(ev.endDate || ev.date, ev.endTime)
+    if (e != null) end = e
+  }
+  if (end < start) end = start + 2 * 60 * 60 * 1000
+
+  const t = now.getTime()
+  if (t < start) {
+    const ms = start - t
+    return {
+      phase: 'upcoming',
+      pinLabel: formatPinCountdown(ms),
+      detail: `Bắt đầu sau ${formatCountdownParts(splitMs(ms))}`,
+    }
+  }
+  if (t >= start && t < end) {
+    const ms = end - t
+    return {
+      phase: 'live',
+      pinLabel: 'LIVE',
+      detail: `Đang diễn ra · còn ${formatPinCountdown(ms)}`,
+    }
+  }
+  return {
+    phase: 'ended',
+    pinLabel: 'END',
+    detail: 'Đã kết thúc',
+  }
+}
+
 export const EVENT_TYPE_LABELS: Record<SideEventType, string> = {
   mixer: 'Mixer',
   workshop: 'Workshop',

@@ -18,14 +18,13 @@ import {
   formatMonthYearVi,
   formatShortDate,
   formatWeekdayShortVi,
-  getMainForumStatus,
+  getSideEventStatus,
   mainForumMeta,
   matchesDateFilter,
   shortEventTitle,
   sortEvents,
   sortEventsUpcoming,
   toSquareImageUrl,
-  type MainForumStatus,
   type SideEvent,
   type SideEventDataset,
   type SideEventType,
@@ -143,13 +142,24 @@ function downloadIcs(ev: SideEvent) {
 
 function popupHtml(
   ev: SideEvent,
-  opts: { live: boolean; today: boolean; distanceLabel?: string },
+  opts: {
+    live: boolean
+    today: boolean
+    distanceLabel?: string
+    statusLabel?: string
+    statusPhase?: string
+  },
 ): string {
   const typeLabel = EVENT_TYPE_LABELS[ev.type] || ev.type
   const when = ev.dateTbd
     ? `Ngày TBD · ${ev.startTime}${ev.endTime ? `–${ev.endTime}` : ''}`
     : `${formatShortDate(ev.date)} · ${ev.startTime}${ev.endTime ? `–${ev.endTime}` : ''}`
+  const stPhase = opts.statusPhase || (opts.live ? 'live' : 'upcoming')
+  const stLabel = opts.statusLabel || (opts.live ? 'LIVE' : '')
   const badges = [
+    stLabel
+      ? `<span class="emp__badge emp__badge--status emp__badge--status-${escapeHtml(stPhase)}">${escapeHtml(stLabel)}</span>`
+      : '',
     opts.live
       ? '<span class="emp__badge emp__badge--live">Đang diễn ra</span>'
       : '',
@@ -198,14 +208,32 @@ function popupHtml(
  * Marker DOM for MapLibre.
  * IMPORTANT: never set CSS `transform` on the root element — MapLibre owns
  * that for lat/lng placement. Hover/scale only on an inner wrapper.
+ * Status chip sits ABOVE the pin (countdown / LIVE / END).
  */
-function buildLumaPinEl(ev: SideEvent, live: boolean): HTMLDivElement {
+function buildLumaPinEl(ev: SideEvent, now: Date = new Date()): HTMLDivElement {
+  const st = getSideEventStatus(ev, now)
   const root = document.createElement('div')
-  root.className = `emp-pin${ev.featured ? ' emp-pin--featured' : ''}${live ? ' emp-pin--live' : ''}`
-  root.title = ev.title
+  root.className = [
+    'emp-pin',
+    ev.featured ? 'emp-pin--featured' : '',
+    st.phase === 'live' ? 'emp-pin--live' : '',
+    st.phase === 'ended' ? 'emp-pin--ended' : '',
+    st.phase === 'upcoming' ? 'emp-pin--upcoming' : '',
+  ]
+    .filter(Boolean)
+    .join(' ')
+  root.title = `${ev.title} · ${st.detail}`
+  root.dataset.eventId = ev.id
 
   const visual = document.createElement('div')
   visual.className = 'emp-pin__visual'
+
+  // Status floating above pin head
+  const status = document.createElement('div')
+  status.className = `emp-pin__status emp-pin__status--${st.phase}`
+  status.setAttribute('data-status', '1')
+  status.textContent = st.pinLabel
+  status.title = st.detail
 
   const imgWrap = document.createElement('div')
   imgWrap.className = 'emp-pin__img'
@@ -234,10 +262,25 @@ function buildLumaPinEl(ev: SideEvent, live: boolean): HTMLDivElement {
   label.className = 'emp-pin__label'
   label.textContent = shortEventTitle(ev.title, 26)
 
+  visual.appendChild(status)
   visual.appendChild(imgWrap)
   visual.appendChild(label)
   root.appendChild(visual)
   return root
+}
+
+function applyPinStatus(el: HTMLElement, ev: SideEvent, now: Date) {
+  const st = getSideEventStatus(ev, now)
+  const chip = el.querySelector('[data-status]') as HTMLElement | null
+  if (chip) {
+    chip.textContent = st.pinLabel
+    chip.className = `emp-pin__status emp-pin__status--${st.phase}`
+    chip.title = st.detail
+  }
+  el.classList.toggle('emp-pin--live', st.phase === 'live')
+  el.classList.toggle('emp-pin--ended', st.phase === 'ended')
+  el.classList.toggle('emp-pin--upcoming', st.phase === 'upcoming')
+  el.title = `${ev.title} · ${st.detail}`
 }
 
 function escapeHtml(s: string): string {
@@ -290,21 +333,25 @@ export function EventMapPage() {
   const [sheetMode, setSheetMode] = useState<SheetMode>(() =>
     isMobileViewport() ? 'half' : 'full',
   )
-  const [forumStatus, setForumStatus] = useState<MainForumStatus>(() =>
-    getMainForumStatus(),
-  )
-
   const today = todayVn()
   const nowHm = nowHmVn()
 
-  // Live countdown tick (main forum status bar)
+  // Tick countdown chips on map pins (does not rebuild markers)
   useEffect(() => {
-    setForumStatus(getMainForumStatus())
-    const id = window.setInterval(() => {
-      setForumStatus(getMainForumStatus())
-    }, 1000)
+    if (!dataset || !mapReady) return
+    const byId = new Map(dataset.events.map((e) => [e.id, e]))
+    const tick = () => {
+      const now = new Date()
+      for (const [id, marker] of markersRef.current) {
+        const ev = byId.get(id)
+        if (!ev) continue
+        applyPinStatus(marker.getElement(), ev, now)
+      }
+    }
+    tick()
+    const id = window.setInterval(tick, 1000)
     return () => window.clearInterval(id)
-  }, [])
+  }, [dataset, mapReady])
 
   useEffect(() => {
     let cancelled = false
@@ -633,10 +680,11 @@ export function EventMapPage() {
     const map = mapRef.current
     if (!map || ev.locationTbd) return
     popupRef.current?.remove()
-    const live = isLive(ev, today, nowHm)
+    const st = getSideEventStatus(ev)
+    const live = st.phase === 'live'
     const isTodayEv = eventOccursOnDate(ev, today)
     const popup = new maplibregl.Popup({
-      offset: 72,
+      offset: 88,
       maxWidth: '300px',
       className: 'emp-popup',
       closeButton: true,
@@ -647,6 +695,8 @@ export function EventMapPage() {
           live,
           today: isTodayEv,
           distanceLabel: distanceLabelFor(ev) || undefined,
+          statusLabel: st.detail,
+          statusPhase: st.phase,
         }),
       )
       .addTo(map)
@@ -759,13 +809,13 @@ export function EventMapPage() {
       }
     }
 
+    const now = new Date()
     for (const ev of mapEvents) {
       const existing = markersRef.current.get(ev.id)
-      const live = isLive(ev, today, nowHm)
-      const pinKey = `${ev.imageUrl || ''}|${ev.title}|${ev.type}|${ev.featured ? 1 : 0}|${live ? 1 : 0}`
+      const pinKey = `${ev.imageUrl || ''}|${ev.title}|${ev.type}|${ev.featured ? 1 : 0}`
       if (!existing || existing.getElement().dataset.pinKey !== pinKey) {
         existing?.remove()
-        const el = buildLumaPinEl(ev, live)
+        const el = buildLumaPinEl(ev, now)
         el.dataset.pinKey = pinKey
         el.addEventListener('click', (e: MouseEvent) => {
           e.stopPropagation()
@@ -778,7 +828,9 @@ export function EventMapPage() {
         el.classList.toggle('is-active', selectedId === ev.id)
       } else {
         existing.setLngLat([ev.lng, ev.lat])
-        existing.getElement().classList.toggle('is-active', selectedId === ev.id)
+        const el = existing.getElement()
+        el.classList.toggle('is-active', selectedId === ev.id)
+        applyPinStatus(el, ev, now)
       }
     }
 
@@ -944,68 +996,6 @@ export function EventMapPage() {
           </a>
         </div>
       </header>
-
-      <div
-        className={`emp-status emp-status--${forumStatus.phase}`}
-        role="status"
-        aria-live="polite"
-      >
-        <div className="emp-status__badge">
-          {forumStatus.phase === 'live' && (
-            <span className="emp-status__live-dot" aria-hidden />
-          )}
-          {forumStatus.badge}
-        </div>
-        <div className="emp-status__body">
-          <p className="emp-status__title">{forumStatus.title}</p>
-          <p className="emp-status__sub">{forumStatus.subtitle}</p>
-        </div>
-        {forumStatus.phase !== 'ended' ? (
-          <div className="emp-status__clock" aria-label="Đếm ngược">
-            {forumStatus.parts.days > 0 && (
-              <div className="emp-status__unit">
-                <strong>{forumStatus.parts.days}</strong>
-                <span>ngày</span>
-              </div>
-            )}
-            <div className="emp-status__unit">
-              <strong>
-                {String(forumStatus.parts.hours).padStart(2, '0')}
-              </strong>
-              <span>giờ</span>
-            </div>
-            <div className="emp-status__sep" aria-hidden>
-              :
-            </div>
-            <div className="emp-status__unit">
-              <strong>
-                {String(forumStatus.parts.minutes).padStart(2, '0')}
-              </strong>
-              <span>phút</span>
-            </div>
-            <div className="emp-status__sep" aria-hidden>
-              :
-            </div>
-            <div className="emp-status__unit">
-              <strong>
-                {String(forumStatus.parts.seconds).padStart(2, '0')}
-              </strong>
-              <span>giây</span>
-            </div>
-          </div>
-        ) : (
-          <div className="emp-status__ended-label">END</div>
-        )}
-        <p className="emp-status__hint">
-          {forumStatus.phase === 'upcoming'
-            ? 'Đến giờ mở cửa main forum'
-            : forumStatus.phase === 'live'
-              ? forumStatus.target === 'end'
-                ? 'Còn lại trong block / forum'
-                : ''
-              : 'Forum đã đóng'}
-        </p>
-      </div>
 
       <div className="emp__filters">
         <div className="emp-widget" role="group" aria-label="Lọc theo ngày">

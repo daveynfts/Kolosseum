@@ -1040,6 +1040,89 @@
   z-index: 2;
 }
 
+/* Countdown / LIVE / END chip above each pin */
+.emp-pin__status {
+  order: -1;
+  max-width: 96px;
+  padding: 0.18rem 0.45rem;
+  border-radius: 980px;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.2;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: #fff;
+  background: rgba(10, 132, 255, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.28);
+  pointer-events: none;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.emp-pin__status--upcoming {
+  background: rgba(10, 132, 255, 0.92);
+  color: #fff;
+}
+
+.emp-pin__status--live {
+  background: rgba(255, 69, 58, 0.95);
+  color: #fff;
+  animation: emp-pin-live-chip 1.4s ease-in-out infinite;
+}
+
+.emp-pin__status--ended {
+  background: rgba(72, 72, 74, 0.92);
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.emp-pin__status--tbd {
+  background: rgba(120, 120, 128, 0.75);
+  color: rgba(255, 255, 255, 0.9);
+  border-style: dashed;
+}
+
+@keyframes emp-pin-live-chip {
+  0%,
+  100% {
+    box-shadow: 0 4px 12px rgba(255, 69, 58, 0.35);
+  }
+  50% {
+    box-shadow: 0 4px 16px rgba(255, 69, 58, 0.55);
+  }
+}
+
+.emp-pin--ended {
+  opacity: 0.78;
+}
+
+.emp-pin--ended .emp-pin__img {
+  filter: grayscale(0.35);
+}
+
+.emp__badge--status {
+  max-width: 100%;
+}
+
+.emp__badge--status-live {
+  background: rgba(255, 69, 58, 0.22) !important;
+  color: #fca5a5 !important;
+}
+
+.emp__badge--status-upcoming {
+  background: rgba(10, 132, 255, 0.2) !important;
+  color: #7dd3fc !important;
+}
+
+.emp__badge--status-ended {
+  background: rgba(148, 163, 184, 0.2) !important;
+  color: #94a3b8 !important;
+}
+
 .emp-pin__img {
   width: 52px;
   height: 52px;

@@ -627,7 +627,7 @@ export function AdminConvictionEventsEditor({ onToast }: Props) {
                   </a>
                 </div>
                 <label className="admin-events-span2">
-                  Registration link
+                  Registration link (Luma)
                   <input
                     value={selected.link || ''}
                     onChange={(e) =>
@@ -635,9 +635,37 @@ export function AdminConvictionEventsEditor({ onToast }: Props) {
                         link: e.target.value || undefined,
                       })
                     }
-                    placeholder="https://"
+                    placeholder="https://luma.com/..."
                   />
                 </label>
+                <label className="admin-events-span2">
+                  Image URL (ảnh vuông trên map)
+                  <input
+                    value={selected.imageUrl || ''}
+                    onChange={(e) =>
+                      patchEvent(selected.id, {
+                        imageUrl: e.target.value || undefined,
+                      })
+                    }
+                    placeholder="https://images.lumacdn.com/..."
+                  />
+                </label>
+                {selected.imageUrl ? (
+                  <div className="admin-events-span2">
+                    <img
+                      src={selected.imageUrl}
+                      alt=""
+                      style={{
+                        width: 72,
+                        height: 72,
+                        objectFit: 'cover',
+                        borderRadius: 10,
+                        border: '1px solid rgba(148,163,184,.35)',
+                      }}
+                      referrerPolicy="no-referrer"
+                    />
+                  </div>
+                ) : null}
                 <label className="admin-events-span2">
                   Description
                   <textarea
@@ -669,6 +697,26 @@ export function AdminConvictionEventsEditor({ onToast }: Props) {
                     }
                   />
                   Featured (pin lớn hơn)
+                </label>
+                <label className="admin-events-check">
+                  <input
+                    type="checkbox"
+                    checked={!!selected.dateTbd}
+                    onChange={(e) =>
+                      patchEvent(selected.id, { dateTbd: e.target.checked })
+                    }
+                  />
+                  Ngày TBD
+                </label>
+                <label className="admin-events-check">
+                  <input
+                    type="checkbox"
+                    checked={!!selected.locationTbd}
+                    onChange={(e) =>
+                      patchEvent(selected.id, { locationTbd: e.target.checked })
+                    }
+                  />
+                  Địa điểm TBD
                 </label>
                 <label className="admin-events-span2">
                   ID (slug)

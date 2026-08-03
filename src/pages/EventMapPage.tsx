@@ -17,7 +17,9 @@ import {
   eventOccursOnDate,
   eventToIcs,
   formatShortDate,
+  shortEventTitle,
   sortEvents,
+  toSquareImageUrl,
   type SideEvent,
   type SideEventDataset,
   type SideEventType,
@@ -233,7 +235,7 @@ function nowHmVn(): string {
 }
 
 function isLive(ev: SideEvent, today: string, nowHm: string): boolean {
-  if (!eventOccursOnDate(ev, today)) return false
+  if (ev.dateTbd || !eventOccursOnDate(ev, today)) return false
   const start = ev.startTime || '00:00'
   const end = ev.endTime || '23:59'
   return nowHm >= start && nowHm <= end
@@ -251,22 +253,30 @@ function downloadIcs(ev: SideEvent) {
 
 function popupHtml(ev: SideEvent, opts: { live: boolean; today: boolean }): string {
   const typeLabel = EVENT_TYPE_LABELS[ev.type] || ev.type
-  const when = `${formatShortDate(ev.date)} · ${ev.startTime}${ev.endTime ? `–${ev.endTime}` : ''}`
+  const when = ev.dateTbd
+    ? `Ngày TBD · ${ev.startTime}${ev.endTime ? `–${ev.endTime}` : ''}`
+    : `${formatShortDate(ev.date)} · ${ev.startTime}${ev.endTime ? `–${ev.endTime}` : ''}`
   const badges = [
     opts.live ? '<span class="emp__badge emp__badge--live">Đang diễn ra</span>' : '',
-    !opts.live && opts.today
+    !opts.live && opts.today && !ev.dateTbd
       ? '<span class="emp__badge emp__badge--today">Hôm nay</span>'
       : '',
+    ev.dateTbd ? '<span class="emp__badge">Ngày TBD</span>' : '',
+    ev.locationTbd ? '<span class="emp__badge">Địa điểm TBD</span>' : '',
     ev.free ? '<span class="emp__badge emp__badge--free">Free</span>' : '',
     `<span class="emp__badge">${typeLabel}</span>`,
   ]
     .filter(Boolean)
     .join(' ')
   const reg = ev.link
-    ? `<a href="${ev.link}" target="_blank" rel="noopener noreferrer">Đăng ký</a>`
+    ? `<a href="${ev.link}" target="_blank" rel="noopener noreferrer">Đăng ký Luma</a>`
+    : ''
+  const img = ev.imageUrl
+    ? `<img class="emp-popup__img" src="${escapeHtml(toSquareImageUrl(ev.imageUrl, 320))}" alt="" loading="lazy" referrerpolicy="no-referrer" />`
     : ''
   return `
     <div class="emp-popup__inner">
+      ${img}
       <h3 class="emp-popup__title">${escapeHtml(ev.title)}</h3>
       <div class="emp__badges" style="margin:0 0 0.4rem">${badges}</div>
       <p class="emp-popup__row">${escapeHtml(when)}</p>
@@ -280,6 +290,42 @@ function popupHtml(ev: SideEvent, opts: { live: boolean; today: boolean }): stri
       </div>
     </div>
   `
+}
+
+function buildLumaPinEl(ev: SideEvent): HTMLDivElement {
+  const root = document.createElement('div')
+  root.className = `emp-pin${ev.featured ? ' emp-pin--featured' : ''}`
+  root.title = ev.title
+
+  const imgWrap = document.createElement('div')
+  imgWrap.className = 'emp-pin__img'
+  imgWrap.style.borderColor = EVENT_TYPE_COLORS[ev.type] || EVENT_TYPE_COLORS.other
+
+  if (ev.imageUrl) {
+    const img = document.createElement('img')
+    img.src = toSquareImageUrl(ev.imageUrl, 160)
+    img.alt = ''
+    img.loading = 'eager'
+    img.decoding = 'async'
+    img.referrerPolicy = 'no-referrer'
+    img.onerror = () => {
+      imgWrap.classList.add('emp-pin__img--fallback')
+      img.remove()
+      imgWrap.textContent = (ev.title || '?').slice(0, 1).toUpperCase()
+    }
+    imgWrap.appendChild(img)
+  } else {
+    imgWrap.classList.add('emp-pin__img--fallback')
+    imgWrap.textContent = (ev.title || '?').slice(0, 1).toUpperCase()
+  }
+
+  const label = document.createElement('div')
+  label.className = 'emp-pin__label'
+  label.textContent = shortEventTitle(ev.title, 26)
+
+  root.appendChild(imgWrap)
+  root.appendChild(label)
+  return root
 }
 
 function escapeHtml(s: string): string {
@@ -380,9 +426,9 @@ export function EventMapPage() {
       container,
       style: MAP_STYLE,
       center: [106.7204, 10.7269],
-      zoom: 15.4,
-      pitch: 58,
-      bearing: -28,
+      zoom: 13.2,
+      pitch: 48,
+      bearing: -20,
       maxPitch: 70,
       maxBounds: HCMC_BOUNDS,
       attributionControl: { compact: true },
@@ -476,7 +522,7 @@ export function EventMapPage() {
     const live = isLive(ev, today, nowHm)
     const isToday = eventOccursOnDate(ev, today)
     const popup = new maplibregl.Popup({
-      offset: 18,
+      offset: 72,
       maxWidth: '300px',
       className: 'emp-popup',
       closeButton: true,
@@ -561,26 +607,23 @@ export function EventMapPage() {
 
     for (const ev of filtered) {
       const existing = markersRef.current.get(ev.id)
-      if (!existing) {
-        const el = document.createElement('div')
-        el.className = `emp-marker${ev.featured ? ' emp-marker--featured' : ''}`
-        el.style.background = EVENT_TYPE_COLORS[ev.type] || EVENT_TYPE_COLORS.other
-        el.title = ev.title
+      const pinKey = `${ev.imageUrl || ''}|${ev.title}|${ev.type}|${ev.featured ? 1 : 0}`
+      if (!existing || existing.getElement().dataset.pinKey !== pinKey) {
+        existing?.remove()
+        const el = buildLumaPinEl(ev)
+        el.dataset.pinKey = pinKey
         el.addEventListener('click', (e: MouseEvent) => {
           e.stopPropagation()
           selectEvent(ev, true)
         })
-        const marker = new maplibregl.Marker({ element: el })
+        const marker = new maplibregl.Marker({ element: el, anchor: 'bottom' })
           .setLngLat([ev.lng, ev.lat])
           .addTo(map)
         markersRef.current.set(ev.id, marker)
-        marker.getElement().classList.toggle('is-active', selectedId === ev.id)
+        el.classList.toggle('is-active', selectedId === ev.id)
       } else {
         existing.setLngLat([ev.lng, ev.lat])
-        const el = existing.getElement()
-        el.style.background = EVENT_TYPE_COLORS[ev.type] || EVENT_TYPE_COLORS.other
-        el.classList.toggle('emp-marker--featured', !!ev.featured)
-        el.classList.toggle('is-active', selectedId === ev.id)
+        existing.getElement().classList.toggle('is-active', selectedId === ev.id)
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- selectEvent closes over latest; markers sync on filter/selection
@@ -710,7 +753,17 @@ export function EventMapPage() {
         <aside className={`emp__panel ${listOpen ? '' : 'is-collapsed'}`}>
           <div className="emp__panel-head">
             <h2>Lịch side events</h2>
-            <p>Chạm để mở popup trên map · Chỉ đường / Đăng ký / .ics</p>
+            <p>
+              10 side events từ{' '}
+              <a
+                href="https://luma.com/conviction-2026"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Luma calendar
+              </a>{' '}
+              · Chỉ đường / Đăng ký / .ics
+            </p>
           </div>
           <div className="emp__list">
             {!filtered.length && (
@@ -726,7 +779,7 @@ export function EventMapPage() {
                 </div>
                 {list.map((ev) => {
                   const live = isLive(ev, today, nowHm)
-                  const isToday = eventOccursOnDate(ev, today)
+                  const isToday = !ev.dateTbd && eventOccursOnDate(ev, today)
                   return (
                     <button
                       key={ev.id}
@@ -739,13 +792,25 @@ export function EventMapPage() {
                       onClick={() => selectEvent(ev, true)}
                     >
                       <div className="emp__card-top">
-                        <span
-                          className="emp__dot"
-                          style={{ background: EVENT_TYPE_COLORS[ev.type] }}
-                        />
+                        {ev.imageUrl ? (
+                          <img
+                            className="emp__thumb"
+                            src={toSquareImageUrl(ev.imageUrl, 96)}
+                            alt=""
+                            loading="lazy"
+                            referrerPolicy="no-referrer"
+                          />
+                        ) : (
+                          <span
+                            className="emp__dot"
+                            style={{ background: EVENT_TYPE_COLORS[ev.type] }}
+                          />
+                        )}
                         <div>
                           <p className="emp__card-title">{ev.title}</p>
                           <p className="emp__card-meta">
+                            {ev.dateTbd ? 'Ngày TBD' : formatShortDate(ev.date)}
+                            {' · '}
                             {ev.startTime}
                             {ev.endTime ? `–${ev.endTime}` : ''}
                             {ev.host ? ` · ${ev.host}` : ''}
@@ -761,6 +826,9 @@ export function EventMapPage() {
                               <span className="emp__badge emp__badge--today">
                                 Hôm nay
                               </span>
+                            )}
+                            {ev.locationTbd && (
+                              <span className="emp__badge">Địa điểm TBD</span>
                             )}
                             {ev.free && (
                               <span className="emp__badge emp__badge--free">Free</span>

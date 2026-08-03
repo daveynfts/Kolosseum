@@ -296,7 +296,7 @@ export function AdminFeedEditor({ kols, onToast, addSignal = 0 }: Props) {
     }
     if (
       !confirm(
-        `Archive ${n} post cũ hơn 1 tuần? Chúng sẽ ra khỏi X Feed live (vẫn giữ trong archivedPosts).`,
+        `Archive ${n} post cũ hơn 14 ngày? Chúng sẽ ra khỏi X Feed live (vẫn giữ trong archivedPosts).`,
       )
     ) {
       return
@@ -449,7 +449,7 @@ export function AdminFeedEditor({ kols, onToast, addSignal = 0 }: Props) {
           {feed
             ? ` · ${feed.postCount} live · ${archivedCount} archived · ${feed.kolCount} voices`
             : ''}
-          . Ưu tiên R2. Post &gt; 7 ngày → <strong>Archive &gt;7d</strong> rồi{' '}
+          . Ưu tiên R2. Post &gt; 14 ngày → <strong>Archive &gt;14d</strong> rồi{' '}
           <strong>Save (R2)</strong> để user thấy.
         </span>
       </div>
@@ -507,9 +507,9 @@ export function AdminFeedEditor({ kols, onToast, addSignal = 0 }: Props) {
           className="btn"
           onClick={onArchiveOld}
           disabled={!feed || archivableCount === 0}
-          title="Chuyển post cũ hơn 7 ngày sang archivedPosts"
+          title="Chuyển post cũ hơn 14 ngày sang archivedPosts"
         >
-          Archive &gt;7d{archivableCount > 0 ? ` (${archivableCount})` : ''}
+          Archive &gt;14d{archivableCount > 0 ? ` (${archivableCount})` : ''}
         </button>
         <button
           type="button"

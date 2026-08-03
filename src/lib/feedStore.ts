@@ -283,7 +283,8 @@ export function createEmptyPost(handle = 'handle'): FeedPost {
   }
 }
 
-export const FEED_ARCHIVE_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000
+/** Posts older than this leave the live X Feed (default 14 days). */
+export const FEED_ARCHIVE_MAX_AGE_MS = 14 * 24 * 60 * 60 * 1000
 
 export function normalizeFeed(feed: Tier1Feed): Tier1Feed {
   const posts = (feed.posts || []).map(normalizePost)
@@ -306,7 +307,7 @@ export function normalizeFeed(feed: Tier1Feed): Tier1Feed {
 }
 
 /**
- * Move posts older than `maxAgeMs` (default 7 days) from posts → archivedPosts.
+ * Move posts older than `maxAgeMs` (default 14 days) from posts → archivedPosts.
  * Keeps archive de-duplicated by id.
  */
 export function archiveOldPosts(

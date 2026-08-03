@@ -1,13 +1,14 @@
 /**
- * Refresh live X Feed for Challenger + Master KOLs only.
+ * Refresh live X Feed for top-3 ranks: Challenger + Master + Diamond.
  * 1) Prefer live tweets via X guest GraphQL (UserTweets)
  * 2) Fallback: jina profile scrape → fxtwitter status
  * 3) Fill synthetic if still short of TARGET_LIVE
- * 4) Archive posts older than 7 days
+ * 4) Archive posts older than 14 days
  * 5) Write public/feed + snapshot; PUT /api/feed if FEED_ADMIN_TOKEN set
  *
  *   node scripts/refresh_feed_challenger_master.mjs
  *   node scripts/refresh_feed_challenger_master.mjs --no-live   # synthetic only
+ *   node scripts/refresh_feed_challenger_master.mjs --fresh
  */
 import fs from 'fs'
 import path from 'path'
@@ -15,9 +16,12 @@ import { fileURLToPath } from 'url'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const ROOT = path.join(__dirname, '..')
-const WEEK_MS = 7 * 24 * 60 * 60 * 1000
-const TARGET_LIVE = 100
-const PER_KOL_LIVE = 8
+/** Live window / archive cutoff (posts older than this leave X Feed live) */
+const LIVE_WINDOW_MS = 14 * 24 * 60 * 60 * 1000
+const WEEK_MS = LIVE_WINDOW_MS // legacy name used in archiveSplit / filters
+const TARGET_LIVE = 140
+const PER_KOL_LIVE = 6
+const TOP_RANKS = new Set(['challenger', 'master', 'diamond'])
 const noLive = process.argv.includes('--no-live')
 /** Drop prior seed posts and rebuild live-first (still archives old) */
 const freshRebuild = process.argv.includes('--fresh')
@@ -723,25 +727,24 @@ async function main() {
     kols = loadJson(snapshotPath).kols || []
   }
 
+  const rankOrder = { challenger: 0, master: 1, diamond: 2 }
   const pool = kols
     .filter((k) => {
       if (k.hidden) return false
-      const rank = getKolRank(k)
-      return rank === 'challenger' || rank === 'master'
+      return TOP_RANKS.has(getKolRank(k))
     })
     .sort(
       (a, b) =>
-        (getKolRank(a) === 'challenger' ? 0 : 1) -
-          (getKolRank(b) === 'challenger' ? 0 : 1) ||
+        (rankOrder[getKolRank(a)] ?? 9) - (rankOrder[getKolRank(b)] ?? 9) ||
         (b.score || 0) - (a.score || 0),
     )
 
   if (!pool.length) {
-    console.error('No Challenger/Master KOLs')
+    console.error('No Challenger/Master/Diamond KOLs')
     process.exit(1)
   }
   console.log(
-    'Pool Challenger+Master:',
+    'Pool Challenger+Master+Diamond (top 3 ranks):',
     pool.length,
     pool.map((k) => `${getKolRank(k)[0].toUpperCase()}:${k.handle}`).join(', '),
   )
@@ -843,6 +846,16 @@ async function main() {
     i++
   }
 
+  // Hard live window: nothing older than LIVE_WINDOW_MS stays in posts[]
+  const cutoffLive = Date.now() - LIVE_WINDOW_MS
+  for (const [id, p] of [...liveById.entries()]) {
+    const t = Date.parse(p.createdAt)
+    if (Number.isFinite(t) && t < cutoffLive) {
+      liveById.delete(id)
+      archById.set(id, p)
+    }
+  }
+
   const livePosts = [...liveById.values()]
     .filter((p) => allowed.has(String(p.handle || '').toLowerCase()))
     // Real posts first, then by recency
@@ -855,7 +868,29 @@ async function main() {
   // Prefer reals; fill remainder with synthetic up to TARGET
   const reals = livePosts.filter((p) => !isSyntheticPost(p))
   const syns = livePosts.filter((p) => isSyntheticPost(p))
-  const finalLive = [...reals, ...syns]
+  let finalLive = [...reals, ...syns]
+    .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+    .slice(0, TARGET_LIVE)
+
+  // Top-up synthetic only inside 14d window if still short
+  let fillI = 0
+  const daySalt2 = Number(
+    new Date().toISOString().slice(0, 10).replace(/-/g, ''),
+  )
+  while (finalLive.length < TARGET_LIVE && fillI < 800) {
+    const kol = pool[fillI % pool.length]
+    const post = buildSynthetic(fillI + 9000, kol, (daySalt2 % 10000) + 3)
+    const t = Date.parse(post.createdAt)
+    if (
+      Number.isFinite(t) &&
+      t >= cutoffLive &&
+      !finalLive.some((x) => x.id === post.id)
+    ) {
+      finalLive.push(post)
+    }
+    fillI++
+  }
+  finalLive = finalLive
     .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
     .slice(0, TARGET_LIVE)
 
@@ -867,10 +902,10 @@ async function main() {
 
   const feed = {
     generatedAt: new Date().toISOString(),
-    source: `admin · refresh Challenger+Master · liveX=${realCount} new=${liveFetched} syn=${finalLive.length - realCount} · archive >7d`,
+    source: `admin · refresh Challenger+Master+Diamond · liveX=${realCount} new=${liveFetched} syn=${finalLive.length - realCount} · archive >14d`,
     mode: 'admin',
     tier: 1,
-    ranks: ['challenger', 'master'],
+    ranks: ['challenger', 'master', 'diamond'],
     kolCount: handles.length,
     handles,
     postCount: finalLive.length,

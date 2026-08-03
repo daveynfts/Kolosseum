@@ -18,9 +18,11 @@ import {
   type ScexDataset,
   type ScexPost,
   type ScexQuadrant,
+  type ScexRadarPipeline,
   type ScexScoringConfig,
   type ScexSentiment,
 } from '../data/scexTracking'
+import { xAvatarUrl } from '../lib/avatar'
 import {
   clearScexCache,
   exportScexJson,
@@ -38,7 +40,7 @@ interface Props {
   onToast: (msg: string) => void
 }
 
-type SubTab = 'settings' | 'actors' | 'posts' | 'preview'
+type SubTab = 'settings' | 'actors' | 'posts' | 'pipeline' | 'preview'
 
 const SENTIMENTS: ScexSentiment[] = [
   'bullish',
@@ -48,6 +50,13 @@ const SENTIMENTS: ScexSentiment[] = [
   'neutral',
 ]
 const QUADRANTS: ScexQuadrant[] = ['stars', 'nurture', 'noise', 'ignore']
+const RADAR_PIPELINES: ScexRadarPipeline[] = [
+  'none',
+  'candidate',
+  'review',
+  'promoted',
+  'rejected',
+]
 
 export function AdminScexEditor({ onToast }: Props) {
   const [dataset, setDataset] = useState<ScexDataset>(() => seedScexDataset())
@@ -59,6 +68,9 @@ export function AdminScexEditor({ onToast }: Props) {
   const [selectedActorId, setSelectedActorId] = useState<string | null>(null)
   const [selectedPostId, setSelectedPostId] = useState<string | null>(null)
   const [actorQuery, setActorQuery] = useState('')
+  const [pipelineFilter, setPipelineFilter] = useState<
+    'all' | ScexRadarPipeline | 'needs_avatar'
+  >('candidate')
 
   useEffect(() => {
     let cancelled = false
@@ -200,7 +212,9 @@ export function AdminScexEditor({ onToast }: Props) {
           a.handle.includes(q) ||
           a.displayName.toLowerCase().includes(q) ||
           (a.tier || '').toLowerCase().includes(q) ||
-          (a.notes || '').toLowerCase().includes(q),
+          (a.notes || '').toLowerCase().includes(q) ||
+          (a.radarPipeline || '').includes(q) ||
+          (a.tags || '').toLowerCase().includes(q),
       )
     }
     return [...list].sort(
@@ -209,6 +223,97 @@ export function AdminScexEditor({ onToast }: Props) {
         (b.volumeScore ?? b.postsVolume) - (a.volumeScore ?? a.postsVolume),
     )
   }, [dataset.actors, actorQuery])
+
+  const pipelineActors = useMemo(() => {
+    let list = dataset.actors
+    if (pipelineFilter === 'needs_avatar') {
+      list = list.filter((a) => !a.avatarWarmedAt && !a.avatarUrl)
+    } else if (pipelineFilter !== 'all') {
+      list = list.filter(
+        (a) => (a.radarPipeline || 'none') === pipelineFilter,
+      )
+    }
+    return [...list].sort(
+      (a, b) =>
+        (b.followers || 0) - (a.followers || 0) ||
+        b.qualityScore - a.qualityScore,
+    )
+  }, [dataset.actors, pipelineFilter])
+
+  const pipelineCounts = useMemo(() => {
+    const c: Record<string, number> = {
+      all: dataset.actors.length,
+      none: 0,
+      candidate: 0,
+      review: 0,
+      promoted: 0,
+      rejected: 0,
+      needs_avatar: 0,
+    }
+    for (const a of dataset.actors) {
+      const p = a.radarPipeline || 'none'
+      c[p] = (c[p] || 0) + 1
+      if (!a.avatarWarmedAt && !a.avatarUrl) c.needs_avatar++
+    }
+    return c
+  }, [dataset.actors])
+
+  const exportRadarCandidates = () => {
+    const rows = dataset.actors
+      .filter(
+        (a) =>
+          a.radarPipeline === 'candidate' || a.radarPipeline === 'review',
+      )
+      .map((a) => ({
+        handle: a.handle,
+        displayName: a.displayName,
+        followers: a.followers,
+        postsVolume: a.postsVolume,
+        volumeScore: a.volumeScore,
+        qualityScore: a.qualityScore,
+        sentiment: a.sentiment,
+        quadrant: a.quadrant,
+        mapRank: a.mapRank || null,
+        radarPipeline: a.radarPipeline,
+        radarNote: a.radarNote || '',
+        avatarUrl: a.avatarUrl || xAvatarUrl(a.handle),
+        avatarWarmedAt: a.avatarWarmedAt || null,
+        sourcedAt: a.sourcedAt || null,
+        tags: a.tags || '',
+        notes: a.notes || '',
+        lastPostAt: a.lastPostAt || null,
+        samplePosts: dataset.posts
+          .filter((p) => p.handle === a.handle)
+          .slice(0, 5)
+          .map((p) => ({
+            url: p.url,
+            postedAt: p.postedAt,
+            text: (p.text || '').slice(0, 160),
+            sentiment: p.sentiment,
+          })),
+      }))
+    const blob = new Blob(
+      [
+        JSON.stringify(
+          {
+            kind: 'scex-radar-pipeline',
+            exportedAt: new Date().toISOString(),
+            count: rows.length,
+            accounts: rows,
+          },
+          null,
+          2,
+        ),
+      ],
+      { type: 'application/json' },
+    )
+    const a = document.createElement('a')
+    a.href = URL.createObjectURL(blob)
+    a.download = `scex-radar-candidates-${new Date().toISOString().slice(0, 10)}.json`
+    a.click()
+    URL.revokeObjectURL(a.href)
+    onToast(`Exported ${rows.length} Radar pipeline accounts`)
+  }
 
   const patchActor = (id: string, patch: Partial<ScexActor>) => {
     setDataset((prev) => {
@@ -420,6 +525,7 @@ export function AdminScexEditor({ onToast }: Props) {
           [
             ['settings', '⚙ Settings'],
             ['actors', '◎ Actors'],
+            ['pipeline', '↗ Radar pipeline'],
             ['posts', '★ Livefeed posts'],
             ['preview', '▣ Preview matrix'],
           ] as [SubTab, string][]
@@ -1095,6 +1201,67 @@ export function AdminScexEditor({ onToast }: Props) {
                       </select>
                     </label>
                     <label>
+                      Radar pipeline
+                      <select
+                        value={selectedActor.radarPipeline || 'none'}
+                        onChange={(e) =>
+                          patchActor(selectedActor.id, {
+                            radarPipeline: e.target
+                              .value as ScexRadarPipeline,
+                          })
+                        }
+                      >
+                        {RADAR_PIPELINES.map((p) => (
+                          <option key={p} value={p}>
+                            {p}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                    <label className="admin-scex-span2">
+                      Radar note (lý do promote / reject)
+                      <input
+                        value={selectedActor.radarNote || ''}
+                        onChange={(e) =>
+                          patchActor(selectedActor.id, {
+                            radarNote: e.target.value,
+                          })
+                        }
+                        placeholder="VD: fit trading VN, eng tốt, đưa lên Gold…"
+                      />
+                    </label>
+                    <label className="admin-scex-span2">
+                      Avatar URL (R2)
+                      <input
+                        value={selectedActor.avatarUrl || ''}
+                        onChange={(e) =>
+                          patchActor(selectedActor.id, {
+                            avatarUrl: e.target.value || undefined,
+                          })
+                        }
+                        placeholder={xAvatarUrl(selectedActor.handle)}
+                      />
+                    </label>
+                    <label>
+                      Avatar warmed
+                      <input
+                        value={selectedActor.avatarWarmedAt || '—'}
+                        readOnly
+                      />
+                    </label>
+                    <label>
+                      Sourced at
+                      <input
+                        value={selectedActor.sourcedAt || ''}
+                        onChange={(e) =>
+                          patchActor(selectedActor.id, {
+                            sourcedAt: e.target.value || undefined,
+                          })
+                        }
+                        placeholder="2026-08-03"
+                      />
+                    </label>
+                    <label>
                       Tier (badge)
                       <input
                         value={selectedActor.tier || ''}
@@ -1291,6 +1458,136 @@ export function AdminScexEditor({ onToast }: Props) {
               </>
             )}
           </div>
+        </div>
+      )}
+
+      {sub === 'pipeline' && (
+        <div className="admin-scex-settings glass">
+          <section className="admin-ts-section">
+            <h3>Radar pipeline · SCEX → Map</h3>
+            <p className="admin-ts-hint" style={{ opacity: 0.75, fontSize: 13 }}>
+              Tài khoản harvest (list58 / blue mentions) được gắn{' '}
+              <code>candidate</code> để admin review. Avatar warm lên R2{' '}
+              <code>radar/avatars/&#123;handle&#125;.jpg</code>. Export JSON
+              để import Radar khi phù hợp — không auto-publish map.
+            </p>
+            <div
+              className="admin-toolbar"
+              style={{ gap: 8, flexWrap: 'wrap', marginBottom: 12 }}
+            >
+              {(
+                [
+                  ['candidate', 'Candidates'],
+                  ['review', 'In review'],
+                  ['promoted', 'Promoted'],
+                  ['rejected', 'Rejected'],
+                  ['none', 'None / map'],
+                  ['needs_avatar', 'Needs avatar'],
+                  ['all', 'All actors'],
+                ] as const
+              ).map(([k, label]) => (
+                <button
+                  key={k}
+                  type="button"
+                  className={`btn ${pipelineFilter === k ? 'btn--primary' : ''}`}
+                  onClick={() => setPipelineFilter(k)}
+                >
+                  {label} ({pipelineCounts[k] ?? 0})
+                </button>
+              ))}
+              <button
+                type="button"
+                className="btn"
+                onClick={exportRadarCandidates}
+              >
+                Export candidates JSON
+              </button>
+            </div>
+            <div className="admin-scex-pipeline-table-wrap">
+              <table className="admin-scex-pipeline-table">
+                <thead>
+                  <tr>
+                    <th />
+                    <th>Handle</th>
+                    <th>Followers</th>
+                    <th>V / Q</th>
+                    <th>Quad</th>
+                    <th>Avatar</th>
+                    <th>Pipeline</th>
+                    <th>Note</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {pipelineActors.map((a) => (
+                    <tr key={a.id}>
+                      <td>
+                        <XProfileAvatar
+                          handle={a.handle}
+                          name={a.displayName}
+                          size={32}
+                          liveFallback
+                        />
+                      </td>
+                      <td>
+                        <strong>@{a.handle}</strong>
+                        <div className="muted" style={{ fontSize: 12 }}>
+                          {a.displayName}
+                          {a.mapRank ? ` · map:${a.mapRank}` : ''}
+                        </div>
+                      </td>
+                      <td>{(a.followers || 0).toLocaleString()}</td>
+                      <td>
+                        {Math.round(a.volumeScore ?? a.postsVolume)} /{' '}
+                        {Math.round(a.qualityScore)}
+                      </td>
+                      <td>
+                        <code>{a.quadrant || '—'}</code>
+                      </td>
+                      <td>
+                        {a.avatarWarmedAt || a.avatarUrl ? (
+                          <span title={a.avatarUrl || xAvatarUrl(a.handle)}>
+                            ✓
+                          </span>
+                        ) : (
+                          <span className="muted">—</span>
+                        )}
+                      </td>
+                      <td>
+                        <select
+                          value={a.radarPipeline || 'none'}
+                          onChange={(e) =>
+                            patchActor(a.id, {
+                              radarPipeline: e.target
+                                .value as ScexRadarPipeline,
+                            })
+                          }
+                        >
+                          {RADAR_PIPELINES.map((p) => (
+                            <option key={p} value={p}>
+                              {p}
+                            </option>
+                          ))}
+                        </select>
+                      </td>
+                      <td>
+                        <input
+                          style={{ minWidth: 140 }}
+                          value={a.radarNote || ''}
+                          onChange={(e) =>
+                            patchActor(a.id, { radarNote: e.target.value })
+                          }
+                          placeholder="ghi chú promote…"
+                        />
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              {pipelineActors.length === 0 && (
+                <p className="muted">Không có actor trong filter này.</p>
+              )}
+            </div>
+          </section>
         </div>
       )}
 

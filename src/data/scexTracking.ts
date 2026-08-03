@@ -16,6 +16,14 @@ export type ScexQuadrant = 'stars' | 'nurture' | 'noise' | 'ignore'
 
 export type ScexActorKind = 'kol' | 'user'
 
+/** Admin pipeline: SCEX → possible Radar map promotion */
+export type ScexRadarPipeline =
+  | 'none'
+  | 'candidate'
+  | 'review'
+  | 'promoted'
+  | 'rejected'
+
 export type ScexSizeMetric = 'followers' | 'reach7d'
 
 export interface ScexAxisConfig {
@@ -140,6 +148,22 @@ export interface ScexActor {
   replyPosts?: number
   /** Map rank when verified on Radar map */
   mapRank?: string
+  /**
+   * R2 public avatar URL after warm (`radar/avatars/{handle}.jpg`).
+   * UI still falls back to XProfileAvatar casing variants if unset.
+   */
+  avatarUrl?: string
+  /** ISO when avatar last warmed to R2 via PUT /api/avatar */
+  avatarWarmedAt?: string
+  /**
+   * Admin: shortlist for possible transfer onto main Radar map.
+   * Default none; new harvest batches set `candidate`.
+   */
+  radarPipeline?: ScexRadarPipeline
+  /** Admin note for Radar promotion decision */
+  radarNote?: string
+  /** When this handle was first added to SCEX tracking (ISO date or datetime) */
+  sourcedAt?: string
 }
 
 export interface ScexPost {
@@ -580,7 +604,31 @@ function normalizeActor(raw: unknown, i: number): ScexActor | null {
     gocPosts: o.gocPosts != null ? Number(o.gocPosts) || 0 : undefined,
     replyPosts: o.replyPosts != null ? Number(o.replyPosts) || 0 : undefined,
     mapRank: o.mapRank != null ? String(o.mapRank) : undefined,
+    avatarUrl:
+      o.avatarUrl != null && String(o.avatarUrl).trim()
+        ? String(o.avatarUrl).trim()
+        : undefined,
+    avatarWarmedAt:
+      o.avatarWarmedAt != null ? String(o.avatarWarmedAt) : undefined,
+    radarPipeline: normalizeRadarPipeline(o.radarPipeline),
+    radarNote: o.radarNote != null ? String(o.radarNote) : undefined,
+    sourcedAt: o.sourcedAt != null ? String(o.sourcedAt) : undefined,
   }
+}
+
+function normalizeRadarPipeline(raw: unknown): ScexRadarPipeline | undefined {
+  const s = String(raw || '')
+    .trim()
+    .toLowerCase()
+  if (
+    s === 'none' ||
+    s === 'candidate' ||
+    s === 'review' ||
+    s === 'promoted' ||
+    s === 'rejected'
+  )
+    return s
+  return undefined
 }
 
 function normalizePost(raw: unknown, i: number): ScexPost | null {

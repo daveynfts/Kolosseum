@@ -3285,3 +3285,44 @@ body.akr-split-resizing .report-md--editable {
 .admin-banner-preview__frame .scex-event-banner {
   position: relative;
 }
+
+/* SCEX Radar pipeline tab */
+.admin-scex-pipeline-table-wrap {
+  overflow: auto;
+  max-height: min(70vh, 640px);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 10px;
+}
+.admin-scex-pipeline-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+.admin-scex-pipeline-table th,
+.admin-scex-pipeline-table td {
+  padding: 8px 10px;
+  text-align: left;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+  vertical-align: middle;
+}
+.admin-scex-pipeline-table th {
+  position: sticky;
+  top: 0;
+  background: rgba(15, 23, 42, 0.95);
+  color: #94a3b8;
+  font-weight: 600;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  z-index: 1;
+}
+.admin-scex-pipeline-table select,
+.admin-scex-pipeline-table input {
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  border-radius: 6px;
+  color: #e2e8f0;
+  padding: 4px 6px;
+  font: inherit;
+  max-width: 100%;
+}

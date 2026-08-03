@@ -7,14 +7,17 @@ import {
   EVENT_TYPE_LABELS,
   EVENT_TYPES,
   SALA_VENUE,
-  confirmedEventDates,
+  calendarStripDates,
   directionsUrl,
   eventDistanceKm,
   eventOccursOnDate,
+  formatDayNum,
   formatDistanceWithWalk,
   formatLumaDay,
   formatLumaTime,
+  formatMonthYearVi,
   formatShortDate,
+  formatWeekdayShortVi,
   matchesDateFilter,
   shortEventTitle,
   sortEvents,
@@ -319,16 +322,22 @@ export function EventMapPage() {
 
   const dates = useMemo(() => {
     if (!dataset) return []
-    const fromEvents = confirmedEventDates(dataset.events)
-    return fromEvents.length
-      ? fromEvents
-      : [dataset.dateRange.start, dataset.dateRange.end].filter(Boolean)
+    return calendarStripDates(dataset.dateRange, dataset.events)
   }, [dataset])
+
+  const calMonthLabel = useMemo(() => {
+    if (!dates.length) return 'Conviction week'
+    // Prefer mid-range label (stable month for 13–16/08)
+    const mid = dates[Math.floor(dates.length / 2)] || dates[0]
+    return formatMonthYearVi(mid)
+  }, [dates])
 
   const tbdDateCount = useMemo(
     () => (dataset ? dataset.events.filter((e) => e.dateTbd).length : 0),
     [dataset],
   )
+
+  const totalEvents = dataset?.events.length ?? 0
 
   const typeCounts = useMemo(() => {
     const m = new Map<SideEventType, number>()
@@ -922,36 +931,78 @@ export function EventMapPage() {
       </header>
 
       <div className="emp__filters">
-        <div className="emp__filter-row">
-          <button
-            type="button"
-            className={`emp__chip ${dateFilter === 'all' ? 'is-active' : ''}`}
-            onClick={() => setDate('all')}
-          >
-            Tất cả ({dataset?.events.length ?? 0})
-          </button>
-          {dates.map((d) => (
-            <button
-              key={d}
-              type="button"
-              className={`emp__chip ${dateFilter === d ? 'is-active is-active--gold' : ''}`}
-              onClick={() => setDate(d)}
-            >
-              {formatShortDate(d)} ({countsByDate.get(d) || 0})
-              {d === today ? ' · hôm nay' : ''}
-            </button>
-          ))}
-          {tbdDateCount > 0 && (
+        <div className="emp-cal" role="group" aria-label="Lọc theo ngày">
+          <div className="emp-cal__head">
+            <div className="emp-cal__head-left">
+              <span className="emp-cal__icon" aria-hidden>
+                ▦
+              </span>
+              <div>
+                <p className="emp-cal__title">Lịch side events</p>
+                <p className="emp-cal__month">{calMonthLabel}</p>
+              </div>
+            </div>
             <button
               type="button"
-              className={`emp__chip ${dateFilter === 'tbd' ? 'is-active' : ''}`}
-              onClick={() => setDate('tbd')}
+              className={`emp-cal__all ${dateFilter === 'all' ? 'is-active' : ''}`}
+              onClick={() => setDate('all')}
+              title="Hiện mọi ngày"
             >
-              Ngày TBD ({tbdDateCount})
+              Tất cả
+              <strong>{totalEvents}</strong>
             </button>
-          )}
+          </div>
+
+          <div className="emp-cal__strip">
+            {dates.map((d) => {
+              const count = countsByDate.get(d) || 0
+              const isToday = d === today
+              const isSelected = dateFilter === d
+              const empty = count === 0
+              return (
+                <button
+                  key={d}
+                  type="button"
+                  className={[
+                    'emp-cal__day',
+                    isSelected ? 'is-selected' : '',
+                    isToday ? 'is-today' : '',
+                    empty ? 'is-empty' : '',
+                  ]
+                    .filter(Boolean)
+                    .join(' ')}
+                  onClick={() => setDate(d)}
+                  disabled={empty}
+                  aria-pressed={isSelected}
+                  aria-label={`${formatWeekdayShortVi(d)} ${formatShortDate(d)}, ${count} sự kiện${isToday ? ', hôm nay' : ''}`}
+                >
+                  <span className="emp-cal__wd">{formatWeekdayShortVi(d)}</span>
+                  <span className="emp-cal__num">{formatDayNum(d)}</span>
+                  <span className="emp-cal__count">
+                    {empty ? '—' : count}
+                  </span>
+                  {isToday && <span className="emp-cal__today-dot" />}
+                </button>
+              )
+            })}
+
+            {tbdDateCount > 0 && (
+              <button
+                type="button"
+                className={`emp-cal__day emp-cal__day--tbd ${dateFilter === 'tbd' ? 'is-selected' : ''}`}
+                onClick={() => setDate('tbd')}
+                aria-pressed={dateFilter === 'tbd'}
+                title="Sự kiện chưa chốt ngày"
+              >
+                <span className="emp-cal__wd">TBD</span>
+                <span className="emp-cal__num">?</span>
+                <span className="emp-cal__count">{tbdDateCount}</span>
+              </button>
+            )}
+          </div>
         </div>
-        <div className="emp__filter-row">
+
+        <div className="emp__filter-row emp__filter-row--types">
           <button
             type="button"
             className={`emp__chip ${typeFilter === 'all' ? 'is-active' : ''}`}

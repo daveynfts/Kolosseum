@@ -546,6 +546,43 @@ export function formatShortDate(isoDate: string): string {
   return `${m[3]}/${m[2]}`
 }
 
+const WEEKDAYS_VI_SHORT = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7']
+
+/** Calendar cell weekday: T5, CN, … (UTC date parts from ISO) */
+export function formatWeekdayShortVi(isoDate: string): string {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(isoDate)
+  if (!m) return ''
+  const d = new Date(Date.UTC(Number(m[1]), Number(m[2]) - 1, Number(m[3])))
+  if (Number.isNaN(d.getTime())) return ''
+  return WEEKDAYS_VI_SHORT[d.getUTCDay()] || ''
+}
+
+/** Day number 1–31 */
+export function formatDayNum(isoDate: string): string {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(isoDate)
+  return m ? String(Number(m[3])) : isoDate
+}
+
+/** “Tháng 8 · 2026” */
+export function formatMonthYearVi(isoDate: string): string {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(isoDate)
+  if (!m) return ''
+  return `Tháng ${Number(m[2])} · ${m[1]}`
+}
+
+/**
+ * Calendar strip dates: expand dataset.dateRange + any confirmed event days outside.
+ */
+export function calendarStripDates(
+  dateRange: { start: string; end: string },
+  events: SideEvent[],
+): string[] {
+  const set = new Set<string>()
+  for (const d of datesInRange(dateRange.start, dateRange.end)) set.add(d)
+  for (const d of confirmedEventDates(events)) set.add(d)
+  return [...set].sort()
+}
+
 /** Luma-style time: 4:00 PM */
 export function formatLumaTime(hhmm: string): string {
   const m = /^(\d{1,2}):(\d{2})$/.exec((hhmm || '').trim())

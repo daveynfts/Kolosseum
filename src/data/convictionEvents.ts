@@ -985,6 +985,77 @@ export function eventDistanceKm(
   return distanceKm(from.lat, from.lng, ev.lat, ev.lng)
 }
 
+export type RoutePoint = {
+  id: string
+  lat: number
+  lng: number
+  label?: string
+}
+
+export type RouteSegment = {
+  id: string
+  fromId: string
+  toId: string
+  from: { lat: number; lng: number }
+  to: { lat: number; lng: number }
+  km: number
+  shortLabel: string
+  fullLabel: string
+  step: number
+}
+
+/**
+ * Open tour via nearest-neighbour from `start` through all points.
+ * Easy-to-read “optimal enough” walking order between nearby events.
+ */
+export function buildNearestNeighborRoute(
+  start: RoutePoint,
+  points: RoutePoint[],
+): { order: RoutePoint[]; segments: RouteSegment[]; totalKm: number } {
+  const remaining = points.filter(
+    (p) =>
+      p.id !== start.id &&
+      Number.isFinite(p.lat) &&
+      Number.isFinite(p.lng),
+  )
+  const order: RoutePoint[] = [start]
+  let cur = start
+  let totalKm = 0
+  const segments: RouteSegment[] = []
+  let step = 1
+
+  while (remaining.length) {
+    let bestIdx = 0
+    let bestKm = Infinity
+    for (let i = 0; i < remaining.length; i++) {
+      const p = remaining[i]
+      const km = distanceKm(cur.lat, cur.lng, p.lat, p.lng)
+      if (km < bestKm) {
+        bestKm = km
+        bestIdx = i
+      }
+    }
+    const next = remaining.splice(bestIdx, 1)[0]
+    totalKm += bestKm
+    segments.push({
+      id: `seg-${step}-${cur.id}-${next.id}`,
+      fromId: cur.id,
+      toId: next.id,
+      from: { lat: cur.lat, lng: cur.lng },
+      to: { lat: next.lat, lng: next.lng },
+      km: bestKm,
+      shortLabel: `${formatDistanceKm(bestKm)} · ${formatWalkEta(bestKm)}`,
+      fullLabel: `Chặng ${step}: ${formatDistanceKm(bestKm)} · ${formatWalkEta(bestKm)} (đi bộ)`,
+      step,
+    })
+    order.push(next)
+    cur = next
+    step++
+  }
+
+  return { order, segments, totalKm }
+}
+
 /** Simple .ics content for one event (local VN wall time as floating). */
 export function eventToIcs(ev: SideEvent): string {
   const stamp = new Date()

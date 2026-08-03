@@ -16,6 +16,7 @@ import {
   directionsUrl,
   eventDistanceKm,
   eventOccursOnDate,
+  buildNearestNeighborRoute,
   formatDayNum,
   formatDistanceKm,
   formatDistanceWithWalk,
@@ -545,32 +546,32 @@ export function EventMapPage() {
     [filtered],
   )
 
-  /** Spokes origin → visible events (for on-map lines + midpoint labels). */
-  const distanceSpokes = useMemo(() => {
-    const origin = distanceFrom
-    const rows: Array<{
-      id: string
-      lng: number
-      lat: number
-      km: number
-      shortLabel: string
-      fullLabel: string
-    }> = []
-    for (const ev of mapEvents) {
-      if (distOrigin === 'selected' && ev.id === selectedId) continue
-      const km = eventDistanceKm(origin, ev)
-      if (km == null) continue
-      rows.push({
-        id: ev.id,
-        lng: ev.lng,
-        lat: ev.lat,
-        km,
-        shortLabel: `${formatDistanceKm(km)} · ${formatWalkEta(km)}`,
-        fullLabel: formatDistanceWithWalk(km, origin.label),
-      })
+  /**
+   * Optimal-ish walking tour: nearest-neighbour from origin through
+   * visible events. Segments = consecutive hops (only nearest next each time).
+   */
+  const routePlan = useMemo(() => {
+    const startId =
+      distOrigin === 'selected' && selectedId
+        ? selectedId
+        : distOrigin === 'me'
+          ? 'origin-me'
+          : 'origin-conviction'
+    const start = {
+      id: startId,
+      lat: distanceFrom.lat,
+      lng: distanceFrom.lng,
+      label: distanceFrom.label,
     }
-    rows.sort((a, b) => a.km - b.km)
-    return rows
+    const points = mapEvents
+      .filter((ev) => ev.id !== startId)
+      .map((ev) => ({
+        id: ev.id,
+        lat: ev.lat,
+        lng: ev.lng,
+        label: ev.title,
+      }))
+    return buildNearestNeighborRoute(start, points)
   }, [mapEvents, distanceFrom, distOrigin, selectedId])
 
   const grouped = useMemo(() => {
@@ -869,9 +870,9 @@ export function EventMapPage() {
         filter: ['==', ['get', 'kind'], 'line'],
         paint: {
           'line-color': '#0071e3',
-          'line-width': 4,
-          'line-opacity': 0.18,
-          'line-blur': 2,
+          'line-width': 6,
+          'line-opacity': 0.2,
+          'line-blur': 1.5,
         },
       })
     }
@@ -881,18 +882,27 @@ export function EventMapPage() {
         type: 'line',
         source: 'emp-dist',
         filter: ['==', ['get', 'kind'], 'line'],
+        layout: {
+          'line-cap': 'round',
+          'line-join': 'round',
+        },
         paint: {
           'line-color': '#5eb0ff',
-          'line-width': 1.6,
-          'line-opacity': 0.72,
-          'line-dasharray': [1.2, 1.6],
+          // First hop (to nearest) thicker; later hops thinner
+          'line-width': [
+            'case',
+            ['==', ['get', 'step'], 1],
+            3.2,
+            2.2,
+          ],
+          'line-opacity': 0.9,
         },
       })
     }
     distLayersReady.current = true
   }
 
-  // Draw distance spokes + midpoint labels on map
+  // Draw optimal nearest-neighbour tour + segment labels
   useEffect(() => {
     const map = mapRef.current
     if (!map || !mapReady) return
@@ -900,26 +910,23 @@ export function EventMapPage() {
     try {
       ensureDistanceLayers(map)
     } catch {
-      /* style not ready */
       return
     }
 
-    const originLng = distanceFrom.lng
-    const originLat = distanceFrom.lat
-    // Cap labels to nearest N to keep map readable; still draw all lines
-    const labelCap = 14
-    const labelIds = new Set(
-      distanceSpokes.slice(0, labelCap).map((s) => s.id),
-    )
-
-    const features = distanceSpokes.map((s) => ({
+    const segs = routePlan.segments
+    const features = segs.map((s) => ({
       type: 'Feature' as const,
-      properties: { kind: 'line', id: s.id, km: s.km },
+      properties: {
+        kind: 'line',
+        id: s.id,
+        km: s.km,
+        step: s.step,
+      },
       geometry: {
         type: 'LineString' as const,
         coordinates: [
-          [originLng, originLat],
-          [s.lng, s.lat],
+          [s.from.lng, s.from.lat],
+          [s.to.lng, s.to.lat],
         ],
       },
     }))
@@ -930,8 +937,7 @@ export function EventMapPage() {
       features,
     })
 
-    // HTML midpoint labels (reliable without map glyphs)
-    const keep = new Set(Array.from(labelIds))
+    const keep = new Set(segs.map((s) => s.id))
     for (const [id, marker] of distLabelMarkersRef.current) {
       if (!keep.has(id)) {
         marker.remove()
@@ -939,15 +945,17 @@ export function EventMapPage() {
       }
     }
 
-    for (const s of distanceSpokes) {
-      if (!labelIds.has(s.id)) continue
-      const midLng = (originLng + s.lng) / 2
-      const midLat = (originLat + s.lat) / 2
+    for (const s of segs) {
+      const midLng = (s.from.lng + s.to.lng) / 2
+      const midLat = (s.from.lat + s.to.lat) / 2
       let marker = distLabelMarkersRef.current.get(s.id)
       if (!marker) {
         const el = document.createElement('div')
-        el.className = 'emp-dist-label'
-        el.innerHTML = `<span class="emp-dist-label__text"></span>`
+        el.className =
+          s.step === 1
+            ? 'emp-dist-label emp-dist-label--nearest'
+            : 'emp-dist-label'
+        el.innerHTML = `<span class="emp-dist-label__step"></span><span class="emp-dist-label__text"></span>`
         marker = new maplibregl.Marker({
           element: el,
           anchor: 'center',
@@ -957,16 +965,23 @@ export function EventMapPage() {
         distLabelMarkersRef.current.set(s.id, marker)
       } else {
         marker.setLngLat([midLng, midLat])
+        marker.getElement().className =
+          s.step === 1
+            ? 'emp-dist-label emp-dist-label--nearest'
+            : 'emp-dist-label'
       }
-      const text = marker
-        .getElement()
-        .querySelector('.emp-dist-label__text') as HTMLElement | null
-      if (text) {
-        text.textContent = s.shortLabel
-        marker.getElement().title = s.fullLabel
-      }
+      const root = marker.getElement()
+      const stepEl = root.querySelector(
+        '.emp-dist-label__step',
+      ) as HTMLElement | null
+      const text = root.querySelector(
+        '.emp-dist-label__text',
+      ) as HTMLElement | null
+      if (stepEl) stepEl.textContent = String(s.step)
+      if (text) text.textContent = s.shortLabel
+      root.title = s.fullLabel
     }
-  }, [mapReady, distanceSpokes, distanceFrom])
+  }, [mapReady, routePlan])
 
   // Origin hub only when measuring from "me" or selected event
   // (Conviction venue already has the gold pin)
@@ -1439,13 +1454,15 @@ export function EventMapPage() {
             <div className="emp__loading">Đang tải bản đồ…</div>
           )}
           <div className="emp__map-hint" aria-hidden>
-            Đường nét đứt = khoảng cách từ{' '}
+            Tuyến tối ưu (gần nhất lần lượt) từ{' '}
             {distOrigin === 'me'
               ? 'bạn'
               : distOrigin === 'selected'
                 ? 'event đang chọn'
-                : 'Conviction'}{' '}
-            · nhãn km + phút đi bộ
+                : 'Conviction'}
+            {routePlan.segments.length
+              ? ` · ${routePlan.segments.length} chặng · ~${formatDistanceKm(routePlan.totalKm)} · ${formatWalkEta(routePlan.totalKm)}`
+              : ''}
           </div>
         </div>
 

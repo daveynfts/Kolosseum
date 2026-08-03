@@ -2,23 +2,48 @@
 .emp-dist-label {
   pointer-events: none;
   z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 0.28rem;
+  padding: 0.18rem 0.4rem 0.18rem 0.22rem;
+  border-radius: 980px;
+  background: rgba(0, 113, 227, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.emp-dist-label--nearest {
+  background: rgba(0, 113, 227, 0.96);
+  box-shadow:
+    0 0 0 2px rgba(0, 113, 227, 0.25),
+    0 6px 16px rgba(0, 113, 227, 0.35);
+}
+
+.emp-dist-label__step {
+  min-width: 1.1rem;
+  height: 1.1rem;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.58rem;
+  font-weight: 800;
+  color: #0071e3;
+  background: #fff;
+  line-height: 1;
 }
 
 .emp-dist-label__text {
   display: inline-block;
-  padding: 0.2rem 0.45rem;
-  border-radius: 980px;
   font-size: 0.62rem;
   font-weight: 700;
   letter-spacing: -0.01em;
   font-variant-numeric: tabular-nums;
   color: #eaf3ff;
   white-space: nowrap;
-  background: rgba(0, 113, 227, 0.88);
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  line-height: 1.2;
 }
 
 .emp-dist-origin {

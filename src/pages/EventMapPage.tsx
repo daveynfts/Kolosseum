@@ -1,12 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import * as maplibregl from 'maplibre-gl'
-import type {
-  GeoJSONSource,
-  Map as MapLibreMap,
-  Marker,
-  Popup,
-  StyleSpecification,
-} from 'maplibre-gl'
+import type { Map as MapLibreMap, Marker, Popup } from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import {
   EVENT_TYPE_COLORS,
@@ -17,24 +11,25 @@ import {
   directionsUrl,
   eventDistanceKm,
   eventOccursOnDate,
-  eventToIcs,
-  formatDistanceKm,
+  formatDistanceWithWalk,
   formatLumaDay,
   formatLumaTime,
   formatShortDate,
   matchesDateFilter,
   shortEventTitle,
   sortEvents,
+  sortEventsUpcoming,
   toSquareImageUrl,
   type SideEvent,
   type SideEventDataset,
   type SideEventType,
+  eventToIcs,
 } from '../data/convictionEvents'
 import { loadEventsWithSource } from '../lib/convictionEventsStore'
 import './EventMapPage.css'
 
 /** Raster dark tiles — avoids CARTO vector TileJSON hangs with MapLibre v6. */
-const MAP_STYLE: StyleSpecification = {
+const MAP_STYLE: maplibregl.StyleSpecification = {
   version: 8,
   name: 'Carto Dark All',
   sources: {
@@ -66,152 +61,8 @@ const HCMC_BOUNDS: [[number, number], [number, number]] = [
   [107.05, 11.05],
 ]
 
-/** Approx. Thiskyhall Sala footprint for gold 3D highlight (not survey-accurate). */
-function salaFootprint(lng: number, lat: number) {
-  // ~90m × 140m rectangle
-  const dLng = 0.00042
-  const dLat = 0.00062
-  return [
-    [
-      [lng - dLng, lat - dLat],
-      [lng + dLng, lat - dLat],
-      [lng + dLng, lat + dLat],
-      [lng - dLng, lat + dLat],
-      [lng - dLng, lat - dLat],
-    ],
-  ]
-}
-
-function addVenue3dLayers(map: MapLibreMap, venue: { lng: number; lat: number; name: string }) {
-  if (!map.getSource('ofm-buildings')) {
-    map.addSource('ofm-buildings', {
-      type: 'vector',
-      url: 'https://tiles.openfreemap.org/planet',
-      attribution: '© OpenFreeMap © OpenMapTiles © OpenStreetMap',
-    })
-  }
-
-  if (!map.getLayer('hcmc-3d-buildings')) {
-    map.addLayer({
-      id: 'hcmc-3d-buildings',
-      source: 'ofm-buildings',
-      'source-layer': 'building',
-      type: 'fill-extrusion',
-      minzoom: 14,
-      filter: ['!', ['has', 'hide_3d']],
-      paint: {
-        'fill-extrusion-color': [
-          'interpolate',
-          ['linear'],
-          ['coalesce', ['get', 'render_height'], ['get', 'height'], 16],
-          0,
-          '#1e293b',
-          20,
-          '#334155',
-          60,
-          '#475569',
-        ],
-        'fill-extrusion-height': [
-          'interpolate',
-          ['linear'],
-          ['zoom'],
-          14,
-          0,
-          14.8,
-          [
-            'coalesce',
-            ['get', 'render_height'],
-            ['get', 'height'],
-            ['*', ['coalesce', ['get', 'levels'], 3], 3.2],
-            14,
-          ],
-        ],
-        'fill-extrusion-base': [
-          'coalesce',
-          ['get', 'render_min_height'],
-          ['get', 'min_height'],
-          0,
-        ],
-        'fill-extrusion-opacity': 0.78,
-      },
-    })
-  }
-
-  const footprint = {
-    type: 'Feature' as const,
-    properties: {
-      name: venue.name,
-      height: 48,
-      base: 0,
-    },
-    geometry: {
-      type: 'Polygon' as const,
-      coordinates: salaFootprint(venue.lng, venue.lat),
-    },
-  }
-
-  const existing = map.getSource('main-venue-3d') as GeoJSONSource | undefined
-  if (existing) {
-    existing.setData({ type: 'FeatureCollection', features: [footprint] })
-  } else {
-    map.addSource('main-venue-3d', {
-      type: 'geojson',
-      data: { type: 'FeatureCollection', features: [footprint] },
-    })
-  }
-
-  if (!map.getLayer('main-venue-3d-extrusion')) {
-    map.addLayer({
-      id: 'main-venue-3d-extrusion',
-      type: 'fill-extrusion',
-      source: 'main-venue-3d',
-      minzoom: 13,
-      paint: {
-        'fill-extrusion-color': '#fbbf24',
-        'fill-extrusion-height': ['get', 'height'],
-        'fill-extrusion-base': ['get', 'base'],
-        'fill-extrusion-opacity': 0.92,
-        'fill-extrusion-vertical-gradient': true,
-      },
-    })
-  }
-
-  if (!map.getLayer('main-venue-3d-outline')) {
-    map.addLayer({
-      id: 'main-venue-3d-outline',
-      type: 'line',
-      source: 'main-venue-3d',
-      minzoom: 13,
-      paint: {
-        'line-color': '#fde68a',
-        'line-width': 2,
-        'line-opacity': 0.9,
-      },
-    })
-  }
-}
-
-function setMap3dCamera(
-  map: MapLibreMap,
-  enabled: boolean,
-  center: [number, number],
-) {
-  if (enabled) {
-    map.easeTo({
-      center,
-      zoom: Math.max(map.getZoom(), 15.6),
-      pitch: 58,
-      bearing: -28,
-      duration: 900,
-    })
-  } else {
-    map.easeTo({
-      pitch: 0,
-      bearing: 0,
-      duration: 700,
-    })
-  }
-}
+type SortMode = 'upcoming' | 'nearest' | 'alpha'
+type SheetMode = 'peek' | 'half' | 'full'
 
 function todayVn(): string {
   try {
@@ -247,8 +98,35 @@ function isLive(ev: SideEvent, today: string, nowHm: string): boolean {
   return nowHm >= start && nowHm <= end
 }
 
+/** Parse deep link from hash `#/event?id=&date=` or search. */
+function parseEventMapParams(): { id?: string; date?: string } {
+  const hash = window.location.hash.replace(/^#\/?/, '')
+  const qIdx = hash.indexOf('?')
+  const fromHash = qIdx >= 0 ? hash.slice(qIdx + 1) : ''
+  const params = new URLSearchParams(fromHash || window.location.search.slice(1))
+  const id = params.get('id')?.trim() || undefined
+  const date = params.get('date')?.trim() || undefined
+  return { id, date }
+}
+
+function writeEventMapParams(opts: {
+  id?: string | null
+  date?: string | null
+}) {
+  const params = new URLSearchParams()
+  if (opts.date && opts.date !== 'all') params.set('date', opts.date)
+  if (opts.id) params.set('id', opts.id)
+  const q = params.toString()
+  const next = q ? `#/event?${q}` : '#/event'
+  if (window.location.hash !== next) {
+    history.replaceState(null, '', next)
+  }
+}
+
 function downloadIcs(ev: SideEvent) {
-  const blob = new Blob([eventToIcs(ev)], { type: 'text/calendar;charset=utf-8' })
+  const blob = new Blob([eventToIcs(ev)], {
+    type: 'text/calendar;charset=utf-8',
+  })
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url
@@ -266,7 +144,9 @@ function popupHtml(
     ? `Ngày TBD · ${ev.startTime}${ev.endTime ? `–${ev.endTime}` : ''}`
     : `${formatShortDate(ev.date)} · ${ev.startTime}${ev.endTime ? `–${ev.endTime}` : ''}`
   const badges = [
-    opts.live ? '<span class="emp__badge emp__badge--live">Đang diễn ra</span>' : '',
+    opts.live
+      ? '<span class="emp__badge emp__badge--live">Đang diễn ra</span>'
+      : '',
     !opts.live && opts.today && !ev.dateTbd
       ? '<span class="emp__badge emp__badge--today">Hôm nay</span>'
       : '',
@@ -308,9 +188,9 @@ function popupHtml(
   `
 }
 
-function buildLumaPinEl(ev: SideEvent): HTMLDivElement {
+function buildLumaPinEl(ev: SideEvent, live: boolean): HTMLDivElement {
   const root = document.createElement('div')
-  root.className = `emp-pin${ev.featured ? ' emp-pin--featured' : ''}`
+  root.className = `emp-pin${ev.featured ? ' emp-pin--featured' : ''}${live ? ' emp-pin--live' : ''}`
   root.title = ev.title
 
   const imgWrap = document.createElement('div')
@@ -352,6 +232,10 @@ function escapeHtml(s: string): string {
     .replace(/"/g, '&quot;')
 }
 
+function isMobileViewport() {
+  return typeof window !== 'undefined' && window.matchMedia('(max-width: 900px)').matches
+}
+
 export function EventMapPage() {
   const mapEl = useRef<HTMLDivElement>(null)
   const mapRef = useRef<MapLibreMap | null>(null)
@@ -359,31 +243,34 @@ export function EventMapPage() {
   const venueMarkerRef = useRef<Marker | null>(null)
   const popupRef = useRef<Popup | null>(null)
   const listRefs = useRef<Map<string, HTMLButtonElement>>(new Map())
+  const deepLinkApplied = useRef(false)
+
+  const initialParams = useMemo(() => parseEventMapParams(), [])
 
   const [dataset, setDataset] = useState<SideEventDataset | null>(null)
   const [source, setSource] = useState<'server' | 'cache' | 'seed'>('seed')
   const [loading, setLoading] = useState(true)
-  const [dateFilter, setDateFilter] = useState<string>('all')
+  const [dateFilter, setDateFilter] = useState<string>(
+    () => initialParams.date || '__default__',
+  )
   const [typeFilter, setTypeFilter] = useState<SideEventType | 'all'>('all')
   const [freeOnly, setFreeOnly] = useState(false)
   const [query, setQuery] = useState('')
-  const [selectedId, setSelectedId] = useState<string | null>(null)
-  const [listOpen, setListOpen] = useState(true)
+  const [selectedId, setSelectedId] = useState<string | null>(
+    () => initialParams.id || null,
+  )
   const [mapReady, setMapReady] = useState(false)
-  const [view3d, setView3d] = useState(true)
-  const view3dRef = useRef(true)
-  const venueRef = useRef({
-    lng: SALA_VENUE.lng,
-    lat: SALA_VENUE.lat,
-    name: SALA_VENUE.name,
-  })
-  /** Distance origin: Sala hub, my GPS, or currently selected event. */
-  const [distOrigin, setDistOrigin] = useState<'sala' | 'me' | 'selected'>('sala')
+  const [distOrigin, setDistOrigin] = useState<'sala' | 'me' | 'selected'>(
+    'sala',
+  )
   const [userLoc, setUserLoc] = useState<{ lat: number; lng: number } | null>(
     null,
   )
   const [geoBusy, setGeoBusy] = useState(false)
-  const [sortNearest, setSortNearest] = useState(false)
+  const [sortMode, setSortMode] = useState<SortMode>('upcoming')
+  const [sheetMode, setSheetMode] = useState<SheetMode>(() =>
+    isMobileViewport() ? 'half' : 'full',
+  )
 
   const today = todayVn()
   const nowHm = nowHmVn()
@@ -400,6 +287,22 @@ export function EventMapPage() {
       cancelled = true
     }
   }, [])
+
+  // Default date: deep link → today (if has events) → all
+  useEffect(() => {
+    if (!dataset || dateFilter !== '__default__') return
+    const hasToday = dataset.events.some((e) => eventOccursOnDate(e, today))
+    setDateFilter(hasToday ? today : 'all')
+  }, [dataset, dateFilter, today])
+
+  // Sync deep link when filters/selection change
+  useEffect(() => {
+    if (dateFilter === '__default__') return
+    writeEventMapParams({
+      id: selectedId,
+      date: dateFilter === 'all' ? null : dateFilter,
+    })
+  }, [selectedId, dateFilter])
 
   const dates = useMemo(() => {
     if (!dataset) return []
@@ -429,6 +332,11 @@ export function EventMapPage() {
     [dataset, selectedId],
   )
 
+  const liveCount = useMemo(() => {
+    if (!dataset) return 0
+    return dataset.events.filter((e) => isLive(e, today, nowHm)).length
+  }, [dataset, today, nowHm])
+
   const distanceFrom = useMemo(() => {
     if (distOrigin === 'me' && userLoc) {
       return { lat: userLoc.lat, lng: userLoc.lng, label: 'bạn' }
@@ -455,32 +363,41 @@ export function EventMapPage() {
     if (!dataset) return []
     const q = query.trim().toLowerCase()
     const list = dataset.events.filter((ev) => {
-      if (!matchesDateFilter(ev, dateFilter)) return false
+      if (!matchesDateFilter(ev, dateFilter === '__default__' ? 'all' : dateFilter))
+        return false
       if (typeFilter !== 'all' && ev.type !== typeFilter) return false
       if (freeOnly && !ev.free) return false
       if (q) {
-        const hay = `${ev.title} ${ev.host} ${ev.venue} ${ev.address}`.toLowerCase()
+        const hay =
+          `${ev.title} ${ev.host} ${ev.venue} ${ev.address}`.toLowerCase()
         if (!hay.includes(q)) return false
       }
       return true
     })
-    if (!sortNearest) return sortEvents(list)
-    return [...list].sort((a, b) => {
-      const da = eventDistanceKm(distanceFrom, a)
-      const db = eventDistanceKm(distanceFrom, b)
-      if (da == null && db == null) return a.title.localeCompare(b.title)
-      if (da == null) return 1
-      if (db == null) return -1
-      return da - db
-    })
+    if (sortMode === 'nearest') {
+      return [...list].sort((a, b) => {
+        const da = eventDistanceKm(distanceFrom, a)
+        const db = eventDistanceKm(distanceFrom, b)
+        if (da == null && db == null) return a.title.localeCompare(b.title)
+        if (da == null) return 1
+        if (db == null) return -1
+        return da - db
+      })
+    }
+    if (sortMode === 'upcoming') {
+      return sortEventsUpcoming(list, today, nowHm)
+    }
+    return sortEvents(list)
   }, [
     dataset,
     dateFilter,
     typeFilter,
     freeOnly,
     query,
-    sortNearest,
+    sortMode,
     distanceFrom,
+    today,
+    nowHm,
   ])
 
   const distanceLabelFor = (ev: SideEvent): string | null => {
@@ -488,7 +405,7 @@ export function EventMapPage() {
     if (distOrigin === 'selected' && ev.id === selectedId) return 'Đang chọn'
     const km = eventDistanceKm(distanceFrom, ev)
     if (km == null) return null
-    return `${formatDistanceKm(km)} từ ${distanceFrom.label}`
+    return formatDistanceWithWalk(km, distanceFrom.label)
   }
 
   const requestMyLocation = () => {
@@ -501,7 +418,7 @@ export function EventMapPage() {
       (pos) => {
         setUserLoc({ lat: pos.coords.latitude, lng: pos.coords.longitude })
         setDistOrigin('me')
-        setSortNearest(true)
+        setSortMode('nearest')
         setGeoBusy(false)
       },
       () => {
@@ -512,7 +429,6 @@ export function EventMapPage() {
     )
   }
 
-  /** Only pin events with a public venue — never fake TBD locations. */
   const mapEvents = useMemo(
     () => filtered.filter((ev) => !ev.locationTbd),
     [filtered],
@@ -543,7 +459,7 @@ export function EventMapPage() {
     return m
   }, [dataset, dates])
 
-  // Init map
+  // Init map — 2D only
   useEffect(() => {
     const container = mapEl.current
     if (!container) return
@@ -554,17 +470,17 @@ export function EventMapPage() {
       container,
       style: MAP_STYLE,
       center: [SALA_VENUE.lng, SALA_VENUE.lat],
-      zoom: 12.4,
-      pitch: 48,
-      bearing: -20,
-      maxPitch: 70,
+      zoom: 12.6,
+      pitch: 0,
+      bearing: 0,
+      maxPitch: 0,
       maxBounds: HCMC_BOUNDS,
       attributionControl: { compact: true },
     })
     map.addControl(
       new maplibregl.NavigationControl({
-        showCompass: true,
-        visualizePitch: true,
+        showCompass: false,
+        visualizePitch: false,
       }),
       'top-right',
     )
@@ -576,30 +492,13 @@ export function EventMapPage() {
       'top-right',
     )
 
-    const setup3d = () => {
-      if (cancelled) return
-      try {
-        addVenue3dLayers(map, venueRef.current)
-      } catch (err) {
-        console.warn('[EventMap] 3D buildings unavailable', err)
-      }
-    }
-
     const markReady = () => {
       if (cancelled || ready) return
       ready = true
       setMapReady(true)
-      setup3d()
-      // Container may have been 0-height during init (flex layout).
       requestAnimationFrame(() => {
         try {
           map.resize()
-          if (view3dRef.current) {
-            setMap3dCamera(map, true, [
-              venueRef.current.lng,
-              venueRef.current.lat,
-            ])
-          }
         } catch {
           /* ignore */
         }
@@ -610,7 +509,6 @@ export function EventMapPage() {
     map.once('idle', markReady)
     map.on('error', (e) => {
       console.warn('[EventMap] map error', e?.error || e)
-      // Still unblock UI so markers/list interaction work.
       markReady()
     })
     const fallbackTimer = window.setTimeout(markReady, 2000)
@@ -645,10 +543,10 @@ export function EventMapPage() {
 
   const openPopup = (ev: SideEvent) => {
     const map = mapRef.current
-    if (!map) return
+    if (!map || ev.locationTbd) return
     popupRef.current?.remove()
     const live = isLive(ev, today, nowHm)
-    const isToday = eventOccursOnDate(ev, today)
+    const isTodayEv = eventOccursOnDate(ev, today)
     const popup = new maplibregl.Popup({
       offset: 72,
       maxWidth: '300px',
@@ -659,7 +557,7 @@ export function EventMapPage() {
       .setHTML(
         popupHtml(ev, {
           live,
-          today: isToday,
+          today: isTodayEv,
           distanceLabel: distanceLabelFor(ev) || undefined,
         }),
       )
@@ -677,13 +575,15 @@ export function EventMapPage() {
 
   const selectEvent = (ev: SideEvent, fly = true) => {
     setSelectedId(ev.id)
+    if (isMobileViewport() && sheetMode === 'peek') setSheetMode('half')
     const map = mapRef.current
     if (map && fly && !ev.locationTbd) {
       map.flyTo({
         center: [ev.lng, ev.lat],
-        zoom: Math.max(map.getZoom(), 14.2),
-        speed: 1.1,
-        pitch: view3dRef.current ? 52 : 0,
+        zoom: Math.max(map.getZoom(), 14.4),
+        speed: 1.15,
+        pitch: 0,
+        bearing: 0,
       })
       openPopup(ev)
     } else if (ev.locationTbd) {
@@ -696,29 +596,30 @@ export function EventMapPage() {
     el?.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
   }
 
-  // Keep venue 3D footprint in sync with admin dataset
+  // Apply deep-link selection once data + map ready
   useEffect(() => {
-    if (!dataset) return
-    venueRef.current = {
-      lng: dataset.venue.lng,
-      lat: dataset.venue.lat,
-      name: dataset.venue.name,
+    if (!dataset || !mapReady || deepLinkApplied.current) return
+    const { id } = parseEventMapParams()
+    if (!id) {
+      deepLinkApplied.current = true
+      return
     }
-    const map = mapRef.current
-    if (!map || !mapReady) return
-    try {
-      addVenue3dLayers(map, venueRef.current)
-    } catch {
-      /* ignore */
+    const ev = dataset.events.find((e) => e.id === id)
+    if (ev) {
+      deepLinkApplied.current = true
+      // slight delay so markers exist
+      requestAnimationFrame(() => selectEvent(ev, true))
+    } else {
+      deepLinkApplied.current = true
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dataset, mapReady])
 
-  // Sync markers with filtered events
+  // Sync markers
   useEffect(() => {
     const map = mapRef.current
     if (!map || !mapReady || !dataset) return
 
-    // Venue marker
     if (!venueMarkerRef.current) {
       const el = document.createElement('div')
       el.className = 'emp-marker emp-marker--venue'
@@ -726,7 +627,11 @@ export function EventMapPage() {
       venueMarkerRef.current = new maplibregl.Marker({ element: el })
         .setLngLat([dataset.venue.lng, dataset.venue.lat])
         .setPopup(
-          new maplibregl.Popup({ offset: 18, className: 'emp-popup', maxWidth: '260px' }).setHTML(
+          new maplibregl.Popup({
+            offset: 18,
+            className: 'emp-popup',
+            maxWidth: '260px',
+          }).setHTML(
             `<h3 class="emp-popup__title">${escapeHtml(dataset.venue.name)}</h3>
              <p class="emp-popup__row">Địa điểm chính · Conviction 2026</p>
              <p class="emp-popup__row">${escapeHtml(dataset.venue.address)}</p>
@@ -751,10 +656,11 @@ export function EventMapPage() {
 
     for (const ev of mapEvents) {
       const existing = markersRef.current.get(ev.id)
-      const pinKey = `${ev.imageUrl || ''}|${ev.title}|${ev.type}|${ev.featured ? 1 : 0}`
+      const live = isLive(ev, today, nowHm)
+      const pinKey = `${ev.imageUrl || ''}|${ev.title}|${ev.type}|${ev.featured ? 1 : 0}|${live ? 1 : 0}`
       if (!existing || existing.getElement().dataset.pinKey !== pinKey) {
         existing?.remove()
-        const el = buildLumaPinEl(ev)
+        const el = buildLumaPinEl(ev, live)
         el.dataset.pinKey = pinKey
         el.addEventListener('click', (e: MouseEvent) => {
           e.stopPropagation()
@@ -771,106 +677,129 @@ export function EventMapPage() {
       }
     }
 
-    // Fit map to visible confirmed pins + main venue (skip while a pin is selected).
     if (!selectedId && mapEvents.length) {
       const bounds = new maplibregl.LngLatBounds()
       bounds.extend([dataset.venue.lng, dataset.venue.lat])
       for (const ev of mapEvents) bounds.extend([ev.lng, ev.lat])
       try {
         map.fitBounds(bounds, {
-          padding: { top: 72, bottom: 72, left: 48, right: 48 },
+          padding: { top: 64, bottom: isMobileViewport() ? 220 : 64, left: 40, right: 40 },
           maxZoom: 14.2,
-          duration: 700,
-          pitch: view3dRef.current ? 48 : 0,
+          duration: 650,
+          pitch: 0,
+          bearing: 0,
         })
       } catch {
         /* ignore */
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- selectEvent closes over latest; markers sync on filter/selection
-  }, [dataset, mapEvents, mapReady, selectedId])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dataset, mapEvents, mapReady, selectedId, today, nowHm])
+
+  const setDate = (d: string) => {
+    setDateFilter(d)
+    setSelectedId(null)
+  }
+
+  const cycleSheet = () => {
+    setSheetMode((m) => (m === 'peek' ? 'half' : m === 'half' ? 'full' : 'peek'))
+  }
+
+  const panelClass =
+    sheetMode === 'peek'
+      ? 'emp__panel emp__panel--peek'
+      : sheetMode === 'half'
+        ? 'emp__panel emp__panel--half'
+        : 'emp__panel emp__panel--full'
 
   return (
     <div className="emp">
       <header className="emp__header">
         <div className="emp__brand">
-          <h1>Conviction 2026 — Side Events Map</h1>
+          <h1>Conviction 2026 · Side Events</h1>
           <p>
-            TP. Hồ Chí Minh · 13–16/08/2026 · Thiskyhall Sala
-            {source !== 'server' ? ` · data: ${source}` : ''}
+            TP.HCM · 13–16/08 · Thiskyhall Sala
+            {liveCount > 0 ? ` · ${liveCount} đang live` : ''}
+            {source !== 'server' ? ` · ${source}` : ''}
           </p>
         </div>
         <div className="emp__header-actions">
-          <button
-            type="button"
-            className={`emp__btn ${distOrigin === 'sala' ? 'emp__btn--primary' : ''}`}
-            onClick={() => setDistOrigin('sala')}
-            title="Đo khoảng cách từ Thiskyhall Sala"
-          >
-            Từ Sala
-          </button>
-          <button
-            type="button"
-            className={`emp__btn ${distOrigin === 'me' ? 'emp__btn--primary' : ''}`}
-            disabled={geoBusy}
-            onClick={() => {
-              if (userLoc) {
-                setDistOrigin('me')
-                setSortNearest(true)
-              } else {
-                requestMyLocation()
-              }
-            }}
-            title="Đo khoảng cách từ vị trí của bạn"
-          >
-            {geoBusy ? 'Đang lấy…' : 'Từ tôi'}
-          </button>
-          <button
-            type="button"
-            className={`emp__btn ${distOrigin === 'selected' ? 'emp__btn--primary' : ''}`}
-            disabled={!selectedEvent || !!selectedEvent.locationTbd}
-            onClick={() => {
-              if (!selectedEvent || selectedEvent.locationTbd) return
-              setDistOrigin('selected')
-              setSortNearest(true)
-            }}
-            title="Đo khoảng cách từ sự kiện đang chọn tới các sự kiện khác"
-          >
-            Giữa events
-          </button>
-          <button
-            type="button"
-            className={`emp__btn ${sortNearest ? 'emp__btn--primary' : ''}`}
-            onClick={() => setSortNearest((v) => !v)}
-            title="Sắp xếp list theo khoảng cách gần → xa"
-          >
-            Gần nhất
-          </button>
-          <button
-            type="button"
-            className={`emp__btn ${view3d ? 'emp__btn--primary' : ''}`}
-            onClick={() => {
-              const next = !view3d
-              setView3d(next)
-              view3dRef.current = next
-              const map = mapRef.current
-              if (!map) return
-              setMap3dCamera(map, next, [
-                venueRef.current.lng,
-                venueRef.current.lat,
-              ])
-            }}
-            title="Bật/tắt góc nhìn 3D quanh Thiskyhall Sala"
-          >
-            {view3d ? '3D · Sala' : '2D'}
-          </button>
+          <div className="emp__btn-group" role="group" aria-label="Đo khoảng cách">
+            <button
+              type="button"
+              className={`emp__btn ${distOrigin === 'sala' ? 'emp__btn--primary' : ''}`}
+              onClick={() => setDistOrigin('sala')}
+              title="Từ Thiskyhall Sala"
+            >
+              Từ Sala
+            </button>
+            <button
+              type="button"
+              className={`emp__btn ${distOrigin === 'me' ? 'emp__btn--primary' : ''}`}
+              disabled={geoBusy}
+              onClick={() => {
+                if (userLoc) {
+                  setDistOrigin('me')
+                  setSortMode('nearest')
+                } else {
+                  requestMyLocation()
+                }
+              }}
+              title="Từ vị trí của bạn"
+            >
+              {geoBusy ? '…' : 'Từ tôi'}
+            </button>
+            <button
+              type="button"
+              className={`emp__btn ${distOrigin === 'selected' ? 'emp__btn--primary' : ''}`}
+              disabled={!selectedEvent || !!selectedEvent.locationTbd}
+              onClick={() => {
+                if (!selectedEvent || selectedEvent.locationTbd) return
+                setDistOrigin('selected')
+                setSortMode('nearest')
+              }}
+              title="Từ sự kiện đang chọn"
+            >
+              Giữa events
+            </button>
+          </div>
+          <div className="emp__btn-group" role="group" aria-label="Sắp xếp">
+            <button
+              type="button"
+              className={`emp__btn ${sortMode === 'upcoming' ? 'emp__btn--primary' : ''}`}
+              onClick={() => setSortMode('upcoming')}
+              title="Sắp diễn ra / đang live trước"
+            >
+              Sắp tới
+            </button>
+            <button
+              type="button"
+              className={`emp__btn ${sortMode === 'nearest' ? 'emp__btn--primary' : ''}`}
+              onClick={() => setSortMode('nearest')}
+              title="Gần → xa"
+            >
+              Gần nhất
+            </button>
+          </div>
           <button
             type="button"
             className="emp__btn emp-toggle-list"
-            onClick={() => setListOpen((v) => !v)}
+            onClick={cycleSheet}
           >
-            {listOpen ? 'Ẩn danh sách' : 'Hiện danh sách'}
+            {sheetMode === 'peek'
+              ? 'Mở list'
+              : sheetMode === 'half'
+                ? 'Mở rộng'
+                : 'Thu list'}
           </button>
+          <a
+            className="emp__btn"
+            href="https://luma.com/conviction-2026"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Luma
+          </a>
           <a
             className="emp__btn"
             href="https://www.conviction.vn/vi"
@@ -880,7 +809,7 @@ export function EventMapPage() {
             conviction.vn
           </a>
           <a className="emp__btn emp__btn--primary" href="#/">
-            ← KOL Radar
+            ← Radar
           </a>
         </div>
       </header>
@@ -890,7 +819,7 @@ export function EventMapPage() {
           <button
             type="button"
             className={`emp__chip ${dateFilter === 'all' ? 'is-active' : ''}`}
-            onClick={() => setDateFilter('all')}
+            onClick={() => setDate('all')}
           >
             Tất cả ({dataset?.events.length ?? 0})
           </button>
@@ -899,7 +828,7 @@ export function EventMapPage() {
               key={d}
               type="button"
               className={`emp__chip ${dateFilter === d ? 'is-active is-active--gold' : ''}`}
-              onClick={() => setDateFilter(d)}
+              onClick={() => setDate(d)}
             >
               {formatShortDate(d)} ({countsByDate.get(d) || 0})
               {d === today ? ' · hôm nay' : ''}
@@ -909,7 +838,7 @@ export function EventMapPage() {
             <button
               type="button"
               className={`emp__chip ${dateFilter === 'tbd' ? 'is-active' : ''}`}
-              onClick={() => setDateFilter('tbd')}
+              onClick={() => setDate('tbd')}
             >
               Ngày TBD ({tbdDateCount})
             </button>
@@ -957,6 +886,8 @@ export function EventMapPage() {
             {mapEvents.length < filtered.length
               ? ` · ${mapEvents.length} trên map`
               : ''}
+            {sortMode === 'upcoming' ? ' · sort: sắp tới' : ''}
+            {sortMode === 'nearest' ? ' · sort: gần nhất' : ''}
           </span>
         </div>
       </div>
@@ -967,20 +898,57 @@ export function EventMapPage() {
           {(loading || !mapReady) && (
             <div className="emp__loading">Đang tải bản đồ…</div>
           )}
+          <div className="emp__map-hint" aria-hidden>
+            Pin vàng = Thiskyhall Sala · Click pin / list để chỉ đường
+          </div>
         </div>
 
-        <aside className={`emp__panel ${listOpen ? '' : 'is-collapsed'}`}>
+        <aside className={panelClass}>
+          <button
+            type="button"
+            className="emp__sheet-handle"
+            onClick={cycleSheet}
+            aria-label="Kéo danh sách"
+          >
+            <span className="emp__sheet-grip" />
+          </button>
           <div className="emp__panel-head">
-            <h2>Lịch side events</h2>
-            <p>
-              Luma calendar · sự kiện chưa có địa điểm chỉ hiện trong list (không
-              pin giả trên map)
-            </p>
+            <div>
+              <h2>Lịch side events</h2>
+              <p>
+                {dateFilter === today
+                  ? 'Đang lọc hôm nay · sắp tới trước'
+                  : dateFilter === 'all'
+                    ? 'Mọi ngày · live / sắp tới ưu tiên'
+                    : `Ngày ${formatShortDate(dateFilter)}`}
+                {' · '}
+                khoảng cách + phút đi bộ từ{' '}
+                {distOrigin === 'me'
+                  ? 'bạn'
+                  : distOrigin === 'selected'
+                    ? 'event chọn'
+                    : 'Sala'}
+              </p>
+            </div>
           </div>
           <div className="emp__list">
             {!filtered.length && (
               <div className="emp__empty">
-                Không có sự kiện khớp bộ lọc. Thử “Tất cả” hoặc bỏ “Chỉ Free”.
+                {dateFilter === today ? (
+                  <>
+                    Không có side event hôm nay. Thử{' '}
+                    <button
+                      type="button"
+                      className="emp__linkish"
+                      onClick={() => setDate('all')}
+                    >
+                      Tất cả
+                    </button>{' '}
+                    hoặc ngày khác.
+                  </>
+                ) : (
+                  <>Không khớp bộ lọc. Thử “Tất cả” hoặc bỏ “Chỉ Free”.</>
+                )}
               </div>
             )}
             {grouped.map(([date, list]) => (
@@ -992,18 +960,19 @@ export function EventMapPage() {
                 </div>
                 {list.map((ev) => {
                   const live = isLive(ev, today, nowHm)
-                  const isToday = !ev.dateTbd && eventOccursOnDate(ev, today)
+                  const isTodayEv = !ev.dateTbd && eventOccursOnDate(ev, today)
                   const timeLabel = ev.endTime
                     ? `${formatLumaTime(ev.startTime)} – ${formatLumaTime(ev.endTime)}`
                     : formatLumaTime(ev.startTime)
                   const place = ev.locationTbd
                     ? 'Location Shown Upon Approval'
                     : ev.venue || ev.address || 'TP. Hồ Chí Minh'
+                  const dist = distanceLabelFor(ev)
                   return (
                     <button
                       key={ev.id}
                       type="button"
-                      className={`emp__card emp__card--luma ${selectedId === ev.id ? 'is-active' : ''}`}
+                      className={`emp__card emp__card--luma ${selectedId === ev.id ? 'is-active' : ''}${live ? ' emp__card--live' : ''}`}
                       ref={(node) => {
                         if (node) listRefs.current.set(ev.id, node)
                         else listRefs.current.delete(ev.id)
@@ -1013,6 +982,7 @@ export function EventMapPage() {
                       <div className="emp__card-body">
                         <p className="emp__card-time">
                           {ev.dateTbd ? 'Time TBD' : timeLabel}
+                          {live ? ' · LIVE' : ''}
                         </p>
                         <p className="emp__card-title">{ev.title}</p>
                         {ev.host ? (
@@ -1027,8 +997,8 @@ export function EventMapPage() {
                           </span>
                           {place}
                         </p>
-                        {distanceLabelFor(ev) ? (
-                          <p className="emp__card-dist">{distanceLabelFor(ev)}</p>
+                        {dist ? (
+                          <p className="emp__card-dist">{dist}</p>
                         ) : ev.locationTbd ? (
                           <p className="emp__card-dist emp__card-dist--muted">
                             Chưa có tọa độ
@@ -1045,13 +1015,15 @@ export function EventMapPage() {
                               Đang diễn ra
                             </span>
                           )}
-                          {!live && isToday && (
+                          {!live && isTodayEv && (
                             <span className="emp__badge emp__badge--today">
                               Hôm nay
                             </span>
                           )}
                           {ev.free && (
-                            <span className="emp__badge emp__badge--free">Free</span>
+                            <span className="emp__badge emp__badge--free">
+                              Free
+                            </span>
                           )}
                         </div>
                       </div>

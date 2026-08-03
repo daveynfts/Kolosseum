@@ -631,6 +631,65 @@ export function formatDistanceKm(km: number): string {
   return `${Math.round(km)} km`
 }
 
+/**
+ * Walking ETA at ~4.5 km/h (urban stroll).
+ * `~12 phút đi bộ` / `~1h15m đi bộ`
+ */
+export function formatWalkEta(km: number): string {
+  if (!Number.isFinite(km) || km < 0) return '—'
+  const min = Math.max(1, Math.round((km / 4.5) * 60))
+  if (km < 0.05) return '< 1 phút đi bộ'
+  if (min < 60) return `~${min} phút đi bộ`
+  const h = Math.floor(min / 60)
+  const m = min % 60
+  return m ? `~${h}h${String(m).padStart(2, '0')}m đi bộ` : `~${h}h đi bộ`
+}
+
+/** Combined: `1.2 km · ~16 phút đi bộ từ Sala` */
+export function formatDistanceWithWalk(
+  km: number,
+  fromLabel = 'Sala',
+): string {
+  return `${formatDistanceKm(km)} · ${formatWalkEta(km)} từ ${fromLabel}`
+}
+
+function hmToMinutes(hm: string): number {
+  const m = /^(\d{1,2}):(\d{2})$/.exec((hm || '').trim())
+  if (!m) return 0
+  return Number(m[1]) * 60 + Number(m[2])
+}
+
+/**
+ * Sort for field use: live first → upcoming today by startTime → later days → past today last.
+ */
+export function sortEventsUpcoming(
+  list: SideEvent[],
+  today: string,
+  nowHm: string,
+): SideEvent[] {
+  const nowMin = hmToMinutes(nowHm)
+  const score = (ev: SideEvent) => {
+    if (ev.dateTbd) return 900_000
+    const onToday = eventOccursOnDate(ev, today)
+    const startMin = hmToMinutes(ev.startTime || '00:00')
+    const endMin = hmToMinutes(ev.endTime || '23:59')
+    if (onToday && nowMin >= startMin && nowMin <= endMin) return startMin // live, earliest first
+    if (onToday && startMin >= nowMin) return 1_000 + startMin // upcoming today
+    if (onToday && endMin < nowMin) return 50_000 + startMin // past today
+    if (ev.date > today) {
+      // later days: date ordinal + time
+      return 10_000 + ev.date.localeCompare(today) * 1_440 + startMin
+    }
+    return 80_000 + startMin // past days
+  }
+  return [...list].sort((a, b) => {
+    const d = score(a) - score(b)
+    if (d !== 0) return d
+    if (a.date !== b.date) return a.date.localeCompare(b.date)
+    return (a.startTime || '').localeCompare(b.startTime || '')
+  })
+}
+
 export function eventDistanceKm(
   from: { lat: number; lng: number },
   ev: SideEvent,

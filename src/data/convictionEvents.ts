@@ -547,6 +547,27 @@ const SIDE_EVENTS: SideEvent[] = [
     featured: true,
   },
   {
+    id: 'redotsclub-vietnam-welcome-mixer',
+    title: 'RedotsClub Vietnam: Welcome Mixer at Conviction 2026',
+    host: 'RedotsClub · Fauvie',
+    venue: '5050 Coffee Tea - Sala',
+    address: '5050 Coffee Tea - Sala, Thành phố Hồ Chí Minh, Hồ Chí Minh',
+    lat: 10.7688195,
+    lng: 106.7274942,
+    date: '2026-08-14',
+    startTime: '16:00',
+    endTime: '19:00',
+    type: 'mixer',
+    link: 'https://luma.com/cj4ukn2e',
+    imageUrl: lumaSquareCover(
+      'uploads/qs/097fb09c-2fd2-4ba4-8308-89fe182a2fc0.jpg',
+    ),
+    description:
+      'Ra mắt RedotsClub Vietnam — mixer RedotPay community: networking, team meet-up, real-world digital payments. Approval required · chỉ khách đã duyệt được vào.',
+    free: true,
+    featured: true,
+  },
+  {
     id: 'lbank-labs-vip-saigon-nights',
     title: 'LBANK Labs VIP Saigon Nights',
     host: 'LBank Labs',
@@ -658,8 +679,8 @@ export const CONVICTION_EVENTS_SEED: SideEventDataset = {
   venue: SALA_VENUE,
   dateRange: { start: '2026-08-13', end: '2026-08-15' },
   events: SIDE_EVENTS,
-  updatedAt: '2026-08-04T16:00:00.000Z',
-  note: 'Main Event pin on map · 14/08 08:00 – 15/08 18:00 GMT+7 · Thiskyhall Sala, Thủ Đức',
+  updatedAt: '2026-08-04T18:00:00.000Z',
+  note: 'RedotsClub Vietnam Welcome Mixer · 14/08 16:00–19:00 · 5050 Coffee Tea - Sala',
 }
 
 function isEventType(v: unknown): v is SideEventType {

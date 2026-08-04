@@ -142,7 +142,11 @@ describe('convictionEvents helpers', () => {
     const pos = pinDisplayPositions([main, ai])
     const pMain = pos.get(main.id)!
     const pAi = pos.get(ai.id)!
-    expect(pMain.lat).not.toBeCloseTo(pAi.lat, 6)
+    // Fan left/right → different lng, same-ish lat
+    expect(pMain.lng).not.toBeCloseTo(pAi.lng, 6)
+    expect(distanceKm(pMain.lat, pMain.lng, pAi.lat, pAi.lng)).toBeGreaterThan(
+      0.04,
+    )
     // Both still near the shared venue (~ < 80 m)
     expect(distanceKm(pMain.lat, pMain.lng, base.lat, base.lng)).toBeLessThan(
       0.08,

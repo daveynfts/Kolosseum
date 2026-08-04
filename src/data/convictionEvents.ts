@@ -64,11 +64,11 @@ export type SideEventDataset = {
   note?: string
 }
 
-/** Thiskyhall Sala — Conviction main venue (10 Mai Chí Thọ, Sala). */
+/** Thiskyhall Sala — Conviction main venue (Thủ Đức, TP.HCM). */
 export const SALA_VENUE: MainVenue = {
   name: 'Thiskyhall Sala Convention Center',
   address:
-    '10 Đường Mai Chí Thọ, An Khánh, Cổng D6, TP. Hồ Chí Minh 71110, Vietnam',
+    '10 Đường Mai Chí Thọ, An Khánh, Thủ Đức, Thành phố Hồ Chí Minh 71110, Vietnam',
   lat: 10.7719776,
   lng: 106.7210607,
 }
@@ -107,8 +107,8 @@ export function mainForumMeta(isoDate: string) {
 }
 
 /**
- * Main forum wall-clock (Asia/Ho_Chi_Minh).
- * Day 1 opens ~08:00 14/08 · forum closes ~18:00 15/08.
+ * Main forum wall-clock (Asia/Ho_Chi_Minh) — Luma Main Event:
+ * Fri 14 Aug 08:00 → Sat 15 Aug 18:00 GMT+7 · Thiskyhall Sala, Thủ Đức.
  */
 export const MAIN_FORUM_SCHEDULE = {
   startIso: '2026-08-14T08:00:00+07:00',
@@ -117,8 +117,11 @@ export const MAIN_FORUM_SCHEDULE = {
   day1EndIso: '2026-08-14T22:00:00+07:00',
   day2StartIso: '2026-08-15T08:00:00+07:00',
   day2EndIso: '2026-08-15T18:00:00+07:00',
-  venue: 'Thiskyhall Sala',
-  title: 'Conviction 2026',
+  venue: 'Thiskyhall Sala Convention Center',
+  district: 'Thủ Đức, Thành phố Hồ Chí Minh',
+  title: 'Conviction 2026 Main Event',
+  /** Short label for map chrome */
+  windowLabel: '14/08 08:00 – 15/08 18:00 GMT+7',
 } as const
 
 export type MainForumPhase = 'upcoming' | 'live' | 'ended'
@@ -173,7 +176,7 @@ export function getMainForumStatus(now: Date = new Date()): MainForumStatus {
       parts: splitMs(start - t),
       badge: 'Sắp diễn ra',
       title: MAIN_FORUM_SCHEDULE.title,
-      subtitle: `${MAIN_FORUM_SCHEDULE.venue} · 14–15/08 · Main forum`,
+      subtitle: `${MAIN_FORUM_SCHEDULE.venue} · ${MAIN_FORUM_SCHEDULE.district} · ${MAIN_FORUM_SCHEDULE.windowLabel}`,
     }
   }
 
@@ -633,8 +636,8 @@ export const CONVICTION_EVENTS_SEED: SideEventDataset = {
   venue: SALA_VENUE,
   dateRange: { start: '2026-08-13', end: '2026-08-15' },
   events: SIDE_EVENTS,
-  updatedAt: '2026-08-04T14:00:00.000Z',
-  note: 'Hydra @ Bitexco L26 14/08 16:00–18:00 · +Crypto Football 13/08 · Main Luma ydvhq4is',
+  updatedAt: '2026-08-04T15:00:00.000Z',
+  note: 'Main Event: 14/08 08:00 – 15/08 18:00 GMT+7 · Thiskyhall Sala Convention Center, Thủ Đức',
 }
 
 function isEventType(v: unknown): v is SideEventType {

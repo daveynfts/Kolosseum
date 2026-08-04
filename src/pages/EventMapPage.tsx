@@ -10,6 +10,7 @@ import {
   EVENT_TYPE_COLORS,
   EVENT_TYPE_LABELS,
   EVENT_TYPES,
+  MAIN_FORUM_SCHEDULE,
   SALA_VENUE,
   calendarStripDates,
   directionsUrl,
@@ -1028,8 +1029,9 @@ export function EventMapPage() {
         <div className="emp__brand">
           <h1>Conviction 2026 · Side Events</h1>
           <p>
-            TP.HCM · 13–16/08 · Thiskyhall Sala
-            {liveCount > 0 ? ` · ${liveCount} đang live` : ''}
+            Main · {MAIN_FORUM_SCHEDULE.windowLabel} ·{' '}
+            {MAIN_FORUM_SCHEDULE.venue} · Thủ Đức
+            {liveCount > 0 ? ` · ${liveCount} side live` : ''}
             {source !== 'server' ? ` · ${source}` : ''}
           </p>
         </div>

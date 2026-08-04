@@ -1,6 +1,6 @@
 /**
  * Conviction 2026 side-event map — types + seed dataset.
- * Source: https://luma.com/conviction-2026 (as of 2026-08-03)
+ * Source: https://luma.com/conviction-2026 (as of 2026-08-04)
  * Venue: Thiskyhall Sala, TP.HCM · Main forum 14–15 Aug 2026.
  */
 
@@ -478,11 +478,11 @@ const SIDE_EVENTS: SideEvent[] = [
   {
     id: 'builders-happy-hours-hcmc',
     title: 'Builders Happy Hours HCMC',
-    host: 'APAC DAO · Utila · ETHGlobal',
-    venue: 'TP.HCM — TBD',
-    address: 'Chưa công khai ngày/địa điểm (khung giờ dự kiến 16:00–19:00)',
-    lat: SALA_VENUE.lat,
-    lng: SALA_VENUE.lng,
+    host: 'APAC DAO · Utila · ETHGlobal · Unlimit',
+    venue: 'Oromia Coffee & Lounge',
+    address: '85 Phan Kế Bính, Quận 1, Hồ Chí Minh 70000, Vietnam',
+    lat: 10.7906677,
+    lng: 106.6983617,
     date: '2026-08-14',
     startTime: '16:00',
     endTime: '19:00',
@@ -492,9 +492,8 @@ const SIDE_EVENTS: SideEvent[] = [
       'uploads/xr/c0229197-d0cc-4cb9-98c1-dc5c367a6bac.png',
     ),
     description:
-      'Side event buổi tối: workshop, Q&A và networking. Ngày + địa điểm vẫn TBD trên Luma.',
-    dateTbd: true,
-    locationTbd: true,
+      'Side event chính thức của Conviction 2026 (ETHGlobal, Unlimit, Utila · co-host APAC DAO). 16:00 opening · 16:30–18:00 workshop · 18:00–19:00 Q&A & sunset networking. Approval required.',
+    free: true,
     featured: true,
   },
   {
@@ -609,8 +608,8 @@ export const CONVICTION_EVENTS_SEED: SideEventDataset = {
   venue: SALA_VENUE,
   dateRange: { start: '2026-08-13', end: '2026-08-15' },
   events: SIDE_EVENTS,
-  updatedAt: '2026-08-03T06:00:00.000Z',
-  note: 'Seed luma covers from uploads/ square assets · 2026-08-03',
+  updatedAt: '2026-08-04T12:00:00.000Z',
+  note: 'Builders Happy Hours HCMC → Oromia Coffee & Lounge · Fri 14 Aug 16:00–19:00 GMT+7',
 }
 
 function isEventType(v: unknown): v is SideEventType {

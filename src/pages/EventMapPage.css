@@ -1040,6 +1040,12 @@
   animation: emp-week-in 0.25s cubic-bezier(0.22, 1, 0.36, 1);
   position: relative;
   overflow: hidden;
+  cursor: pointer;
+}
+
+.emp-week__main-card.is-active {
+  outline: 2px solid rgba(251, 191, 36, 0.75);
+  outline-offset: 1px;
 }
 
 .emp-week__main-card::before {
@@ -1460,9 +1466,23 @@
   color: #fca5a5;
 }
 
+.emp__badge--main {
+  background: rgba(251, 191, 36, 0.22);
+  color: #fcd34d;
+  border: 1px solid rgba(251, 191, 36, 0.35);
+  font-weight: 700;
+}
+
 .emp__badge--today {
   background: rgba(251, 191, 36, 0.2);
   color: #fcd34d;
+}
+
+.emp__card--main {
+  border-color: rgba(251, 191, 36, 0.35);
+  box-shadow:
+    0 0 0 1px rgba(251, 191, 36, 0.12) inset,
+    0 8px 24px rgba(0, 0, 0, 0.28);
 }
 
 .emp__empty {
@@ -1613,6 +1633,18 @@
     0 0 0 2.5px rgba(3, 3, 5, 0.95),
     0 0 0 5px rgba(251, 191, 36, 0.4),
     0 6px 16px rgba(251, 191, 36, 0.25);
+}
+
+/* Main forum pin — largest gold ring at Sala */
+.emp-pin--main .emp-pin__img {
+  width: 68px;
+  height: 68px;
+  border-width: 3.5px;
+  border-color: #fbbf24 !important;
+  box-shadow:
+    0 0 0 3px rgba(3, 3, 5, 0.95),
+    0 0 0 7px rgba(251, 191, 36, 0.55),
+    0 8px 22px rgba(251, 191, 36, 0.4);
 }
 
 .emp-pin--live .emp-pin__img {

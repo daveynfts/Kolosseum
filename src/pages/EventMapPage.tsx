@@ -167,10 +167,16 @@ function popupHtml(
   const typeLabel = EVENT_TYPE_LABELS[ev.type] || ev.type
   const when = ev.dateTbd
     ? `Ngày TBD · ${ev.startTime}${ev.endTime ? `–${ev.endTime}` : ''}`
-    : `${formatShortDate(ev.date)} · ${ev.startTime}${ev.endTime ? `–${ev.endTime}` : ''}`
+    : ev.endDate && ev.endDate !== ev.date
+      ? `${formatShortDate(ev.date)} ${ev.startTime} → ${formatShortDate(ev.endDate)} ${ev.endTime || ''}`.trim()
+      : `${formatShortDate(ev.date)} · ${ev.startTime}${ev.endTime ? `–${ev.endTime}` : ''}`
   const stPhase = opts.statusPhase || (opts.live ? 'live' : 'upcoming')
   const stLabel = opts.statusLabel || (opts.live ? 'LIVE' : '')
+  const isMain = ev.id === 'conviction-2026-main-event'
   const badges = [
+    isMain
+      ? '<span class="emp__badge emp__badge--main">Main Event</span>'
+      : '',
     stLabel
       ? `<span class="emp__badge emp__badge--status emp__badge--status-${escapeHtml(stPhase)}">${escapeHtml(stLabel)}</span>`
       : '',
@@ -239,6 +245,7 @@ function buildLumaPinEl(ev: SideEvent, now: Date = new Date()): HTMLDivElement {
   root.className = [
     'emp-pin',
     ev.featured ? 'emp-pin--featured' : '',
+    ev.id === 'conviction-2026-main-event' ? 'emp-pin--main' : '',
     st.phase === 'live' ? 'emp-pin--live' : '',
     st.phase === 'ended' ? 'emp-pin--ended' : '',
     st.phase === 'upcoming' ? 'emp-pin--upcoming' : '',
@@ -543,8 +550,19 @@ export function EventMapPage() {
 
   const grouped = useMemo(() => {
     const map = new Map<string, SideEvent[]>()
+    const dayKey =
+      dateFilter !== 'all' &&
+      dateFilter !== 'tbd' &&
+      dateFilter !== '__default__'
+        ? dateFilter
+        : null
     for (const ev of filtered) {
-      const key = ev.dateTbd ? 'tbd' : ev.date
+      // Multi-day events (Main) appear under the active day filter when set
+      const key = ev.dateTbd
+        ? 'tbd'
+        : dayKey && eventOccursOnDate(ev, dayKey)
+          ? dayKey
+          : ev.date
       const list = map.get(key) || []
       list.push(ev)
       map.set(key, list)
@@ -555,7 +573,7 @@ export function EventMapPage() {
       return a.localeCompare(b)
     })
     return keys.map((k) => [k, map.get(k)!] as const)
-  }, [filtered])
+  }, [filtered, dateFilter])
 
   const countsByDate = useMemo(() => {
     const m = new Map<string, number>()
@@ -1272,17 +1290,36 @@ export function EventMapPage() {
           {(() => {
             const selectedMain = mainForumMeta(dateFilter)
             if (!selectedMain) return null
+            const mainEv = dataset?.events.find(
+              (e) => e.id === 'conviction-2026-main-event',
+            )
             return (
               <div
-                className={`emp-week__main-card emp-week__main-card--d${selectedMain.day}`}
+                className={`emp-week__main-card emp-week__main-card--d${selectedMain.day}${selectedId === 'conviction-2026-main-event' ? ' is-active' : ''}`}
+                role={mainEv ? 'button' : undefined}
+                tabIndex={mainEv ? 0 : undefined}
+                onClick={() => {
+                  if (mainEv) selectEvent(mainEv, true)
+                }}
+                onKeyDown={(e) => {
+                  if (!mainEv) return
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault()
+                    selectEvent(mainEv, true)
+                  }
+                }}
               >
                 <div className="emp-week__main-left">
                   <span className="emp-week__main-badge">
                     Main · Day {selectedMain.day}
                   </span>
-                  <p className="emp-week__main-title">{selectedMain.track}</p>
+                  <p className="emp-week__main-title">
+                    Conviction 2026 Main Event
+                  </p>
                   <p className="emp-week__main-sub">
-                    Thiskyhall Sala · {formatShortDate(dateFilter)}
+                    {selectedMain.track} · Thiskyhall Sala · Thủ Đức ·{' '}
+                    {formatShortDate(dateFilter)}
+                    {selectedMain.day === 1 ? ' · từ 08:00' : ' · đến 18:00'}
                   </p>
                 </div>
                 <a
@@ -1294,6 +1331,7 @@ export function EventMapPage() {
                   }
                   target="_blank"
                   rel="noopener noreferrer"
+                  onClick={(e) => e.stopPropagation()}
                 >
                   Agenda
                 </a>
@@ -1433,17 +1471,21 @@ export function EventMapPage() {
                   const live = st.phase === 'live'
                   const isTodayEv = !ev.dateTbd && eventOccursOnDate(ev, today)
                   const isActive = selectedId === ev.id
-                  const timeLabel = ev.endTime
-                    ? `${formatLumaTime(ev.startTime)} – ${formatLumaTime(ev.endTime)}`
-                    : formatLumaTime(ev.startTime)
+                  const timeLabel =
+                    ev.endDate && ev.endDate !== ev.date
+                      ? `${formatShortDate(ev.date)} ${formatLumaTime(ev.startTime)} → ${formatShortDate(ev.endDate)} ${ev.endTime ? formatLumaTime(ev.endTime) : ''}`.trim()
+                      : ev.endTime
+                        ? `${formatLumaTime(ev.startTime)} – ${formatLumaTime(ev.endTime)}`
+                        : formatLumaTime(ev.startTime)
                   const place = ev.locationTbd
                     ? 'Địa điểm sẽ công bố sau (TBD)'
                     : ev.venue || ev.address || 'TP. Hồ Chí Minh'
                   const dist = distanceLabelFor(ev)
+                  const isMain = ev.id === 'conviction-2026-main-event'
                   return (
                     <div
                       key={ev.id}
-                      className={`emp__card emp__card--luma ${isActive ? 'is-active' : ''}${live ? ' emp__card--live' : ''}${ev.locationTbd ? ' emp__card--tbd-loc' : ''}`}
+                      className={`emp__card emp__card--luma ${isActive ? 'is-active' : ''}${live ? ' emp__card--live' : ''}${ev.locationTbd ? ' emp__card--tbd-loc' : ''}${isMain ? ' emp__card--main' : ''}`}
                       ref={(node) => {
                         if (node) listRefs.current.set(ev.id, node)
                         else listRefs.current.delete(ev.id)
@@ -1487,6 +1529,11 @@ export function EventMapPage() {
                             </p>
                           ) : null}
                           <div className="emp__badges">
+                            {isMain && (
+                              <span className="emp__badge emp__badge--main">
+                                Main Event
+                              </span>
+                            )}
                             {(ev.dateTbd || ev.locationTbd) && (
                               <span className="emp__badge emp__badge--pending">
                                 {ev.locationTbd

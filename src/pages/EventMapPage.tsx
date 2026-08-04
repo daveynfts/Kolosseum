@@ -16,6 +16,7 @@ import {
   directionsUrl,
   eventDistanceKm,
   eventOccursOnDate,
+  pinDisplayPositions,
   formatDayNum,
   formatDistanceWithDrive,
   formatLumaDay,
@@ -548,6 +549,22 @@ export function EventMapPage() {
     [filtered],
   )
 
+  /** Display lat/lng with spiderfy when several events share a venue pin. */
+  const pinPositions = useMemo(
+    () => pinDisplayPositions(mapEvents),
+    [mapEvents],
+  )
+
+  const displayLngLat = (ev: SideEvent): { lat: number; lng: number } => {
+    if (ev.locationTbd) {
+      return {
+        lat: dataset?.venue.lat ?? SALA_VENUE.lat,
+        lng: dataset?.venue.lng ?? SALA_VENUE.lng,
+      }
+    }
+    return pinPositions.get(ev.id) ?? { lat: ev.lat, lng: ev.lng }
+  }
+
   const grouped = useMemo(() => {
     const map = new Map<string, SideEvent[]>()
     const dayKey =
@@ -796,13 +813,8 @@ export function EventMapPage() {
     const st = getSideEventStatus(ev)
     const live = st.phase === 'live'
     const isTodayEv = eventOccursOnDate(ev, today)
-    // TBD location: still show popup at main venue as approximate anchor
-    const lng = ev.locationTbd
-      ? (dataset?.venue.lng ?? SALA_VENUE.lng)
-      : ev.lng
-    const lat = ev.locationTbd
-      ? (dataset?.venue.lat ?? SALA_VENUE.lat)
-      : ev.lat
+    // Use spiderfied display position (overlap fix); real coords stay for directions
+    const { lng, lat } = displayLngLat(ev)
     // Width matches Luma-style 1:1 cover (square image fills card width)
     const wide = isMobileViewport()
       ? Math.min(320, Math.max(280, map.getContainer().clientWidth - 24))
@@ -841,12 +853,10 @@ export function EventMapPage() {
       setSheetMode('peek')
     }
     const map = mapRef.current
-    const target = ev.locationTbd
-      ? (dataset?.venue ?? SALA_VENUE)
-      : { lng: ev.lng, lat: ev.lat }
+    const target = displayLngLat(ev)
     const zoom = ev.locationTbd
       ? Math.max(map?.getZoom() ?? 13, 13.2)
-      : Math.max(map?.getZoom() ?? 14, 14.4)
+      : Math.max(map?.getZoom() ?? 14.4, 14.6)
 
     if (map && fly) {
       userMovedMapRef.current = false
@@ -957,8 +967,9 @@ export function EventMapPage() {
 
     const now = new Date()
     for (const ev of mapEvents) {
+      const pos = pinPositions.get(ev.id) ?? { lat: ev.lat, lng: ev.lng }
       const existing = markersRef.current.get(ev.id)
-      const pinKey = `${ev.imageUrl || ''}|${ev.title}|${ev.type}|${ev.featured ? 1 : 0}`
+      const pinKey = `${ev.imageUrl || ''}|${ev.title}|${ev.type}|${ev.featured ? 1 : 0}|${pos.lat.toFixed(6)},${pos.lng.toFixed(6)}`
       if (!existing || existing.getElement().dataset.pinKey !== pinKey) {
         existing?.remove()
         const el = buildLumaPinEl(ev, now)
@@ -968,12 +979,12 @@ export function EventMapPage() {
           selectEvent(ev, true)
         })
         const marker = new maplibregl.Marker({ element: el, anchor: 'bottom' })
-          .setLngLat([ev.lng, ev.lat])
+          .setLngLat([pos.lng, pos.lat])
           .addTo(map)
         markersRef.current.set(ev.id, marker)
         el.classList.toggle('is-active', selectedId === ev.id)
       } else {
-        existing.setLngLat([ev.lng, ev.lat])
+        existing.setLngLat([pos.lng, pos.lat])
         const el = existing.getElement()
         el.classList.toggle('is-active', selectedId === ev.id)
         applyPinStatus(el, ev, now)
@@ -997,7 +1008,10 @@ export function EventMapPage() {
           userMovedMapRef.current = false
           const bounds = new maplibregl.LngLatBounds()
           bounds.extend([dataset.venue.lng, dataset.venue.lat])
-          for (const ev of mapEvents) bounds.extend([ev.lng, ev.lat])
+          for (const ev of mapEvents) {
+            const p = pinPositions.get(ev.id) ?? { lat: ev.lat, lng: ev.lng }
+            bounds.extend([p.lng, p.lat])
+          }
           try {
             map.fitBounds(bounds, {
               padding: {
@@ -1021,7 +1035,7 @@ export function EventMapPage() {
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dataset, mapEvents, mapReady, selectedId, today, nowHm])
+  }, [dataset, mapEvents, mapReady, selectedId, today, nowHm, pinPositions])
 
   const setDate = (d: string) => {
     setDateFilter(d)

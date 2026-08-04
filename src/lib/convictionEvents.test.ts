@@ -11,6 +11,7 @@ import {
   matchesDateFilter,
   normalizeDataset,
   normalizeSideEvent,
+  pinDisplayPositions,
   sortEvents,
   type SideEvent,
 } from '../data/convictionEvents'
@@ -112,6 +113,41 @@ describe('convictionEvents helpers', () => {
     })!
     expect(eventOccursOnDate(ev, '2026-08-14')).toBe(true)
     expect(eventsOnDate([ev], '2026-08-16')).toHaveLength(0)
+  })
+
+  it('pinDisplayPositions fans out overlapping venue pins', () => {
+    const base = {
+      host: '',
+      venue: 'Sala',
+      address: '',
+      lat: 10.7719776,
+      lng: 106.7210607,
+      date: '2026-08-15',
+      type: 'conference' as const,
+    }
+    const main = normalizeSideEvent({
+      ...base,
+      id: 'conviction-2026-main-event',
+      title: 'Main',
+      startTime: '08:00',
+      endTime: '18:00',
+    })!
+    const ai = normalizeSideEvent({
+      ...base,
+      id: 'special-ai-forum-conviction',
+      title: 'AI Forum',
+      startTime: '09:00',
+      endTime: '15:00',
+    })!
+    const pos = pinDisplayPositions([main, ai])
+    const pMain = pos.get(main.id)!
+    const pAi = pos.get(ai.id)!
+    expect(pMain.lat).not.toBeCloseTo(pAi.lat, 6)
+    // Both still near the shared venue (~ < 80 m)
+    expect(distanceKm(pMain.lat, pMain.lng, base.lat, base.lng)).toBeLessThan(
+      0.08,
+    )
+    expect(distanceKm(pAi.lat, pAi.lng, base.lat, base.lng)).toBeLessThan(0.08)
   })
 
   it('rejects invalid coords', () => {

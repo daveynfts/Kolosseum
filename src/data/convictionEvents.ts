@@ -946,6 +946,71 @@ export function directionsUrl(lat: number, lng: number): string {
   return `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`
 }
 
+/**
+ * Spread pins that share the same lat/lng so they don't stack (e.g. Main +
+ * Special AI Forum both at Thiskyhall Sala on 15/08).
+ * Returns display positions only — real coords stay for directions/distance.
+ */
+export function pinDisplayPositions(
+  events: SideEvent[],
+  radiusM = 36,
+): Map<string, { lat: number; lng: number }> {
+  const out = new Map<string, { lat: number; lng: number }>()
+  const groups = new Map<string, SideEvent[]>()
+
+  for (const ev of events) {
+    if (ev.locationTbd) continue
+    if (!Number.isFinite(ev.lat) || !Number.isFinite(ev.lng)) continue
+    // ~1.1 m grid at equator; enough to cluster true duplicates
+    const key = `${ev.lat.toFixed(5)},${ev.lng.toFixed(5)}`
+    const g = groups.get(key) || []
+    g.push(ev)
+    groups.set(key, g)
+  }
+
+  // meters → degrees around HCMC (~10.77°N)
+  const meanLat =
+    events.reduce((s, e) => s + (e.locationTbd ? 0 : e.lat), 0) /
+      Math.max(1, events.filter((e) => !e.locationTbd).length) || 10.77
+  const degPerMLat = 1 / 111_320
+  const degPerMLng = 1 / (111_320 * Math.cos((meanLat * Math.PI) / 180))
+
+  for (const group of groups.values()) {
+    if (group.length === 1) {
+      const only = group[0]!
+      out.set(only.id, { lat: only.lat, lng: only.lng })
+      continue
+    }
+    const sorted = [...group].sort((a, b) => {
+      // Keep Main Event as anchor (first) then by start time / title
+      if (a.id === 'conviction-2026-main-event') return -1
+      if (b.id === 'conviction-2026-main-event') return 1
+      if (a.startTime !== b.startTime) {
+        return a.startTime.localeCompare(b.startTime)
+      }
+      return a.title.localeCompare(b.title)
+    })
+    const n = sorted.length
+    const cx = sorted[0]!.lng
+    const cy = sorted[0]!.lat
+    sorted.forEach((ev, i) => {
+      // 2 pins: left/right of center; 3+: ring starting north
+      let angle: number
+      if (n === 2) {
+        angle = i === 0 ? -Math.PI / 2.2 : Math.PI / 2.2
+      } else {
+        angle = (2 * Math.PI * i) / n - Math.PI / 2
+      }
+      const r = radiusM * (1 + 0.12 * Math.floor(i / 6))
+      out.set(ev.id, {
+        lat: cy + r * Math.cos(angle) * degPerMLat,
+        lng: cx + r * Math.sin(angle) * degPerMLng,
+      })
+    })
+  }
+  return out
+}
+
 /** Haversine distance in kilometers. */
 export function distanceKm(
   aLat: number,

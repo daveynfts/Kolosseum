@@ -66,12 +66,15 @@ export type SideEventDataset = {
 
 /** Thiskyhall Sala — Conviction main venue (10 Mai Chí Thọ, Sala). */
 export const SALA_VENUE: MainVenue = {
-  name: 'Thiskyhall Sala',
+  name: 'Thiskyhall Sala Convention Center',
   address:
-    'Thiskyhall Sala Convention Center, 10 Mai Chí Thọ, KĐT Sala, An Khánh, TP. Hồ Chí Minh',
-  lat: 10.771895,
-  lng: 106.721066,
+    '10 Đường Mai Chí Thọ, An Khánh, Cổng D6, TP. Hồ Chí Minh 71110, Vietnam',
+  lat: 10.7719776,
+  lng: 106.7210607,
 }
+
+/** Luma registration for the main forum (14–15/08). */
+export const CONVICTION_MAIN_LUMA = 'https://luma.com/ydvhq4is'
 
 /**
  * Main forum days at Thiskyhall (not side events).
@@ -459,21 +462,43 @@ const SIDE_EVENTS: SideEvent[] = [
     title:
       "Building Vietnam's Tokenised Capital Markets: Lessons from Singapore",
     host: 'Hydra X',
-    venue: 'TP.HCM — TBD',
-    address: 'Chưa công khai ngày giờ địa điểm',
-    lat: SALA_VENUE.lat,
-    lng: SALA_VENUE.lng,
+    venue: 'L26 · Bitexco Financial Tower',
+    address:
+      'L26, Bitexco Financial Tower, No. 2 Hai Trieu Street, Sai Gon Ward, Ho Chi Minh City, Vietnam',
+    lat: 10.77162,
+    lng: 106.70428,
     date: '2026-08-14',
-    startTime: '14:00',
+    startTime: '16:00',
+    endTime: '18:00',
     type: 'conference',
     link: 'https://luma.com/kfl0ulwv',
     imageUrl: lumaSquareCover(
       'gallery-images/6n/63fec81d-4939-46b0-89dc-dee963a97b5b.png',
     ),
     description:
-      'Sự kiện riêng cho ngân hàng, chứng khoán và hệ sinh thái tài sản số — bài học từ Singapore. Pin map ẩn tới khi công khai.',
-    dateTbd: true,
+      'Private gathering (banks, securities, digital assets) on regulated tokenised markets — lessons from Singapore. Approval required · Luma may hide address until approved.',
+    featured: true,
+  },
+  {
+    id: 'crypto-football-conviction-2026',
+    title: 'Crypto Football @Conviction 2026',
+    host: 'Thomas Doan',
+    venue: 'TP.HCM — TBD (revealed after approval)',
+    address: 'Đăng ký Luma để xem địa điểm (Spectator / Player)',
+    lat: SALA_VENUE.lat,
+    lng: SALA_VENUE.lng,
+    date: '2026-08-13',
+    startTime: '17:00',
+    endTime: '18:30',
+    type: 'other',
+    link: 'https://luma.com/d57b9tsu',
+    imageUrl: lumaSquareCover(
+      'uploads/ge/1087be2c-5c88-48c6-9b66-e07df14276d3.png',
+    ),
+    description:
+      'Bóng đá + networking builders/founders trong tuần Conviction. Vé Spectator hoặc Player · approval required · địa điểm chỉ hiện sau khi duyệt.',
     locationTbd: true,
+    featured: true,
   },
   {
     id: 'builders-happy-hours-hcmc',
@@ -608,8 +633,8 @@ export const CONVICTION_EVENTS_SEED: SideEventDataset = {
   venue: SALA_VENUE,
   dateRange: { start: '2026-08-13', end: '2026-08-15' },
   events: SIDE_EVENTS,
-  updatedAt: '2026-08-04T12:00:00.000Z',
-  note: 'Builders Happy Hours HCMC → Oromia Coffee & Lounge · Fri 14 Aug 16:00–19:00 GMT+7',
+  updatedAt: '2026-08-04T14:00:00.000Z',
+  note: 'Hydra @ Bitexco L26 14/08 16:00–18:00 · +Crypto Football 13/08 · Main Luma ydvhq4is',
 }
 
 function isEventType(v: unknown): v is SideEventType {

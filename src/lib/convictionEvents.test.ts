@@ -8,7 +8,9 @@ import {
   datesInRange,
   distanceKm,
   eventDistanceKm,
+  eventHasMapPin,
   eventOccursOnDate,
+  eventTimeOfDay,
   eventsOnDate,
   formatDistanceKm,
   getSideEventStatus,
@@ -120,6 +122,37 @@ describe('convictionEvents helpers', () => {
     })!
     expect(eventOccursOnDate(ev, '2026-08-14')).toBe(true)
     expect(eventsOnDate([ev], '2026-08-16')).toHaveLength(0)
+  })
+
+  it('eventTimeOfDay buckets start times', () => {
+    const mk = (startTime: string) =>
+      normalizeSideEvent({
+        id: 't',
+        title: 'T',
+        lat: 10.7,
+        lng: 106.7,
+        date: '2026-08-14',
+        startTime,
+        type: 'meetup',
+      })!
+    expect(eventTimeOfDay(mk('09:30'))).toBe('morning')
+    expect(eventTimeOfDay(mk('12:00'))).toBe('afternoon')
+    expect(eventTimeOfDay(mk('16:59'))).toBe('afternoon')
+    expect(eventTimeOfDay(mk('17:00'))).toBe('evening')
+    expect(
+      eventHasMapPin(
+        normalizeSideEvent({
+          id: 'p',
+          title: 'P',
+          lat: 10.7,
+          lng: 106.7,
+          date: '2026-08-14',
+          startTime: '10:00',
+          type: 'meetup',
+          locationTbd: true,
+        })!,
+      ),
+    ).toBe(false)
   })
 
   it('buildDayTimeline flags overlapping side slots on 14 Aug', () => {

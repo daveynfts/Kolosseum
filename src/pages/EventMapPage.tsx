@@ -17,10 +17,13 @@ import {
   calendarStripDates,
   directionsUrl,
   eventDistanceKm,
+  eventHasMapPin,
   eventOccursOnDate,
+  eventTimeOfDay,
   isMainEvent,
   isMainVenueSideStage,
   pinDisplayPositions,
+  type TimeOfDayBucket,
   formatDayNum,
   formatDistanceWithDrive,
   formatLumaTime,
@@ -419,6 +422,9 @@ export function EventMapPage() {
   )
   const [typeFilter, setTypeFilter] = useState<SideEventType | 'all'>('all')
   const [freeOnly, setFreeOnly] = useState(false)
+  const [hasPinOnly, setHasPinOnly] = useState(false)
+  const [timeOfDay, setTimeOfDay] = useState<TimeOfDayBucket | 'all'>('all')
+  const [moreTypesOpen, setMoreTypesOpen] = useState(false)
   /** Focus list on dateTbd / locationTbd events only */
   const [tbdFocus, setTbdFocus] = useState(false)
   const [query, setQuery] = useState('')
@@ -591,6 +597,11 @@ export function EventMapPage() {
       }
       if (typeFilter !== 'all' && ev.type !== typeFilter) return false
       if (freeOnly && !ev.free) return false
+      if (hasPinOnly && !eventHasMapPin(ev)) return false
+      if (timeOfDay !== 'all') {
+        const bucket = eventTimeOfDay(ev)
+        if (bucket !== timeOfDay) return false
+      }
       if (q) {
         const hay =
           `${ev.title} ${ev.host} ${ev.venue} ${ev.address}`.toLowerCase()
@@ -617,6 +628,8 @@ export function EventMapPage() {
     dateFilter,
     typeFilter,
     freeOnly,
+    hasPinOnly,
+    timeOfDay,
     tbdFocus,
     query,
     sortMode,
@@ -726,6 +739,7 @@ export function EventMapPage() {
 
   const focusTbd = () => {
     setTbdFocus(true)
+    setHasPinOnly(false)
     setTypeFilter('all')
     setFreeOnly(false)
     setQuery('')
@@ -737,8 +751,32 @@ export function EventMapPage() {
     setTbdFocus(false)
     setTypeFilter('all')
     setFreeOnly(false)
+    setHasPinOnly(false)
+    setTimeOfDay('all')
     setQuery('')
   }
+
+  const bumpMapFit = () => {
+    userMovedMapRef.current = false
+    lastFitKeyRef.current = ''
+  }
+
+  const timeOfDayCounts = useMemo(() => {
+    const c = { morning: 0, afternoon: 0, evening: 0 }
+    if (!dataset) return c
+    const base = dataset.events.filter((ev) => {
+      if (tbdFocus) return !!(ev.dateTbd || ev.locationTbd)
+      return matchesDateFilter(
+        ev,
+        dateFilter === '__default__' ? 'all' : dateFilter,
+      )
+    })
+    for (const ev of base) {
+      const b = eventTimeOfDay(ev)
+      if (b) c[b]++
+    }
+    return c
+  }, [dataset, dateFilter, tbdFocus])
 
   /** Display lat/lng with spiderfy when several events share a venue pin. */
   const pinPositions = useMemo(
@@ -1783,49 +1821,65 @@ export function EventMapPage() {
             </div>
           )}
 
-          <div className="emp__filter-row emp__filter-row--types">
+          <div
+            className="emp__filter-row emp__filter-row--primary"
+            role="group"
+            aria-label={tt('filterRowPrimary')}
+          >
+            {(
+              [
+                ['all', 'filterTimeAll', null],
+                ['morning', 'filterMorning', timeOfDayCounts.morning],
+                ['afternoon', 'filterAfternoon', timeOfDayCounts.afternoon],
+                ['evening', 'filterEvening', timeOfDayCounts.evening],
+              ] as const
+            ).map(([key, labelKey, count]) => (
+              <button
+                key={key}
+                type="button"
+                className={`emp__chip emp__chip--time${timeOfDay === key ? ' is-active' : ''}`}
+                onClick={() => {
+                  setTimeOfDay(key)
+                  bumpMapFit()
+                }}
+              >
+                {tt(labelKey)}
+                {key !== 'all' && count != null ? ` · ${count}` : ''}
+              </button>
+            ))}
             <button
               type="button"
-              className={`emp__chip ${typeFilter === 'all' ? 'is-active' : ''}`}
+              className={`emp__chip emp__chip--pin${hasPinOnly ? ' is-active' : ''}`}
+              title={tt('filterHasPinTitle')}
+              aria-pressed={hasPinOnly}
               onClick={() => {
-                setTypeFilter('all')
-                userMovedMapRef.current = false
-                lastFitKeyRef.current = ''
+                setHasPinOnly((v) => !v)
+                if (!hasPinOnly) setTbdFocus(false)
+                bumpMapFit()
               }}
             >
-              {tt('typesAll')}
+              ⌖ {tt('filterHasPin')}
             </button>
-            {EVENT_TYPES.filter((t) => (typeCounts.get(t) || 0) > 0).map(
-              (t) => (
-                <button
-                  key={t}
-                  type="button"
-                  className={`emp__chip ${typeFilter === t ? 'is-active' : ''}`}
-                  onClick={() => {
-                    setTypeFilter(t)
-                    userMovedMapRef.current = false
-                    lastFitKeyRef.current = ''
-                  }}
-                  style={
-                    typeFilter === t
-                      ? { background: EVENT_TYPE_COLORS[t], color: '#0f172a' }
-                      : undefined
-                  }
-                >
-                  {EVENT_TYPE_LABELS[t]} ({typeCounts.get(t)})
-                </button>
-              ),
-            )}
             <button
               type="button"
-              className={`emp__chip ${freeOnly ? 'is-active' : ''}`}
+              className={`emp__chip emp__chip--free${freeOnly ? ' is-active' : ''}`}
+              aria-pressed={freeOnly}
               onClick={() => {
                 setFreeOnly((v) => !v)
-                userMovedMapRef.current = false
-                lastFitKeyRef.current = ''
+                bumpMapFit()
               }}
             >
               {tt('freeOnly')}
+            </button>
+            <button
+              type="button"
+              className={`emp__chip emp__chip--more${moreTypesOpen || typeFilter !== 'all' ? ' is-active' : ''}`}
+              title={tt('filterMoreTitle')}
+              aria-expanded={moreTypesOpen}
+              onClick={() => setMoreTypesOpen((v) => !v)}
+            >
+              {moreTypesOpen ? tt('filterMoreHide') : tt('filterMore')}
+              {typeFilter !== 'all' ? ` · ${EVENT_TYPE_LABELS[typeFilter]}` : ''}
             </button>
             <input
               className="emp__search"
@@ -1834,6 +1888,51 @@ export function EventMapPage() {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
             />
+          </div>
+
+          {moreTypesOpen && (
+            <div
+              className="emp__filter-row emp__filter-row--types emp__filter-row--advanced"
+              role="group"
+              aria-label={tt('filterMoreTitle')}
+            >
+              <button
+                type="button"
+                className={`emp__chip ${typeFilter === 'all' ? 'is-active' : ''}`}
+                onClick={() => {
+                  setTypeFilter('all')
+                  bumpMapFit()
+                }}
+              >
+                {tt('typesAll')}
+              </button>
+              {EVENT_TYPES.filter((t) => (typeCounts.get(t) || 0) > 0).map(
+                (t) => (
+                  <button
+                    key={t}
+                    type="button"
+                    className={`emp__chip ${typeFilter === t ? 'is-active' : ''}`}
+                    onClick={() => {
+                      setTypeFilter(t)
+                      bumpMapFit()
+                    }}
+                    style={
+                      typeFilter === t
+                        ? {
+                            background: EVENT_TYPE_COLORS[t],
+                            color: '#0f172a',
+                          }
+                        : undefined
+                    }
+                  >
+                    {EVENT_TYPE_LABELS[t]} ({typeCounts.get(t)})
+                  </button>
+                ),
+              )}
+            </div>
+          )}
+
+          <div className="emp__filter-row emp__filter-row--insight">
             <div className="emp-insight" role="group" aria-label="Insights">
               <button
                 type="button"

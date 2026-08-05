@@ -313,6 +313,30 @@ function eventInstantMs(date: string, hhmm: string): number | null {
  */
 export type UiLocale = 'vi' | 'en'
 
+/** Part of day for attendee filters (VN wall clock). */
+export type TimeOfDayBucket = 'morning' | 'afternoon' | 'evening'
+
+/**
+ * Bucket by startTime: morning &lt;12, afternoon 12–16:59, evening ≥17.
+ * dateTbd / missing time → null (excluded when a bucket is active).
+ */
+export function eventTimeOfDay(ev: SideEvent): TimeOfDayBucket | null {
+  if (ev.dateTbd) return null
+  const m = /^(\d{1,2}):(\d{2})$/.exec((ev.startTime || '').trim())
+  if (!m) return null
+  const h = Number(m[1])
+  const min = Number(m[2])
+  if (!Number.isFinite(h) || !Number.isFinite(min)) return null
+  const total = h * 60 + min
+  if (total < 12 * 60) return 'morning'
+  if (total < 17 * 60) return 'afternoon'
+  return 'evening'
+}
+
+export function eventHasMapPin(ev: SideEvent): boolean {
+  return !ev.locationTbd && Number.isFinite(ev.lat) && Number.isFinite(ev.lng)
+}
+
 export function getSideEventStatus(
   ev: SideEvent,
   now: Date = new Date(),

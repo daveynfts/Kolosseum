@@ -466,6 +466,44 @@
   padding-top: 0.1rem;
 }
 
+.emp__filter-row--primary {
+  gap: 0.35rem;
+}
+
+.emp__filter-row--advanced {
+  padding: 0.35rem 0.15rem 0.15rem;
+  border-top: 1px dashed rgba(255, 255, 255, 0.08);
+  margin-top: 0.15rem;
+}
+
+.emp__filter-row--insight {
+  padding-top: 0.15rem;
+}
+
+.emp__chip--time.is-active {
+  background: rgba(0, 113, 227, 0.22);
+  border-color: rgba(96, 165, 250, 0.4);
+  color: #bfdbfe;
+}
+
+.emp__chip--pin.is-active {
+  background: rgba(52, 211, 153, 0.16);
+  border-color: rgba(52, 211, 153, 0.4);
+  color: #6ee7b7;
+}
+
+.emp__chip--free.is-active {
+  background: rgba(52, 211, 153, 0.2);
+  border-color: rgba(110, 231, 183, 0.45);
+  color: #a7f3d0;
+}
+
+.emp__chip--more.is-active {
+  background: rgba(167, 139, 250, 0.14);
+  border-color: rgba(167, 139, 250, 0.35);
+  color: #ddd6fe;
+}
+
 /* —— Week calendar · liquid glass grid —— */
 .emp-week {
   --lg-fill: linear-gradient(

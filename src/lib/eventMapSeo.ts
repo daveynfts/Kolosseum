@@ -8,7 +8,9 @@ const DESCRIPTION =
   'Bản đồ side events Conviction 2026 tại TP.HCM (14–15/08). Lịch, pin, khoảng cách, trùng giờ — Thiskyhall Sala & venues around the city.'
 const DESCRIPTION_EN =
   'Interactive map of Conviction 2026 side events in Ho Chi Minh City · 14–15 Aug · calendar, pins, distance & schedule conflicts.'
-const OG_IMAGE = 'https://radar.daveynfts.com/og/conviction-2026-events.jpg'
+/** Cache-bust query when replacing the product screenshot OG card. */
+const OG_IMAGE =
+  'https://radar.daveynfts.com/og/conviction-2026-events.jpg?v=20260805b'
 const CANONICAL = 'https://radar.daveynfts.com/event/conviction-2026'
 
 function upsertMeta(

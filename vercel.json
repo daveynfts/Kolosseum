@@ -2,6 +2,18 @@
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "framework": "vite",
+  "redirects": [
+    {
+      "source": "/api/og-conviction-events",
+      "destination": "/og/conviction-2026-events.jpg",
+      "permanent": false
+    },
+    {
+      "source": "/api/event-share",
+      "destination": "/event-preview.html",
+      "permanent": false
+    }
+  ],
   "rewrites": [
     {
       "source": "/api/banner-image",

@@ -1,5 +1,6 @@
 /**
- * Social crawlers (Telegram, etc.) get OG HTML from /api/event-share.
+ * Social crawlers (Telegram, etc.) get static OG HTML (no serverless fn —
+ * Hobby plan cap is 12 functions).
  * Real users continue to the Vite SPA via vercel.json rewrite.
  */
 import { rewrite, next } from '@vercel/functions'
@@ -15,7 +16,8 @@ export const config = {
 export default function middleware(request: Request) {
   const ua = request.headers.get('user-agent') || ''
   if (BOT_UA.test(ua)) {
-    return rewrite(new URL('/api/event-share', request.url))
+    // Static file in public/ — does not count toward Hobby serverless limit
+    return rewrite(new URL('/event-preview.html', request.url))
   }
   // Humans: fall through to static SPA + vercel.json /event rewrite
   return next()

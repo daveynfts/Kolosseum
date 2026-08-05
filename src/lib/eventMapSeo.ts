@@ -1,6 +1,6 @@
 /**
  * Client-side document title + meta for /event (humans / in-app browsers).
- * Telegram/Facebook crawlers use middleware → /api/event-share (server OG HTML).
+ * Telegram/Facebook crawlers use middleware → /event-preview.html (static OG HTML).
  */
 
 const TITLE = 'Conviction 2026 — Side Events Map | DaveyNFTs'

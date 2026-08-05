@@ -49,6 +49,7 @@ import {
   useEventMapLocale,
   type EventMapLocale,
 } from '../lib/eventMapI18n'
+import { applyEventMapSeo } from '../lib/eventMapSeo'
 import { withBase } from '../lib/base'
 import './EventMapPage.css'
 
@@ -400,6 +401,10 @@ export function EventMapPage() {
   localeRef.current = locale
   const ttRef = useRef(tt)
   ttRef.current = tt
+
+  useEffect(() => {
+    applyEventMapSeo(locale)
+  }, [locale])
 
   const mapEl = useRef<HTMLDivElement>(null)
   const mapRef = useRef<MapLibreMap | null>(null)

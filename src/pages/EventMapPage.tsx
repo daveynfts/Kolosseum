@@ -26,11 +26,8 @@ import {
   pinDisplayPositions,
   formatDayNum,
   formatDistanceWithDrive,
-  formatLumaDay,
   formatLumaTime,
-  formatMonthYearVi,
   formatShortDate,
-  formatWeekdayShortVi,
   getSideEventStatus,
   mainForumMeta,
   matchesDateFilter,
@@ -41,9 +38,17 @@ import {
   type SideEvent,
   type SideEventDataset,
   type SideEventType,
+  type UiLocale,
   eventToIcs,
 } from '../data/convictionEvents'
 import { loadEventsWithSource } from '../lib/convictionEventsStore'
+import {
+  formatLumaDayLocale,
+  formatMonthYear,
+  formatWeekdayShort,
+  useEventMapLocale,
+  type EventMapLocale,
+} from '../lib/eventMapI18n'
 import { withBase } from '../lib/base'
 import './EventMapPage.css'
 
@@ -168,46 +173,72 @@ function popupHtml(
     distanceLabel?: string
     statusLabel?: string
     statusPhase?: string
+    locale: EventMapLocale
+    labels: {
+      badgeMain: string
+      badgeStage: string
+      badgeSide: string
+      badgeLive: string
+      badgeToday: string
+      badgeDateTbd: string
+      badgeLocTbd: string
+      badgeFree: string
+      register: string
+      directions: string
+      host: string
+      place: string
+      placeTbdLong: string
+      pinTempNote: string
+      whenTbd: string
+    }
   },
 ): string {
+  const L = opts.labels
   const typeLabel = EVENT_TYPE_LABELS[ev.type] || ev.type
+  const timePart = `${ev.startTime}${ev.endTime ? `–${ev.endTime}` : ''}`
   const when = ev.dateTbd
-    ? `Ngày TBD · ${ev.startTime}${ev.endTime ? `–${ev.endTime}` : ''}`
+    ? L.whenTbd.replace('{time}', timePart)
     : ev.endDate && ev.endDate !== ev.date
       ? `${formatShortDate(ev.date)} ${ev.startTime} → ${formatShortDate(ev.endDate)} ${ev.endTime || ''}`.trim()
-      : `${formatShortDate(ev.date)} · ${ev.startTime}${ev.endTime ? `–${ev.endTime}` : ''}`
+      : `${formatShortDate(ev.date)} · ${timePart}`
   const stPhase = opts.statusPhase || (opts.live ? 'live' : 'upcoming')
   const stLabel = opts.statusLabel || (opts.live ? 'LIVE' : '')
   const main = isMainEvent(ev)
   const stage = !main && isMainVenueSideStage(ev)
   const badges = [
     main
-      ? '<span class="emp__badge emp__badge--main">Main forum</span>'
+      ? `<span class="emp__badge emp__badge--main">${escapeHtml(L.badgeMain)}</span>`
       : stage
-        ? '<span class="emp__badge emp__badge--stage">Stage · Sala</span>'
-        : '<span class="emp__badge emp__badge--side">Side event</span>',
+        ? `<span class="emp__badge emp__badge--stage">${escapeHtml(L.badgeStage)}</span>`
+        : `<span class="emp__badge emp__badge--side">${escapeHtml(L.badgeSide)}</span>`,
     stLabel
       ? `<span class="emp__badge emp__badge--status emp__badge--status-${escapeHtml(stPhase)}">${escapeHtml(stLabel)}</span>`
       : '',
     opts.live
-      ? '<span class="emp__badge emp__badge--live">Đang diễn ra</span>'
+      ? `<span class="emp__badge emp__badge--live">${escapeHtml(L.badgeLive)}</span>`
       : '',
     !opts.live && opts.today && !ev.dateTbd
-      ? '<span class="emp__badge emp__badge--today">Hôm nay</span>'
+      ? `<span class="emp__badge emp__badge--today">${escapeHtml(L.badgeToday)}</span>`
       : '',
-    ev.dateTbd ? '<span class="emp__badge">Ngày TBD</span>' : '',
-    ev.locationTbd ? '<span class="emp__badge">Địa điểm TBD</span>' : '',
-    ev.free ? '<span class="emp__badge emp__badge--free">Free</span>' : '',
+    ev.dateTbd
+      ? `<span class="emp__badge">${escapeHtml(L.badgeDateTbd)}</span>`
+      : '',
+    ev.locationTbd
+      ? `<span class="emp__badge">${escapeHtml(L.badgeLocTbd)}</span>`
+      : '',
+    ev.free
+      ? `<span class="emp__badge emp__badge--free">${escapeHtml(L.badgeFree)}</span>`
+      : '',
     `<span class="emp__badge">${typeLabel}</span>`,
   ]
     .filter(Boolean)
     .join(' ')
   const reg = ev.link
-    ? `<a class="emp-popup__act emp-popup__act--reg" href="${ev.link}" target="_blank" rel="noopener noreferrer">Đăng ký</a>`
-    : `<span class="emp-popup__act emp-popup__act--disabled">Đăng ký</span>`
+    ? `<a class="emp-popup__act emp-popup__act--reg" href="${ev.link}" target="_blank" rel="noopener noreferrer">${escapeHtml(L.register)}</a>`
+    : `<span class="emp-popup__act emp-popup__act--disabled">${escapeHtml(L.register)}</span>`
   const directions = ev.locationTbd
-    ? `<a class="emp-popup__act emp-popup__act--map" href="${directionsUrl(SALA_VENUE.lat, SALA_VENUE.lng)}" target="_blank" rel="noopener noreferrer">Chỉ đường</a>`
-    : `<a class="emp-popup__act emp-popup__act--map" href="${directionsUrl(ev.lat, ev.lng)}" target="_blank" rel="noopener noreferrer">Chỉ đường</a>`
+    ? `<a class="emp-popup__act emp-popup__act--map" href="${directionsUrl(SALA_VENUE.lat, SALA_VENUE.lng)}" target="_blank" rel="noopener noreferrer">${escapeHtml(L.directions)}</a>`
+    : `<a class="emp-popup__act emp-popup__act--map" href="${directionsUrl(ev.lat, ev.lng)}" target="_blank" rel="noopener noreferrer">${escapeHtml(L.directions)}</a>`
   const img = ev.imageUrl
     ? `<img class="emp-popup__img" src="${escapeHtml(toSquareImageUrl(ev.imageUrl, 640))}" alt="" loading="lazy" referrerpolicy="no-referrer" />`
     : ''
@@ -215,7 +246,7 @@ function popupHtml(
     ? `<p class="emp-popup__row emp-popup__dist">${escapeHtml(opts.distanceLabel)}</p>`
     : ''
   const placeLine = ev.locationTbd
-    ? 'Địa điểm sẽ công bố sau khi duyệt (Location TBD)'
+    ? L.placeTbdLong
     : [ev.venue, ev.address].filter(Boolean).join(' — ')
   return `
     <div class="emp-popup__inner">
@@ -225,11 +256,11 @@ function popupHtml(
         <div class="emp__badges emp-popup__badges">${badges}</div>
         <p class="emp-popup__row emp-popup__when">${escapeHtml(when)}</p>
         ${dist}
-        ${ev.host ? `<p class="emp-popup__row"><span class="emp-popup__k">Host</span> ${escapeHtml(ev.host)}</p>` : ''}
-        <p class="emp-popup__row"><span class="emp-popup__k">Địa điểm</span> ${escapeHtml(placeLine)}</p>
+        ${ev.host ? `<p class="emp-popup__row"><span class="emp-popup__k">${escapeHtml(L.host)}</span> ${escapeHtml(ev.host)}</p>` : ''}
+        <p class="emp-popup__row"><span class="emp-popup__k">${escapeHtml(L.place)}</span> ${escapeHtml(placeLine)}</p>
         ${
           ev.locationTbd
-            ? '<p class="emp-popup__row emp-popup__note">Pin tạm tại Thiskyhall Sala · tọa độ thật chưa public</p>'
+            ? `<p class="emp-popup__row emp-popup__note">${escapeHtml(L.pinTempNote)}</p>`
             : ''
         }
         ${ev.description ? `<p class="emp-popup__desc">${escapeHtml(ev.description)}</p>` : ''}
@@ -248,8 +279,13 @@ function popupHtml(
  * that for lat/lng placement. Hover/scale only on an inner wrapper.
  * Status chip sits ABOVE the pin (countdown / LIVE / END).
  */
-function buildLumaPinEl(ev: SideEvent, now: Date = new Date()): HTMLDivElement {
-  const st = getSideEventStatus(ev, now)
+function buildLumaPinEl(
+  ev: SideEvent,
+  now: Date = new Date(),
+  locale: UiLocale = 'vi',
+  tierLabels?: { main: string; stage: string; side: string },
+): HTMLDivElement {
+  const st = getSideEventStatus(ev, now, locale)
   const main = isMainEvent(ev)
   const stage = !main && isMainVenueSideStage(ev)
   const root = document.createElement('div')
@@ -264,7 +300,11 @@ function buildLumaPinEl(ev: SideEvent, now: Date = new Date()): HTMLDivElement {
   ]
     .filter(Boolean)
     .join(' ')
-  const tier = main ? 'Main forum' : stage ? 'Stage · Sala' : 'Side event'
+  const tier = main
+    ? tierLabels?.main || 'MAIN'
+    : stage
+      ? tierLabels?.stage || 'STAGE'
+      : tierLabels?.side || 'SIDE'
   root.title = `${tier} · ${ev.title} · ${st.detail}`
   root.dataset.eventId = ev.id
   root.dataset.tier = main ? 'main' : stage ? 'stage' : 'side'
@@ -283,7 +323,7 @@ function buildLumaPinEl(ev: SideEvent, now: Date = new Date()): HTMLDivElement {
 
   const tierChip = document.createElement('div')
   tierChip.className = `emp-pin__tier emp-pin__tier--${main ? 'main' : stage ? 'stage' : 'side'}`
-  tierChip.textContent = main ? 'MAIN' : stage ? 'STAGE' : 'SIDE'
+  tierChip.textContent = tier
 
   const imgWrap = document.createElement('div')
   imgWrap.className = 'emp-pin__img'
@@ -323,8 +363,13 @@ function buildLumaPinEl(ev: SideEvent, now: Date = new Date()): HTMLDivElement {
   return root
 }
 
-function applyPinStatus(el: HTMLElement, ev: SideEvent, now: Date) {
-  const st = getSideEventStatus(ev, now)
+function applyPinStatus(
+  el: HTMLElement,
+  ev: SideEvent,
+  now: Date,
+  locale: UiLocale = 'vi',
+) {
+  const st = getSideEventStatus(ev, now, locale)
   const chip = el.querySelector('[data-status]') as HTMLElement | null
   if (chip) {
     chip.textContent = st.pinLabel
@@ -350,6 +395,12 @@ function isMobileViewport() {
 }
 
 export function EventMapPage() {
+  const { locale, setLocale, tt } = useEventMapLocale()
+  const localeRef = useRef(locale)
+  localeRef.current = locale
+  const ttRef = useRef(tt)
+  ttRef.current = tt
+
   const mapEl = useRef<HTMLDivElement>(null)
   const mapRef = useRef<MapLibreMap | null>(null)
   const markersRef = useRef<Map<string, Marker>>(new Map())
@@ -404,7 +455,7 @@ export function EventMapPage() {
       for (const [id, marker] of markersRef.current) {
         const ev = byId.get(id)
         if (!ev) continue
-        applyPinStatus(marker.getElement(), ev, now)
+        applyPinStatus(marker.getElement(), ev, now, localeRef.current)
       }
     }
     tick()
@@ -450,8 +501,8 @@ export function EventMapPage() {
     if (!dates.length) return 'Conviction week'
     // Prefer mid-range label (stable month for 13–16/08)
     const mid = dates[Math.floor(dates.length / 2)] || dates[0]
-    return formatMonthYearVi(mid)
-  }, [dates])
+    return formatMonthYear(mid, locale)
+  }, [dates, locale])
 
   const tbdDateCount = useMemo(
     () => (dataset ? dataset.events.filter((e) => e.dateTbd).length : 0),
@@ -546,10 +597,12 @@ export function EventMapPage() {
 
   const distanceLabelFor = (ev: SideEvent): string | null => {
     if (ev.locationTbd) return null
-    if (distOrigin === 'selected' && ev.id === selectedId) return 'Đang chọn'
+    if (distOrigin === 'selected' && ev.id === selectedId) {
+      return locale === 'en' ? 'Selected' : 'Đang chọn'
+    }
     const km = eventDistanceKm(distanceFrom, ev)
     if (km == null) return null
-    return formatDistanceWithDrive(km, distanceFrom.label)
+    return formatDistanceWithDrive(km, distanceFrom.label, locale)
   }
 
   const requestMyLocation = () => {
@@ -868,7 +921,9 @@ export function EventMapPage() {
     const map = mapRef.current
     if (!map) return
     popupRef.current?.remove()
-    const st = getSideEventStatus(ev, new Date())
+    const loc = localeRef.current
+    const tr = ttRef.current
+    const st = getSideEventStatus(ev, new Date(), loc)
     const live = st.phase === 'live'
     const isTodayEv = eventOccursOnDate(ev, todayVn())
     // Use spiderfied display position (overlap fix); real coords stay for directions
@@ -893,6 +948,24 @@ export function EventMapPage() {
           distanceLabel: distanceLabelFor(ev) || undefined,
           statusLabel: st.detail,
           statusPhase: st.phase,
+          locale: loc,
+          labels: {
+            badgeMain: tr('badgeMain'),
+            badgeStage: tr('badgeStage'),
+            badgeSide: tr('badgeSide'),
+            badgeLive: tr('badgeLive'),
+            badgeToday: tr('today'),
+            badgeDateTbd: tr('badgeDateTbd'),
+            badgeLocTbd: tr('badgeLocTbd'),
+            badgeFree: tr('badgeFree'),
+            register: tr('register'),
+            directions: tr('directions'),
+            host: tr('host'),
+            place: tr('place'),
+            placeTbdLong: tr('placeTbdLong'),
+            pinTempNote: tr('pinTempNote'),
+            whenTbd: tr('whenTbd'),
+          },
         }),
       )
       .addTo(map)
@@ -1032,7 +1105,11 @@ export function EventMapPage() {
       const pinKey = `${ev.imageUrl || ''}|${ev.title}|${ev.type}|${ev.featured ? 1 : 0}|${pos.lat.toFixed(6)},${pos.lng.toFixed(6)}`
       if (!existing || existing.getElement().dataset.pinKey !== pinKey) {
         existing?.remove()
-        const el = buildLumaPinEl(ev, now)
+        const el = buildLumaPinEl(ev, now, localeRef.current, {
+          main: ttRef.current('tierMain'),
+          stage: ttRef.current('tierStage'),
+          side: ttRef.current('tierSide'),
+        })
         el.dataset.pinKey = pinKey
         el.addEventListener('click', (e: MouseEvent) => {
           e.stopPropagation()
@@ -1048,7 +1125,7 @@ export function EventMapPage() {
         existing.setLngLat([pos.lng, pos.lat])
         const el = existing.getElement()
         el.classList.toggle('is-active', selectedId === ev.id)
-        applyPinStatus(el, ev, now)
+        applyPinStatus(el, ev, now, localeRef.current)
       }
     }
 
@@ -1096,7 +1173,7 @@ export function EventMapPage() {
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dataset, mapEvents, mapReady, selectedId, today, nowHm, pinPositions])
+  }, [dataset, mapEvents, mapReady, selectedId, today, nowHm, pinPositions, locale])
 
   const setDate = (d: string) => {
     setDateFilter(d)
@@ -1120,23 +1197,49 @@ export function EventMapPage() {
     <div className="emp">
       <header className="emp__header">
         <div className="emp__brand">
-          <h1>Conviction 2026 · Side Events</h1>
+          <h1>{tt('pageTitle')}</h1>
           <p>
-            Main · {MAIN_FORUM_SCHEDULE.windowLabel} ·{' '}
-            {MAIN_FORUM_SCHEDULE.venue} · Thủ Đức
-            {liveCount > 0 ? ` · ${liveCount} đang live` : ''}
+            {tt('mainHeader', {
+              window: MAIN_FORUM_SCHEDULE.windowLabel,
+              venue: MAIN_FORUM_SCHEDULE.venue,
+            })}
+            {liveCount > 0 ? ` · ${tt('liveCount', { n: liveCount })}` : ''}
             {source !== 'server' ? ` · ${source}` : ''}
           </p>
         </div>
         <div className="emp__header-actions">
-          <div className="emp__btn-group" role="group" aria-label="Đo khoảng cách">
+          <div
+            className="emp__btn-group emp-lang"
+            role="group"
+            aria-label={tt('langToggle')}
+          >
+            <button
+              type="button"
+              className={`emp__btn emp-lang__btn ${locale === 'vi' ? 'emp__btn--primary' : ''}`}
+              onClick={() => setLocale('vi')}
+              aria-pressed={locale === 'vi'}
+              title="Tiếng Việt"
+            >
+              {tt('langVi')}
+            </button>
+            <button
+              type="button"
+              className={`emp__btn emp-lang__btn ${locale === 'en' ? 'emp__btn--primary' : ''}`}
+              onClick={() => setLocale('en')}
+              aria-pressed={locale === 'en'}
+              title="English"
+            >
+              {tt('langEn')}
+            </button>
+          </div>
+          <div className="emp__btn-group" role="group" aria-label={tt('distGroup')}>
             <button
               type="button"
               className={`emp__btn ${distOrigin === 'sala' ? 'emp__btn--primary' : ''}`}
               onClick={() => setDistOrigin('sala')}
-              title="Từ Thiskyhall Sala · Conviction main venue"
+              title={tt('fromConvictionTitle')}
             >
-              Từ Conviction
+              {tt('fromConviction')}
             </button>
             <button
               type="button"
@@ -1150,9 +1253,9 @@ export function EventMapPage() {
                   requestMyLocation()
                 }
               }}
-              title="Từ vị trí của bạn"
+              title={tt('fromMeTitle')}
             >
-              {geoBusy ? '…' : 'Từ tôi'}
+              {geoBusy ? '…' : tt('fromMe')}
             </button>
             <button
               type="button"
@@ -1163,27 +1266,27 @@ export function EventMapPage() {
                 setDistOrigin('selected')
                 setSortMode('nearest')
               }}
-              title="Từ sự kiện đang chọn"
+              title={tt('betweenEventsTitle')}
             >
-              Giữa events
+              {tt('betweenEvents')}
             </button>
           </div>
-          <div className="emp__btn-group" role="group" aria-label="Sắp xếp">
+          <div className="emp__btn-group" role="group" aria-label={tt('sortGroup')}>
             <button
               type="button"
               className={`emp__btn ${sortMode === 'upcoming' ? 'emp__btn--primary' : ''}`}
               onClick={() => setSortMode('upcoming')}
-              title="Sắp diễn ra / đang live trước"
+              title={tt('sortUpcomingTitle')}
             >
-              Sắp tới
+              {tt('sortUpcoming')}
             </button>
             <button
               type="button"
               className={`emp__btn ${sortMode === 'nearest' ? 'emp__btn--primary' : ''}`}
               onClick={() => setSortMode('nearest')}
-              title="Gần → xa"
+              title={tt('sortNearestTitle')}
             >
-              Gần nhất
+              {tt('sortNearest')}
             </button>
           </div>
           <button
@@ -1192,10 +1295,10 @@ export function EventMapPage() {
             onClick={cycleSheet}
           >
             {sheetMode === 'peek'
-              ? 'Mở list'
+              ? tt('openList')
               : sheetMode === 'half'
-                ? 'Mở rộng'
-                : 'Thu list'}
+                ? tt('expandList')
+                : tt('collapseList')}
           </button>
           <a
             className="emp__btn"
@@ -1226,25 +1329,26 @@ export function EventMapPage() {
       </header>
 
       <div className="emp__filters">
-        <div className="emp-week" role="group" aria-label="Lọc theo ngày">
+        <div className="emp-week" role="group" aria-label={tt('filterDays')}>
           <div className="emp-week__bar">
             <div className="emp-week__meta">
               <div className="emp-week__title-row">
                 <span className="emp-week__month">{calMonthLabel}</span>
-                <div className="emp-week__seg" role="tablist" aria-label="Phạm vi">
+                <div className="emp-week__seg" role="tablist" aria-label={tt('scope')}>
                   <button
                     type="button"
                     role="tab"
                     className={`emp-week__seg-btn ${dateFilter === 'all' ? 'is-on' : ''}`}
                     onClick={() => setDate('all')}
                   >
-                    Tất cả
+                    {tt('all')}
                   </button>
                 </div>
               </div>
               {dateFilter !== 'all' && dateFilter !== 'tbd' && dateFilter !== '__default__' ? (
                 <span className="emp-week__selected-label">
-                  {formatWeekdayShortVi(dateFilter)} · {formatShortDate(dateFilter)}
+                  {formatWeekdayShort(dateFilter, locale)} ·{' '}
+                  {formatShortDate(dateFilter)}
                   {mainForumMeta(dateFilter)
                     ? ` · ${mainForumMeta(dateFilter)!.short}`
                     : ''}
@@ -1252,14 +1356,14 @@ export function EventMapPage() {
               ) : (
                 <span className="emp-week__selected-label">
                   {dateFilter === 'tbd'
-                    ? 'Ngày chưa chốt'
-                    : `${totalEvents} sự kiện trong tuần`}
+                    ? tt('dateUnconfirmed')
+                    : tt('eventsInWeek', { n: totalEvents })}
                 </span>
               )}
             </div>
           </div>
 
-          <div className="emp-week__days" role="listbox" aria-label="Chọn ngày">
+          <div className="emp-week__days" role="listbox" aria-label={tt('pickDay')}>
             {dates.map((d) => {
               const count = countsByDate.get(d) || 0
               const isToday = d === today
@@ -1291,12 +1395,21 @@ export function EventMapPage() {
                   aria-selected={isSelected}
                   title={
                     main
-                      ? `${main.short} · ${main.track}${count ? ` · ${count} side` : ''}`
-                      : `${formatShortDate(d)} · ${count} sự kiện`
+                      ? tt('dayTitleMain', {
+                          short: main.short,
+                          track: main.track,
+                          sides: count
+                            ? tt('daySides', { n: count })
+                            : '',
+                        })
+                      : tt('dayTitle', {
+                          date: formatShortDate(d),
+                          n: count,
+                        })
                   }
                 >
                   <span className="emp-week__dow">
-                    {formatWeekdayShortVi(d)}
+                    {formatWeekdayShort(d, locale)}
                   </span>
                   <span className="emp-week__num">{formatDayNum(d)}</span>
                   <span className="emp-week__foot">
@@ -1351,7 +1464,7 @@ export function EventMapPage() {
                 onClick={() => setDate('tbd')}
                 aria-pressed={dateFilter === 'tbd'}
                 aria-selected={dateFilter === 'tbd'}
-                title="Chưa chốt ngày"
+                title={tt('dateNotSet')}
               >
                 <span className="emp-week__dow">TBD</span>
                 <span className="emp-week__num emp-week__num--tbd">?</span>
@@ -1384,16 +1497,19 @@ export function EventMapPage() {
               >
                 <div className="emp-week__main-left">
                   <span className="emp-week__main-badge">
-                    Main forum · Day {selectedMain.day}
+                    {tt('mainForumDay', { day: selectedMain.day })}
                   </span>
                   <p className="emp-week__main-title">
                     Conviction 2026 Main Event
                   </p>
                   <p className="emp-week__main-sub">
-                    {selectedMain.track} · Thiskyhall Sala · Thủ Đức ·{' '}
+                    {selectedMain.track} · Thiskyhall Sala ·{' '}
+                    {locale === 'en' ? 'Thu Duc' : 'Thủ Đức'} ·{' '}
                     {formatShortDate(dateFilter)}
-                    {selectedMain.day === 1 ? ' · từ 08:00' : ' · đến 18:00'}
-                    {' · pin lớn trên map'}
+                    {selectedMain.day === 1
+                      ? tt('fromTime')
+                      : tt('untilTime')}
+                    {tt('mainPinHint')}
                   </p>
                 </div>
                 <a
@@ -1407,28 +1523,33 @@ export function EventMapPage() {
                   rel="noopener noreferrer"
                   onClick={(e) => e.stopPropagation()}
                 >
-                  Agenda
+                  {tt('agenda')}
                 </a>
               </div>
             )
           })()}
 
           {dayTimeline && (
-            <div className="emp-timeline" aria-label="Timeline trùng giờ trong ngày">
+            <div className="emp-timeline" aria-label={tt('timelineAria')}>
               <div className="emp-timeline__head">
                 <div>
-                  <span className="emp-timeline__title">Timeline ngày</span>
+                  <span className="emp-timeline__title">
+                    {tt('timelineTitle')}
+                  </span>
                   <span className="emp-timeline__sub">
-                    {formatShortDate(dayTimeline.date)} · side events chồng giờ
-                    được tô cam
+                    {tt('timelineSub', {
+                      date: formatShortDate(dayTimeline.date),
+                    })}
                   </span>
                 </div>
                 {dayTimeline.conflictedSideCount > 0 ? (
                   <span className="emp-timeline__warn">
-                    {dayTimeline.conflictedSideCount} side trùng slot
+                    {tt('timelineWarn', {
+                      n: dayTimeline.conflictedSideCount,
+                    })}
                   </span>
                 ) : (
-                  <span className="emp-timeline__ok">Không trùng side</span>
+                  <span className="emp-timeline__ok">{tt('timelineOk')}</span>
                 )}
               </div>
               <div className="emp-timeline__hours" aria-hidden>
@@ -1486,7 +1607,7 @@ export function EventMapPage() {
                       }}
                       title={`${bar.title} · ${bar.startLabel}–${bar.endLabel}${
                         conflicted
-                          ? ` · Trùng ${bar.conflictCount} side`
+                          ? ` · ${tt('badgeConflict', { n: bar.conflictCount })}`
                           : ''
                       }`}
                       onClick={() => {
@@ -1513,10 +1634,7 @@ export function EventMapPage() {
                   )
                 })}
               </div>
-              <p className="emp-timeline__legend">
-                Vàng = Main forum · Tím = Stage Sala · Cam = side trùng giờ ·
-                Click bar để mở pin
-              </p>
+              <p className="emp-timeline__legend">{tt('timelineLegend')}</p>
             </div>
           )}
         </div>
@@ -1531,7 +1649,7 @@ export function EventMapPage() {
               lastFitKeyRef.current = ''
             }}
           >
-            Mọi loại
+            {tt('typesAll')}
           </button>
           {EVENT_TYPES.filter((t) => (typeCounts.get(t) || 0) > 0).map((t) => (
             <button
@@ -1561,22 +1679,22 @@ export function EventMapPage() {
               lastFitKeyRef.current = ''
             }}
           >
-            Chỉ Free
+            {tt('freeOnly')}
           </button>
           <input
             className="emp__search"
             type="search"
-            placeholder="Tìm tên / host / địa điểm…"
+            placeholder={tt('searchPh')}
             value={query}
             onChange={(e) => setQuery(e.target.value)}
           />
           <span className="emp__meta">
-            {filtered.length} sự kiện
+            {tt('metaEvents', { n: filtered.length })}
             {mapEvents.length < filtered.length
-              ? ` · ${mapEvents.length} trên map`
+              ? tt('metaOnMap', { n: mapEvents.length })
               : ''}
-            {sortMode === 'upcoming' ? ' · sort: sắp tới' : ''}
-            {sortMode === 'nearest' ? ' · sort: gần nhất' : ''}
+            {sortMode === 'upcoming' ? tt('metaSortUpcoming') : ''}
+            {sortMode === 'nearest' ? tt('metaSortNearest') : ''}
           </span>
         </div>
       </div>
@@ -1585,7 +1703,7 @@ export function EventMapPage() {
         <div className="emp__map">
           <div ref={mapEl} style={{ position: 'absolute', inset: 0 }} />
           {(loading || !mapReady) && (
-            <div className="emp__loading">Đang tải bản đồ…</div>
+            <div className="emp__loading">{tt('loading')}</div>
           )}
           <div className="emp__map-hint" aria-hidden>
             Chạm pin · xem chi tiết side event
@@ -1603,20 +1721,24 @@ export function EventMapPage() {
           </button>
           <div className="emp__panel-head">
             <div>
-              <h2>Main forum + Side events</h2>
+              <h2>{tt('panelTitle')}</h2>
               <p>
                 {dateFilter === today
-                  ? 'Đang lọc hôm nay · Main trước · side sắp tới'
+                  ? tt('panelToday')
                   : dateFilter === 'all'
-                    ? 'Mọi ngày · Main forum tách riêng · side events bên dưới'
-                    : `Ngày ${formatShortDate(dateFilter)} · Main rồi side`}
+                    ? tt('panelAll')
+                    : tt('panelDay', {
+                        date: formatShortDate(dateFilter),
+                      })}
                 {' · '}
-                khoảng cách từ{' '}
-                {distOrigin === 'me'
-                  ? 'bạn'
-                  : distOrigin === 'selected'
-                    ? 'event chọn'
-                    : 'Conviction'}
+                {tt('panelDist', {
+                  from:
+                    distOrigin === 'me'
+                      ? tt('fromYou')
+                      : distOrigin === 'selected'
+                        ? tt('fromSelected')
+                        : tt('fromVenue'),
+                })}
               </p>
             </div>
           </div>
@@ -1625,18 +1747,18 @@ export function EventMapPage() {
               <div className="emp__empty">
                 {dateFilter === today ? (
                   <>
-                    Không có sự kiện hôm nay. Thử{' '}
+                    {tt('emptyToday')}{' '}
                     <button
                       type="button"
                       className="emp__linkish"
                       onClick={() => setDate('all')}
                     >
-                      Tất cả
+                      {tt('all')}
                     </button>{' '}
-                    hoặc ngày khác.
+                    {tt('orOtherDay')}
                   </>
                 ) : (
-                  <>Không khớp bộ lọc. Thử “Tất cả” hoặc bỏ “Chỉ Free”.</>
+                  <>{tt('emptyFilter')}</>
                 )}
               </div>
             )}
@@ -1644,7 +1766,7 @@ export function EventMapPage() {
               const { main: mainList, side: sideList } =
                 partitionMainAndSide(list)
               const renderCard = (ev: SideEvent) => {
-                const st = getSideEventStatus(ev, nowDate)
+                const st = getSideEventStatus(ev, nowDate, locale)
                 const live = st.phase === 'live'
                 const isTodayEv = !ev.dateTbd && eventOccursOnDate(ev, today)
                 const isActive = selectedId === ev.id
@@ -1655,8 +1777,10 @@ export function EventMapPage() {
                       ? `${formatLumaTime(ev.startTime)} – ${formatLumaTime(ev.endTime)}`
                       : formatLumaTime(ev.startTime)
                 const place = ev.locationTbd
-                  ? 'Địa điểm sẽ công bố sau (TBD)'
-                  : ev.venue || ev.address || 'TP. Hồ Chí Minh'
+                  ? tt('placeTbd')
+                  : ev.venue ||
+                    ev.address ||
+                    (locale === 'en' ? 'Ho Chi Minh City' : 'TP. Hồ Chí Minh')
                 const dist = distanceLabelFor(ev)
                 const main = isMainEvent(ev)
                 const stage = !main && isMainVenueSideStage(ev)
@@ -1678,7 +1802,7 @@ export function EventMapPage() {
                     >
                       <div className="emp__card-body">
                         <p className="emp__card-time">
-                          {ev.dateTbd ? 'Time TBD' : timeLabel}
+                          {ev.dateTbd ? tt('timeTbd') : timeLabel}
                           {live ? ' · LIVE' : ''}
                           {!live && st.phase === 'upcoming'
                             ? ` · ${st.pinLabel}`
@@ -1705,51 +1829,51 @@ export function EventMapPage() {
                           <p className="emp__card-dist">{dist}</p>
                         ) : ev.locationTbd ? (
                           <p className="emp__card-dist emp__card-dist--muted">
-                            Chưa có tọa độ · xem chi tiết bên dưới
+                            {tt('noCoords')}
                           </p>
                         ) : null}
                         <div className="emp__badges">
                           {main ? (
                             <span className="emp__badge emp__badge--main">
-                              Main forum
+                              {tt('badgeMain')}
                             </span>
                           ) : stage ? (
                             <span className="emp__badge emp__badge--stage">
-                              Stage · Sala
+                              {tt('badgeStage')}
                             </span>
                           ) : (
                             <span className="emp__badge emp__badge--side">
-                              Side event
+                              {tt('badgeSide')}
                             </span>
                           )}
                           {conflicted && (
                             <span
                               className="emp__badge emp__badge--conflict"
-                              title={conflictLabel(conflicts)}
+                              title={conflictLabel(conflicts, 2, locale)}
                             >
-                              Trùng giờ · {conflicts.length}
+                              {tt('badgeConflict', { n: conflicts.length })}
                             </span>
                           )}
                           {(ev.dateTbd || ev.locationTbd) && (
                             <span className="emp__badge emp__badge--pending">
                               {ev.locationTbd
-                                ? 'Location TBD'
-                                : 'Date TBD'}
+                                ? tt('badgeLocTbd')
+                                : tt('badgeDateTbd')}
                             </span>
                           )}
                           {live && (
                             <span className="emp__badge emp__badge--live">
-                              Đang diễn ra
+                              {tt('badgeLive')}
                             </span>
                           )}
                           {!live && isTodayEv && (
                             <span className="emp__badge emp__badge--today">
-                              Hôm nay
+                              {tt('today')}
                             </span>
                           )}
                           {ev.free && (
                             <span className="emp__badge emp__badge--free">
-                              Free
+                              {tt('badgeFree')}
                             </span>
                           )}
                         </div>
@@ -1783,22 +1907,19 @@ export function EventMapPage() {
                         ) : null}
                         <p className="emp__card-detail-meta">
                           {main
-                            ? 'Main forum · Thiskyhall Sala · 14–15/08'
+                            ? tt('metaMain')
                             : stage
-                              ? 'Side stage tại venue chính (Sala)'
-                              : 'Side event · ngoài main stage'}
+                              ? tt('metaStage')
+                              : tt('metaSide')}
                           {' · '}
                           {st.detail}
-                          {ev.locationTbd
-                            ? ' · Địa điểm public sau khi duyệt Luma'
-                            : ''}
+                          {ev.locationTbd ? tt('metaLocTbd') : ''}
                         </p>
                         {conflicted ? (
                           <p className="emp__card-conflict">
-                            ⚠ {conflictLabel(conflicts)}
+                            ⚠ {conflictLabel(conflicts, 2, locale)}
                             <span className="emp__card-conflict-hint">
-                              {' '}
-                              — chọn 1 slot hoặc đi nối nếu venue gần
+                              {tt('conflictHint')}
                             </span>
                           </p>
                         ) : null}
@@ -1810,7 +1931,7 @@ export function EventMapPage() {
                               target="_blank"
                               rel="noopener noreferrer"
                             >
-                              Đăng ký Luma
+                              {tt('registerLuma')}
                             </a>
                           ) : null}
                           {!ev.locationTbd ? (
@@ -1820,7 +1941,7 @@ export function EventMapPage() {
                               target="_blank"
                               rel="noopener noreferrer"
                             >
-                              Chỉ đường
+                              {tt('directions')}
                             </a>
                           ) : (
                             <a
@@ -1832,7 +1953,7 @@ export function EventMapPage() {
                               target="_blank"
                               rel="noopener noreferrer"
                             >
-                              Venue chính
+                              {tt('mainVenue')}
                             </a>
                           )}
                           <button
@@ -1840,7 +1961,7 @@ export function EventMapPage() {
                             className="emp__card-action"
                             onClick={() => downloadIcs(ev)}
                           >
-                            Thêm lịch
+                            {tt('addCalendar')}
                           </button>
                         </div>
                       </div>
@@ -1852,15 +1973,19 @@ export function EventMapPage() {
                 <div key={date} className="emp__day-group">
                   <div className="emp__day-label">
                     {date === 'tbd'
-                      ? 'Ngày TBD'
-                      : `${formatLumaDay(date)}${date === today ? ' · Hôm nay' : ''}`}
+                      ? tt('dateTbd')
+                      : `${formatLumaDayLocale(date, locale)}${
+                          date === today ? ` · ${tt('today')}` : ''
+                        }`}
                   </div>
                   {mainList.length > 0 && (
                     <div className="emp__section emp__section--main">
                       <div className="emp__section-label emp__section-label--main">
-                        <span className="emp__section-kicker">Main forum</span>
+                        <span className="emp__section-kicker">
+                          {tt('sectionMain')}
+                        </span>
                         <span className="emp__section-hint">
-                          Diễn đàn chính · pin vàng lớn
+                          {tt('sectionMainHint')}
                         </span>
                       </div>
                       {mainList.map(renderCard)}
@@ -1869,12 +1994,12 @@ export function EventMapPage() {
                   {sideList.length > 0 && (
                     <div className="emp__section emp__section--side">
                       <div className="emp__section-label emp__section-label--side">
-                        <span className="emp__section-kicker">Side events</span>
+                        <span className="emp__section-kicker">
+                          {tt('sectionSide')}
+                        </span>
                         <span className="emp__section-hint">
-                          {sideList.length} sự kiện
-                          {mainList.length
-                            ? ' · Stage Sala = viền tím'
-                            : ''}
+                          {tt('sectionSideHint', { n: sideList.length })}
+                          {mainList.length ? tt('sectionSideHintStage') : ''}
                         </span>
                       </div>
                       {sideList.map(renderCard)}

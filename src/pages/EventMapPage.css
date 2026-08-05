@@ -1,3 +1,13 @@
+/* Language toggle EN/VI */
+.emp-lang {
+  flex-shrink: 0;
+}
+.emp-lang__btn {
+  min-width: 2.4rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
 /* Origin hub when measuring from me / selected event */
 .emp-dist-origin {
   width: 22px;

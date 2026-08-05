@@ -311,21 +311,29 @@ function eventInstantMs(date: string, hhmm: string): number | null {
  * Per-side-event status for map pins: countdown / LIVE / END / TBD.
  * Uses Asia/Ho_Chi_Minh wall times (date + startTime/endTime).
  */
+export type UiLocale = 'vi' | 'en'
+
 export function getSideEventStatus(
   ev: SideEvent,
   now: Date = new Date(),
+  locale: UiLocale = 'vi',
 ): SideEventStatus {
+  const en = locale === 'en'
   if (ev.dateTbd || !ev.date) {
     return {
       phase: 'tbd',
       pinLabel: 'TBD',
-      detail: 'Ngày chưa công bố',
+      detail: en ? 'Date not announced' : 'Ngày chưa công bố',
     }
   }
 
   const start = eventInstantMs(ev.date, ev.startTime || '09:00')
   if (start == null) {
-    return { phase: 'tbd', pinLabel: 'TBD', detail: 'Thiếu giờ bắt đầu' }
+    return {
+      phase: 'tbd',
+      pinLabel: 'TBD',
+      detail: en ? 'Missing start time' : 'Thiếu giờ bắt đầu',
+    }
   }
 
   let end =
@@ -342,24 +350,26 @@ export function getSideEventStatus(
   const t = now.getTime()
   if (t < start) {
     const ms = start - t
+    const cd = formatCountdownParts(splitMs(ms))
     return {
       phase: 'upcoming',
       pinLabel: formatPinCountdown(ms),
-      detail: `Bắt đầu sau ${formatCountdownParts(splitMs(ms))}`,
+      detail: en ? `Starts in ${cd}` : `Bắt đầu sau ${cd}`,
     }
   }
   if (t >= start && t < end) {
     const ms = end - t
+    const left = formatPinCountdown(ms)
     return {
       phase: 'live',
       pinLabel: 'LIVE',
-      detail: `Đang diễn ra · còn ${formatPinCountdown(ms)}`,
+      detail: en ? `Live · ${left} left` : `Đang diễn ra · còn ${left}`,
     }
   }
   return {
     phase: 'ended',
     pinLabel: 'END',
-    detail: 'Đã kết thúc',
+    detail: en ? 'Ended' : 'Đã kết thúc',
   }
 }
 
@@ -638,7 +648,11 @@ export function buildDayTimeline(
   }
 }
 
-export function conflictLabel(others: SideEvent[], maxNames = 2): string {
+export function conflictLabel(
+  others: SideEvent[],
+  maxNames = 2,
+  locale: UiLocale = 'vi',
+): string {
   if (!others.length) return ''
   const trim = (t: string, max: number) => {
     const s = (t || '').trim()
@@ -646,6 +660,11 @@ export function conflictLabel(others: SideEvent[], maxNames = 2): string {
   }
   const names = others.slice(0, maxNames).map((e) => trim(e.title, 22))
   const extra = others.length - names.length
+  if (locale === 'en') {
+    return extra > 0
+      ? `Overlaps ${names.join(', ')} +${extra}`
+      : `Overlaps ${names.join(', ')}`
+  }
   return extra > 0
     ? `Trùng giờ với ${names.join(', ')} +${extra}`
     : `Trùng giờ với ${names.join(', ')}`
@@ -1386,13 +1405,20 @@ export function formatDistanceKm(km: number): string {
  * Driving / xe máy ETA at ~20 km/h (urban traffic, HCMC-ish).
  * `~12 phút đi xe` / `~1h15m đi xe`
  */
-export function formatDriveEta(km: number): string {
+export function formatDriveEta(km: number, locale: UiLocale = 'vi'): string {
   if (!Number.isFinite(km) || km < 0) return '—'
   const min = Math.max(1, Math.round((km / 20) * 60))
-  if (km < 0.05) return '< 1 phút đi xe'
-  if (min < 60) return `~${min} phút đi xe`
+  if (km < 0.05) return locale === 'en' ? '< 1 min ride' : '< 1 phút đi xe'
+  if (min < 60) {
+    return locale === 'en' ? `~${min} min ride` : `~${min} phút đi xe`
+  }
   const h = Math.floor(min / 60)
   const m = min % 60
+  if (locale === 'en') {
+    return m
+      ? `~${h}h${String(m).padStart(2, '0')}m ride`
+      : `~${h}h ride`
+  }
   return m ? `~${h}h${String(m).padStart(2, '0')}m đi xe` : `~${h}h đi xe`
 }
 
@@ -1403,8 +1429,13 @@ export const formatWalkEta = formatDriveEta
 export function formatDistanceWithDrive(
   km: number,
   fromLabel = 'Sala',
+  locale: UiLocale = 'vi',
 ): string {
-  return `${formatDistanceKm(km)} · ${formatDriveEta(km)} từ ${fromLabel}`
+  const eta = formatDriveEta(km, locale)
+  if (locale === 'en') {
+    return `${formatDistanceKm(km)} · ${eta} from ${fromLabel}`
+  }
+  return `${formatDistanceKm(km)} · ${eta} từ ${fromLabel}`
 }
 
 /** @deprecated Use formatDistanceWithDrive */

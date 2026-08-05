@@ -438,11 +438,33 @@ export function EventMapPage() {
   const [sheetMode, setSheetMode] = useState<SheetMode>(() =>
     isMobileViewport() ? 'half' : 'full',
   )
+  const [isMobile, setIsMobile] = useState(() => isMobileViewport())
+  /** Collapse distance/sort tools on small screens */
+  const [toolsOpen, setToolsOpen] = useState(false)
+  /** Collapse calendar/timeline strip to free map space */
+  const [filtersOpen, setFiltersOpen] = useState(true)
+  const sheetTouchY = useRef<number | null>(null)
   /** Wall-clock tick so LIVE badges / liveCount stay correct (esp. multi-day Main). */
   const [nowTick, setNowTick] = useState(() => Date.now())
   const today = todayVn()
   const nowHm = nowHmVn()
   const nowDate = useMemo(() => new Date(nowTick), [nowTick])
+
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 900px)')
+    const sync = () => {
+      const mobile = mq.matches
+      setIsMobile(mobile)
+      if (!mobile) {
+        setToolsOpen(true)
+        setFiltersOpen(true)
+        setSheetMode('full')
+      }
+    }
+    sync()
+    mq.addEventListener('change', sync)
+    return () => mq.removeEventListener('change', sync)
+  }, [])
 
   // Tick pin chips + list LIVE state every second
   useEffect(() => {
@@ -979,9 +1001,11 @@ export function EventMapPage() {
 
   const selectEvent = (ev: SideEvent, fly = true) => {
     setSelectedId(ev.id)
-    // On mobile: peek sheet so popup has room above the list
+    // On mobile: peek sheet + collapse filters so map/popup stay usable
     if (isMobileViewport()) {
       setSheetMode('peek')
+      setFiltersOpen(false)
+      setToolsOpen(false)
     }
     const map = mapRef.current
     const target = displayLngLat(ev)
@@ -1154,7 +1178,13 @@ export function EventMapPage() {
             map.fitBounds(bounds, {
               padding: {
                 top: 64,
-                bottom: isMobileViewport() ? 200 : 64,
+                bottom: isMobileViewport()
+                  ? sheetMode === 'full'
+                    ? 280
+                    : sheetMode === 'half'
+                      ? 200
+                      : 88
+                  : 64,
                 left: 40,
                 right: 40,
               },
@@ -1186,6 +1216,31 @@ export function EventMapPage() {
     setSheetMode((m) => (m === 'peek' ? 'half' : m === 'half' ? 'full' : 'peek'))
   }
 
+  const expandSheet = () => {
+    setSheetMode((m) => (m === 'peek' ? 'half' : m === 'half' ? 'full' : 'full'))
+  }
+
+  const collapseSheet = () => {
+    setSheetMode((m) => (m === 'full' ? 'half' : m === 'half' ? 'peek' : 'peek'))
+  }
+
+  const onSheetTouchStart = (e: { touches: ArrayLike<{ clientY: number }> }) => {
+    sheetTouchY.current = e.touches[0]?.clientY ?? null
+  }
+
+  const onSheetTouchEnd = (e: {
+    changedTouches: ArrayLike<{ clientY: number }>
+  }) => {
+    const start = sheetTouchY.current
+    sheetTouchY.current = null
+    if (start == null) return
+    const end = e.changedTouches[0]?.clientY
+    if (end == null) return
+    const dy = end - start
+    if (dy > 48) collapseSheet()
+    else if (dy < -48) expandSheet()
+  }
+
   const panelClass =
     sheetMode === 'peek'
       ? 'emp__panel emp__panel--peek'
@@ -1194,11 +1249,16 @@ export function EventMapPage() {
         : 'emp__panel emp__panel--full'
 
   return (
-    <div className="emp">
+    <div
+      className={`emp${isMobile ? ' emp--mobile' : ''}${!filtersOpen ? ' emp--filters-collapsed' : ''}`}
+    >
       <header className="emp__header">
         <div className="emp__brand">
-          <h1>{tt('pageTitle')}</h1>
-          <p>
+          <h1 className="emp__brand-title">
+            <span className="emp__brand-title-full">{tt('pageTitle')}</span>
+            <span className="emp__brand-title-short">{tt('pageTitleShort')}</span>
+          </h1>
+          <p className="emp__brand-sub">
             {tt('mainHeader', {
               window: MAIN_FORUM_SCHEDULE.windowLabel,
               venue: MAIN_FORUM_SCHEDULE.venue,
@@ -1232,103 +1292,153 @@ export function EventMapPage() {
               {tt('langEn')}
             </button>
           </div>
-          <div className="emp__btn-group" role="group" aria-label={tt('distGroup')}>
+          {isMobile && (
             <button
               type="button"
-              className={`emp__btn ${distOrigin === 'sala' ? 'emp__btn--primary' : ''}`}
-              onClick={() => setDistOrigin('sala')}
-              title={tt('fromConvictionTitle')}
+              className={`emp__btn emp-tools-toggle ${toolsOpen ? 'emp__btn--primary' : ''}`}
+              onClick={() => setToolsOpen((v) => !v)}
+              aria-expanded={toolsOpen}
             >
-              {tt('fromConviction')}
+              {toolsOpen ? tt('toolsLess') : tt('toolsMore')}
             </button>
-            <button
-              type="button"
-              className={`emp__btn ${distOrigin === 'me' ? 'emp__btn--primary' : ''}`}
-              disabled={geoBusy}
-              onClick={() => {
-                if (userLoc) {
-                  setDistOrigin('me')
+          )}
+          <div
+            className={`emp__tools-row${!isMobile || toolsOpen ? ' is-open' : ''}`}
+          >
+            <div className="emp__btn-group" role="group" aria-label={tt('distGroup')}>
+              <button
+                type="button"
+                className={`emp__btn ${distOrigin === 'sala' ? 'emp__btn--primary' : ''}`}
+                onClick={() => setDistOrigin('sala')}
+                title={tt('fromConvictionTitle')}
+              >
+                {tt('fromConviction')}
+              </button>
+              <button
+                type="button"
+                className={`emp__btn ${distOrigin === 'me' ? 'emp__btn--primary' : ''}`}
+                disabled={geoBusy}
+                onClick={() => {
+                  if (userLoc) {
+                    setDistOrigin('me')
+                    setSortMode('nearest')
+                  } else {
+                    requestMyLocation()
+                  }
+                }}
+                title={tt('fromMeTitle')}
+              >
+                {geoBusy ? '…' : tt('fromMe')}
+              </button>
+              <button
+                type="button"
+                className={`emp__btn ${distOrigin === 'selected' ? 'emp__btn--primary' : ''}`}
+                disabled={!selectedEvent || !!selectedEvent.locationTbd}
+                onClick={() => {
+                  if (!selectedEvent || selectedEvent.locationTbd) return
+                  setDistOrigin('selected')
                   setSortMode('nearest')
-                } else {
-                  requestMyLocation()
-                }
-              }}
-              title={tt('fromMeTitle')}
-            >
-              {geoBusy ? '…' : tt('fromMe')}
-            </button>
+                }}
+                title={tt('betweenEventsTitle')}
+              >
+                {tt('betweenEvents')}
+              </button>
+            </div>
+            <div className="emp__btn-group" role="group" aria-label={tt('sortGroup')}>
+              <button
+                type="button"
+                className={`emp__btn ${sortMode === 'upcoming' ? 'emp__btn--primary' : ''}`}
+                onClick={() => setSortMode('upcoming')}
+                title={tt('sortUpcomingTitle')}
+              >
+                {tt('sortUpcoming')}
+              </button>
+              <button
+                type="button"
+                className={`emp__btn ${sortMode === 'nearest' ? 'emp__btn--primary' : ''}`}
+                onClick={() => setSortMode('nearest')}
+                title={tt('sortNearestTitle')}
+              >
+                {tt('sortNearest')}
+              </button>
+            </div>
             <button
               type="button"
-              className={`emp__btn ${distOrigin === 'selected' ? 'emp__btn--primary' : ''}`}
-              disabled={!selectedEvent || !!selectedEvent.locationTbd}
-              onClick={() => {
-                if (!selectedEvent || selectedEvent.locationTbd) return
-                setDistOrigin('selected')
-                setSortMode('nearest')
-              }}
-              title={tt('betweenEventsTitle')}
+              className="emp__btn emp-toggle-list"
+              onClick={cycleSheet}
             >
-              {tt('betweenEvents')}
+              {sheetMode === 'peek'
+                ? tt('openList')
+                : sheetMode === 'half'
+                  ? tt('expandList')
+                  : tt('collapseList')}
             </button>
+            <a
+              className="emp__btn"
+              href="https://luma.com/conviction-2026"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Luma
+            </a>
+            <a
+              className="emp__btn emp__btn--logo"
+              href={CONVICTION_HOME}
+              target="_blank"
+              rel="noopener noreferrer"
+              title="Conviction 2026"
+              aria-label="Conviction 2026 — conviction.vn"
+            >
+              <img
+                className="emp__conviction-logo"
+                src={CONVICTION_LOGO}
+                alt="Conviction"
+                width={120}
+                height={20}
+                decoding="async"
+              />
+            </a>
           </div>
-          <div className="emp__btn-group" role="group" aria-label={tt('sortGroup')}>
-            <button
-              type="button"
-              className={`emp__btn ${sortMode === 'upcoming' ? 'emp__btn--primary' : ''}`}
-              onClick={() => setSortMode('upcoming')}
-              title={tt('sortUpcomingTitle')}
-            >
-              {tt('sortUpcoming')}
-            </button>
-            <button
-              type="button"
-              className={`emp__btn ${sortMode === 'nearest' ? 'emp__btn--primary' : ''}`}
-              onClick={() => setSortMode('nearest')}
-              title={tt('sortNearestTitle')}
-            >
-              {tt('sortNearest')}
-            </button>
-          </div>
-          <button
-            type="button"
-            className="emp__btn emp-toggle-list"
-            onClick={cycleSheet}
-          >
-            {sheetMode === 'peek'
-              ? tt('openList')
-              : sheetMode === 'half'
-                ? tt('expandList')
-                : tt('collapseList')}
-          </button>
-          <a
-            className="emp__btn"
-            href="https://luma.com/conviction-2026"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Luma
-          </a>
-          <a
-            className="emp__btn emp__btn--logo"
-            href={CONVICTION_HOME}
-            target="_blank"
-            rel="noopener noreferrer"
-            title="Conviction 2026"
-            aria-label="Conviction 2026 — conviction.vn"
-          >
-            <img
-              className="emp__conviction-logo"
-              src={CONVICTION_LOGO}
-              alt="Conviction"
-              width={120}
-              height={20}
-              decoding="async"
-            />
-          </a>
         </div>
       </header>
 
-      <div className="emp__filters">
+      {isMobile && (
+        <div className="emp-mobile-bar">
+          <button
+            type="button"
+            className={`emp-mobile-bar__btn ${filtersOpen ? 'is-on' : ''}`}
+            onClick={() => setFiltersOpen((v) => !v)}
+            aria-expanded={filtersOpen}
+          >
+            {filtersOpen ? tt('filtersCollapse') : tt('filtersExpand')}
+          </button>
+          <button
+            type="button"
+            className="emp-mobile-bar__btn is-primary"
+            onClick={() => {
+              if (sheetMode === 'peek') setSheetMode('half')
+              else if (sheetMode === 'half') setSheetMode('full')
+              else setSheetMode('half')
+            }}
+          >
+            {sheetMode === 'peek' ? tt('fabListOpen') : tt('fabList')}
+            {filtered.length ? ` · ${filtered.length}` : ''}
+          </button>
+          <button
+            type="button"
+            className="emp-mobile-bar__btn"
+            onClick={() => {
+              requestMyLocation()
+              setToolsOpen(false)
+            }}
+            disabled={geoBusy}
+          >
+            {geoBusy ? '…' : tt('fabLocate')}
+          </button>
+        </div>
+      )}
+
+      <div className={`emp__filters${filtersOpen ? '' : ' is-collapsed'}`}>
         <div className="emp-week" role="group" aria-label={tt('filterDays')}>
           <div className="emp-week__bar">
             <div className="emp-week__meta">
@@ -1706,18 +1816,57 @@ export function EventMapPage() {
             <div className="emp__loading">{tt('loading')}</div>
           )}
           <div className="emp__map-hint" aria-hidden>
-            Chạm pin · xem chi tiết side event
+            {tt('mapHint')}
           </div>
+          {isMobile && (
+            <div className="emp-map-fabs" role="toolbar" aria-label={tt('sheetAria')}>
+              <button
+                type="button"
+                className="emp-map-fab"
+                onClick={() => {
+                  setFiltersOpen(true)
+                  setSheetMode('half')
+                }}
+                title={tt('fabListOpen')}
+              >
+                {tt('fabList')}
+              </button>
+              <button
+                type="button"
+                className="emp-map-fab emp-map-fab--accent"
+                onClick={() => requestMyLocation()}
+                disabled={geoBusy}
+                title={tt('fabLocate')}
+              >
+                ⌖
+              </button>
+            </div>
+          )}
         </div>
 
-        <aside className={panelClass}>
+        <aside
+          className={panelClass}
+          aria-label={tt('sheetAria')}
+          onTouchStart={onSheetTouchStart}
+          onTouchEnd={onSheetTouchEnd}
+        >
           <button
             type="button"
             className="emp__sheet-handle"
             onClick={cycleSheet}
-            aria-label="Kéo danh sách"
+            onTouchStart={onSheetTouchStart}
+            onTouchEnd={onSheetTouchEnd}
+            aria-label={tt('sheetAria')}
           >
             <span className="emp__sheet-grip" />
+            <span className="emp__sheet-label">
+              {sheetMode === 'peek'
+                ? tt('openList')
+                : sheetMode === 'half'
+                  ? tt('expandList')
+                  : tt('collapseList')}
+              {filtered.length ? ` · ${filtered.length}` : ''}
+            </span>
           </button>
           <div className="emp__panel-head">
             <div>

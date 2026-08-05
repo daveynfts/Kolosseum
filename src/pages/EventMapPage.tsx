@@ -451,8 +451,11 @@ export function EventMapPage() {
   const [isMobile, setIsMobile] = useState(() => isMobileViewport())
   /** Collapse distance/sort tools on small screens */
   const [toolsOpen, setToolsOpen] = useState(false)
-  /** Collapse calendar/timeline strip to free map space */
-  const [filtersOpen, setFiltersOpen] = useState(true)
+  /**
+   * Calendar/timeline strip. Default collapsed on mobile so the map
+   * gets the first screenful; desktop stays expanded.
+   */
+  const [filtersOpen, setFiltersOpen] = useState(() => !isMobileViewport())
   const sheetTouchY = useRef<number | null>(null)
   /** Wall-clock tick so LIVE badges / liveCount stay correct (esp. multi-day Main). */
   const [nowTick, setNowTick] = useState(() => Date.now())
@@ -469,6 +472,8 @@ export function EventMapPage() {
         setToolsOpen(true)
         setFiltersOpen(true)
         setSheetMode('full')
+      } else {
+        setToolsOpen(false)
       }
     }
     sync()
@@ -1146,7 +1151,7 @@ export function EventMapPage() {
   const selectEventRef = useRef(selectEvent)
   selectEventRef.current = selectEvent
 
-  // When mobile sheet height changes, resize map canvas
+  // When mobile sheet / filter chrome height changes, resize map canvas
   useEffect(() => {
     const map = mapRef.current
     if (!map || !mapReady) return
@@ -1156,9 +1161,13 @@ export function EventMapPage() {
       } catch {
         /* ignore */
       }
-    }, 300)
+      // Re-clamp open popup so it stays above the sheet
+      if (popupRef.current) panPopupIntoView(map)
+    }, 280)
     return () => window.clearTimeout(t)
-  }, [sheetMode, mapReady])
+    // panPopupIntoView is stable enough for resize-only use
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sheetMode, filtersOpen, toolsOpen, mapReady, isMobile])
 
   // Apply deep-link selection once data + map ready
   useEffect(() => {
@@ -1279,10 +1288,10 @@ export function EventMapPage() {
                 top: 64,
                 bottom: isMobileViewport()
                   ? sheetMode === 'full'
-                    ? 280
+                    ? Math.round(window.innerHeight * 0.55)
                     : sheetMode === 'half'
-                      ? 200
-                      : 88
+                      ? Math.round(window.innerHeight * 0.38)
+                      : 96
                   : 64,
                 left: 40,
                 right: 40,
@@ -1324,7 +1333,10 @@ export function EventMapPage() {
     setSheetMode((m) => (m === 'full' ? 'half' : m === 'half' ? 'peek' : 'peek'))
   }
 
-  const onSheetTouchStart = (e: { touches: ArrayLike<{ clientY: number }> }) => {
+  /** Sheet drag only from handle — avoids fighting list scroll. */
+  const onSheetTouchStart = (e: {
+    touches: ArrayLike<{ clientY: number }>
+  }) => {
     sheetTouchY.current = e.touches[0]?.clientY ?? null
   }
 
@@ -1337,8 +1349,9 @@ export function EventMapPage() {
     const end = e.changedTouches[0]?.clientY
     if (end == null) return
     const dy = end - start
-    if (dy > 48) collapseSheet()
-    else if (dy < -48) expandSheet()
+    // Slightly higher threshold = fewer accidental sheet snaps
+    if (dy > 56) collapseSheet()
+    else if (dy < -56) expandSheet()
   }
 
   const panelClass =
@@ -1350,7 +1363,15 @@ export function EventMapPage() {
 
   return (
     <div
-      className={`emp${isMobile ? ' emp--mobile' : ''}${!filtersOpen ? ' emp--filters-collapsed' : ''}`}
+      className={[
+        'emp',
+        isMobile ? 'emp--mobile' : '',
+        !filtersOpen ? 'emp--filters-collapsed' : '',
+        isMobile ? `emp--sheet-${sheetMode}` : '',
+        toolsOpen ? 'emp--tools-open' : '',
+      ]
+        .filter(Boolean)
+        .join(' ')}
     >
       <header className="emp__header">
         <div className="emp__brand">
@@ -1506,40 +1527,6 @@ export function EventMapPage() {
           </div>
         </div>
       </header>
-
-      {isMobile && (
-        <div className="emp-chrome-bar emp-chrome-bar--mobile">
-          <button
-            type="button"
-            className="emp-chrome-bar__btn is-primary"
-            onClick={() => {
-              if (sheetMode === 'peek') setSheetMode('half')
-              else if (sheetMode === 'half') setSheetMode('full')
-              else setSheetMode('half')
-            }}
-          >
-            {sheetMode === 'peek' ? tt('fabListOpen') : tt('fabList')}
-            {filtered.length ? ` · ${filtered.length}` : ''}
-          </button>
-          <button
-            type="button"
-            className="emp-chrome-bar__btn"
-            onClick={() => {
-              requestMyLocation()
-              setToolsOpen(false)
-            }}
-            disabled={geoBusy}
-            title={geoBusy ? tt('locating') : tt('fabLocate')}
-            aria-busy={geoBusy}
-          >
-            {geoBusy ? (
-              <span className="emp-spinner" aria-hidden />
-            ) : (
-              tt('fabLocate')
-            )}
-          </button>
-        </div>
-      )}
 
       <div className={`emp__filters${filtersOpen ? '' : ' is-collapsed'}`}>
         <div className="emp-week" role="group" aria-label={tt('filterDays')}>
@@ -1988,26 +1975,42 @@ export function EventMapPage() {
           <div className="emp__map-hint" aria-hidden>
             {tt('mapHint')}
           </div>
-          {isMobile && (
+          {isMobile && sheetMode !== 'full' && (
             <div className="emp-map-fabs" role="toolbar" aria-label={tt('sheetAria')}>
               <button
                 type="button"
-                className="emp-map-fab"
+                className={`emp-map-fab emp-map-fab--list${sheetMode !== 'peek' ? ' is-on' : ''}`}
                 onClick={() => {
-                  setFiltersOpen(true)
-                  setSheetMode('half')
+                  if (sheetMode === 'peek') setSheetMode('half')
+                  else cycleSheet()
                 }}
-                title={tt('fabListOpen')}
+                title={
+                  sheetMode === 'peek' ? tt('fabListOpen') : tt('collapseList')
+                }
+                aria-label={
+                  sheetMode === 'peek' ? tt('fabListOpen') : tt('collapseList')
+                }
               >
-                {tt('fabList')}
+                <span className="emp-map-fab__txt">
+                  {sheetMode === 'peek' ? tt('fabList') : tt('fabList')}
+                </span>
+                {filtered.length > 0 && (
+                  <span className="emp-map-fab__badge" aria-hidden>
+                    {filtered.length}
+                  </span>
+                )}
               </button>
               <button
                 type="button"
                 className="emp-map-fab emp-map-fab--accent"
-                onClick={() => requestMyLocation()}
+                onClick={() => {
+                  requestMyLocation()
+                  setToolsOpen(false)
+                }}
                 disabled={geoBusy}
                 title={geoBusy ? tt('locating') : tt('fabLocate')}
                 aria-busy={geoBusy}
+                aria-label={tt('fabLocate')}
               >
                 {geoBusy ? (
                   <span className="emp-spinner emp-spinner--on-dark" aria-hidden />
@@ -2015,16 +2018,22 @@ export function EventMapPage() {
                   '⌖'
                 )}
               </button>
+              {!filtersOpen && (
+                <button
+                  type="button"
+                  className="emp-map-fab emp-map-fab--cal"
+                  onClick={() => setFiltersOpen(true)}
+                  title={tt('calendarShow')}
+                  aria-label={tt('calendarShow')}
+                >
+                  📅
+                </button>
+              )}
             </div>
           )}
         </div>
 
-        <aside
-          className={panelClass}
-          aria-label={tt('sheetAria')}
-          onTouchStart={onSheetTouchStart}
-          onTouchEnd={onSheetTouchEnd}
-        >
+        <aside className={panelClass} aria-label={tt('sheetAria')}>
           <button
             type="button"
             className="emp__sheet-handle"
@@ -2036,11 +2045,14 @@ export function EventMapPage() {
             <span className="emp__sheet-grip" />
             <span className="emp__sheet-label">
               {sheetMode === 'peek'
-                ? tt('openList')
+                ? filtered.length
+                  ? `${tt('openList')} · ${filtered.length}`
+                  : tt('openList')
                 : sheetMode === 'half'
-                  ? tt('expandList')
+                  ? filtered.length
+                    ? `${tt('expandList')} · ${filtered.length}`
+                    : tt('expandList')
                   : tt('collapseList')}
-              {filtered.length ? ` · ${filtered.length}` : ''}
             </span>
           </button>
           <div className="emp__panel-head">

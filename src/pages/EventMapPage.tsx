@@ -541,8 +541,6 @@ export function EventMapPage() {
     [dataset],
   )
 
-  const totalEvents = dataset?.events.length ?? 0
-
   const typeCounts = useMemo(() => {
     const m = new Map<SideEventType, number>()
     if (!dataset) return m

@@ -1850,11 +1850,23 @@ export function EventMapPage() {
               {summaryChips.conflicts > 0 && (
                 <button
                   type="button"
-                  className="emp-insight__chip emp-insight__chip--conflict"
+                  className="emp-insight__chip emp-insight__chip--conflict emp-insight__chip--rich"
                   title={tt('chipConflictTitle')}
+                  aria-label={tt('chipConflictAria', {
+                    n: summaryChips.conflicts,
+                  })}
                   onClick={focusConflictTimeline}
                 >
-                  {tt('chipConflict', { n: summaryChips.conflicts })}
+                  <span className="emp-insight__clash" aria-hidden>
+                    <span className="emp-insight__clash-a" />
+                    <span className="emp-insight__clash-b" />
+                  </span>
+                  <span className="emp-insight__num">
+                    {summaryChips.conflicts}
+                  </span>
+                  <span className="emp-insight__word">
+                    {tt('chipConflictWord')}
+                  </span>
                 </button>
               )}
               {summaryChips.tbd > 0 && (
@@ -2062,8 +2074,19 @@ export function EventMapPage() {
                             </span>
                           )}
                           {conflicted && (
-                            <span className="emp__badge emp__badge--conflict">
-                              {tt('badgeConflict', { n: conflicts.length })}
+                            <span
+                              className="emp__badge emp__badge--conflict emp__badge--conflict-rich"
+                              title={tt('badgeConflictShort', {
+                                n: conflicts.length,
+                              })}
+                            >
+                              <span className="emp-insight__clash emp-insight__clash--sm" aria-hidden>
+                                <span className="emp-insight__clash-a" />
+                                <span className="emp-insight__clash-b" />
+                              </span>
+                              {tt('badgeConflictShort', {
+                                n: conflicts.length,
+                              })}
                             </span>
                           )}
                           {(ev.dateTbd || ev.locationTbd) && (

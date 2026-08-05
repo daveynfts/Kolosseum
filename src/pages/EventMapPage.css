@@ -1321,15 +1321,104 @@
 }
 
 .emp-insight__chip--conflict {
-  color: #fdba74;
-  border-color: rgba(251, 146, 60, 0.4);
-  background: rgba(251, 146, 60, 0.14);
+  color: #ffedd5;
+  border-color: rgba(251, 146, 60, 0.5);
+  background: linear-gradient(
+    135deg,
+    rgba(251, 146, 60, 0.28) 0%,
+    rgba(239, 68, 68, 0.16) 100%
+  );
   font-weight: 700;
+  gap: 0.35rem;
+  padding-left: 0.45rem;
+  padding-right: 0.7rem;
 }
 
 .emp-insight__chip--conflict:hover {
-  background: rgba(251, 146, 60, 0.22);
-  color: #ffedd5;
+  background: linear-gradient(
+    135deg,
+    rgba(251, 146, 60, 0.38) 0%,
+    rgba(239, 68, 68, 0.22) 100%
+  );
+  color: #fff7ed;
+  border-color: rgba(253, 186, 116, 0.7);
+}
+
+/* Rich chip: [icon] [big number] [short word] */
+.emp-insight__chip--rich {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.32rem;
+}
+
+.emp-insight__num {
+  font-size: 0.95rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  color: #fff;
+  min-width: 0.85rem;
+  text-align: center;
+}
+
+.emp-insight__word {
+  font-size: 0.68rem;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+  opacity: 0.92;
+  white-space: nowrap;
+}
+
+/* Two overlapping squares = “same slot” */
+.emp-insight__clash {
+  position: relative;
+  width: 1.05rem;
+  height: 1.05rem;
+  flex: 0 0 auto;
+}
+
+.emp-insight__clash-a,
+.emp-insight__clash-b {
+  position: absolute;
+  width: 0.62rem;
+  height: 0.62rem;
+  border-radius: 2.5px;
+  border: 1.5px solid rgba(255, 237, 213, 0.95);
+  box-sizing: border-box;
+}
+
+.emp-insight__clash-a {
+  left: 0;
+  top: 0.12rem;
+  background: rgba(251, 146, 60, 0.55);
+}
+
+.emp-insight__clash-b {
+  right: 0;
+  bottom: 0.08rem;
+  background: rgba(248, 113, 113, 0.5);
+  border-color: rgba(254, 215, 170, 0.9);
+}
+
+.emp-insight__clash--sm {
+  width: 0.85rem;
+  height: 0.85rem;
+}
+
+.emp-insight__clash--sm .emp-insight__clash-a,
+.emp-insight__clash--sm .emp-insight__clash-b {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-width: 1.25px;
+  border-radius: 2px;
+}
+
+.emp__badge--conflict-rich {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.28rem;
+  padding-left: 0.35rem;
 }
 
 .emp-insight__chip--tbd {
@@ -2968,6 +3057,19 @@
     min-height: 34px;
     padding: 0.42rem 0.7rem;
     font-size: 0.74rem;
+  }
+
+  .emp-insight__chip--conflict {
+    min-height: 36px;
+    padding: 0.4rem 0.75rem 0.4rem 0.5rem;
+  }
+
+  .emp-insight__num {
+    font-size: 1.05rem;
+  }
+
+  .emp-insight__word {
+    font-size: 0.72rem;
   }
 
   .emp__card-conflict-thumb {

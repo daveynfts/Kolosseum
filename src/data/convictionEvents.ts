@@ -720,28 +720,6 @@ function lumaSquareCover(assetPath: string, size = 400): string {
  */
 const SIDE_EVENTS: SideEvent[] = [
   {
-    id: 'conviction-2026-main-event',
-    title: 'Conviction 2026 Main Event',
-    host: 'CONVICTION',
-    venue: 'Thiskyhall Sala Convention Center',
-    address:
-      '10 Đường Mai Chí Thọ, An Khánh, Thủ Đức, Thành phố Hồ Chí Minh 71110, Vietnam',
-    lat: SALA_VENUE.lat,
-    lng: SALA_VENUE.lng,
-    date: '2026-08-14',
-    endDate: '2026-08-15',
-    startTime: '08:00',
-    endTime: '18:00',
-    type: 'conference',
-    link: CONVICTION_MAIN_LUMA,
-    imageUrl: lumaSquareCover(
-      'event-covers/2u/95490580-6a5c-41e9-8c36-5a1e5aa0ad68.jpg',
-    ),
-    description:
-      'Diễn đàn chính 2 ngày tại Thiskyhall Sala (Thủ Đức). Ngày 1 · 14/08 Blockchain & Tài sản số · Ngày 2 · 15/08 AI Day. 08:00 14/08 → 18:00 15/08 GMT+7. Approval required.',
-    featured: true,
-  },
-  {
     id: 'quantum-founder-summit-2026',
     title: 'Quantum Founder Summit 2026: Build. Pitch. Raise.',
     host: 'Moon Ventures',

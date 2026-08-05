@@ -10,7 +10,6 @@ import {
   EVENT_TYPE_COLORS,
   EVENT_TYPE_LABELS,
   EVENT_TYPES,
-  MAIN_EVENT_ID,
   MAIN_FORUM_SCHEDULE,
   SALA_VENUE,
   buildConflictMap,
@@ -22,7 +21,6 @@ import {
   eventOccursOnDate,
   isMainEvent,
   isMainVenueSideStage,
-  partitionMainAndSide,
   pinDisplayPositions,
   formatDayNum,
   formatDistanceWithDrive,
@@ -582,8 +580,7 @@ export function EventMapPage() {
       if (!matchesDateFilter(ev, dateFilter === '__default__' ? 'all' : dateFilter))
         return false
       if (typeFilter !== 'all' && ev.type !== typeFilter) return false
-      // Keep Main forum visible even when "Chỉ Free" is on
-      if (freeOnly && !ev.free && !isMainEvent(ev)) return false
+      if (freeOnly && !ev.free) return false
       if (q) {
         const hay =
           `${ev.title} ${ev.host} ${ev.venue} ${ev.address}`.toLowerCase()
@@ -672,7 +669,7 @@ export function EventMapPage() {
     if (!filtered.length) return new Map<string, SideEvent[]>()
     // When viewing one day, only that day's overlaps matter for badges
     const pool = timelineDate
-      ? filtered.filter((e) => eventOccursOnDate(e, timelineDate) || isMainEvent(e))
+      ? filtered.filter((e) => eventOccursOnDate(e, timelineDate))
       : filtered
     return buildConflictMap(pool, { includeMain: false })
   }, [filtered, timelineDate])
@@ -1402,41 +1399,55 @@ export function EventMapPage() {
         </div>
       </header>
 
-      {isMobile && (
-        <div className="emp-mobile-bar">
-          <button
-            type="button"
-            className={`emp-mobile-bar__btn ${filtersOpen ? 'is-on' : ''}`}
-            onClick={() => setFiltersOpen((v) => !v)}
-            aria-expanded={filtersOpen}
-          >
-            {filtersOpen ? tt('filtersCollapse') : tt('filtersExpand')}
-          </button>
-          <button
-            type="button"
-            className="emp-mobile-bar__btn is-primary"
-            onClick={() => {
-              if (sheetMode === 'peek') setSheetMode('half')
-              else if (sheetMode === 'half') setSheetMode('full')
-              else setSheetMode('half')
-            }}
-          >
-            {sheetMode === 'peek' ? tt('fabListOpen') : tt('fabList')}
+      <div className="emp-chrome-bar">
+        <button
+          type="button"
+          className={`emp-chrome-bar__btn ${filtersOpen ? 'is-on' : ''}`}
+          onClick={() => setFiltersOpen((v) => !v)}
+          aria-expanded={filtersOpen}
+          title={filtersOpen ? tt('calendarHide') : tt('calendarShow')}
+        >
+          {filtersOpen ? tt('calendarHide') : tt('calendarShow')}
+        </button>
+        {!filtersOpen && (
+          <span className="emp-chrome-bar__hint">
+            {tt('calendarCollapsedHint')}
+            {dateFilter !== 'all' &&
+            dateFilter !== 'tbd' &&
+            dateFilter !== '__default__'
+              ? ` · ${formatShortDate(dateFilter)}`
+              : ''}
             {filtered.length ? ` · ${filtered.length}` : ''}
-          </button>
-          <button
-            type="button"
-            className="emp-mobile-bar__btn"
-            onClick={() => {
-              requestMyLocation()
-              setToolsOpen(false)
-            }}
-            disabled={geoBusy}
-          >
-            {geoBusy ? '…' : tt('fabLocate')}
-          </button>
-        </div>
-      )}
+          </span>
+        )}
+        {isMobile && (
+          <>
+            <button
+              type="button"
+              className="emp-chrome-bar__btn is-primary"
+              onClick={() => {
+                if (sheetMode === 'peek') setSheetMode('half')
+                else if (sheetMode === 'half') setSheetMode('full')
+                else setSheetMode('half')
+              }}
+            >
+              {sheetMode === 'peek' ? tt('fabListOpen') : tt('fabList')}
+              {filtered.length ? ` · ${filtered.length}` : ''}
+            </button>
+            <button
+              type="button"
+              className="emp-chrome-bar__btn"
+              onClick={() => {
+                requestMyLocation()
+                setToolsOpen(false)
+              }}
+              disabled={geoBusy}
+            >
+              {geoBusy ? '…' : tt('fabLocate')}
+            </button>
+          </>
+        )}
+      </div>
 
       <div className={`emp__filters${filtersOpen ? '' : ' is-collapsed'}`}>
         <div className="emp-week" role="group" aria-label={tt('filterDays')}>
@@ -1584,60 +1595,6 @@ export function EventMapPage() {
               </button>
             )}
           </div>
-
-          {(() => {
-            const selectedMain = mainForumMeta(dateFilter)
-            if (!selectedMain) return null
-            const mainEv = dataset?.events.find((e) => isMainEvent(e))
-            return (
-              <div
-                className={`emp-week__main-card emp-week__main-card--d${selectedMain.day}${selectedId === MAIN_EVENT_ID ? ' is-active' : ''}`}
-                role={mainEv ? 'button' : undefined}
-                tabIndex={mainEv ? 0 : undefined}
-                onClick={() => {
-                  if (mainEv) selectEvent(mainEv, true)
-                }}
-                onKeyDown={(e) => {
-                  if (!mainEv) return
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault()
-                    selectEvent(mainEv, true)
-                  }
-                }}
-              >
-                <div className="emp-week__main-left">
-                  <span className="emp-week__main-badge">
-                    {tt('mainForumDay', { day: selectedMain.day })}
-                  </span>
-                  <p className="emp-week__main-title">
-                    Conviction 2026 Main Event
-                  </p>
-                  <p className="emp-week__main-sub">
-                    {selectedMain.track} · Thiskyhall Sala ·{' '}
-                    {locale === 'en' ? 'Thu Duc' : 'Thủ Đức'} ·{' '}
-                    {formatShortDate(dateFilter)}
-                    {selectedMain.day === 1
-                      ? tt('fromTime')
-                      : tt('untilTime')}
-                    {tt('mainPinHint')}
-                  </p>
-                </div>
-                <a
-                  className="emp-week__main-link"
-                  href={
-                    selectedMain.day === 1
-                      ? 'https://www.conviction.vn/vi/day-1'
-                      : 'https://www.conviction.vn/vi/day-2'
-                  }
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  {tt('agenda')}
-                </a>
-              </div>
-            )
-          })()}
 
           {dayTimeline && (
             <div className="emp-timeline" aria-label={tt('timelineAria')}>
@@ -1870,7 +1827,7 @@ export function EventMapPage() {
           </button>
           <div className="emp__panel-head">
             <div>
-              <h2>{tt('panelTitle')}</h2>
+              <h2>{tt('panelTitleSimple')}</h2>
               <p>
                 {dateFilter === today
                   ? tt('panelToday')
@@ -1912,8 +1869,6 @@ export function EventMapPage() {
               </div>
             )}
             {grouped.map(([date, list]) => {
-              const { main: mainList, side: sideList } =
-                partitionMainAndSide(list)
               const renderCard = (ev: SideEvent) => {
                 const st = getSideEventStatus(ev, nowDate, locale)
                 const live = st.phase === 'live'
@@ -1931,14 +1886,13 @@ export function EventMapPage() {
                     ev.address ||
                     (locale === 'en' ? 'Ho Chi Minh City' : 'TP. Hồ Chí Minh')
                 const dist = distanceLabelFor(ev)
-                const main = isMainEvent(ev)
-                const stage = !main && isMainVenueSideStage(ev)
+                const stage = isMainVenueSideStage(ev)
                 const conflicts = conflictMap.get(ev.id) || []
-                const conflicted = !main && conflicts.length > 0
+                const conflicted = conflicts.length > 0
                 return (
                   <div
                     key={ev.id}
-                    className={`emp__card emp__card--luma ${isActive ? 'is-active' : ''}${live ? ' emp__card--live' : ''}${ev.locationTbd ? ' emp__card--tbd-loc' : ''}${main ? ' emp__card--main' : ''}${stage ? ' emp__card--stage' : ''}${conflicted ? ' emp__card--conflict' : ''}`}
+                    className={`emp__card emp__card--luma ${isActive ? 'is-active' : ''}${live ? ' emp__card--live' : ''}${ev.locationTbd ? ' emp__card--tbd-loc' : ''}${stage ? ' emp__card--stage' : ''}${conflicted ? ' emp__card--conflict' : ''}`}
                     ref={(node) => {
                       if (node) listRefs.current.set(ev.id, node)
                       else listRefs.current.delete(ev.id)
@@ -1982,11 +1936,7 @@ export function EventMapPage() {
                           </p>
                         ) : null}
                         <div className="emp__badges">
-                          {main ? (
-                            <span className="emp__badge emp__badge--main">
-                              {tt('badgeMain')}
-                            </span>
-                          ) : stage ? (
+                          {stage ? (
                             <span className="emp__badge emp__badge--stage">
                               {tt('badgeStage')}
                             </span>
@@ -2055,11 +2005,7 @@ export function EventMapPage() {
                           </p>
                         ) : null}
                         <p className="emp__card-detail-meta">
-                          {main
-                            ? tt('metaMain')
-                            : stage
-                              ? tt('metaStage')
-                              : tt('metaSide')}
+                          {stage ? tt('metaStage') : tt('metaSide')}
                           {' · '}
                           {st.detail}
                           {ev.locationTbd ? tt('metaLocTbd') : ''}
@@ -2127,33 +2073,9 @@ export function EventMapPage() {
                           date === today ? ` · ${tt('today')}` : ''
                         }`}
                   </div>
-                  {mainList.length > 0 && (
-                    <div className="emp__section emp__section--main">
-                      <div className="emp__section-label emp__section-label--main">
-                        <span className="emp__section-kicker">
-                          {tt('sectionMain')}
-                        </span>
-                        <span className="emp__section-hint">
-                          {tt('sectionMainHint')}
-                        </span>
-                      </div>
-                      {mainList.map(renderCard)}
-                    </div>
-                  )}
-                  {sideList.length > 0 && (
-                    <div className="emp__section emp__section--side">
-                      <div className="emp__section-label emp__section-label--side">
-                        <span className="emp__section-kicker">
-                          {tt('sectionSide')}
-                        </span>
-                        <span className="emp__section-hint">
-                          {tt('sectionSideHint', { n: sideList.length })}
-                          {mainList.length ? tt('sectionSideHintStage') : ''}
-                        </span>
-                      </div>
-                      {sideList.map(renderCard)}
-                    </div>
-                  )}
+                  <div className="emp__section emp__section--side">
+                    {list.map(renderCard)}
+                  </div>
                 </div>
               )
             })}

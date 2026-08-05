@@ -17,7 +17,6 @@ import {
   matchesDateFilter,
   normalizeDataset,
   normalizeSideEvent,
-  partitionMainAndSide,
   pinDisplayPositions,
   sortEvents,
   type SideEvent,
@@ -28,17 +27,12 @@ describe('convictionEvents helpers', () => {
     const n = normalizeDataset(CONVICTION_EVENTS_SEED)
     expect(n).not.toBeNull()
     expect(n!.event).toBe('conviction-2026')
-    expect(n!.events).toHaveLength(14)
+    expect(n!.events).toHaveLength(13)
     expect(n!.events.every((e) => !!e.imageUrl && !!e.link)).toBe(true)
-    expect(n!.events.some((e) => isMainEvent(e))).toBe(true)
-    const main = n!.events.find((e) => isMainEvent(e))!
-    expect(main.id).toBe(MAIN_EVENT_ID)
-    const parts = partitionMainAndSide(n!.events)
-    expect(parts.main).toHaveLength(1)
-    expect(parts.side.length).toBe(n!.events.length - 1)
+    // Main forum is venue chrome only — not a side-event pin
+    expect(n!.events.some((e) => isMainEvent(e))).toBe(false)
     const ai = n!.events.find((e) => e.id === 'special-ai-forum-conviction')
     expect(ai && isMainVenueSideStage(ai)).toBe(true)
-    expect(isMainVenueSideStage(main)).toBe(false)
     // Luma calendar covers: uploads / gallery / event-covers (not event-social)
     expect(
       n!.events.every(
@@ -131,7 +125,7 @@ describe('convictionEvents helpers', () => {
   it('buildDayTimeline flags overlapping side slots on 14 Aug', () => {
     const tl = buildDayTimeline(CONVICTION_EVENTS_SEED.events, '2026-08-14')
     expect(tl).not.toBeNull()
-    expect(tl!.bars.some((b) => b.isMain)).toBe(true)
+    expect(tl!.bars.every((b) => !b.isMain)).toBe(true)
     // Hydra / Builders HH / Redots all 16:00+
     expect(tl!.conflictedSideCount).toBeGreaterThanOrEqual(2)
     const conf = buildConflictMap(
@@ -144,26 +138,33 @@ describe('convictionEvents helpers', () => {
     expect(builders.some((e) => e.id === 'redotsclub-vietnam-welcome-mixer')).toBe(
       true,
     )
-    // Main should not appear in side conflict map
     expect(conf.has(MAIN_EVENT_ID)).toBe(false)
   })
 
-  it('getSideEventStatus handles multi-day Main overnight window', () => {
-    const main = CONVICTION_EVENTS_SEED.events.find((e) => isMainEvent(e))!
-    // Day1 evening — still live until day2 18:00
+  it('getSideEventStatus handles multi-day overnight window', () => {
+    const multi = normalizeSideEvent({
+      id: 'multi-day',
+      title: 'Multi',
+      lat: 10.77,
+      lng: 106.72,
+      date: '2026-08-14',
+      endDate: '2026-08-15',
+      startTime: '08:00',
+      endTime: '18:00',
+      type: 'conference',
+    })!
     const d1eve = getSideEventStatus(
-      main,
+      multi,
       new Date('2026-08-14T19:00:00+07:00'),
     )
     expect(d1eve.phase).toBe('live')
-    // Day2 morning before 08:00 wall of "startTime" — still live (started day1)
     const d2am = getSideEventStatus(
-      main,
+      multi,
       new Date('2026-08-15T07:00:00+07:00'),
     )
     expect(d2am.phase).toBe('live')
     const after = getSideEventStatus(
-      main,
+      multi,
       new Date('2026-08-15T19:00:00+07:00'),
     )
     expect(after.phase).toBe('ended')
@@ -179,33 +180,27 @@ describe('convictionEvents helpers', () => {
       date: '2026-08-15',
       type: 'conference' as const,
     }
-    const main = normalizeSideEvent({
-      ...base,
-      id: 'conviction-2026-main-event',
-      title: 'Main',
-      startTime: '08:00',
-      endTime: '18:00',
-    })!
-    const ai = normalizeSideEvent({
+    const a = normalizeSideEvent({
       ...base,
       id: 'special-ai-forum-conviction',
       title: 'AI Forum',
       startTime: '09:00',
       endTime: '15:00',
     })!
-    const pos = pinDisplayPositions([main, ai])
-    const pMain = pos.get(main.id)!
-    const pAi = pos.get(ai.id)!
-    // Fan left/right → different lng, same-ish lat
-    expect(pMain.lng).not.toBeCloseTo(pAi.lng, 6)
-    expect(distanceKm(pMain.lat, pMain.lng, pAi.lat, pAi.lng)).toBeGreaterThan(
-      0.04,
-    )
-    // Both still near the shared venue (~ < 80 m)
-    expect(distanceKm(pMain.lat, pMain.lng, base.lat, base.lng)).toBeLessThan(
-      0.08,
-    )
-    expect(distanceKm(pAi.lat, pAi.lng, base.lat, base.lng)).toBeLessThan(0.08)
+    const b = normalizeSideEvent({
+      ...base,
+      id: 'another-sala-stage',
+      title: 'Other Sala',
+      startTime: '10:00',
+      endTime: '12:00',
+    })!
+    const pos = pinDisplayPositions([a, b])
+    const pA = pos.get(a.id)!
+    const pB = pos.get(b.id)!
+    expect(pA.lng).not.toBeCloseTo(pB.lng, 6)
+    expect(distanceKm(pA.lat, pA.lng, pB.lat, pB.lng)).toBeGreaterThan(0.04)
+    expect(distanceKm(pA.lat, pA.lng, base.lat, base.lng)).toBeLessThan(0.08)
+    expect(distanceKm(pB.lat, pB.lng, base.lat, base.lng)).toBeLessThan(0.08)
   })
 
   it('rejects invalid coords', () => {

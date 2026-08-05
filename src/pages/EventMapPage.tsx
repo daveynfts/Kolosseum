@@ -13,7 +13,10 @@ import {
   MAIN_EVENT_ID,
   MAIN_FORUM_SCHEDULE,
   SALA_VENUE,
+  buildConflictMap,
+  buildDayTimeline,
   calendarStripDates,
+  conflictLabel,
   directionsUrl,
   eventDistanceKm,
   eventOccursOnDate,
@@ -574,6 +577,30 @@ export function EventMapPage() {
     () => filtered.filter((ev) => !ev.locationTbd),
     [filtered],
   )
+
+  /** Active day for timeline (concrete YYYY-MM-DD only). */
+  const timelineDate =
+    dateFilter !== 'all' &&
+    dateFilter !== 'tbd' &&
+    dateFilter !== '__default__' &&
+    /^\d{4}-\d{2}-\d{2}$/.test(dateFilter)
+      ? dateFilter
+      : null
+
+  const dayTimeline = useMemo(() => {
+    if (!dataset || !timelineDate) return null
+    return buildDayTimeline(dataset.events, timelineDate)
+  }, [dataset, timelineDate])
+
+  /** Conflicts among side events (Main excluded) for the filtered set. */
+  const conflictMap = useMemo(() => {
+    if (!filtered.length) return new Map<string, SideEvent[]>()
+    // When viewing one day, only that day's overlaps matter for badges
+    const pool = timelineDate
+      ? filtered.filter((e) => eventOccursOnDate(e, timelineDate) || isMainEvent(e))
+      : filtered
+    return buildConflictMap(pool, { includeMain: false })
+  }, [filtered, timelineDate])
 
   /** Display lat/lng with spiderfy when several events share a venue pin. */
   const pinPositions = useMemo(
@@ -1385,6 +1412,113 @@ export function EventMapPage() {
               </div>
             )
           })()}
+
+          {dayTimeline && (
+            <div className="emp-timeline" aria-label="Timeline trùng giờ trong ngày">
+              <div className="emp-timeline__head">
+                <div>
+                  <span className="emp-timeline__title">Timeline ngày</span>
+                  <span className="emp-timeline__sub">
+                    {formatShortDate(dayTimeline.date)} · side events chồng giờ
+                    được tô cam
+                  </span>
+                </div>
+                {dayTimeline.conflictedSideCount > 0 ? (
+                  <span className="emp-timeline__warn">
+                    {dayTimeline.conflictedSideCount} side trùng slot
+                  </span>
+                ) : (
+                  <span className="emp-timeline__ok">Không trùng side</span>
+                )}
+              </div>
+              <div className="emp-timeline__hours" aria-hidden>
+                {dayTimeline.hours.map((h) => {
+                  const span =
+                    dayTimeline.rangeEndMin - dayTimeline.rangeStartMin
+                  const left =
+                    ((h * 60 - dayTimeline.rangeStartMin) / span) * 100
+                  if (left < -2 || left > 102) return null
+                  return (
+                    <span
+                      key={h}
+                      className="emp-timeline__hour"
+                      style={{ left: `${left}%` }}
+                    >
+                      {String(h).padStart(2, '0')}:00
+                    </span>
+                  )
+                })}
+              </div>
+              <div
+                className="emp-timeline__lanes"
+                style={{
+                  height: `${Math.max(2, dayTimeline.laneCount) * 28 + 8}px`,
+                }}
+              >
+                {dayTimeline.bars.map((bar) => {
+                  const active = selectedId === bar.id
+                  const conflicted = !bar.isMain && bar.conflictCount > 0
+                  return (
+                    <button
+                      key={bar.id}
+                      type="button"
+                      className={[
+                        'emp-timeline__bar',
+                        bar.isMain ? 'emp-timeline__bar--main' : '',
+                        bar.isStage ? 'emp-timeline__bar--stage' : '',
+                        conflicted ? 'emp-timeline__bar--conflict' : '',
+                        active ? 'is-active' : '',
+                      ]
+                        .filter(Boolean)
+                        .join(' ')}
+                      style={{
+                        left: `${bar.leftPct}%`,
+                        width: `${bar.widthPct}%`,
+                        top: `${bar.lane * 28 + 4}px`,
+                        background: bar.isMain
+                          ? 'linear-gradient(90deg, rgba(251,191,36,0.35), rgba(251,191,36,0.12))'
+                          : conflicted
+                            ? 'linear-gradient(90deg, rgba(251,146,60,0.55), rgba(248,113,113,0.35))'
+                            : `linear-gradient(90deg, ${bar.color}cc, ${bar.color}55)`,
+                        borderColor: conflicted
+                          ? 'rgba(251, 146, 60, 0.85)'
+                          : bar.color,
+                      }}
+                      title={`${bar.title} · ${bar.startLabel}–${bar.endLabel}${
+                        conflicted
+                          ? ` · Trùng ${bar.conflictCount} side`
+                          : ''
+                      }`}
+                      onClick={() => {
+                        const ev = dataset?.events.find((e) => e.id === bar.id)
+                        if (ev) selectEvent(ev, true)
+                      }}
+                    >
+                      <span className="emp-timeline__bar-time">
+                        {bar.startLabel}
+                      </span>
+                      <span className="emp-timeline__bar-name">
+                        {bar.isMain
+                          ? 'MAIN'
+                          : bar.isStage
+                            ? 'STAGE'
+                            : shortEventTitle(bar.title, 18)}
+                      </span>
+                      {conflicted ? (
+                        <span className="emp-timeline__bar-x">
+                          ×{bar.conflictCount}
+                        </span>
+                      ) : null}
+                    </button>
+                  )
+                })}
+              </div>
+              <p className="emp-timeline__legend">
+                Vàng = Main forum · Tím = Stage Sala · Cam = side trùng giờ ·
+                Click bar để mở pin
+              </p>
+            </div>
+          )}
         </div>
 
         <div className="emp__filter-row emp__filter-row--types">
@@ -1526,10 +1660,12 @@ export function EventMapPage() {
                 const dist = distanceLabelFor(ev)
                 const main = isMainEvent(ev)
                 const stage = !main && isMainVenueSideStage(ev)
+                const conflicts = conflictMap.get(ev.id) || []
+                const conflicted = !main && conflicts.length > 0
                 return (
                   <div
                     key={ev.id}
-                    className={`emp__card emp__card--luma ${isActive ? 'is-active' : ''}${live ? ' emp__card--live' : ''}${ev.locationTbd ? ' emp__card--tbd-loc' : ''}${main ? ' emp__card--main' : ''}${stage ? ' emp__card--stage' : ''}`}
+                    className={`emp__card emp__card--luma ${isActive ? 'is-active' : ''}${live ? ' emp__card--live' : ''}${ev.locationTbd ? ' emp__card--tbd-loc' : ''}${main ? ' emp__card--main' : ''}${stage ? ' emp__card--stage' : ''}${conflicted ? ' emp__card--conflict' : ''}`}
                     ref={(node) => {
                       if (node) listRefs.current.set(ev.id, node)
                       else listRefs.current.delete(ev.id)
@@ -1584,6 +1720,14 @@ export function EventMapPage() {
                           ) : (
                             <span className="emp__badge emp__badge--side">
                               Side event
+                            </span>
+                          )}
+                          {conflicted && (
+                            <span
+                              className="emp__badge emp__badge--conflict"
+                              title={conflictLabel(conflicts)}
+                            >
+                              Trùng giờ · {conflicts.length}
                             </span>
                           )}
                           {(ev.dateTbd || ev.locationTbd) && (
@@ -1649,6 +1793,15 @@ export function EventMapPage() {
                             ? ' · Địa điểm public sau khi duyệt Luma'
                             : ''}
                         </p>
+                        {conflicted ? (
+                          <p className="emp__card-conflict">
+                            ⚠ {conflictLabel(conflicts)}
+                            <span className="emp__card-conflict-hint">
+                              {' '}
+                              — chọn 1 slot hoặc đi nối nếu venue gần
+                            </span>
+                          </p>
+                        ) : null}
                         <div className="emp__card-actions">
                           {ev.link ? (
                             <a

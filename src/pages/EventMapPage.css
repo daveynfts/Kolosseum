@@ -1487,6 +1487,209 @@
   font-weight: 600;
 }
 
+.emp__badge--conflict {
+  background: rgba(251, 146, 60, 0.22);
+  color: #fdba74;
+  border: 1px solid rgba(251, 146, 60, 0.45);
+  font-weight: 700;
+}
+
+.emp__card--conflict {
+  border-color: rgba(251, 146, 60, 0.4);
+  box-shadow:
+    0 0 0 1px rgba(251, 146, 60, 0.12) inset,
+    0 6px 18px rgba(0, 0, 0, 0.24);
+}
+
+.emp__card-conflict {
+  margin: 0.35rem 0 0;
+  padding: 0.45rem 0.55rem;
+  border-radius: 10px;
+  font-size: 0.78rem;
+  line-height: 1.35;
+  color: #fed7aa;
+  background: rgba(154, 52, 18, 0.35);
+  border: 1px solid rgba(251, 146, 60, 0.35);
+}
+
+.emp__card-conflict-hint {
+  color: rgba(254, 215, 170, 0.75);
+  font-weight: 400;
+}
+
+/* Day timeline conflict strip */
+.emp-timeline {
+  margin-top: 0.55rem;
+  padding: 0.65rem 0.7rem 0.55rem;
+  border-radius: 14px;
+  background:
+    linear-gradient(
+      160deg,
+      rgba(255, 255, 255, 0.06),
+      rgba(255, 255, 255, 0.02)
+    ),
+    rgba(8, 10, 16, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28);
+}
+
+.emp-timeline__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.45rem;
+}
+
+.emp-timeline__title {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #e2e8f0;
+}
+
+.emp-timeline__sub {
+  display: block;
+  margin-top: 0.15rem;
+  font-size: 0.72rem;
+  color: var(--emp-muted);
+}
+
+.emp-timeline__warn {
+  flex-shrink: 0;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #fdba74;
+  background: rgba(251, 146, 60, 0.15);
+  border: 1px solid rgba(251, 146, 60, 0.4);
+  border-radius: 999px;
+  padding: 0.2rem 0.5rem;
+}
+
+.emp-timeline__ok {
+  flex-shrink: 0;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #6ee7b7;
+  background: rgba(52, 211, 153, 0.12);
+  border: 1px solid rgba(52, 211, 153, 0.3);
+  border-radius: 999px;
+  padding: 0.2rem 0.5rem;
+}
+
+.emp-timeline__hours {
+  position: relative;
+  height: 1rem;
+  margin-bottom: 0.15rem;
+}
+
+.emp-timeline__hour {
+  position: absolute;
+  top: 0;
+  transform: translateX(-50%);
+  font-size: 0.58rem;
+  color: rgba(148, 163, 184, 0.85);
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.emp-timeline__lanes {
+  position: relative;
+  width: 100%;
+  min-height: 64px;
+  border-radius: 10px;
+  background:
+    repeating-linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0.03) 0,
+      rgba(255, 255, 255, 0.03) 1px,
+      transparent 1px,
+      transparent 12.5%
+    ),
+    rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  overflow: hidden;
+}
+
+.emp-timeline__bar {
+  position: absolute;
+  height: 24px;
+  border-radius: 7px;
+  border: 1px solid;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0 0.35rem;
+  overflow: hidden;
+  cursor: pointer;
+  color: #f8fafc;
+  font-size: 0.62rem;
+  font-weight: 600;
+  line-height: 1;
+  transition:
+    transform 0.12s ease,
+    box-shadow 0.12s ease,
+    filter 0.12s ease;
+  z-index: 1;
+}
+
+.emp-timeline__bar:hover {
+  filter: brightness(1.12);
+  transform: translateY(-1px);
+  z-index: 3;
+}
+
+.emp-timeline__bar.is-active {
+  outline: 2px solid rgba(255, 255, 255, 0.75);
+  outline-offset: 1px;
+  z-index: 4;
+  box-shadow: 0 0 0 3px rgba(0, 113, 227, 0.35);
+}
+
+.emp-timeline__bar--main {
+  height: 22px;
+  opacity: 0.95;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  z-index: 0;
+}
+
+.emp-timeline__bar--conflict {
+  box-shadow: 0 0 0 1px rgba(251, 146, 60, 0.35);
+}
+
+.emp-timeline__bar-time {
+  opacity: 0.85;
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+}
+
+.emp-timeline__bar-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+.emp-timeline__bar-x {
+  margin-left: auto;
+  flex-shrink: 0;
+  font-weight: 800;
+  color: #ffedd5;
+  background: rgba(0, 0, 0, 0.25);
+  border-radius: 4px;
+  padding: 0.1rem 0.25rem;
+}
+
+.emp-timeline__legend {
+  margin: 0.4rem 0 0;
+  font-size: 0.68rem;
+  color: var(--emp-muted);
+  line-height: 1.35;
+}
+
 .emp__badge--today {
   background: rgba(251, 191, 36, 0.2);
   color: #fcd34d;

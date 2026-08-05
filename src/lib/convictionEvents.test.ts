@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest'
 import {
   CONVICTION_EVENTS_SEED,
   MAIN_EVENT_ID,
+  buildConflictMap,
+  buildDayTimeline,
   confirmedEventDates,
   datesInRange,
   distanceKm,
@@ -124,6 +126,26 @@ describe('convictionEvents helpers', () => {
     })!
     expect(eventOccursOnDate(ev, '2026-08-14')).toBe(true)
     expect(eventsOnDate([ev], '2026-08-16')).toHaveLength(0)
+  })
+
+  it('buildDayTimeline flags overlapping side slots on 14 Aug', () => {
+    const tl = buildDayTimeline(CONVICTION_EVENTS_SEED.events, '2026-08-14')
+    expect(tl).not.toBeNull()
+    expect(tl!.bars.some((b) => b.isMain)).toBe(true)
+    // Hydra / Builders HH / Redots all 16:00+
+    expect(tl!.conflictedSideCount).toBeGreaterThanOrEqual(2)
+    const conf = buildConflictMap(
+      CONVICTION_EVENTS_SEED.events.filter((e) =>
+        eventOccursOnDate(e, '2026-08-14'),
+      ),
+      { includeMain: false },
+    )
+    const builders = conf.get('builders-happy-hours-hcmc') || []
+    expect(builders.some((e) => e.id === 'redotsclub-vietnam-welcome-mixer')).toBe(
+      true,
+    )
+    // Main should not appear in side conflict map
+    expect(conf.has(MAIN_EVENT_ID)).toBe(false)
   })
 
   it('getSideEventStatus handles multi-day Main overnight window', () => {

@@ -383,6 +383,274 @@ export const EVENT_TYPE_COLORS: Record<SideEventType, string> = {
   other: '#94a3b8',
 }
 
+// ── Timeline / schedule conflicts (same day, overlapping wall-clock) ──
+
+export type EventTimeWindow = {
+  id: string
+  startMs: number
+  endMs: number
+  /** Minutes from local midnight on `date` (clipped) */
+  startMin: number
+  endMin: number
+}
+
+function minutesOnDate(ms: number, date: string): number {
+  const day0 = eventInstantMs(date, '00:00')
+  if (day0 == null) return 0
+  return Math.max(0, Math.min(24 * 60, Math.round((ms - day0) / 60_000)))
+}
+
+/** Absolute [start, end) for an event (VN offset). */
+export function eventAbsoluteWindow(
+  ev: SideEvent,
+): { startMs: number; endMs: number } | null {
+  if (ev.dateTbd || !ev.date) return null
+  const start = eventInstantMs(ev.date, ev.startTime || '09:00')
+  if (start == null) return null
+  let end =
+    eventInstantMs(ev.endDate || ev.date, ev.endTime || '') ??
+    start + 2 * 60 * 60 * 1000
+  if (ev.endTime) {
+    const e = eventInstantMs(ev.endDate || ev.date, ev.endTime)
+    if (e != null) end = e
+  }
+  if (end <= start) end = start + 2 * 60 * 60 * 1000
+  return { startMs: start, endMs: end }
+}
+
+/**
+ * Window clipped to a calendar day (for day timeline bars).
+ * Multi-day Main: day1 08:00→24:00, day2 00:00→18:00, etc.
+ */
+export function eventWindowOnDate(
+  ev: SideEvent,
+  date: string,
+): EventTimeWindow | null {
+  if (!eventOccursOnDate(ev, date)) return null
+  const abs = eventAbsoluteWindow(ev)
+  if (!abs) return null
+  const dayStart = eventInstantMs(date, '00:00')
+  if (dayStart == null) return null
+  const dayEnd = dayStart + 24 * 60 * 60 * 1000
+  const startMs = Math.max(abs.startMs, dayStart)
+  const endMs = Math.min(abs.endMs, dayEnd)
+  if (endMs <= startMs) return null
+  return {
+    id: ev.id,
+    startMs,
+    endMs,
+    startMin: minutesOnDate(startMs, date),
+    endMin: minutesOnDate(endMs, date),
+  }
+}
+
+export function windowsOverlap(
+  a: { startMs: number; endMs: number },
+  b: { startMs: number; endMs: number },
+): boolean {
+  return a.startMs < b.endMs && b.startMs < a.endMs
+}
+
+/**
+ * Map eventId → other events that overlap in absolute time.
+ * By default Main forum is excluded from conflict pairs (it's the all-day base).
+ */
+export function buildConflictMap(
+  events: SideEvent[],
+  opts?: { includeMain?: boolean },
+): Map<string, SideEvent[]> {
+  const includeMain = opts?.includeMain === true
+  const list = events.filter(
+    (e) => !e.dateTbd && (includeMain || !isMainEvent(e)),
+  )
+  const windows = new Map<string, { startMs: number; endMs: number }>()
+  for (const ev of list) {
+    const w = eventAbsoluteWindow(ev)
+    if (w) windows.set(ev.id, w)
+  }
+  const byId = new Map(list.map((e) => [e.id, e]))
+  const out = new Map<string, SideEvent[]>()
+  const ids = [...windows.keys()]
+  for (const id of ids) out.set(id, [])
+  for (let i = 0; i < ids.length; i++) {
+    for (let j = i + 1; j < ids.length; j++) {
+      const a = ids[i]!
+      const b = ids[j]!
+      if (!windowsOverlap(windows.get(a)!, windows.get(b)!)) continue
+      out.get(a)!.push(byId.get(b)!)
+      out.get(b)!.push(byId.get(a)!)
+    }
+  }
+  return out
+}
+
+export type TimelineBar = {
+  id: string
+  title: string
+  host: string
+  venue: string
+  type: SideEventType
+  isMain: boolean
+  isStage: boolean
+  startMin: number
+  endMin: number
+  leftPct: number
+  widthPct: number
+  lane: number
+  conflictIds: string[]
+  conflictCount: number
+  startLabel: string
+  endLabel: string
+  color: string
+}
+
+export type DayTimeline = {
+  date: string
+  rangeStartMin: number
+  rangeEndMin: number
+  hours: number[]
+  bars: TimelineBar[]
+  laneCount: number
+  /** Side events that have ≥1 overlap with another side event */
+  conflictedSideCount: number
+}
+
+function hmFromMin(min: number): string {
+  const m = Math.max(0, Math.min(24 * 60, Math.round(min)))
+  const h = Math.floor(m / 60)
+  const mm = m % 60
+  return `${String(h).padStart(2, '0')}:${String(mm).padStart(2, '0')}`
+}
+
+/**
+ * Build a day timeline with lanes + conflict counts for side events.
+ * Main forum is drawn as a background bar (lane 0) and does not create "Trùng giờ".
+ */
+export function buildDayTimeline(
+  events: SideEvent[],
+  date: string,
+): DayTimeline | null {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return null
+  const onDay = events.filter((e) => eventOccursOnDate(e, date))
+  if (!onDay.length) return null
+
+  const conflicts = buildConflictMap(onDay, { includeMain: false })
+  const windows: Array<{ ev: SideEvent; w: EventTimeWindow }> = []
+  for (const ev of onDay) {
+    const w = eventWindowOnDate(ev, date)
+    if (w) windows.push({ ev, w })
+  }
+  if (!windows.length) return null
+
+  let minM = Math.min(...windows.map((x) => x.w.startMin))
+  let maxM = Math.max(...windows.map((x) => x.w.endMin))
+  // Pad to whole hours, keep at least 08:00–22:00 feel when sparse
+  minM = Math.max(0, Math.floor(minM / 60) * 60 - 30)
+  maxM = Math.min(24 * 60, Math.ceil(maxM / 60) * 60 + 30)
+  if (maxM - minM < 4 * 60) {
+    minM = Math.max(0, minM - 60)
+    maxM = Math.min(24 * 60, maxM + 60)
+  }
+  const span = Math.max(60, maxM - minM)
+
+  // Assign lanes: Main always lane 0; sides pack greedily from lane 1
+  const sorted = [...windows].sort((a, b) => {
+    if (isMainEvent(a.ev) !== isMainEvent(b.ev)) {
+      return isMainEvent(a.ev) ? -1 : 1
+    }
+    if (a.w.startMin !== b.w.startMin) return a.w.startMin - b.w.startMin
+    return a.w.endMin - b.w.endMin
+  })
+  /** laneEnds[i] = minute when lane i becomes free again */
+  const laneEnds: number[] = [0] // reserve lane 0 for Main
+  const laneOf = new Map<string, number>()
+  for (const { ev, w } of sorted) {
+    if (isMainEvent(ev)) {
+      laneOf.set(ev.id, 0)
+      laneEnds[0] = Math.max(laneEnds[0] ?? 0, w.endMin)
+      continue
+    }
+    let placedLane = -1
+    for (let L = 1; L < laneEnds.length; L++) {
+      if ((laneEnds[L] ?? 0) <= w.startMin) {
+        placedLane = L
+        break
+      }
+    }
+    if (placedLane < 0) {
+      placedLane = laneEnds.length
+      laneEnds.push(0)
+    }
+    laneOf.set(ev.id, placedLane)
+    laneEnds[placedLane] = w.endMin
+  }
+
+  const hours: number[] = []
+  for (
+    let h = Math.floor(minM / 60);
+    h <= Math.floor((maxM - 1) / 60);
+    h++
+  ) {
+    hours.push(h)
+  }
+
+  let conflictedSideCount = 0
+  const bars: TimelineBar[] = sorted.map(({ ev, w }) => {
+    const conf = (conflicts.get(ev.id) || []).map((c) => c.id)
+    if (!isMainEvent(ev) && conf.length) conflictedSideCount++
+    const leftPct = ((w.startMin - minM) / span) * 100
+    const widthPct = Math.max(2.5, ((w.endMin - w.startMin) / span) * 100)
+    return {
+      id: ev.id,
+      title: ev.title,
+      host: ev.host,
+      venue: ev.venue,
+      type: ev.type,
+      isMain: isMainEvent(ev),
+      isStage: isMainVenueSideStage(ev),
+      startMin: w.startMin,
+      endMin: w.endMin,
+      leftPct,
+      widthPct,
+      lane: laneOf.get(ev.id) ?? 1,
+      conflictIds: conf,
+      conflictCount: conf.length,
+      startLabel: hmFromMin(w.startMin),
+      endLabel: hmFromMin(w.endMin),
+      color: isMainEvent(ev)
+        ? '#fbbf24'
+        : isMainVenueSideStage(ev)
+          ? '#a78bfa'
+          : EVENT_TYPE_COLORS[ev.type] || EVENT_TYPE_COLORS.other,
+    }
+  })
+
+  const laneCount = Math.max(1, ...bars.map((b) => b.lane + 1), 2)
+
+  return {
+    date,
+    rangeStartMin: minM,
+    rangeEndMin: maxM,
+    hours,
+    bars,
+    laneCount,
+    conflictedSideCount,
+  }
+}
+
+export function conflictLabel(others: SideEvent[], maxNames = 2): string {
+  if (!others.length) return ''
+  const trim = (t: string, max: number) => {
+    const s = (t || '').trim()
+    return s.length <= max ? s : `${s.slice(0, max - 1).trimEnd()}…`
+  }
+  const names = others.slice(0, maxNames).map((e) => trim(e.title, 22))
+  const extra = others.length - names.length
+  return extra > 0
+    ? `Trùng giờ với ${names.join(', ')} +${extra}`
+    : `Trùng giờ với ${names.join(', ')}`
+}
+
 /**
  * Luma list thumbnails use square `uploads/` / `gallery-images/` covers
  * (not wide `event-social/` OG banners).

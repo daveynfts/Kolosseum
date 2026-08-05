@@ -669,6 +669,26 @@ const SIDE_EVENTS: SideEvent[] = [
       'AI, RWA, tokenisation, stablecoins, institutional finance và blockchain adoption.',
     featured: true,
   },
+  {
+    id: 'unlimited-conviction-sundowner',
+    title: 'Unlimit(ed) Conviction Sundowner',
+    host: 'APAC DAO · Unlimit',
+    venue: 'Ômm Mixology Saigon',
+    address: 'Ômm Mixology Saigon, Thành phố Hồ Chí Minh, Hồ Chí Minh',
+    lat: 10.7702142,
+    lng: 106.7052468,
+    date: '2026-08-15',
+    startTime: '18:00',
+    endTime: '20:00',
+    type: 'mixer',
+    link: 'https://luma.com/jg1vrpif',
+    imageUrl: lumaSquareCover(
+      'uploads/yx/078e26e2-d0e2-4b0f-8c78-9cce1300adbd.png',
+    ),
+    description:
+      'Premium side event: payments & infrastructure leaders — opening remarks, project intros, networking. À-la-carte dinner & cocktails · Approval required.',
+    featured: true,
+  },
 ]
 
 export const CONVICTION_EVENTS_SEED: SideEventDataset = {
@@ -679,8 +699,8 @@ export const CONVICTION_EVENTS_SEED: SideEventDataset = {
   venue: SALA_VENUE,
   dateRange: { start: '2026-08-13', end: '2026-08-15' },
   events: SIDE_EVENTS,
-  updatedAt: '2026-08-04T18:00:00.000Z',
-  note: 'RedotsClub Vietnam Welcome Mixer · 14/08 16:00–19:00 · 5050 Coffee Tea - Sala',
+  updatedAt: '2026-08-04T19:00:00.000Z',
+  note: 'Unlimit(ed) Conviction Sundowner · 15/08 18:00–20:00 · Ômm Mixology Saigon',
 }
 
 function isEventType(v: unknown): v is SideEventType {

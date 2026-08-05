@@ -21,7 +21,7 @@ describe('convictionEvents helpers', () => {
     const n = normalizeDataset(CONVICTION_EVENTS_SEED)
     expect(n).not.toBeNull()
     expect(n!.event).toBe('conviction-2026')
-    expect(n!.events).toHaveLength(13)
+    expect(n!.events).toHaveLength(14)
     expect(n!.events.every((e) => !!e.imageUrl && !!e.link)).toBe(true)
     expect(n!.events.some((e) => e.id === 'conviction-2026-main-event')).toBe(
       true,

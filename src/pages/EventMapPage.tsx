@@ -2047,27 +2047,7 @@ export function EventMapPage() {
             </span>
           </button>
           <div className="emp__panel-head">
-            <div>
-              <h2>{tt('panelTitleSimple')}</h2>
-              <p>
-                {dateFilter === today
-                  ? tt('panelToday')
-                  : dateFilter === 'all'
-                    ? tt('panelAll')
-                    : tt('panelDay', {
-                        date: formatShortDate(dateFilter),
-                      })}
-                {' · '}
-                {tt('panelDist', {
-                  from:
-                    distOrigin === 'me'
-                      ? tt('fromYou')
-                      : distOrigin === 'selected'
-                        ? tt('fromSelected')
-                        : tt('fromVenue'),
-                })}
-              </p>
-            </div>
+            <h2>{tt('panelTitleSimple')}</h2>
           </div>
           <div className="emp__list">
             {!filtered.length && (

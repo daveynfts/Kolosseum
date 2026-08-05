@@ -468,10 +468,8 @@
 
 .emp__filter-row--primary {
   gap: 0.35rem;
-}
-
-.emp__filter-row--insight {
-  padding-top: 0.15rem;
+  align-items: center;
+  flex-wrap: wrap;
 }
 
 .emp__filter-sep {
@@ -1302,11 +1300,17 @@
   color: var(--emp-text-2);
   border-radius: var(--emp-radius-pill);
   padding: 0.28rem 0.7rem;
+  min-height: 2rem;
+  height: 2rem;
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
   font-size: 0.74rem;
   font-weight: 600;
   letter-spacing: -0.01em;
   cursor: pointer;
   transition: all 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .emp__chip:hover {
@@ -1356,95 +1360,100 @@
   margin-left: auto;
 }
 
-/* Actionable insight chips (replace plain meta text) */
+/* Insight pills — same row & size as primary filter chips */
 .emp-insight {
-  display: flex;
-  flex-wrap: wrap;
+  display: inline-flex;
+  flex-wrap: nowrap;
   align-items: center;
   gap: 0.35rem;
-  margin-left: auto;
+  flex: 0 0 auto;
 }
 
-.emp-insight__chip {
-  appearance: none;
-  border: 1px solid var(--emp-border);
-  background: var(--emp-surface);
-  color: var(--emp-text-2);
-  font: inherit;
-  font-size: 0.72rem;
-  font-weight: 650;
-  letter-spacing: -0.01em;
-  line-height: 1;
-  padding: 0.38rem 0.6rem;
-  min-height: 30px;
-  border-radius: 999px;
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-  transition:
-    background 0.15s ease,
-    border-color 0.15s ease,
-    color 0.15s ease;
+.emp__filter-sep--insight {
+  margin-left: 0.15rem;
 }
 
-.emp-insight__chip:hover {
-  background: var(--emp-surface-hover);
-  color: var(--emp-text);
+/* Match base .emp__chip geometry exactly */
+.emp-insight__pill {
+  min-height: 2rem;
+  height: 2rem;
+  box-sizing: border-box;
+  padding: 0 0.38rem 0 0.7rem;
+  font-size: 0.74rem;
+  font-weight: 600;
+  white-space: nowrap;
 }
 
-.emp-insight__chip--count {
+.emp-insight__pill .emp__chip-count {
+  min-width: 1.25rem;
+  height: 1.25rem;
+}
+
+.emp-insight__pill--count {
   color: #93c5fd;
-  border-color: rgba(96, 165, 250, 0.28);
+  border-color: rgba(96, 165, 250, 0.3);
   background: rgba(37, 99, 235, 0.12);
 }
 
-.emp-insight__chip--conflict {
+.emp-insight__pill--count:hover {
+  background: rgba(37, 99, 235, 0.2);
+  color: #bfdbfe;
+}
+
+.emp-insight__pill--count .emp__chip-count {
+  color: #0b1220;
+  background: rgba(147, 197, 253, 0.95);
+  border-color: transparent;
+}
+
+.emp-insight__pill--conflict {
+  color: #fdba74;
+  border-color: rgba(251, 146, 60, 0.4);
+  background: rgba(251, 146, 60, 0.14);
+}
+
+.emp-insight__pill--conflict:hover:not(:disabled) {
+  background: rgba(251, 146, 60, 0.22);
   color: #ffedd5;
-  border-color: rgba(251, 146, 60, 0.5);
-  background: linear-gradient(
-    135deg,
-    rgba(251, 146, 60, 0.28) 0%,
-    rgba(239, 68, 68, 0.16) 100%
-  );
-  font-weight: 700;
-  gap: 0.35rem;
-  padding-left: 0.45rem;
-  padding-right: 0.7rem;
 }
 
-.emp-insight__chip--conflict:hover {
-  background: linear-gradient(
-    135deg,
-    rgba(251, 146, 60, 0.38) 0%,
-    rgba(239, 68, 68, 0.22) 100%
-  );
-  color: #fff7ed;
-  border-color: rgba(253, 186, 116, 0.7);
+.emp-insight__pill--conflict .emp__chip-count {
+  color: #0b1220;
+  background: rgba(253, 186, 116, 0.95);
+  border-color: transparent;
 }
 
-/* Rich chip: [icon] [big number] [short word] */
-.emp-insight__chip--rich {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.32rem;
+.emp-insight__pill--tbd {
+  color: #c4b5fd;
+  border-color: rgba(167, 139, 250, 0.35);
+  background: rgba(139, 92, 246, 0.12);
 }
 
-.emp-insight__num {
-  font-size: 0.95rem;
-  font-weight: 800;
-  font-variant-numeric: tabular-nums;
-  letter-spacing: -0.03em;
-  line-height: 1;
-  color: #fff;
-  min-width: 0.85rem;
-  text-align: center;
+.emp-insight__pill--tbd:hover:not(:disabled) {
+  background: rgba(139, 92, 246, 0.2);
+  color: #ede9fe;
 }
 
-.emp-insight__word {
-  font-size: 0.68rem;
-  font-weight: 650;
-  letter-spacing: -0.01em;
-  opacity: 0.92;
-  white-space: nowrap;
+.emp-insight__pill--tbd.is-active {
+  color: #ede9fe;
+  border-color: rgba(167, 139, 250, 0.55);
+  background: rgba(139, 92, 246, 0.28);
+}
+
+.emp-insight__pill--tbd .emp__chip-count {
+  color: #0b1220;
+  background: rgba(196, 181, 253, 0.95);
+  border-color: transparent;
+}
+
+.emp-insight__pill.is-dim,
+.emp-insight__pill:disabled {
+  opacity: 0.42;
+  cursor: default;
+}
+
+.emp-insight__pill .emp-insight__clash {
+  flex: 0 0 auto;
 }
 
 /* Two overlapping squares = “same slot” */
@@ -3247,27 +3256,14 @@
   }
 
   .emp-insight {
-    margin-left: 0;
     width: 100%;
+    flex-wrap: wrap;
   }
 
-  .emp-insight__chip {
-    min-height: 34px;
-    padding: 0.42rem 0.7rem;
-    font-size: 0.74rem;
-  }
-
-  .emp-insight__chip--conflict {
-    min-height: 36px;
-    padding: 0.4rem 0.75rem 0.4rem 0.5rem;
-  }
-
-  .emp-insight__num {
-    font-size: 1.05rem;
-  }
-
-  .emp-insight__word {
-    font-size: 0.72rem;
+  .emp__chip,
+  .emp-insight__pill {
+    min-height: 2.15rem;
+    height: 2.15rem;
   }
 
   .emp__card-conflict-thumb {

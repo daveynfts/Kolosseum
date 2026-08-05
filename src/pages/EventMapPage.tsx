@@ -1922,58 +1922,60 @@ export function EventMapPage() {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
             />
-          </div>
-
-          <div className="emp__filter-row emp__filter-row--insight">
+            <span className="emp__filter-sep emp__filter-sep--insight" aria-hidden />
             <div className="emp-insight" role="group" aria-label="Insights">
               <button
                 type="button"
-                className="emp-insight__chip emp-insight__chip--count"
+                className="emp__chip emp__chip--with-count emp-insight__pill emp-insight__pill--count"
                 title={tt('chipEventsTitle')}
                 onClick={clearInsightFilters}
               >
-                {timelineDate === today
-                  ? tt('chipEventsToday', { n: summaryChips.events })
-                  : timelineDate
-                    ? tt('chipEventsDay', { n: summaryChips.events })
-                    : tt('chipEvents', { n: summaryChips.events })}
+                <span className="emp__chip-label">
+                  {timelineDate === today
+                    ? tt('chipEventsTodayWord')
+                    : timelineDate
+                      ? tt('chipEventsDayWord')
+                      : tt('chipEventsWord')}
+                </span>
+                <span className="emp__chip-count" aria-hidden>
+                  {summaryChips.events}
+                </span>
               </button>
-              {summaryChips.conflicts > 0 && (
-                <button
-                  type="button"
-                  className="emp-insight__chip emp-insight__chip--conflict emp-insight__chip--rich"
-                  title={tt('chipConflictTitle')}
-                  aria-label={tt('chipConflictAria', {
-                    n: summaryChips.conflicts,
-                  })}
-                  onClick={focusConflictTimeline}
-                >
-                  <span className="emp-insight__clash" aria-hidden>
-                    <span className="emp-insight__clash-a" />
-                    <span className="emp-insight__clash-b" />
-                  </span>
-                  <span className="emp-insight__num">
-                    {summaryChips.conflicts}
-                  </span>
-                  <span className="emp-insight__word">
-                    {tt('chipConflictWord')}
-                  </span>
-                </button>
-              )}
-              {summaryChips.tbd > 0 && (
-                <button
-                  type="button"
-                  className={`emp-insight__chip emp-insight__chip--tbd${tbdFocus ? ' is-on' : ''}`}
-                  title={tt('chipTbdTitle')}
-                  aria-pressed={tbdFocus}
-                  onClick={() => {
-                    if (tbdFocus) setTbdFocus(false)
-                    else focusTbd()
-                  }}
-                >
-                  {tt('chipTbd', { n: summaryChips.tbd })}
-                </button>
-              )}
+              <button
+                type="button"
+                className={`emp__chip emp__chip--with-count emp-insight__pill emp-insight__pill--conflict${summaryChips.conflicts === 0 ? ' is-dim' : ''}`}
+                title={tt('chipConflictTitle')}
+                aria-label={tt('chipConflictAria', {
+                  n: summaryChips.conflicts,
+                })}
+                disabled={summaryChips.conflicts === 0}
+                onClick={focusConflictTimeline}
+              >
+                <span className="emp-insight__clash emp-insight__clash--sm" aria-hidden>
+                  <span className="emp-insight__clash-a" />
+                  <span className="emp-insight__clash-b" />
+                </span>
+                <span className="emp__chip-label">{tt('chipConflictWord')}</span>
+                <span className="emp__chip-count" aria-hidden>
+                  {summaryChips.conflicts}
+                </span>
+              </button>
+              <button
+                type="button"
+                className={`emp__chip emp__chip--with-count emp-insight__pill emp-insight__pill--tbd${tbdFocus ? ' is-active' : ''}${summaryChips.tbd === 0 ? ' is-dim' : ''}`}
+                title={tt('chipTbdTitle')}
+                aria-pressed={tbdFocus}
+                disabled={summaryChips.tbd === 0}
+                onClick={() => {
+                  if (tbdFocus) setTbdFocus(false)
+                  else focusTbd()
+                }}
+              >
+                <span className="emp__chip-label">{tt('chipTbdWord')}</span>
+                <span className="emp__chip-count" aria-hidden>
+                  {summaryChips.tbd}
+                </span>
+              </button>
             </div>
           </div>
           </div>

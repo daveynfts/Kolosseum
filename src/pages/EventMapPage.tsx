@@ -420,7 +420,10 @@ export function EventMapPage() {
   )
   const [typeFilter, setTypeFilter] = useState<SideEventType | 'all'>('all')
   const [freeOnly, setFreeOnly] = useState(false)
+  /** Focus list on dateTbd / locationTbd events only */
+  const [tbdFocus, setTbdFocus] = useState(false)
   const [query, setQuery] = useState('')
+  const timelineElRef = useRef<HTMLDivElement | null>(null)
   const [selectedId, setSelectedId] = useState<string | null>(
     () => initialParams.id || null,
   )
@@ -577,8 +580,16 @@ export function EventMapPage() {
     if (!dataset) return []
     const q = query.trim().toLowerCase()
     const list = dataset.events.filter((ev) => {
-      if (!matchesDateFilter(ev, dateFilter === '__default__' ? 'all' : dateFilter))
+      if (tbdFocus) {
+        if (!ev.dateTbd && !ev.locationTbd) return false
+      } else if (
+        !matchesDateFilter(
+          ev,
+          dateFilter === '__default__' ? 'all' : dateFilter,
+        )
+      ) {
         return false
+      }
       if (typeFilter !== 'all' && ev.type !== typeFilter) return false
       if (freeOnly && !ev.free) return false
       if (q) {
@@ -607,6 +618,7 @@ export function EventMapPage() {
     dateFilter,
     typeFilter,
     freeOnly,
+    tbdFocus,
     query,
     sortMode,
     distanceFrom,
@@ -673,6 +685,61 @@ export function EventMapPage() {
       : filtered
     return buildConflictMap(pool, { includeMain: false })
   }, [filtered, timelineDate])
+
+  /** Actionable summary chips (count / conflict / TBD). */
+  const summaryChips = useMemo(() => {
+    if (!dataset) {
+      return { events: 0, conflicts: 0, tbd: 0 }
+    }
+    const scope =
+      timelineDate && !tbdFocus
+        ? dataset.events.filter((e) => eventOccursOnDate(e, timelineDate))
+        : dataset.events
+    // Event count = current filtered list (what user sees)
+    const events = filtered.length
+    // Conflicts: prefer day timeline; else count unique conflicted ids in scope
+    let conflicts = dayTimeline?.conflictedSideCount ?? 0
+    if (!dayTimeline) {
+      const conf = buildConflictMap(scope, { includeMain: false })
+      conflicts = [...conf.values()].filter((v) => v.length > 0).length
+    }
+    const tbd = dataset.events.filter((e) => e.dateTbd || e.locationTbd).length
+    return { events, conflicts, tbd }
+  }, [dataset, filtered, timelineDate, tbdFocus, dayTimeline])
+
+  const focusConflictTimeline = () => {
+    setTbdFocus(false)
+    setFiltersOpen(true)
+    if (!timelineDate && dataset) {
+      const dayWithConflict = dates.find((d) => {
+        const tl = buildDayTimeline(dataset.events, d)
+        return (tl?.conflictedSideCount ?? 0) > 0
+      })
+      if (dayWithConflict) setDate(dayWithConflict)
+    }
+    requestAnimationFrame(() => {
+      timelineElRef.current?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'nearest',
+      })
+    })
+  }
+
+  const focusTbd = () => {
+    setTbdFocus(true)
+    setTypeFilter('all')
+    setFreeOnly(false)
+    setQuery('')
+    setFiltersOpen(true)
+    if (isMobile) setSheetMode('half')
+  }
+
+  const clearInsightFilters = () => {
+    setTbdFocus(false)
+    setTypeFilter('all')
+    setFreeOnly(false)
+    setQuery('')
+  }
 
   /** Display lat/lng with spiderfy when several events share a venue pin. */
   const pinPositions = useMemo(
@@ -1204,6 +1271,7 @@ export function EventMapPage() {
 
   const setDate = (d: string) => {
     setDateFilter(d)
+    setTbdFocus(false)
     setSelectedId(null)
     userMovedMapRef.current = false
     lastFitKeyRef.current = '' // force re-fit for new day filter
@@ -1604,7 +1672,11 @@ export function EventMapPage() {
           </div>
 
           {dayTimeline && (
-            <div className="emp-timeline" aria-label={tt('timelineAria')}>
+            <div
+              className="emp-timeline"
+              ref={timelineElRef}
+              aria-label={tt('timelineAria')}
+            >
               <div className="emp-timeline__head">
                 <div>
                   <span className="emp-timeline__title">
@@ -1763,14 +1835,44 @@ export function EventMapPage() {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
             />
-            <span className="emp__meta">
-              {tt('metaEvents', { n: filtered.length })}
-              {mapEvents.length < filtered.length
-                ? tt('metaOnMap', { n: mapEvents.length })
-                : ''}
-              {sortMode === 'upcoming' ? tt('metaSortUpcoming') : ''}
-              {sortMode === 'nearest' ? tt('metaSortNearest') : ''}
-            </span>
+            <div className="emp-insight" role="group" aria-label="Insights">
+              <button
+                type="button"
+                className="emp-insight__chip emp-insight__chip--count"
+                title={tt('chipEventsTitle')}
+                onClick={clearInsightFilters}
+              >
+                {timelineDate === today
+                  ? tt('chipEventsToday', { n: summaryChips.events })
+                  : timelineDate
+                    ? tt('chipEventsDay', { n: summaryChips.events })
+                    : tt('chipEvents', { n: summaryChips.events })}
+              </button>
+              {summaryChips.conflicts > 0 && (
+                <button
+                  type="button"
+                  className="emp-insight__chip emp-insight__chip--conflict"
+                  title={tt('chipConflictTitle')}
+                  onClick={focusConflictTimeline}
+                >
+                  {tt('chipConflict', { n: summaryChips.conflicts })}
+                </button>
+              )}
+              {summaryChips.tbd > 0 && (
+                <button
+                  type="button"
+                  className={`emp-insight__chip emp-insight__chip--tbd${tbdFocus ? ' is-on' : ''}`}
+                  title={tt('chipTbdTitle')}
+                  aria-pressed={tbdFocus}
+                  onClick={() => {
+                    if (tbdFocus) setTbdFocus(false)
+                    else focusTbd()
+                  }}
+                >
+                  {tt('chipTbd', { n: summaryChips.tbd })}
+                </button>
+              )}
+            </div>
           </div>
           </div>
         </div>

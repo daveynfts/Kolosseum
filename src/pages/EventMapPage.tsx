@@ -1571,9 +1571,11 @@ export function EventMapPage() {
                   </button>
                 </div>
               </div>
-              {dateFilter !== 'all' &&
-              dateFilter !== 'tbd' &&
-              dateFilter !== '__default__' ? (
+              {dateFilter === 'tbd' ? (
+                <span className="emp-week__selected-label">
+                  {tt('dateUnconfirmed')}
+                </span>
+              ) : dateFilter !== 'all' && dateFilter !== '__default__' ? (
                 <span className="emp-week__selected-label">
                   {formatWeekdayShort(dateFilter, locale)} ·{' '}
                   {formatShortDate(dateFilter)}
@@ -1581,13 +1583,7 @@ export function EventMapPage() {
                     ? ` · ${mainForumMeta(dateFilter)!.short}`
                     : ''}
                 </span>
-              ) : (
-                <span className="emp-week__selected-label">
-                  {dateFilter === 'tbd'
-                    ? tt('dateUnconfirmed')
-                    : tt('eventsInWeek', { n: totalEvents })}
-                </span>
-              )}
+              ) : null}
             </div>
           </div>
 

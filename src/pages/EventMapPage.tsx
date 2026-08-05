@@ -2251,13 +2251,20 @@ export function EventMapPage() {
                 )
               }
               return (
-                <div key={date} className="emp__day-group">
-                  <div className="emp__day-label">
+                <div
+                  key={date}
+                  className="emp__day-group"
+                  data-day={date}
+                >
+                  <div className="emp__day-label" data-sticky-day={date}>
                     {date === 'tbd'
                       ? tt('dateTbd')
                       : `${formatLumaDayLocale(date, locale)}${
                           date === today ? ` · ${tt('today')}` : ''
                         }`}
+                    <span className="emp__day-label-count">
+                      {list.length}
+                    </span>
                   </div>
                   <div className="emp__section emp__section--side">
                     {list.map(renderCard)}

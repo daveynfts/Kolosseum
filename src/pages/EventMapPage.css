@@ -1595,49 +1595,118 @@
   overflow: visible;
 }
 
+/* Sticky day header — Apple liquid glass */
 .emp__day-label {
+  --day-lg-blur: blur(28px) saturate(180%);
   position: sticky;
-  top: 0;
+  top: 0.2rem;
   z-index: 5;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 0.5rem;
-  font-size: 0.78rem;
-  font-weight: 750;
-  letter-spacing: 0.01em;
+  gap: 0.55rem;
+  isolation: isolate;
+  overflow: hidden;
+  font-size: 0.8rem;
+  font-weight: 650;
+  letter-spacing: -0.02em;
   text-transform: none;
-  color: #fde68a;
-  padding: 0.55rem 0.65rem;
-  margin: 0 -0.15rem 0.1rem;
-  border-radius: 10px;
-  border: 1px solid rgba(251, 191, 36, 0.22);
-  background: linear-gradient(
-    180deg,
-    rgba(22, 18, 8, 0.98) 0%,
-    rgba(12, 11, 8, 0.96) 100%
-  );
-  backdrop-filter: blur(16px) saturate(150%);
-  -webkit-backdrop-filter: blur(16px) saturate(150%);
+  color: rgba(255, 255, 255, 0.94);
+  padding: 0.58rem 0.7rem 0.58rem 0.85rem;
+  margin: 0 0 0.2rem;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  /* Translucent glass fill */
+  background:
+    linear-gradient(
+      155deg,
+      rgba(255, 255, 255, 0.22) 0%,
+      rgba(255, 255, 255, 0.08) 38%,
+      rgba(255, 255, 255, 0.04) 100%
+    ),
+    rgba(28, 28, 32, 0.42);
+  backdrop-filter: var(--day-lg-blur);
+  -webkit-backdrop-filter: var(--day-lg-blur);
   box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.05) inset,
-    0 8px 18px rgba(0, 0, 0, 0.4);
+    /* specular top edge */
+    inset 0 1px 0 rgba(255, 255, 255, 0.38),
+    /* soft inner bottom */
+    inset 0 -1px 0 rgba(0, 0, 0, 0.2),
+    /* outer float */
+    0 1px 2px rgba(0, 0, 0, 0.12),
+    0 8px 28px rgba(0, 0, 0, 0.28),
+    0 0 0 0.5px rgba(255, 255, 255, 0.08);
+  text-shadow: 0 0.5px 1px rgba(0, 0, 0, 0.35);
+}
+
+/* Diagonal light streak (liquid glass sheen) */
+.emp__day-label::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(
+    115deg,
+    rgba(255, 255, 255, 0.28) 0%,
+    rgba(255, 255, 255, 0.06) 28%,
+    transparent 48%,
+    transparent 100%
+  );
+  opacity: 0.9;
+  z-index: 0;
+}
+
+/* Soft bottom vignette so list content doesn’t clash under glass */
+.emp__day-label::after {
+  content: '';
+  position: absolute;
+  left: 8%;
+  right: 8%;
+  bottom: -10px;
+  height: 14px;
+  border-radius: 50%;
+  background: radial-gradient(
+    ellipse at center,
+    rgba(0, 0, 0, 0.28) 0%,
+    transparent 72%
+  );
+  pointer-events: none;
+  z-index: -1;
+  filter: blur(2px);
+}
+
+.emp__day-label > * {
+  position: relative;
+  z-index: 1;
 }
 
 .emp__day-label-count {
   flex: 0 0 auto;
-  min-width: 1.35rem;
-  height: 1.35rem;
-  padding: 0 0.35rem;
+  min-width: 1.45rem;
+  height: 1.45rem;
+  padding: 0 0.4rem;
   border-radius: 999px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.68rem;
-  font-weight: 800;
+  font-size: 0.7rem;
+  font-weight: 750;
   font-variant-numeric: tabular-nums;
-  color: #0f172a;
-  background: rgba(251, 191, 36, 0.9);
+  letter-spacing: -0.02em;
+  color: rgba(255, 255, 255, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  background:
+    linear-gradient(
+      160deg,
+      rgba(255, 255, 255, 0.28) 0%,
+      rgba(255, 255, 255, 0.08) 100%
+    ),
+    rgba(255, 255, 255, 0.1);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.35),
+    0 2px 8px rgba(0, 0, 0, 0.2);
+  text-shadow: none;
 }
 
 .emp__card {

@@ -421,7 +421,6 @@ export function EventMapPage() {
     () => initialParams.date || '__default__',
   )
   const [typeFilter, setTypeFilter] = useState<SideEventType | 'all'>('all')
-  const [freeOnly, setFreeOnly] = useState(false)
   const [hasPinOnly, setHasPinOnly] = useState(false)
   const [timeOfDay, setTimeOfDay] = useState<TimeOfDayBucket | 'all'>('all')
   const [moreTypesOpen, setMoreTypesOpen] = useState(false)
@@ -596,7 +595,6 @@ export function EventMapPage() {
         return false
       }
       if (typeFilter !== 'all' && ev.type !== typeFilter) return false
-      if (freeOnly && !ev.free) return false
       if (hasPinOnly && !eventHasMapPin(ev)) return false
       if (timeOfDay !== 'all') {
         const bucket = eventTimeOfDay(ev)
@@ -627,7 +625,6 @@ export function EventMapPage() {
     dataset,
     dateFilter,
     typeFilter,
-    freeOnly,
     hasPinOnly,
     timeOfDay,
     tbdFocus,
@@ -741,7 +738,6 @@ export function EventMapPage() {
     setTbdFocus(true)
     setHasPinOnly(false)
     setTypeFilter('all')
-    setFreeOnly(false)
     setQuery('')
     setFiltersOpen(true)
     if (isMobile) setSheetMode('half')
@@ -750,7 +746,6 @@ export function EventMapPage() {
   const clearInsightFilters = () => {
     setTbdFocus(false)
     setTypeFilter('all')
-    setFreeOnly(false)
     setHasPinOnly(false)
     setTimeOfDay('all')
     setQuery('')
@@ -1255,7 +1250,7 @@ export function EventMapPage() {
     }
 
     // Auto-fit only when filter set changes (not after user zoom/pan)
-    const fitKey = `${dateFilter}|${typeFilter}|${freeOnly}|${query}|${mapEvents.map((e) => e.id).join(',')}`
+    const fitKey = `${dateFilter}|${typeFilter}|${hasPinOnly}|${timeOfDay}|${query}|${mapEvents.map((e) => e.id).join(',')}`
     const shouldFit =
       mapEvents.length > 0 &&
       !selectedId &&
@@ -1837,14 +1832,18 @@ export function EventMapPage() {
               <button
                 key={key}
                 type="button"
-                className={`emp__chip emp__chip--time${timeOfDay === key ? ' is-active' : ''}`}
+                className={`emp__chip emp__chip--time emp__chip--with-count${timeOfDay === key ? ' is-active' : ''}`}
                 onClick={() => {
                   setTimeOfDay(key)
                   bumpMapFit()
                 }}
               >
-                {tt(labelKey)}
-                {key !== 'all' && count != null ? ` · ${count}` : ''}
+                <span className="emp__chip-label">{tt(labelKey)}</span>
+                {key !== 'all' && count != null ? (
+                  <span className="emp__chip-count" aria-hidden>
+                    {count}
+                  </span>
+                ) : null}
               </button>
             ))}
             <button
@@ -1862,17 +1861,6 @@ export function EventMapPage() {
             </button>
             <button
               type="button"
-              className={`emp__chip emp__chip--free${freeOnly ? ' is-active' : ''}`}
-              aria-pressed={freeOnly}
-              onClick={() => {
-                setFreeOnly((v) => !v)
-                bumpMapFit()
-              }}
-            >
-              {tt('freeOnly')}
-            </button>
-            <button
-              type="button"
               className={`emp__chip emp__chip--more${moreTypesOpen || typeFilter !== 'all' ? ' is-active' : ''}`}
               title={tt('filterMoreTitle')}
               aria-expanded={moreTypesOpen}
@@ -1881,6 +1869,52 @@ export function EventMapPage() {
               {moreTypesOpen ? tt('filterMoreHide') : tt('filterMore')}
               {typeFilter !== 'all' ? ` · ${EVENT_TYPE_LABELS[typeFilter]}` : ''}
             </button>
+            {moreTypesOpen && (
+              <>
+                <span className="emp__filter-sep" aria-hidden />
+                <button
+                  type="button"
+                  className={`emp__chip ${typeFilter === 'all' ? 'is-active' : ''}`}
+                  onClick={() => {
+                    setTypeFilter('all')
+                    bumpMapFit()
+                  }}
+                >
+                  {tt('typesAll')}
+                </button>
+                {EVENT_TYPES.filter((t) => (typeCounts.get(t) || 0) > 0).map(
+                  (t) => (
+                    <button
+                      key={t}
+                      type="button"
+                      className={`emp__chip emp__chip--with-count ${typeFilter === t ? 'is-active' : ''}`}
+                      onClick={() => {
+                        setTypeFilter(t)
+                        bumpMapFit()
+                      }}
+                      style={
+                        typeFilter === t
+                          ? {
+                              background: EVENT_TYPE_COLORS[t],
+                              color: '#0f172a',
+                            }
+                          : undefined
+                      }
+                    >
+                      <span className="emp__chip-label">
+                        {EVENT_TYPE_LABELS[t]}
+                      </span>
+                      <span
+                        className={`emp__chip-count${typeFilter === t ? ' emp__chip-count--on-color' : ''}`}
+                        aria-hidden
+                      >
+                        {typeCounts.get(t)}
+                      </span>
+                    </button>
+                  ),
+                )}
+              </>
+            )}
             <input
               className="emp__search"
               type="search"
@@ -1889,48 +1923,6 @@ export function EventMapPage() {
               onChange={(e) => setQuery(e.target.value)}
             />
           </div>
-
-          {moreTypesOpen && (
-            <div
-              className="emp__filter-row emp__filter-row--types emp__filter-row--advanced"
-              role="group"
-              aria-label={tt('filterMoreTitle')}
-            >
-              <button
-                type="button"
-                className={`emp__chip ${typeFilter === 'all' ? 'is-active' : ''}`}
-                onClick={() => {
-                  setTypeFilter('all')
-                  bumpMapFit()
-                }}
-              >
-                {tt('typesAll')}
-              </button>
-              {EVENT_TYPES.filter((t) => (typeCounts.get(t) || 0) > 0).map(
-                (t) => (
-                  <button
-                    key={t}
-                    type="button"
-                    className={`emp__chip ${typeFilter === t ? 'is-active' : ''}`}
-                    onClick={() => {
-                      setTypeFilter(t)
-                      bumpMapFit()
-                    }}
-                    style={
-                      typeFilter === t
-                        ? {
-                            background: EVENT_TYPE_COLORS[t],
-                            color: '#0f172a',
-                          }
-                        : undefined
-                    }
-                  >
-                    {EVENT_TYPE_LABELS[t]} ({typeCounts.get(t)})
-                  </button>
-                ),
-              )}
-            </div>
-          )}
 
           <div className="emp__filter-row emp__filter-row--insight">
             <div className="emp-insight" role="group" aria-label="Insights">

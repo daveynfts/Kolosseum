@@ -1323,9 +1323,14 @@ export function EventMapPage() {
                     requestMyLocation()
                   }
                 }}
-                title={tt('fromMeTitle')}
+                title={geoBusy ? tt('locating') : tt('fromMeTitle')}
+                aria-busy={geoBusy}
               >
-                {geoBusy ? '…' : tt('fromMe')}
+                {geoBusy ? (
+                  <span className="emp-spinner" aria-hidden />
+                ) : (
+                  tt('fromMe')
+                )}
               </button>
               <button
                 type="button"
@@ -1421,8 +1426,14 @@ export function EventMapPage() {
               setToolsOpen(false)
             }}
             disabled={geoBusy}
+            title={geoBusy ? tt('locating') : tt('fabLocate')}
+            aria-busy={geoBusy}
           >
-            {geoBusy ? '…' : tt('fabLocate')}
+            {geoBusy ? (
+              <span className="emp-spinner" aria-hidden />
+            ) : (
+              tt('fabLocate')
+            )}
           </button>
         </div>
       )}
@@ -1792,9 +1803,14 @@ export function EventMapPage() {
                 className="emp-map-fab emp-map-fab--accent"
                 onClick={() => requestMyLocation()}
                 disabled={geoBusy}
-                title={tt('fabLocate')}
+                title={geoBusy ? tt('locating') : tt('fabLocate')}
+                aria-busy={geoBusy}
               >
-                ⌖
+                {geoBusy ? (
+                  <span className="emp-spinner emp-spinner--on-dark" aria-hidden />
+                ) : (
+                  '⌖'
+                )}
               </button>
             </div>
           )}

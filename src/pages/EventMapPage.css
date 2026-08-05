@@ -1,3 +1,33 @@
+/* Inline loading spinner (geolocation, etc.) */
+.emp-spinner {
+  display: inline-block;
+  width: 0.95rem;
+  height: 0.95rem;
+  border: 2px solid rgba(255, 255, 255, 0.22);
+  border-top-color: rgba(255, 255, 255, 0.92);
+  border-radius: 50%;
+  animation: emp-spin 0.7s linear infinite;
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+
+.emp-spinner--on-dark {
+  border-color: rgba(255, 255, 255, 0.28);
+  border-top-color: #fff;
+}
+
+.emp__btn:disabled .emp-spinner,
+.emp-chrome-bar__btn:disabled .emp-spinner {
+  border-color: rgba(255, 255, 255, 0.18);
+  border-top-color: rgba(158, 201, 255, 0.95);
+}
+
+@keyframes emp-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 /* Language toggle EN/VI */
 .emp-lang {
   flex-shrink: 0;

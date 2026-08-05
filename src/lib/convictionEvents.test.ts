@@ -9,6 +9,7 @@ import {
   eventOccursOnDate,
   eventsOnDate,
   formatDistanceKm,
+  getSideEventStatus,
   isMainEvent,
   isMainVenueSideStage,
   matchesDateFilter,
@@ -123,6 +124,27 @@ describe('convictionEvents helpers', () => {
     })!
     expect(eventOccursOnDate(ev, '2026-08-14')).toBe(true)
     expect(eventsOnDate([ev], '2026-08-16')).toHaveLength(0)
+  })
+
+  it('getSideEventStatus handles multi-day Main overnight window', () => {
+    const main = CONVICTION_EVENTS_SEED.events.find((e) => isMainEvent(e))!
+    // Day1 evening — still live until day2 18:00
+    const d1eve = getSideEventStatus(
+      main,
+      new Date('2026-08-14T19:00:00+07:00'),
+    )
+    expect(d1eve.phase).toBe('live')
+    // Day2 morning before 08:00 wall of "startTime" — still live (started day1)
+    const d2am = getSideEventStatus(
+      main,
+      new Date('2026-08-15T07:00:00+07:00'),
+    )
+    expect(d2am.phase).toBe('live')
+    const after = getSideEventStatus(
+      main,
+      new Date('2026-08-15T19:00:00+07:00'),
+    )
+    expect(after.phase).toBe('ended')
   })
 
   it('pinDisplayPositions fans out overlapping venue pins', () => {

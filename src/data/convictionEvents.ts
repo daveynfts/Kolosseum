@@ -680,8 +680,7 @@ const SIDE_EVENTS: SideEvent[] = [
       'uploads/zl/b0c2e514-a237-44b2-b8c9-9481cc89dd85.png',
     ),
     description:
-      'Meetup developer: Solana, smart accounts, security, infrastructure, AI × Crypto. GitHub + approval. Ngày xác nhận trên Luma.',
-    dateTbd: true,
+      'Meetup developer: Solana, smart accounts, security, infrastructure, AI × Crypto. GitHub + approval.',
     featured: true,
   },
   {

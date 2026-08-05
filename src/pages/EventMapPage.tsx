@@ -115,11 +115,9 @@ function nowHmVn(): string {
   }
 }
 
-function isLive(ev: SideEvent, today: string, nowHm: string): boolean {
-  if (ev.dateTbd || !eventOccursOnDate(ev, today)) return false
-  const start = ev.startTime || '00:00'
-  const end = ev.endTime || '23:59'
-  return nowHm >= start && nowHm <= end
+/** Live = same multi-day logic as pin status (handles endDate correctly). */
+function isLive(ev: SideEvent, now: Date = new Date()): boolean {
+  return getSideEventStatus(ev, now).phase === 'live'
 }
 
 /** Parse deep link from hash `#/event?id=&date=` or search. */
@@ -386,15 +384,20 @@ export function EventMapPage() {
   const [sheetMode, setSheetMode] = useState<SheetMode>(() =>
     isMobileViewport() ? 'half' : 'full',
   )
+  /** Wall-clock tick so LIVE badges / liveCount stay correct (esp. multi-day Main). */
+  const [nowTick, setNowTick] = useState(() => Date.now())
   const today = todayVn()
   const nowHm = nowHmVn()
+  const nowDate = useMemo(() => new Date(nowTick), [nowTick])
 
-  // Tick countdown chips on map pins (does not rebuild markers)
+  // Tick pin chips + list LIVE state every second
   useEffect(() => {
-    if (!dataset || !mapReady) return
+    if (!dataset) return
     const byId = new Map(dataset.events.map((e) => [e.id, e]))
     const tick = () => {
       const now = new Date()
+      setNowTick(now.getTime())
+      if (!mapReady) return
       for (const [id, marker] of markersRef.current) {
         const ev = byId.get(id)
         if (!ev) continue
@@ -471,8 +474,8 @@ export function EventMapPage() {
 
   const liveCount = useMemo(() => {
     if (!dataset) return 0
-    return dataset.events.filter((e) => isLive(e, today, nowHm)).length
-  }, [dataset, today, nowHm])
+    return dataset.events.filter((e) => isLive(e, nowDate)).length
+  }, [dataset, nowDate])
 
   const distanceFrom = useMemo(() => {
     if (distOrigin === 'me' && userLoc) {
@@ -503,7 +506,8 @@ export function EventMapPage() {
       if (!matchesDateFilter(ev, dateFilter === '__default__' ? 'all' : dateFilter))
         return false
       if (typeFilter !== 'all' && ev.type !== typeFilter) return false
-      if (freeOnly && !ev.free) return false
+      // Keep Main forum visible even when "Chỉ Free" is on
+      if (freeOnly && !ev.free && !isMainEvent(ev)) return false
       if (q) {
         const hay =
           `${ev.title} ${ev.host} ${ev.venue} ${ev.address}`.toLowerCase()
@@ -577,14 +581,19 @@ export function EventMapPage() {
     [mapEvents],
   )
 
+  const pinPositionsRef = useRef(pinPositions)
+  pinPositionsRef.current = pinPositions
+  const datasetRef = useRef(dataset)
+  datasetRef.current = dataset
+
   const displayLngLat = (ev: SideEvent): { lat: number; lng: number } => {
     if (ev.locationTbd) {
-      return {
-        lat: dataset?.venue.lat ?? SALA_VENUE.lat,
-        lng: dataset?.venue.lng ?? SALA_VENUE.lng,
-      }
+      const v = datasetRef.current?.venue ?? SALA_VENUE
+      return { lat: v.lat, lng: v.lng }
     }
-    return pinPositions.get(ev.id) ?? { lat: ev.lat, lng: ev.lng }
+    return (
+      pinPositionsRef.current.get(ev.id) ?? { lat: ev.lat, lng: ev.lng }
+    )
   }
 
   const grouped = useMemo(() => {
@@ -832,9 +841,9 @@ export function EventMapPage() {
     const map = mapRef.current
     if (!map) return
     popupRef.current?.remove()
-    const st = getSideEventStatus(ev)
+    const st = getSideEventStatus(ev, new Date())
     const live = st.phase === 'live'
-    const isTodayEv = eventOccursOnDate(ev, today)
+    const isTodayEv = eventOccursOnDate(ev, todayVn())
     // Use spiderfied display position (overlap fix); real coords stay for directions
     const { lng, lat } = displayLngLat(ev)
     // Width matches Luma-style 1:1 cover (square image fills card width)
@@ -911,6 +920,8 @@ export function EventMapPage() {
       el?.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
     })
   }
+  const selectEventRef = useRef(selectEvent)
+  selectEventRef.current = selectEvent
 
   // When mobile sheet height changes, resize map canvas
   useEffect(() => {
@@ -998,7 +1009,8 @@ export function EventMapPage() {
         el.dataset.pinKey = pinKey
         el.addEventListener('click', (e: MouseEvent) => {
           e.stopPropagation()
-          selectEvent(ev, true)
+          // Always use latest selectEvent (pin positions / filters)
+          selectEventRef.current(ev, true)
         })
         const marker = new maplibregl.Marker({ element: el, anchor: 'bottom' })
           .setLngLat([pos.lng, pos.lat])
@@ -1085,7 +1097,7 @@ export function EventMapPage() {
           <p>
             Main · {MAIN_FORUM_SCHEDULE.windowLabel} ·{' '}
             {MAIN_FORUM_SCHEDULE.venue} · Thủ Đức
-            {liveCount > 0 ? ` · ${liveCount} side live` : ''}
+            {liveCount > 0 ? ` · ${liveCount} đang live` : ''}
             {source !== 'server' ? ` · ${source}` : ''}
           </p>
         </div>
@@ -1498,7 +1510,7 @@ export function EventMapPage() {
               const { main: mainList, side: sideList } =
                 partitionMainAndSide(list)
               const renderCard = (ev: SideEvent) => {
-                const st = getSideEventStatus(ev)
+                const st = getSideEventStatus(ev, nowDate)
                 const live = st.phase === 'live'
                 const isTodayEv = !ev.dateTbd && eventOccursOnDate(ev, today)
                 const isActive = selectedId === ev.id

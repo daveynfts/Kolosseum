@@ -1,6 +1,6 @@
 /**
  * Client-side document title + meta for /event (humans / in-app browsers).
- * Telegram/Facebook crawlers use middleware → event-preview.html instead.
+ * Telegram/Facebook crawlers use middleware → /api/event-share (server OG HTML).
  */
 
 const TITLE = 'Conviction 2026 — Side Events Map | DaveyNFTs'
@@ -8,7 +8,7 @@ const DESCRIPTION =
   'Bản đồ side events Conviction 2026 tại TP.HCM (14–15/08). Lịch, pin, khoảng cách, trùng giờ — Thiskyhall Sala & venues around the city.'
 const DESCRIPTION_EN =
   'Interactive map of Conviction 2026 side events in Ho Chi Minh City · 14–15 Aug · calendar, pins, distance & schedule conflicts.'
-const OG_IMAGE = 'https://radar.daveynfts.com/api/og-conviction-events'
+const OG_IMAGE = 'https://radar.daveynfts.com/og/conviction-2026-events.jpg'
 const CANONICAL = 'https://radar.daveynfts.com/event/conviction-2026'
 
 function upsertMeta(

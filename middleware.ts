@@ -1,11 +1,12 @@
 /**
- * Serve crawler-friendly OG HTML for /event/* (Telegram, Twitter, etc.).
- * Humans keep the Vite SPA rewrite.
+ * Social crawlers (Telegram, etc.) get OG HTML from /api/event-share.
+ * Real users continue to the Vite SPA via vercel.json rewrite.
  */
 import { rewrite, next } from '@vercel/functions'
 
+// Only known social crawlers — avoid bare "Preview" (can match real browsers).
 const BOT_UA =
-  /TelegramBot|twitterbot|facebookexternalhit|Facebot|LinkedInBot|Slackbot|Discordbot|WhatsApp|redditbot|Pinterest|vkShare|SkypeUriPreview|Applebot|Googlebot|bingbot|Baiduspider|YandexBot|DuckDuckBot|Slurp|Embedly|Quora Link Preview|Showyoubot|outbrain|W3C_Validator|Qwantify|bitlybot|nuzzel|Discordbot|Google Page Speed|Bitrix link preview|Xing-preview|ZoominfoBot|Viber|line-poker|Iframely|SteamChatURLLookup/i
+  /TelegramBot|twitterbot|facebookexternalhit|Facebot|LinkedInBot|Slackbot|Discordbot|WhatsApp|redditbot|Pinterest|vkShare|SkypeUriPreview|Embedly|Iframely|Slack-ImgProxy|Quora Link Preview|Showyoubot|outbrain|W3C_Validator|Qwantify|bitlybot|nuzzel|Googlebot|bingbot|Applebot|Baiduspider|YandexBot|DuckDuckBot|Slurp|Viber|line-poker|SteamChatURLLookup|Discordbot|Xing-preview|ZoominfoBot/i
 
 export const config = {
   matcher: ['/event', '/event/(.*)'],
@@ -14,9 +15,8 @@ export const config = {
 export default function middleware(request: Request) {
   const ua = request.headers.get('user-agent') || ''
   if (BOT_UA.test(ua)) {
-    const url = new URL(request.url)
-    // Static preview page with correct OG tags + image
-    return rewrite(new URL('/event-preview.html', url.origin))
+    return rewrite(new URL('/api/event-share', request.url))
   }
+  // Humans: fall through to static SPA + vercel.json /event rewrite
   return next()
 }

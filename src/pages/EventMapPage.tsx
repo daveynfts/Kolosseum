@@ -1399,59 +1399,37 @@ export function EventMapPage() {
         </div>
       </header>
 
-      <div className="emp-chrome-bar">
-        <button
-          type="button"
-          className={`emp-chrome-bar__btn ${filtersOpen ? 'is-on' : ''}`}
-          onClick={() => setFiltersOpen((v) => !v)}
-          aria-expanded={filtersOpen}
-          title={filtersOpen ? tt('calendarHide') : tt('calendarShow')}
-        >
-          {filtersOpen ? tt('calendarHide') : tt('calendarShow')}
-        </button>
-        {!filtersOpen && (
-          <span className="emp-chrome-bar__hint">
-            {tt('calendarCollapsedHint')}
-            {dateFilter !== 'all' &&
-            dateFilter !== 'tbd' &&
-            dateFilter !== '__default__'
-              ? ` · ${formatShortDate(dateFilter)}`
-              : ''}
+      {isMobile && (
+        <div className="emp-chrome-bar emp-chrome-bar--mobile">
+          <button
+            type="button"
+            className="emp-chrome-bar__btn is-primary"
+            onClick={() => {
+              if (sheetMode === 'peek') setSheetMode('half')
+              else if (sheetMode === 'half') setSheetMode('full')
+              else setSheetMode('half')
+            }}
+          >
+            {sheetMode === 'peek' ? tt('fabListOpen') : tt('fabList')}
             {filtered.length ? ` · ${filtered.length}` : ''}
-          </span>
-        )}
-        {isMobile && (
-          <>
-            <button
-              type="button"
-              className="emp-chrome-bar__btn is-primary"
-              onClick={() => {
-                if (sheetMode === 'peek') setSheetMode('half')
-                else if (sheetMode === 'half') setSheetMode('full')
-                else setSheetMode('half')
-              }}
-            >
-              {sheetMode === 'peek' ? tt('fabListOpen') : tt('fabList')}
-              {filtered.length ? ` · ${filtered.length}` : ''}
-            </button>
-            <button
-              type="button"
-              className="emp-chrome-bar__btn"
-              onClick={() => {
-                requestMyLocation()
-                setToolsOpen(false)
-              }}
-              disabled={geoBusy}
-            >
-              {geoBusy ? '…' : tt('fabLocate')}
-            </button>
-          </>
-        )}
-      </div>
+          </button>
+          <button
+            type="button"
+            className="emp-chrome-bar__btn"
+            onClick={() => {
+              requestMyLocation()
+              setToolsOpen(false)
+            }}
+            disabled={geoBusy}
+          >
+            {geoBusy ? '…' : tt('fabLocate')}
+          </button>
+        </div>
+      )}
 
       <div className={`emp__filters${filtersOpen ? '' : ' is-collapsed'}`}>
         <div className="emp-week" role="group" aria-label={tt('filterDays')}>
-          <div className="emp-week__bar">
+          <div className="emp-week__bar emp-week__bar--sticky">
             <div className="emp-week__meta">
               <div className="emp-week__title-row">
                 <span className="emp-week__month">{calMonthLabel}</span>
@@ -1464,26 +1442,44 @@ export function EventMapPage() {
                   >
                     {tt('all')}
                   </button>
+                  <button
+                    type="button"
+                    className={`emp-week__seg-btn emp-week__seg-btn--min ${!filtersOpen ? 'is-on' : ''}`}
+                    onClick={() => setFiltersOpen((v) => !v)}
+                    aria-expanded={filtersOpen}
+                    title={
+                      filtersOpen ? tt('calendarHide') : tt('calendarShow')
+                    }
+                  >
+                    {filtersOpen ? tt('calendarHide') : tt('calendarShow')}
+                  </button>
                 </div>
               </div>
-              {dateFilter !== 'all' && dateFilter !== 'tbd' && dateFilter !== '__default__' ? (
+              {dateFilter !== 'all' &&
+              dateFilter !== 'tbd' &&
+              dateFilter !== '__default__' ? (
                 <span className="emp-week__selected-label">
                   {formatWeekdayShort(dateFilter, locale)} ·{' '}
                   {formatShortDate(dateFilter)}
                   {mainForumMeta(dateFilter)
                     ? ` · ${mainForumMeta(dateFilter)!.short}`
                     : ''}
+                  {!filtersOpen ? ` · ${tt('calendarCollapsedHint')}` : ''}
                 </span>
               ) : (
                 <span className="emp-week__selected-label">
                   {dateFilter === 'tbd'
                     ? tt('dateUnconfirmed')
                     : tt('eventsInWeek', { n: totalEvents })}
+                  {!filtersOpen ? ` · ${tt('calendarCollapsedHint')}` : ''}
                 </span>
               )}
             </div>
           </div>
 
+          <div
+            className={`emp-week__collapsible${filtersOpen ? '' : ' is-collapsed'}`}
+          >
           <div className="emp-week__days" role="listbox" aria-label={tt('pickDay')}>
             {dates.map((d) => {
               const count = countsByDate.get(d) || 0
@@ -1704,65 +1700,68 @@ export function EventMapPage() {
               <p className="emp-timeline__legend">{tt('timelineLegend')}</p>
             </div>
           )}
-        </div>
 
-        <div className="emp__filter-row emp__filter-row--types">
-          <button
-            type="button"
-            className={`emp__chip ${typeFilter === 'all' ? 'is-active' : ''}`}
-            onClick={() => {
-              setTypeFilter('all')
-              userMovedMapRef.current = false
-              lastFitKeyRef.current = ''
-            }}
-          >
-            {tt('typesAll')}
-          </button>
-          {EVENT_TYPES.filter((t) => (typeCounts.get(t) || 0) > 0).map((t) => (
+          <div className="emp__filter-row emp__filter-row--types">
             <button
-              key={t}
               type="button"
-              className={`emp__chip ${typeFilter === t ? 'is-active' : ''}`}
+              className={`emp__chip ${typeFilter === 'all' ? 'is-active' : ''}`}
               onClick={() => {
-                setTypeFilter(t)
+                setTypeFilter('all')
                 userMovedMapRef.current = false
                 lastFitKeyRef.current = ''
               }}
-              style={
-                typeFilter === t
-                  ? { background: EVENT_TYPE_COLORS[t], color: '#0f172a' }
-                  : undefined
-              }
             >
-              {EVENT_TYPE_LABELS[t]} ({typeCounts.get(t)})
+              {tt('typesAll')}
             </button>
-          ))}
-          <button
-            type="button"
-            className={`emp__chip ${freeOnly ? 'is-active' : ''}`}
-            onClick={() => {
-              setFreeOnly((v) => !v)
-              userMovedMapRef.current = false
-              lastFitKeyRef.current = ''
-            }}
-          >
-            {tt('freeOnly')}
-          </button>
-          <input
-            className="emp__search"
-            type="search"
-            placeholder={tt('searchPh')}
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-          />
-          <span className="emp__meta">
-            {tt('metaEvents', { n: filtered.length })}
-            {mapEvents.length < filtered.length
-              ? tt('metaOnMap', { n: mapEvents.length })
-              : ''}
-            {sortMode === 'upcoming' ? tt('metaSortUpcoming') : ''}
-            {sortMode === 'nearest' ? tt('metaSortNearest') : ''}
-          </span>
+            {EVENT_TYPES.filter((t) => (typeCounts.get(t) || 0) > 0).map(
+              (t) => (
+                <button
+                  key={t}
+                  type="button"
+                  className={`emp__chip ${typeFilter === t ? 'is-active' : ''}`}
+                  onClick={() => {
+                    setTypeFilter(t)
+                    userMovedMapRef.current = false
+                    lastFitKeyRef.current = ''
+                  }}
+                  style={
+                    typeFilter === t
+                      ? { background: EVENT_TYPE_COLORS[t], color: '#0f172a' }
+                      : undefined
+                  }
+                >
+                  {EVENT_TYPE_LABELS[t]} ({typeCounts.get(t)})
+                </button>
+              ),
+            )}
+            <button
+              type="button"
+              className={`emp__chip ${freeOnly ? 'is-active' : ''}`}
+              onClick={() => {
+                setFreeOnly((v) => !v)
+                userMovedMapRef.current = false
+                lastFitKeyRef.current = ''
+              }}
+            >
+              {tt('freeOnly')}
+            </button>
+            <input
+              className="emp__search"
+              type="search"
+              placeholder={tt('searchPh')}
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+            />
+            <span className="emp__meta">
+              {tt('metaEvents', { n: filtered.length })}
+              {mapEvents.length < filtered.length
+                ? tt('metaOnMap', { n: mapEvents.length })
+                : ''}
+              {sortMode === 'upcoming' ? tt('metaSortUpcoming') : ''}
+              {sortMode === 'nearest' ? tt('metaSortNearest') : ''}
+            </span>
+          </div>
+          </div>
         </div>
       </div>
 

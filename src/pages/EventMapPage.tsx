@@ -15,7 +15,6 @@ import {
   buildConflictMap,
   buildDayTimeline,
   calendarStripDates,
-  conflictLabel,
   directionsUrl,
   eventDistanceKm,
   eventOccursOnDate,
@@ -2063,10 +2062,7 @@ export function EventMapPage() {
                             </span>
                           )}
                           {conflicted && (
-                            <span
-                              className="emp__badge emp__badge--conflict"
-                              title={conflictLabel(conflicts, 2, locale)}
-                            >
+                            <span className="emp__badge emp__badge--conflict">
                               {tt('badgeConflict', { n: conflicts.length })}
                             </span>
                           )}
@@ -2128,12 +2124,62 @@ export function EventMapPage() {
                           {ev.locationTbd ? tt('metaLocTbd') : ''}
                         </p>
                         {conflicted ? (
-                          <p className="emp__card-conflict">
-                            ⚠ {conflictLabel(conflicts, 2, locale)}
-                            <span className="emp__card-conflict-hint">
-                              {tt('conflictHint')}
-                            </span>
-                          </p>
+                          <div className="emp__card-conflict emp__card-conflict--thumbs">
+                            <div className="emp__card-conflict-head">
+                              <span className="emp__card-conflict-label">
+                                {tt('conflictPick')}
+                              </span>
+                              <span className="emp__card-conflict-hint">
+                                {tt('conflictPickHint')}
+                              </span>
+                            </div>
+                            <div
+                              className="emp__card-conflict-thumbs"
+                              role="list"
+                            >
+                              {conflicts.map((other) => {
+                                const time = other.endTime
+                                  ? `${formatLumaTime(other.startTime)}–${formatLumaTime(other.endTime)}`
+                                  : formatLumaTime(other.startTime)
+                                return (
+                                  <button
+                                    key={other.id}
+                                    type="button"
+                                    role="listitem"
+                                    className="emp__card-conflict-thumb"
+                                    title={`${other.title} · ${time}${other.venue ? ` · ${other.venue}` : ''}`}
+                                    onClick={(e) => {
+                                      e.stopPropagation()
+                                      selectEvent(other, true)
+                                    }}
+                                  >
+                                    {other.imageUrl ? (
+                                      <img
+                                        src={toSquareImageUrl(other.imageUrl, 120)}
+                                        alt=""
+                                        loading="lazy"
+                                        referrerPolicy="no-referrer"
+                                      />
+                                    ) : (
+                                      <span
+                                        className="emp__card-conflict-thumb-fb"
+                                        style={{
+                                          background:
+                                            EVENT_TYPE_COLORS[other.type] ||
+                                            EVENT_TYPE_COLORS.other,
+                                        }}
+                                      >
+                                        {(other.title || '?').slice(0, 1)}
+                                      </span>
+                                    )}
+                                    <span className="emp__card-conflict-thumb-time">
+                                      {other.startTime || '—'}
+                                    </span>
+                                  </button>
+                                )
+                              })}
+                            </div>
+                          </div>
                         ) : null}
                         <div className="emp__card-actions">
                           {ev.link ? (

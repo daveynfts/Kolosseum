@@ -1624,9 +1624,101 @@
   border: 1px solid rgba(251, 146, 60, 0.35);
 }
 
+.emp__card-conflict--thumbs {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.emp__card-conflict-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.25rem 0.5rem;
+}
+
+.emp__card-conflict-label {
+  font-size: 0.72rem;
+  font-weight: 750;
+  color: #ffedd5;
+  letter-spacing: -0.01em;
+}
+
 .emp__card-conflict-hint {
-  color: rgba(254, 215, 170, 0.75);
-  font-weight: 400;
+  color: rgba(254, 215, 170, 0.72);
+  font-weight: 500;
+  font-size: 0.68rem;
+}
+
+.emp__card-conflict-thumbs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.emp__card-conflict-thumb {
+  appearance: none;
+  position: relative;
+  width: 52px;
+  height: 52px;
+  padding: 0;
+  border: 1.5px solid rgba(251, 146, 60, 0.55);
+  border-radius: 10px;
+  overflow: hidden;
+  background: #1e293b;
+  cursor: pointer;
+  flex: 0 0 auto;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    transform 0.12s ease,
+    border-color 0.12s ease,
+    box-shadow 0.12s ease;
+}
+
+.emp__card-conflict-thumb:hover {
+  transform: translateY(-2px) scale(1.04);
+  border-color: #fdba74;
+  box-shadow: 0 4px 14px rgba(251, 146, 60, 0.35);
+}
+
+.emp__card-conflict-thumb:active {
+  transform: scale(0.97);
+}
+
+.emp__card-conflict-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.emp__card-conflict-thumb-fb {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  font-weight: 800;
+  font-size: 1rem;
+  color: #0f172a;
+}
+
+.emp__card-conflict-thumb-time {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 0.12rem 0.15rem;
+  font-size: 0.55rem;
+  font-weight: 750;
+  letter-spacing: -0.02em;
+  text-align: center;
+  color: #fff;
+  background: linear-gradient(
+    180deg,
+    transparent,
+    rgba(0, 0, 0, 0.82)
+  );
+  font-variant-numeric: tabular-nums;
 }
 
 /* Day timeline conflict strip */
@@ -2876,6 +2968,17 @@
     min-height: 34px;
     padding: 0.42rem 0.7rem;
     font-size: 0.74rem;
+  }
+
+  .emp__card-conflict-thumb {
+    width: 56px;
+    height: 56px;
+    border-radius: 11px;
+  }
+
+  .emp__card-conflict-thumb-time {
+    font-size: 0.58rem;
+    padding: 0.15rem 0.2rem;
   }
 
   .emp__body {

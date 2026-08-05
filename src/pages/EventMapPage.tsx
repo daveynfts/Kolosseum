@@ -1575,14 +1575,12 @@ export function EventMapPage() {
                   {mainForumMeta(dateFilter)
                     ? ` · ${mainForumMeta(dateFilter)!.short}`
                     : ''}
-                  {!filtersOpen ? ` · ${tt('calendarCollapsedHint')}` : ''}
                 </span>
               ) : (
                 <span className="emp-week__selected-label">
                   {dateFilter === 'tbd'
                     ? tt('dateUnconfirmed')
                     : tt('eventsInWeek', { n: totalEvents })}
-                  {!filtersOpen ? ` · ${tt('calendarCollapsedHint')}` : ''}
                 </span>
               )}
             </div>

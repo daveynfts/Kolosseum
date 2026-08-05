@@ -19,7 +19,9 @@ import {
   assertNotStale,
   enforcePublicRateLimit,
   isAdmin,
+  isGetOrHead,
   readBaseUpdatedAt,
+  sendJson,
 } from '../lib/server/apiHelpers.js'
 
 type Body = {
@@ -33,7 +35,7 @@ type Body = {
 
 function cors(res: VercelResponse) {
   res.setHeader('Access-Control-Allow-Origin', '*')
-  res.setHeader('Access-Control-Allow-Methods', 'GET, PUT, OPTIONS')
+  res.setHeader('Access-Control-Allow-Methods', 'GET, HEAD, PUT, OPTIONS')
   res.setHeader(
     'Access-Control-Allow-Headers',
     'Content-Type, Authorization',
@@ -79,26 +81,26 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   try {
-    if (req.method === 'GET') {
+    if (isGetOrHead(req.method)) {
       if (!enforcePublicRateLimit(req, res, 'kol-reports', 90)) return
       const wantAll =
         String(req.query.all || '') === '1' ||
         String(req.query.scope || '') === 'admin'
       if (wantAll && !isAdmin(req)) {
-        return res.status(401).json({
+        return sendJson(req, res, 401, {
           error: 'unauthorized',
           message: 'Admin token required for full reports dataset',
         })
       }
       const data = await r2GetJson<Body>(client, KOL_REPORTS_OBJECT_KEY)
       if (!data) {
-        return res.status(404).json({
+        return sendJson(req, res, 404, {
           error: 'empty',
           message: 'No KOL reports on server yet.',
         })
       }
-      if (wantAll) return res.status(200).json(data)
-      return res.status(200).json(publicSlice(data))
+      if (wantAll) return sendJson(req, res, 200, data)
+      return sendJson(req, res, 200, publicSlice(data))
     }
 
     if (req.method === 'PUT') {

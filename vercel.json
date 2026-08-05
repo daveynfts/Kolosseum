@@ -5,12 +5,12 @@
   "redirects": [
     {
       "source": "/api/og-conviction-events",
-      "destination": "/og/conviction-2026-events.jpg",
+      "destination": "https://radar.daveynfts.com/og/conviction-2026-events.jpg?v=20260805c",
       "permanent": false
     },
     {
       "source": "/api/event-share",
-      "destination": "/event-preview.html",
+      "destination": "https://radar.daveynfts.com/event-preview.html",
       "permanent": false
     }
   ],
@@ -39,6 +39,24 @@
         {
           "key": "Cache-Control",
           "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
+    {
+      "source": "/og/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=86400, stale-while-revalidate=604800"
+        }
+      ]
+    },
+    {
+      "source": "/favicon-(32|64).png",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=604800, immutable"
         }
       ]
     }

@@ -12,7 +12,9 @@ import {
   cors as applyCors,
   enforcePublicRateLimit,
   isAdmin,
+  isGetOrHead,
   jsonError,
+  sendJson,
 } from '../lib/server/apiHelpers.js'
 
 type TweetOut = {
@@ -105,10 +107,10 @@ function toIso(created: unknown): string {
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  applyCors(res, 'GET, OPTIONS', 'Content-Type, Authorization')
+  applyCors(res, 'GET, HEAD, OPTIONS', 'Content-Type, Authorization')
   res.setHeader('Cache-Control', 'no-store')
   if (req.method === 'OPTIONS') return res.status(204).end()
-  if (req.method !== 'GET') {
+  if (!isGetOrHead(req.method)) {
     return jsonError(res, 405, 'method_not_allowed')
   }
   if (!enforcePublicRateLimit(req, res, 'x-status', 40)) return
@@ -118,7 +120,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   const rawUrl = String(req.query.url || req.query.u || '').trim()
   if (!rawUrl) {
-    return res.status(400).json({
+    return sendJson(req, res, 400, {
       error: 'missing_url',
       message: 'Pass ?url=https://x.com/user/status/ID',
     })
@@ -126,7 +128,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   const parsed = parseXStatusUrl(rawUrl)
   if (!parsed) {
-    return res.status(400).json({
+    return sendJson(req, res, 400, {
       error: 'invalid_url',
       message: 'Not a valid X/Twitter status URL',
     })
@@ -171,7 +173,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   if (!tweet) {
-    return res.status(502).json({
+    return sendJson(req, res, 502, {
       error: 'fetch_failed',
       message: 'Could not load status from fxtwitter/vxtwitter',
       errors,
@@ -256,7 +258,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     source: sourceUsed || 'fxtwitter',
   }
 
-  return res.status(200).json({
+  return sendJson(req, res, 200, {
     ok: true,
     post: out,
     cache: {

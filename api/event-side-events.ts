@@ -19,7 +19,9 @@ import {
   assertNotStale,
   bearer,
   enforcePublicRateLimit,
+  isGetOrHead,
   readBaseUpdatedAt,
+  sendJson,
 } from '../lib/server/apiHelpers.js'
 import { cacheEventImageUrls } from '../lib/server/mediaCache.js'
 
@@ -47,7 +49,7 @@ type Body = {
 
 function cors(res: VercelResponse) {
   res.setHeader('Access-Control-Allow-Origin', '*')
-  res.setHeader('Access-Control-Allow-Methods', 'GET, PUT, OPTIONS')
+  res.setHeader('Access-Control-Allow-Methods', 'GET, HEAD, PUT, OPTIONS')
   res.setHeader(
     'Access-Control-Allow-Headers',
     'Content-Type, Authorization',
@@ -90,17 +92,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   try {
-    if (req.method === 'GET') {
+    if (isGetOrHead(req.method)) {
       if (!enforcePublicRateLimit(req, res, 'event-side-events', 90)) return
       const data = await r2GetJson<Body>(client, EVENT_SIDE_EVENTS_OBJECT_KEY)
       if (!data || !Array.isArray(data.events)) {
-        return res.status(404).json({
+        return sendJson(req, res, 404, {
           error: 'empty',
           message:
             'No side-event data yet. Admin → Events → Save to publish.',
         })
       }
-      return res.status(200).json(data)
+      return sendJson(req, res, 200, data)
     }
 
     if (req.method === 'PUT') {

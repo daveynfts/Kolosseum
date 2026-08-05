@@ -6,6 +6,7 @@ import type { VercelRequest, VercelResponse } from '@vercel/node'
 import {
   cors,
   enforcePublicRateLimit,
+  isGetOrHead,
   jsonError,
 } from '../lib/server/apiHelpers.js'
 import {
@@ -16,9 +17,9 @@ import {
 } from '../lib/server/r2.js'
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  cors(res, 'GET, OPTIONS')
+  cors(res, 'GET, HEAD, OPTIONS')
   if (req.method === 'OPTIONS') return res.status(204).end()
-  if (req.method !== 'GET') {
+  if (!isGetOrHead(req.method)) {
     return jsonError(res, 405, 'method_not_allowed')
   }
   if (!enforcePublicRateLimit(req, res, 'media', 120)) return
@@ -45,6 +46,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     res.setHeader('Content-Type', obj.contentType || 'image/jpeg')
     res.setHeader('Cache-Control', 'public, max-age=604800, immutable')
     res.setHeader('X-Media-Source', 'cloudflare-r2')
+    if (req.method === 'HEAD') return res.status(200).end()
     return res.status(200).send(obj.body)
   } catch (e) {
     console.error('[api/media]', e)

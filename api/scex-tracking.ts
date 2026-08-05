@@ -19,7 +19,9 @@ import {
   assertNotStale,
   bearer,
   enforcePublicRateLimit,
+  isGetOrHead,
   readBaseUpdatedAt,
+  sendJson,
 } from '../lib/server/apiHelpers.js'
 
 type Body = {
@@ -36,7 +38,7 @@ type Body = {
 
 function cors(res: VercelResponse) {
   res.setHeader('Access-Control-Allow-Origin', '*')
-  res.setHeader('Access-Control-Allow-Methods', 'GET, PUT, OPTIONS')
+  res.setHeader('Access-Control-Allow-Methods', 'GET, HEAD, PUT, OPTIONS')
   res.setHeader(
     'Access-Control-Allow-Headers',
     'Content-Type, Authorization',
@@ -62,16 +64,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   try {
-    if (req.method === 'GET') {
+    if (isGetOrHead(req.method)) {
       if (!enforcePublicRateLimit(req, res, 'scex-tracking', 90)) return
       const data = await r2GetJson<Body>(client, SCEX_TRACKING_OBJECT_KEY)
       if (!data || !data.config) {
-        return res.status(404).json({
+        return sendJson(req, res, 404, {
           error: 'empty',
           message: 'No SCEX tracking data on server yet. Admin → SCEX → Save.',
         })
       }
-      return res.status(200).json(data)
+      return sendJson(req, res, 200, data)
     }
 
     if (req.method === 'PUT') {

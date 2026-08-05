@@ -70,6 +70,27 @@ export function jsonError(
   return res.status(status).json({ error, ...extra })
 }
 
+/** Public read verbs (health checks / curl -I use HEAD). */
+export function isGetOrHead(method?: string | null): boolean {
+  return method === 'GET' || method === 'HEAD'
+}
+
+/**
+ * JSON response for GET; HEAD returns the same status with empty body
+ * (so monitoring tools get 200 instead of 405).
+ */
+export function sendJson(
+  req: VercelRequest,
+  res: VercelResponse,
+  status: number,
+  body: unknown,
+): VercelResponse {
+  if (req.method === 'HEAD') {
+    return res.status(status).end()
+  }
+  return res.status(status).json(body)
+}
+
 export function conflictResponse(
   res: VercelResponse,
   message: string,

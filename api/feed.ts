@@ -23,7 +23,9 @@ import {
   bearer,
   debugAllowed,
   enforcePublicRateLimit,
+  isGetOrHead,
   readBaseUpdatedAt,
+  sendJson,
 } from '../lib/server/apiHelpers.js'
 
 type FeedBody = {
@@ -37,7 +39,7 @@ type FeedBody = {
 
 function cors(res: VercelResponse) {
   res.setHeader('Access-Control-Allow-Origin', '*')
-  res.setHeader('Access-Control-Allow-Methods', 'GET, PUT, DELETE, OPTIONS')
+  res.setHeader('Access-Control-Allow-Methods', 'GET, HEAD, PUT, DELETE, OPTIONS')
   res.setHeader(
     'Access-Control-Allow-Headers',
     'Content-Type, Authorization',
@@ -49,11 +51,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   cors(res)
   if (req.method === 'OPTIONS') return res.status(204).end()
 
-  if (req.method === 'GET' && (req.query.debug === '1' || req.query.debug === 'true')) {
+  if (
+    isGetOrHead(req.method) &&
+    (req.query.debug === '1' || req.query.debug === 'true')
+  ) {
     if (!debugAllowed(req)) {
-      return res.status(401).json({ error: 'unauthorized' })
+      return sendJson(req, res, 401, { error: 'unauthorized' })
     }
-    return res.status(200).json({
+    return sendJson(req, res, 200, {
       ok: true,
       storage: 'cloudflare-r2',
       r2Ready: r2Configured(),
@@ -72,16 +77,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   try {
-    if (req.method === 'GET') {
+    if (isGetOrHead(req.method)) {
       if (!enforcePublicRateLimit(req, res, 'feed', 90)) return
       const data = await r2GetJson<FeedBody>(client, FEED_OBJECT_KEY)
       if (!data || !Array.isArray(data.posts)) {
-        return res.status(404).json({
+        return sendJson(req, res, 404, {
           error: 'empty',
           message: 'No feed on server yet. Save from Admin → Feed.',
         })
       }
-      return res.status(200).json(data)
+      return sendJson(req, res, 200, data)
     }
 
     if (req.method === 'PUT') {

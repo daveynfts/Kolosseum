@@ -19,7 +19,7 @@ import {
 
 function cors(res: VercelResponse) {
   res.setHeader('Access-Control-Allow-Origin', '*')
-  res.setHeader('Access-Control-Allow-Methods', 'GET, PUT, OPTIONS')
+  res.setHeader('Access-Control-Allow-Methods', 'GET, HEAD, PUT, OPTIONS')
   res.setHeader(
     'Access-Control-Allow-Headers',
     'Content-Type, Authorization',
@@ -154,12 +154,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   const key = avatarKey(handle)
 
-  if (req.method === 'GET') {
+  if (req.method === 'GET' || req.method === 'HEAD') {
     try {
       const obj = await r2GetObject(client, key)
       if (!obj) return res.status(404).json({ error: 'not_found' })
       res.setHeader('Content-Type', obj.contentType || 'image/jpeg')
       res.setHeader('Cache-Control', 'public, max-age=3600')
+      if (req.method === 'HEAD') return res.status(200).end()
       return res.status(200).send(obj.body)
     } catch (e) {
       console.error('[api/avatar GET]', e)

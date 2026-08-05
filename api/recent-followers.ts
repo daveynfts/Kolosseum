@@ -18,7 +18,9 @@ import {
   bearer,
   debugAllowed,
   enforcePublicRateLimit,
+  isGetOrHead,
   readBaseUpdatedAt,
+  sendJson,
 } from '../lib/server/apiHelpers.js'
 
 type Body = {
@@ -35,7 +37,7 @@ type Body = {
 
 function cors(res: VercelResponse) {
   res.setHeader('Access-Control-Allow-Origin', '*')
-  res.setHeader('Access-Control-Allow-Methods', 'GET, PUT, OPTIONS')
+  res.setHeader('Access-Control-Allow-Methods', 'GET, HEAD, PUT, OPTIONS')
   res.setHeader(
     'Access-Control-Allow-Headers',
     'Content-Type, Authorization',
@@ -47,11 +49,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   cors(res)
   if (req.method === 'OPTIONS') return res.status(204).end()
 
-  if (req.method === 'GET' && (req.query.debug === '1' || req.query.debug === 'true')) {
+  if (
+    isGetOrHead(req.method) &&
+    (req.query.debug === '1' || req.query.debug === 'true')
+  ) {
     if (!debugAllowed(req)) {
-      return res.status(401).json({ error: 'unauthorized' })
+      return sendJson(req, res, 401, { error: 'unauthorized' })
     }
-    return res.status(200).json({
+    return sendJson(req, res, 200, {
       ok: true,
       storage: 'cloudflare-r2',
       key: RECENT_FOLLOWERS_OBJECT_KEY,
@@ -69,16 +74,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   try {
-    if (req.method === 'GET') {
+    if (isGetOrHead(req.method)) {
       if (!enforcePublicRateLimit(req, res, 'recent-followers', 90)) return
       const data = await r2GetJson<Body>(client, RECENT_FOLLOWERS_OBJECT_KEY)
       if (!data?.map || typeof data.map !== 'object') {
-        return res.status(404).json({
+        return sendJson(req, res, 404, {
           error: 'empty',
           message: 'No recent-followers map on server yet.',
         })
       }
-      return res.status(200).json(data)
+      return sendJson(req, res, 200, data)
     }
 
     if (req.method === 'PUT') {

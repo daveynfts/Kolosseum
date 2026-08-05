@@ -26,8 +26,10 @@ import {
   conflictResponse,
   cors,
   enforcePublicRateLimit,
+  isGetOrHead,
   jsonError,
   readBaseUpdatedAt,
+  sendJson,
 } from '../lib/server/apiHelpers.js'
 
 export const config = {
@@ -214,7 +216,7 @@ async function handleImagePut(
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  cors(res, 'GET, PUT, OPTIONS', 'Content-Type, Authorization, X-Filename')
+  cors(res, 'GET, HEAD, PUT, OPTIONS', 'Content-Type, Authorization, X-Filename')
   res.setHeader('Cache-Control', 'no-store')
   if (req.method === 'OPTIONS') return res.status(204).end()
 
@@ -227,15 +229,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   try {
-    if (req.method === 'GET') {
+    if (isGetOrHead(req.method)) {
       if (!enforcePublicRateLimit(req, res, 'site-banner', 90)) return
       const data = await r2GetJson<Body>(client, SITE_BANNER_OBJECT_KEY)
       if (!data || typeof data.href !== 'string') {
-        return jsonError(res, 404, 'empty', {
+        return sendJson(req, res, 404, {
+          error: 'empty',
           message: 'No banner config on server yet. Admin → Banner → Save.',
         })
       }
-      return res.status(200).json(data)
+      return sendJson(req, res, 200, data)
     }
 
     if (req.method === 'PUT') {

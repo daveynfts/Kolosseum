@@ -1,6 +1,10 @@
 // @vitest-environment node
 import { describe, expect, it } from 'vitest'
-import { assertNotStale, readBaseUpdatedAt } from './apiHelpers.js'
+import {
+  assertNotStale,
+  isGetOrHead,
+  readBaseUpdatedAt,
+} from './apiHelpers.js'
 import { checkRateLimit } from './rateLimit.js'
 
 describe('assertNotStale', () => {
@@ -45,5 +49,14 @@ describe('checkRateLimit', () => {
     const blocked = checkRateLimit('ip1', 2, 60_000, t0 + 2)
     expect(blocked.ok).toBe(false)
     if (!blocked.ok) expect(blocked.retryAfterSec).toBeGreaterThan(0)
+  })
+})
+
+describe('isGetOrHead', () => {
+  it('accepts GET and HEAD only', () => {
+    expect(isGetOrHead('GET')).toBe(true)
+    expect(isGetOrHead('HEAD')).toBe(true)
+    expect(isGetOrHead('PUT')).toBe(false)
+    expect(isGetOrHead(undefined)).toBe(false)
   })
 })

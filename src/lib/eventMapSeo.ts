@@ -10,7 +10,7 @@ const DESCRIPTION_EN =
   'Interactive map of Conviction 2026 side events in Ho Chi Minh City · 14–15 Aug · calendar, pins, distance & schedule conflicts.'
 /** Cache-bust query when replacing the product screenshot OG card. */
 const OG_IMAGE =
-  'https://radar.daveynfts.com/og/conviction-2026-events.jpg?v=20260805b'
+  'https://radar.daveynfts.com/og/conviction-2026-events.jpg?v=20260805c'
 const CANONICAL = 'https://radar.daveynfts.com/event/conviction-2026'
 
 function upsertMeta(

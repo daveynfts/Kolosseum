@@ -21,7 +21,9 @@ import {
   bearer,
   debugAllowed,
   enforcePublicRateLimit,
+  isGetOrHead,
   readBaseUpdatedAt,
+  sendJson,
 } from '../lib/server/apiHelpers.js'
 
 type KolsBody = {
@@ -38,7 +40,7 @@ type KolsBody = {
 
 function cors(res: VercelResponse) {
   res.setHeader('Access-Control-Allow-Origin', '*')
-  res.setHeader('Access-Control-Allow-Methods', 'GET, PUT, DELETE, OPTIONS')
+  res.setHeader('Access-Control-Allow-Methods', 'GET, HEAD, PUT, DELETE, OPTIONS')
   res.setHeader(
     'Access-Control-Allow-Headers',
     'Content-Type, Authorization',
@@ -50,11 +52,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   cors(res)
   if (req.method === 'OPTIONS') return res.status(204).end()
 
-  if (req.method === 'GET' && (req.query.debug === '1' || req.query.debug === 'true')) {
+  if (
+    isGetOrHead(req.method) &&
+    (req.query.debug === '1' || req.query.debug === 'true')
+  ) {
     if (!debugAllowed(req)) {
-      return res.status(401).json({ error: 'unauthorized' })
+      return sendJson(req, res, 401, { error: 'unauthorized' })
     }
-    return res.status(200).json({
+    return sendJson(req, res, 200, {
       ok: true,
       storage: 'cloudflare-r2',
       key: KOLS_OBJECT_KEY,
@@ -74,16 +79,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   try {
-    if (req.method === 'GET') {
+    if (isGetOrHead(req.method)) {
       if (!enforcePublicRateLimit(req, res, 'kols', 90)) return
       const data = await r2GetJson<KolsBody>(client, KOLS_OBJECT_KEY)
       if (!data || !Array.isArray(data.kols) || data.kols.length === 0) {
-        return res.status(404).json({
+        return sendJson(req, res, 404, {
           error: 'empty',
           message: 'No KOL list on server yet. Save from Admin → Save to server.',
         })
       }
-      return res.status(200).json(data)
+      return sendJson(req, res, 200, data)
     }
 
     if (req.method === 'PUT') {

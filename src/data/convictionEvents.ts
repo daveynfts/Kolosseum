@@ -106,6 +106,41 @@ export function mainForumMeta(isoDate: string) {
   return MAIN_FORUM_DAYS[isoDate] || null
 }
 
+/** Stable id for the multi-day Conviction main forum entry on the map. */
+export const MAIN_EVENT_ID = 'conviction-2026-main-event'
+
+export function isMainEvent(ev: { id: string } | null | undefined): boolean {
+  return !!ev && ev.id === MAIN_EVENT_ID
+}
+
+/**
+ * Side event co-located at Thiskyhall Sala (e.g. Special AI Forum stage).
+ * Used to label "Stage / Side" pins smaller than the Main forum pin.
+ */
+export function isMainVenueSideStage(
+  ev: SideEvent,
+  venue: { lat: number; lng: number } = SALA_VENUE,
+  maxKm = 0.15,
+): boolean {
+  if (isMainEvent(ev) || ev.locationTbd) return false
+  if (!Number.isFinite(ev.lat) || !Number.isFinite(ev.lng)) return false
+  return distanceKm(ev.lat, ev.lng, venue.lat, venue.lng) <= maxKm
+}
+
+/** Split a day's list: Main forum first, then side events. */
+export function partitionMainAndSide(events: SideEvent[]): {
+  main: SideEvent[]
+  side: SideEvent[]
+} {
+  const main: SideEvent[] = []
+  const side: SideEvent[] = []
+  for (const ev of events) {
+    if (isMainEvent(ev)) main.push(ev)
+    else side.push(ev)
+  }
+  return { main, side }
+}
+
 /**
  * Main forum wall-clock (Asia/Ho_Chi_Minh) — Luma Main Event:
  * Fri 14 Aug 08:00 → Sat 15 Aug 18:00 GMT+7 · Thiskyhall Sala, Thủ Đức.
@@ -1024,8 +1059,8 @@ export function pinDisplayPositions(
     }
     const sorted = [...group].sort((a, b) => {
       // Keep Main Event as anchor (first) then by start time / title
-      if (a.id === 'conviction-2026-main-event') return -1
-      if (b.id === 'conviction-2026-main-event') return 1
+      if (a.id === MAIN_EVENT_ID) return -1
+      if (b.id === MAIN_EVENT_ID) return 1
       if (a.startTime !== b.startTime) {
         return a.startTime.localeCompare(b.startTime)
       }

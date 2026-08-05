@@ -1473,6 +1473,20 @@
   font-weight: 700;
 }
 
+.emp__badge--stage {
+  background: rgba(167, 139, 250, 0.2);
+  color: #c4b5fd;
+  border: 1px solid rgba(167, 139, 250, 0.35);
+  font-weight: 600;
+}
+
+.emp__badge--side {
+  background: rgba(56, 189, 248, 0.12);
+  color: #7dd3fc;
+  border: 1px solid rgba(56, 189, 248, 0.22);
+  font-weight: 600;
+}
+
 .emp__badge--today {
   background: rgba(251, 191, 36, 0.2);
   color: #fcd34d;
@@ -1483,6 +1497,57 @@
   box-shadow:
     0 0 0 1px rgba(251, 191, 36, 0.12) inset,
     0 8px 24px rgba(0, 0, 0, 0.28);
+}
+
+.emp__card--stage {
+  border-color: rgba(167, 139, 250, 0.32);
+  box-shadow:
+    0 0 0 1px rgba(167, 139, 250, 0.1) inset,
+    0 6px 18px rgba(0, 0, 0, 0.24);
+}
+
+/* List sections: Main forum vs Side events */
+.emp__section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  margin-bottom: 0.85rem;
+}
+
+.emp__section-label {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.4rem 0.65rem;
+  padding: 0.35rem 0.15rem 0.15rem;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: linear-gradient(
+    180deg,
+    rgba(3, 3, 5, 0.96) 60%,
+    rgba(3, 3, 5, 0)
+  );
+}
+
+.emp__section-kicker {
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.emp__section-label--main .emp__section-kicker {
+  color: #fbbf24;
+}
+
+.emp__section-label--side .emp__section-kicker {
+  color: #7dd3fc;
+}
+
+.emp__section-hint {
+  font-size: 0.72rem;
+  color: var(--emp-muted);
 }
 
 .emp__empty {
@@ -1635,16 +1700,65 @@
     0 6px 16px rgba(251, 191, 36, 0.25);
 }
 
-/* Main forum pin — largest gold ring at Sala */
+/* Main forum pin — largest gold ring at Sala, always on top */
+.emp-pin--main {
+  z-index: 8 !important;
+}
 .emp-pin--main .emp-pin__img {
-  width: 68px;
-  height: 68px;
+  width: 72px;
+  height: 72px;
   border-width: 3.5px;
   border-color: #fbbf24 !important;
   box-shadow:
     0 0 0 3px rgba(3, 3, 5, 0.95),
-    0 0 0 7px rgba(251, 191, 36, 0.55),
-    0 8px 22px rgba(251, 191, 36, 0.4);
+    0 0 0 8px rgba(251, 191, 36, 0.55),
+    0 10px 26px rgba(251, 191, 36, 0.45);
+}
+
+/* Side stage at Sala — smaller purple ring (below Main) */
+.emp-pin--stage {
+  z-index: 5 !important;
+}
+.emp-pin--stage .emp-pin__img {
+  width: 46px;
+  height: 46px;
+  border-width: 2.5px;
+  border-color: #a78bfa !important;
+  box-shadow:
+    0 0 0 2px rgba(3, 3, 5, 0.92),
+    0 0 0 4px rgba(167, 139, 250, 0.4),
+    0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.emp-pin__tier {
+  font-size: 0.58rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  line-height: 1;
+  padding: 0.18rem 0.35rem;
+  border-radius: 999px;
+  margin-bottom: 0.2rem;
+  align-self: center;
+  border: 1px solid transparent;
+}
+.emp-pin__tier--main {
+  color: #0f172a;
+  background: #fbbf24;
+  border-color: rgba(255, 255, 255, 0.25);
+}
+.emp-pin__tier--stage {
+  color: #ede9fe;
+  background: rgba(91, 33, 182, 0.85);
+  border-color: rgba(167, 139, 250, 0.5);
+}
+.emp-pin__tier--side {
+  color: #e0f2fe;
+  background: rgba(14, 116, 144, 0.75);
+  border-color: rgba(56, 189, 248, 0.35);
+}
+
+.emp-pin.is-active {
+  z-index: 12 !important;
 }
 
 .emp-pin--live .emp-pin__img {

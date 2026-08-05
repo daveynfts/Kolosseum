@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   CONVICTION_EVENTS_SEED,
+  MAIN_EVENT_ID,
   confirmedEventDates,
   datesInRange,
   distanceKm,
@@ -8,9 +9,12 @@ import {
   eventOccursOnDate,
   eventsOnDate,
   formatDistanceKm,
+  isMainEvent,
+  isMainVenueSideStage,
   matchesDateFilter,
   normalizeDataset,
   normalizeSideEvent,
+  partitionMainAndSide,
   pinDisplayPositions,
   sortEvents,
   type SideEvent,
@@ -23,9 +27,15 @@ describe('convictionEvents helpers', () => {
     expect(n!.event).toBe('conviction-2026')
     expect(n!.events).toHaveLength(14)
     expect(n!.events.every((e) => !!e.imageUrl && !!e.link)).toBe(true)
-    expect(n!.events.some((e) => e.id === 'conviction-2026-main-event')).toBe(
-      true,
-    )
+    expect(n!.events.some((e) => isMainEvent(e))).toBe(true)
+    const main = n!.events.find((e) => isMainEvent(e))!
+    expect(main.id).toBe(MAIN_EVENT_ID)
+    const parts = partitionMainAndSide(n!.events)
+    expect(parts.main).toHaveLength(1)
+    expect(parts.side.length).toBe(n!.events.length - 1)
+    const ai = n!.events.find((e) => e.id === 'special-ai-forum-conviction')
+    expect(ai && isMainVenueSideStage(ai)).toBe(true)
+    expect(isMainVenueSideStage(main)).toBe(false)
     // Luma calendar covers: uploads / gallery / event-covers (not event-social)
     expect(
       n!.events.every(

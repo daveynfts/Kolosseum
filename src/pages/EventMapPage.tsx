@@ -10,12 +10,16 @@ import {
   EVENT_TYPE_COLORS,
   EVENT_TYPE_LABELS,
   EVENT_TYPES,
+  MAIN_EVENT_ID,
   MAIN_FORUM_SCHEDULE,
   SALA_VENUE,
   calendarStripDates,
   directionsUrl,
   eventDistanceKm,
   eventOccursOnDate,
+  isMainEvent,
+  isMainVenueSideStage,
+  partitionMainAndSide,
   pinDisplayPositions,
   formatDayNum,
   formatDistanceWithDrive,
@@ -173,11 +177,14 @@ function popupHtml(
       : `${formatShortDate(ev.date)} · ${ev.startTime}${ev.endTime ? `–${ev.endTime}` : ''}`
   const stPhase = opts.statusPhase || (opts.live ? 'live' : 'upcoming')
   const stLabel = opts.statusLabel || (opts.live ? 'LIVE' : '')
-  const isMain = ev.id === 'conviction-2026-main-event'
+  const main = isMainEvent(ev)
+  const stage = !main && isMainVenueSideStage(ev)
   const badges = [
-    isMain
-      ? '<span class="emp__badge emp__badge--main">Main Event</span>'
-      : '',
+    main
+      ? '<span class="emp__badge emp__badge--main">Main forum</span>'
+      : stage
+        ? '<span class="emp__badge emp__badge--stage">Stage · Sala</span>'
+        : '<span class="emp__badge emp__badge--side">Side event</span>',
     stLabel
       ? `<span class="emp__badge emp__badge--status emp__badge--status-${escapeHtml(stPhase)}">${escapeHtml(stLabel)}</span>`
       : '',
@@ -242,19 +249,26 @@ function popupHtml(
  */
 function buildLumaPinEl(ev: SideEvent, now: Date = new Date()): HTMLDivElement {
   const st = getSideEventStatus(ev, now)
+  const main = isMainEvent(ev)
+  const stage = !main && isMainVenueSideStage(ev)
   const root = document.createElement('div')
   root.className = [
     'emp-pin',
-    ev.featured ? 'emp-pin--featured' : '',
-    ev.id === 'conviction-2026-main-event' ? 'emp-pin--main' : '',
+    main ? 'emp-pin--main' : '',
+    stage ? 'emp-pin--stage' : '',
+    !main && !stage && ev.featured ? 'emp-pin--featured' : '',
     st.phase === 'live' ? 'emp-pin--live' : '',
     st.phase === 'ended' ? 'emp-pin--ended' : '',
     st.phase === 'upcoming' ? 'emp-pin--upcoming' : '',
   ]
     .filter(Boolean)
     .join(' ')
-  root.title = `${ev.title} · ${st.detail}`
+  const tier = main ? 'Main forum' : stage ? 'Stage · Sala' : 'Side event'
+  root.title = `${tier} · ${ev.title} · ${st.detail}`
   root.dataset.eventId = ev.id
+  root.dataset.tier = main ? 'main' : stage ? 'stage' : 'side'
+  // Main stays above co-located stage/side pins
+  root.style.zIndex = main ? '8' : stage ? '5' : '3'
 
   const visual = document.createElement('div')
   visual.className = 'emp-pin__visual'
@@ -266,10 +280,17 @@ function buildLumaPinEl(ev: SideEvent, now: Date = new Date()): HTMLDivElement {
   status.textContent = st.pinLabel
   status.title = st.detail
 
+  const tierChip = document.createElement('div')
+  tierChip.className = `emp-pin__tier emp-pin__tier--${main ? 'main' : stage ? 'stage' : 'side'}`
+  tierChip.textContent = main ? 'MAIN' : stage ? 'STAGE' : 'SIDE'
+
   const imgWrap = document.createElement('div')
   imgWrap.className = 'emp-pin__img'
-  imgWrap.style.borderColor =
-    EVENT_TYPE_COLORS[ev.type] || EVENT_TYPE_COLORS.other
+  imgWrap.style.borderColor = main
+    ? '#fbbf24'
+    : stage
+      ? '#a78bfa'
+      : EVENT_TYPE_COLORS[ev.type] || EVENT_TYPE_COLORS.other
 
   if (ev.imageUrl) {
     const img = document.createElement('img')
@@ -291,9 +312,10 @@ function buildLumaPinEl(ev: SideEvent, now: Date = new Date()): HTMLDivElement {
 
   const label = document.createElement('div')
   label.className = 'emp-pin__label'
-  label.textContent = shortEventTitle(ev.title, 26)
+  label.textContent = shortEventTitle(ev.title, main ? 28 : 22)
 
   visual.appendChild(status)
+  visual.appendChild(tierChip)
   visual.appendChild(imgWrap)
   visual.appendChild(label)
   root.appendChild(visual)
@@ -1304,12 +1326,10 @@ export function EventMapPage() {
           {(() => {
             const selectedMain = mainForumMeta(dateFilter)
             if (!selectedMain) return null
-            const mainEv = dataset?.events.find(
-              (e) => e.id === 'conviction-2026-main-event',
-            )
+            const mainEv = dataset?.events.find((e) => isMainEvent(e))
             return (
               <div
-                className={`emp-week__main-card emp-week__main-card--d${selectedMain.day}${selectedId === 'conviction-2026-main-event' ? ' is-active' : ''}`}
+                className={`emp-week__main-card emp-week__main-card--d${selectedMain.day}${selectedId === MAIN_EVENT_ID ? ' is-active' : ''}`}
                 role={mainEv ? 'button' : undefined}
                 tabIndex={mainEv ? 0 : undefined}
                 onClick={() => {
@@ -1325,7 +1345,7 @@ export function EventMapPage() {
               >
                 <div className="emp-week__main-left">
                   <span className="emp-week__main-badge">
-                    Main · Day {selectedMain.day}
+                    Main forum · Day {selectedMain.day}
                   </span>
                   <p className="emp-week__main-title">
                     Conviction 2026 Main Event
@@ -1334,6 +1354,7 @@ export function EventMapPage() {
                     {selectedMain.track} · Thiskyhall Sala · Thủ Đức ·{' '}
                     {formatShortDate(dateFilter)}
                     {selectedMain.day === 1 ? ' · từ 08:00' : ' · đến 18:00'}
+                    {' · pin lớn trên map'}
                   </p>
                 </div>
                 <a
@@ -1436,15 +1457,15 @@ export function EventMapPage() {
           </button>
           <div className="emp__panel-head">
             <div>
-              <h2>Lịch side events</h2>
+              <h2>Main forum + Side events</h2>
               <p>
                 {dateFilter === today
-                  ? 'Đang lọc hôm nay · sắp tới trước'
+                  ? 'Đang lọc hôm nay · Main trước · side sắp tới'
                   : dateFilter === 'all'
-                    ? 'Mọi ngày · live / sắp tới ưu tiên'
-                    : `Ngày ${formatShortDate(dateFilter)}`}
+                    ? 'Mọi ngày · Main forum tách riêng · side events bên dưới'
+                    : `Ngày ${formatShortDate(dateFilter)} · Main rồi side`}
                 {' · '}
-                khoảng cách + phút đi xe từ{' '}
+                khoảng cách từ{' '}
                 {distOrigin === 'me'
                   ? 'bạn'
                   : distOrigin === 'selected'
@@ -1458,7 +1479,7 @@ export function EventMapPage() {
               <div className="emp__empty">
                 {dateFilter === today ? (
                   <>
-                    Không có side event hôm nay. Thử{' '}
+                    Không có sự kiện hôm nay. Thử{' '}
                     <button
                       type="button"
                       className="emp__linkish"
@@ -1473,186 +1494,230 @@ export function EventMapPage() {
                 )}
               </div>
             )}
-            {grouped.map(([date, list]) => (
-              <div key={date} className="emp__day-group">
-                <div className="emp__day-label">
-                  {date === 'tbd'
-                    ? 'Ngày TBD'
-                    : `${formatLumaDay(date)}${date === today ? ' · Hôm nay' : ''}`}
-                </div>
-                {list.map((ev) => {
-                  const st = getSideEventStatus(ev)
-                  const live = st.phase === 'live'
-                  const isTodayEv = !ev.dateTbd && eventOccursOnDate(ev, today)
-                  const isActive = selectedId === ev.id
-                  const timeLabel =
-                    ev.endDate && ev.endDate !== ev.date
-                      ? `${formatShortDate(ev.date)} ${formatLumaTime(ev.startTime)} → ${formatShortDate(ev.endDate)} ${ev.endTime ? formatLumaTime(ev.endTime) : ''}`.trim()
-                      : ev.endTime
-                        ? `${formatLumaTime(ev.startTime)} – ${formatLumaTime(ev.endTime)}`
-                        : formatLumaTime(ev.startTime)
-                  const place = ev.locationTbd
-                    ? 'Địa điểm sẽ công bố sau (TBD)'
-                    : ev.venue || ev.address || 'TP. Hồ Chí Minh'
-                  const dist = distanceLabelFor(ev)
-                  const isMain = ev.id === 'conviction-2026-main-event'
-                  return (
-                    <div
-                      key={ev.id}
-                      className={`emp__card emp__card--luma ${isActive ? 'is-active' : ''}${live ? ' emp__card--live' : ''}${ev.locationTbd ? ' emp__card--tbd-loc' : ''}${isMain ? ' emp__card--main' : ''}`}
-                      ref={(node) => {
-                        if (node) listRefs.current.set(ev.id, node)
-                        else listRefs.current.delete(ev.id)
-                      }}
+            {grouped.map(([date, list]) => {
+              const { main: mainList, side: sideList } =
+                partitionMainAndSide(list)
+              const renderCard = (ev: SideEvent) => {
+                const st = getSideEventStatus(ev)
+                const live = st.phase === 'live'
+                const isTodayEv = !ev.dateTbd && eventOccursOnDate(ev, today)
+                const isActive = selectedId === ev.id
+                const timeLabel =
+                  ev.endDate && ev.endDate !== ev.date
+                    ? `${formatShortDate(ev.date)} ${formatLumaTime(ev.startTime)} → ${formatShortDate(ev.endDate)} ${ev.endTime ? formatLumaTime(ev.endTime) : ''}`.trim()
+                    : ev.endTime
+                      ? `${formatLumaTime(ev.startTime)} – ${formatLumaTime(ev.endTime)}`
+                      : formatLumaTime(ev.startTime)
+                const place = ev.locationTbd
+                  ? 'Địa điểm sẽ công bố sau (TBD)'
+                  : ev.venue || ev.address || 'TP. Hồ Chí Minh'
+                const dist = distanceLabelFor(ev)
+                const main = isMainEvent(ev)
+                const stage = !main && isMainVenueSideStage(ev)
+                return (
+                  <div
+                    key={ev.id}
+                    className={`emp__card emp__card--luma ${isActive ? 'is-active' : ''}${live ? ' emp__card--live' : ''}${ev.locationTbd ? ' emp__card--tbd-loc' : ''}${main ? ' emp__card--main' : ''}${stage ? ' emp__card--stage' : ''}`}
+                    ref={(node) => {
+                      if (node) listRefs.current.set(ev.id, node)
+                      else listRefs.current.delete(ev.id)
+                    }}
+                  >
+                    <button
+                      type="button"
+                      className="emp__card-main"
+                      onClick={() => selectEvent(ev, true)}
                     >
-                      <button
-                        type="button"
-                        className="emp__card-main"
-                        onClick={() => selectEvent(ev, true)}
-                      >
-                        <div className="emp__card-body">
-                          <p className="emp__card-time">
-                            {ev.dateTbd ? 'Time TBD' : timeLabel}
-                            {live ? ' · LIVE' : ''}
-                            {!live && st.phase === 'upcoming'
-                              ? ` · ${st.pinLabel}`
-                              : ''}
-                            {st.phase === 'ended' ? ' · END' : ''}
-                          </p>
-                          <p className="emp__card-title">{ev.title}</p>
-                          {ev.host ? (
-                            <p className="emp__card-host">
-                              <span
-                                className="emp__card-host-dot"
-                                aria-hidden
-                              />
-                              By {ev.host}
-                            </p>
-                          ) : null}
-                          <p className="emp__card-place">
-                            <span className="emp__card-pin" aria-hidden>
-                              ⌖
-                            </span>
-                            {place}
-                          </p>
-                          {dist ? (
-                            <p className="emp__card-dist">{dist}</p>
-                          ) : ev.locationTbd ? (
-                            <p className="emp__card-dist emp__card-dist--muted">
-                              Chưa có tọa độ · xem chi tiết bên dưới
-                            </p>
-                          ) : null}
-                          <div className="emp__badges">
-                            {isMain && (
-                              <span className="emp__badge emp__badge--main">
-                                Main Event
-                              </span>
-                            )}
-                            {(ev.dateTbd || ev.locationTbd) && (
-                              <span className="emp__badge emp__badge--pending">
-                                {ev.locationTbd
-                                  ? 'Location TBD'
-                                  : 'Date TBD'}
-                              </span>
-                            )}
-                            {live && (
-                              <span className="emp__badge emp__badge--live">
-                                Đang diễn ra
-                              </span>
-                            )}
-                            {!live && isTodayEv && (
-                              <span className="emp__badge emp__badge--today">
-                                Hôm nay
-                              </span>
-                            )}
-                            {ev.free && (
-                              <span className="emp__badge emp__badge--free">
-                                Free
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                        <div className="emp__card-media">
-                          {ev.imageUrl ? (
-                            <img
-                              src={toSquareImageUrl(ev.imageUrl, 240)}
-                              alt=""
-                              loading="lazy"
-                              referrerPolicy="no-referrer"
+                      <div className="emp__card-body">
+                        <p className="emp__card-time">
+                          {ev.dateTbd ? 'Time TBD' : timeLabel}
+                          {live ? ' · LIVE' : ''}
+                          {!live && st.phase === 'upcoming'
+                            ? ` · ${st.pinLabel}`
+                            : ''}
+                          {st.phase === 'ended' ? ' · END' : ''}
+                        </p>
+                        <p className="emp__card-title">{ev.title}</p>
+                        {ev.host ? (
+                          <p className="emp__card-host">
+                            <span
+                              className="emp__card-host-dot"
+                              aria-hidden
                             />
+                            By {ev.host}
+                          </p>
+                        ) : null}
+                        <p className="emp__card-place">
+                          <span className="emp__card-pin" aria-hidden>
+                            ⌖
+                          </span>
+                          {place}
+                        </p>
+                        {dist ? (
+                          <p className="emp__card-dist">{dist}</p>
+                        ) : ev.locationTbd ? (
+                          <p className="emp__card-dist emp__card-dist--muted">
+                            Chưa có tọa độ · xem chi tiết bên dưới
+                          </p>
+                        ) : null}
+                        <div className="emp__badges">
+                          {main ? (
+                            <span className="emp__badge emp__badge--main">
+                              Main forum
+                            </span>
+                          ) : stage ? (
+                            <span className="emp__badge emp__badge--stage">
+                              Stage · Sala
+                            </span>
                           ) : (
-                            <div
-                              className="emp__card-media-fallback"
-                              style={{
-                                background: EVENT_TYPE_COLORS[ev.type],
-                              }}
-                            >
-                              {(ev.title || '?').slice(0, 1)}
-                            </div>
+                            <span className="emp__badge emp__badge--side">
+                              Side event
+                            </span>
+                          )}
+                          {(ev.dateTbd || ev.locationTbd) && (
+                            <span className="emp__badge emp__badge--pending">
+                              {ev.locationTbd
+                                ? 'Location TBD'
+                                : 'Date TBD'}
+                            </span>
+                          )}
+                          {live && (
+                            <span className="emp__badge emp__badge--live">
+                              Đang diễn ra
+                            </span>
+                          )}
+                          {!live && isTodayEv && (
+                            <span className="emp__badge emp__badge--today">
+                              Hôm nay
+                            </span>
+                          )}
+                          {ev.free && (
+                            <span className="emp__badge emp__badge--free">
+                              Free
+                            </span>
                           )}
                         </div>
-                      </button>
-                      {isActive && (
-                        <div className="emp__card-detail">
-                          {ev.description ? (
-                            <p className="emp__card-detail-desc">
-                              {ev.description}
-                            </p>
-                          ) : null}
-                          <p className="emp__card-detail-meta">
-                            {st.detail}
-                            {ev.locationTbd
-                              ? ' · Địa điểm public sau khi duyệt Luma'
-                              : ''}
-                          </p>
-                          <div className="emp__card-actions">
-                            {ev.link ? (
-                              <a
-                                className="emp__card-action emp__card-action--primary"
-                                href={ev.link}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                              >
-                                Đăng ký Luma
-                              </a>
-                            ) : null}
-                            {!ev.locationTbd ? (
-                              <a
-                                className="emp__card-action"
-                                href={directionsUrl(ev.lat, ev.lng)}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                              >
-                                Chỉ đường
-                              </a>
-                            ) : (
-                              <a
-                                className="emp__card-action"
-                                href={directionsUrl(
-                                  SALA_VENUE.lat,
-                                  SALA_VENUE.lng,
-                                )}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                              >
-                                Venue chính
-                              </a>
-                            )}
-                            <button
-                              type="button"
-                              className="emp__card-action"
-                              onClick={() => downloadIcs(ev)}
-                            >
-                              Thêm lịch
-                            </button>
+                      </div>
+                      <div className="emp__card-media">
+                        {ev.imageUrl ? (
+                          <img
+                            src={toSquareImageUrl(ev.imageUrl, 240)}
+                            alt=""
+                            loading="lazy"
+                            referrerPolicy="no-referrer"
+                          />
+                        ) : (
+                          <div
+                            className="emp__card-media-fallback"
+                            style={{
+                              background: EVENT_TYPE_COLORS[ev.type],
+                            }}
+                          >
+                            {(ev.title || '?').slice(0, 1)}
                           </div>
+                        )}
+                      </div>
+                    </button>
+                    {isActive && (
+                      <div className="emp__card-detail">
+                        {ev.description ? (
+                          <p className="emp__card-detail-desc">
+                            {ev.description}
+                          </p>
+                        ) : null}
+                        <p className="emp__card-detail-meta">
+                          {main
+                            ? 'Main forum · Thiskyhall Sala · 14–15/08'
+                            : stage
+                              ? 'Side stage tại venue chính (Sala)'
+                              : 'Side event · ngoài main stage'}
+                          {' · '}
+                          {st.detail}
+                          {ev.locationTbd
+                            ? ' · Địa điểm public sau khi duyệt Luma'
+                            : ''}
+                        </p>
+                        <div className="emp__card-actions">
+                          {ev.link ? (
+                            <a
+                              className="emp__card-action emp__card-action--primary"
+                              href={ev.link}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              Đăng ký Luma
+                            </a>
+                          ) : null}
+                          {!ev.locationTbd ? (
+                            <a
+                              className="emp__card-action"
+                              href={directionsUrl(ev.lat, ev.lng)}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              Chỉ đường
+                            </a>
+                          ) : (
+                            <a
+                              className="emp__card-action"
+                              href={directionsUrl(
+                                SALA_VENUE.lat,
+                                SALA_VENUE.lng,
+                              )}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              Venue chính
+                            </a>
+                          )}
+                          <button
+                            type="button"
+                            className="emp__card-action"
+                            onClick={() => downloadIcs(ev)}
+                          >
+                            Thêm lịch
+                          </button>
                         </div>
-                      )}
+                      </div>
+                    )}
+                  </div>
+                )
+              }
+              return (
+                <div key={date} className="emp__day-group">
+                  <div className="emp__day-label">
+                    {date === 'tbd'
+                      ? 'Ngày TBD'
+                      : `${formatLumaDay(date)}${date === today ? ' · Hôm nay' : ''}`}
+                  </div>
+                  {mainList.length > 0 && (
+                    <div className="emp__section emp__section--main">
+                      <div className="emp__section-label emp__section-label--main">
+                        <span className="emp__section-kicker">Main forum</span>
+                        <span className="emp__section-hint">
+                          Diễn đàn chính · pin vàng lớn
+                        </span>
+                      </div>
+                      {mainList.map(renderCard)}
                     </div>
-                  )
-                })}
-              </div>
-            ))}
+                  )}
+                  {sideList.length > 0 && (
+                    <div className="emp__section emp__section--side">
+                      <div className="emp__section-label emp__section-label--side">
+                        <span className="emp__section-kicker">Side events</span>
+                        <span className="emp__section-hint">
+                          {sideList.length} sự kiện
+                          {mainList.length
+                            ? ' · Stage Sala = viền tím'
+                            : ''}
+                        </span>
+                      </div>
+                      {sideList.map(renderCard)}
+                    </div>
+                  )}
+                </div>
+              )
+            })}
           </div>
         </aside>
       </div>

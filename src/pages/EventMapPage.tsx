@@ -17,7 +17,6 @@ import {
   calendarStripDates,
   directionsUrl,
   eventDistanceKm,
-  eventHasMapPin,
   eventOccursOnDate,
   eventTimeOfDay,
   isMainEvent,
@@ -426,7 +425,6 @@ export function EventMapPage() {
     () => initialParams.date || '__default__',
   )
   const [typeFilter, setTypeFilter] = useState<SideEventType | 'all'>('all')
-  const [hasPinOnly, setHasPinOnly] = useState(false)
   const [timeOfDay, setTimeOfDay] = useState<TimeOfDayBucket | 'all'>('all')
   const [moreTypesOpen, setMoreTypesOpen] = useState(false)
   /** Focus list on dateTbd / locationTbd events only */
@@ -603,7 +601,6 @@ export function EventMapPage() {
         return false
       }
       if (typeFilter !== 'all' && ev.type !== typeFilter) return false
-      if (hasPinOnly && !eventHasMapPin(ev)) return false
       if (timeOfDay !== 'all') {
         const bucket = eventTimeOfDay(ev)
         if (bucket !== timeOfDay) return false
@@ -633,7 +630,6 @@ export function EventMapPage() {
     dataset,
     dateFilter,
     typeFilter,
-    hasPinOnly,
     timeOfDay,
     tbdFocus,
     query,
@@ -1262,7 +1258,7 @@ export function EventMapPage() {
     }
 
     // Auto-fit only when filter set changes (not after user zoom/pan)
-    const fitKey = `${dateFilter}|${typeFilter}|${hasPinOnly}|${timeOfDay}|${query}|${mapEvents.map((e) => e.id).join(',')}`
+    const fitKey = `${dateFilter}|${typeFilter}|${timeOfDay}|${query}|${mapEvents.map((e) => e.id).join(',')}`
     const shouldFit =
       mapEvents.length > 0 &&
       !selectedId &&
@@ -1830,19 +1826,6 @@ export function EventMapPage() {
                 ) : null}
               </button>
             ))}
-            <button
-              type="button"
-              className={`emp__chip emp__chip--pin${hasPinOnly ? ' is-active' : ''}`}
-              title={tt('filterHasPinTitle')}
-              aria-pressed={hasPinOnly}
-              onClick={() => {
-                setHasPinOnly((v) => !v)
-                if (!hasPinOnly) setTbdFocus(false)
-                bumpMapFit()
-              }}
-            >
-              ⌖ {tt('filterHasPin')}
-            </button>
             <button
               type="button"
               className={`emp__chip emp__chip--more${moreTypesOpen || typeFilter !== 'all' ? ' is-active' : ''}`}

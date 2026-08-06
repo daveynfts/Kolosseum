@@ -765,6 +765,28 @@ const SIDE_EVENTS: SideEvent[] = [
     featured: true,
   },
   {
+    id: 'pudgy-renaiss-tcg-coffee-meetup',
+    title: 'Pudgy Việt Nam x Renaiss Việt Nam TCG Coffee Meet Up',
+    host: 'Pudgy Penguins · Renaiss Việt Nam',
+    venue: 'Nexus Café & Collectibles Hub',
+    address:
+      'Nexus Café & Collectibles Hub, TP.HCM (địa chỉ chi tiết sau khi duyệt Luma)',
+    lat: 10.78227862795571,
+    lng: 106.68400199263297,
+    date: '2026-08-13',
+    startTime: '13:30',
+    endTime: '16:00',
+    type: 'meetup',
+    link: 'https://luma.com/lnyyozdg',
+    imageUrl: lumaSquareCover(
+      'uploads/ae/a2c53c3c-c166-40f8-83b4-9b7ffa0f0916.jpg',
+    ),
+    description:
+      'TCG coffee meetup · Pudgy Penguins × Renaiss: collector, Pokémon/TCG, networking, minigame & merch. Free · Approval required · 13:00 check-in · 13:30–16:00 program.',
+    free: true,
+    featured: true,
+  },
+  {
     id: 'vietnam-onchain',
     title: 'Vietnam Onchain',
     host: 'Vietnam Onchain',
@@ -1022,8 +1044,8 @@ export const CONVICTION_EVENTS_SEED: SideEventDataset = {
   venue: SALA_VENUE,
   dateRange: { start: '2026-08-13', end: '2026-08-15' },
   events: SIDE_EVENTS,
-  updatedAt: '2026-08-04T19:00:00.000Z',
-  note: 'Unlimit(ed) Conviction Sundowner · 15/08 18:00–20:00 · Ômm Mixology Saigon',
+  updatedAt: '2026-08-06T03:30:00.000Z',
+  note: 'Pudgy × Renaiss TCG Coffee Meet Up · 13/08 13:30–16:00 · Nexus Café',
 }
 
 function isEventType(v: unknown): v is SideEventType {

@@ -740,7 +740,6 @@ export function EventMapPage() {
 
   const focusTbd = () => {
     setTbdFocus(true)
-    setHasPinOnly(false)
     setTypeFilter('all')
     setQuery('')
     setFiltersOpen(true)
@@ -750,7 +749,6 @@ export function EventMapPage() {
   const clearInsightFilters = () => {
     setTbdFocus(false)
     setTypeFilter('all')
-    setHasPinOnly(false)
     setTimeOfDay('all')
     setQuery('')
   }

@@ -916,6 +916,50 @@ const SIDE_EVENTS: SideEvent[] = [
     featured: true,
   },
   {
+    id: 'busan-blockchain-summit-business-meetup',
+    title:
+      '[2026 Busan Blockchain Global Summit in Vietnam] Business Meet-Up',
+    host: '2026 Busan Blockchain Global Summit',
+    venue: 'Thiskyhall Sala Convention Center',
+    address: SALA_VENUE.address,
+    lat: SALA_VENUE.lat,
+    lng: SALA_VENUE.lng,
+    date: '2026-08-14',
+    startTime: '14:00',
+    endTime: '16:30',
+    type: 'conference',
+    link: 'https://luma.com/gbiw9d5s',
+    imageUrl: lumaSquareCover(
+      'uploads/xz/433c8edd-c25f-4e5a-a1e3-a4e88ba06147.jpg',
+    ),
+    description:
+      'Busan Metropolitan City & Busan Techno Park — business collaboration between Korean and Vietnamese blockchain companies. At Thiskyhall Sala during Conviction week.',
+    free: true,
+    featured: true,
+  },
+  {
+    id: 'busan-blockchain-summit-networking-dinner',
+    title:
+      '[2026 Busan Blockchain Global Summit in Vietnam] Networking Dinner',
+    host: '2026 Busan Blockchain Global Summit',
+    venue: 'Thiskyhall Sala Convention Center',
+    address: SALA_VENUE.address,
+    lat: SALA_VENUE.lat,
+    lng: SALA_VENUE.lng,
+    date: '2026-08-14',
+    startTime: '18:00',
+    endTime: '20:00',
+    type: 'mixer',
+    link: 'https://luma.com/natlp21z',
+    imageUrl: lumaSquareCover(
+      'uploads/3z/df49e6ae-0ce0-4901-9d73-51f990344530.jpg',
+    ),
+    description:
+      'Networking dinner for Korea–Vietnam participants after the day’s programs — continue conversations and explore partnerships. Thiskyhall Sala.',
+    free: true,
+    featured: true,
+  },
+  {
     id: 'builders-happy-hours-hcmc',
     title: 'Builders Happy Hours HCMC',
     host: 'APAC DAO · Utila · ETHGlobal · Unlimit',
@@ -1131,8 +1175,8 @@ export const CONVICTION_EVENTS_SEED: SideEventDataset = {
   venue: SALA_VENUE,
   dateRange: { start: '2026-08-13', end: '2026-08-16' },
   events: SIDE_EVENTS,
-  updatedAt: '2026-08-10T05:00:00.000Z',
-  note: "Web3 Builders' Breakfast: Hiding the Chain · 15/08 The Sentry L",
+  updatedAt: '2026-08-10T08:00:00.000Z',
+  note: 'Busan Blockchain Global Summit · Business Meet-Up + Networking Dinner · 14/08 Sala',
 }
 
 function isEventType(v: unknown): v is SideEventType {

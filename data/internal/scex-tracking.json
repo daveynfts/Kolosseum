@@ -2,8 +2,8 @@
   "version": 1,
   "kind": "scex-tracking",
   "asOf": "2026-08-03",
-  "updatedAt": "2026-08-03T03:08:53.981Z",
-  "note": "SCEX mention export sync · 133 accounts · 82 original posts linked · matrix volume = gốc+reply · views → reach7d. Livefeed filter by KOL. Tone Hỗn hợp/Trung lập → neutral. Media on R2: 74/82 posts (hydrate_scex_media). Batch posts +32 (KT, shuigvn, SucVat, bachkhoabnb, KienGold, …). Media on R2: 102/114 posts (hydrate_scex_media). Batch posts +19 (KhiemBNB, dinhthang97, Blockmedia, KaiBGR, Lens, …). Media on R2: 118/133 posts (hydrate_scex_media). Batch posts +27 (PeterTran, htp96, RiceFarmer, Liquid100x, …). Media on R2: 140/160 posts (hydrate_scex_media). Batch posts +28 (tdcrypto, NickyPham, BiCanTho, GF_Capital, …). Media on R2: 168/188 posts (hydrate_scex_media). Batch posts +25 (vangemxin1, TranNinh9, maybach, PTGinKing, …). Media on R2: 192/213 posts (hydrate_scex_media). Batch posts +26 (Tungthuocno, DaveyNFTsAI, VnInvestBlogger, hang1856, …). Media on R2: 214/239 posts (hydrate_scex_media). Scores recomputed (log volume + map-tier quality; eng weight low). Scores recomputed (log volume + map-tier quality; eng weight low). · Official @scexofficial posts upsert since:2026-07-27 until:2026-08-03 (+7/~0 upd, 7 posts; no post 30/07). · Blue Verified mentions 2026-07-27→2026-08-04: +20 posts · +10 actors · ~8 upd · 18 blue handles. Scores recomputed (log volume + map-tier quality; eng weight low). · Blue Verified mentions 2026-07-27→2026-08-04: +1 posts · +1 actors · ~18 upd · 19 blue handles. Scores recomputed (log volume + map-tier quality; eng weight low). · list58 curated mentions: +54 posts · +34 actors · ~14 actor upd · 58 links. Scores recomputed (log volume + map-tier quality; eng weight low). · Avatar warm 2026-08-03: ok 179 skip 0 fail 0; radar candidates tagged ~63.",
+  "updatedAt": "2026-08-10T02:42:37.357Z",
+  "note": "SCEX mention export sync · 133 accounts · 82 original posts linked · matrix volume = gốc+reply · views → reach7d. Livefeed filter by KOL. Tone Hỗn hợp/Trung lập → neutral. Media on R2: 74/82 posts (hydrate_scex_media). Batch posts +32 (KT, shuigvn, SucVat, bachkhoabnb, KienGold, …). Media on R2: 102/114 posts (hydrate_scex_media). Batch posts +19 (KhiemBNB, dinhthang97, Blockmedia, KaiBGR, Lens, …). Media on R2: 118/133 posts (hydrate_scex_media). Batch posts +27 (PeterTran, htp96, RiceFarmer, Liquid100x, …). Media on R2: 140/160 posts (hydrate_scex_media). Batch posts +28 (tdcrypto, NickyPham, BiCanTho, GF_Capital, …). Media on R2: 168/188 posts (hydrate_scex_media). Batch posts +25 (vangemxin1, TranNinh9, maybach, PTGinKing, …). Media on R2: 192/213 posts (hydrate_scex_media). Batch posts +26 (Tungthuocno, DaveyNFTsAI, VnInvestBlogger, hang1856, …). Media on R2: 214/239 posts (hydrate_scex_media). Scores recomputed (log volume + map-tier quality; eng weight low). Scores recomputed (log volume + map-tier quality; eng weight low). · Official @scexofficial posts upsert since:2026-07-27 until:2026-08-03 (+7/~0 upd, 7 posts; no post 30/07). · Blue Verified mentions 2026-07-27→2026-08-04: +20 posts · +10 actors · ~8 upd · 18 blue handles. Scores recomputed (log volume + map-tier quality; eng weight low). · Blue Verified mentions 2026-07-27→2026-08-04: +1 posts · +1 actors · ~18 upd · 19 blue handles. Scores recomputed (log volume + map-tier quality; eng weight low). · list58 curated mentions: +54 posts · +34 actors · ~14 actor upd · 58 links. Scores recomputed (log volume + map-tier quality; eng weight low). · Avatar warm 2026-08-03: ok 179 skip 0 fail 0; radar candidates tagged ~63. Manual batch · HuevaToi 03/08 + refresh KT_BTC/LeHuuQuangVinh/TyrSui.",
   "config": {
     "brandName": "SCEX",
     "brandHandle": "scexofficial",
@@ -1364,7 +1364,7 @@
     {
       "id": "a_huevatoi",
       "handle": "huevatoi",
-      "displayName": "HuevaToi",
+      "displayName": "Zarroc.BTC 🧠",
       "kind": "kol",
       "tier": "Platinum",
       "followers": 19900,
@@ -1377,7 +1377,7 @@
       "isWhitelisted": true,
       "notes": "Gốc 1 · Reply 2 · Views 1698 · Tone: Bullish",
       "tags": "goc:1,reply:2,bullish",
-      "lastPostAt": "2026-07-19T04:45:23.624Z",
+      "lastPostAt": "2026-08-03T13:31:54.000Z",
       "gocPosts": 1,
       "replyPosts": 2,
       "volumeScore": 49.9,
@@ -2608,7 +2608,7 @@
       "displayName": "gmmarcus.c98",
       "kind": "kol",
       "followers": 2546,
-      "reach7d": 528,
+      "reach7d": 557,
       "postsVolume": 1,
       "qualityScore": 57.2,
       "sentiment": "bullish",
@@ -2780,7 +2780,7 @@
       "displayName": "Tyr68.sui",
       "kind": "kol",
       "followers": 1132,
-      "reach7d": 289,
+      "reach7d": 302,
       "postsVolume": 1,
       "qualityScore": 57.5,
       "sentiment": "bullish",
@@ -4460,6 +4460,21 @@
   ],
   "posts": [
     {
+      "id": "p_2084271038704300112",
+      "handle": "huevatoi",
+      "url": "https://x.com/HuevaToi/status/2084271038704300112",
+      "text": "@scexofficial cảm ơn ban tổ chức đã tạo ra sân chơi thú vị này",
+      "postedAt": "2026-08-03T13:31:54.000Z",
+      "sentiment": "neutral",
+      "hidden": false,
+      "notes": "manual radar update · user batch · reply",
+      "likes": 1,
+      "reposts": 0,
+      "replies": 0,
+      "views": 43,
+      "media": []
+    },
+    {
       "id": "p_2083898577068453957",
       "handle": "convictionvn",
       "url": "https://x.com/convictionvn/status/2083898577068453957",
@@ -4985,20 +5000,20 @@
     {
       "id": "p_2083427976298017245",
       "handle": "kt_btc",
-      "url": "https://x.com/kt_btc/status/2083427976298017245",
+      "url": "https://x.com/KT_BTC/status/2083427976298017245",
       "text": "Đây còn Thuế đối với các lệnh mua bán Coin! \n\n- Thì ae cứ nhìn app demo sàn @scexofficial là trực quan nhất!\n\nMình sẽ so sánh lệnh mua và bán để ae dễ hiểu nhé.\n\nHiện tại Thuế chỉ tính ở chiều Bán còn chiều Mua thì không tính.   \n\n- Và mức Thuế này là 0.1% so với giá trị bán. \n\n=> Lệnh bán 500tr VNĐ thì thuế là 500k  \n=> Lệnh bán 1 tỷ VNĐ thì thuế là 1 triệu VNĐ\n\nMọi thứ sắp tới sẽ cần update liên tục nên ae chịu khó làm quen dần nhé.",
       "postedAt": "2026-08-01T05:41:52.000Z",
       "sentiment": "neutral",
       "hidden": false,
-      "notes": "Blue Verified mention · since:2026-07-27 until:2026-08-04",
+      "notes": "manual radar update · user batch",
       "media": [
-        "https://pbs.twimg.com/media/HOm7DBEbwAABNVB.jpg?name=orig",
-        "https://pbs.twimg.com/media/HOm7DtCbIAAnNJD.jpg?name=orig"
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/9a8ec88b2586ac018100d136",
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/f576e3d562dd24b44849648b"
       ],
       "likes": 62,
       "reposts": 2,
       "replies": 44,
-      "views": 5690
+      "views": 5825
     },
     {
       "id": "p_2083423586782699902",
@@ -5099,19 +5114,19 @@
     {
       "id": "p_2083095199295905976",
       "handle": "lehuuquangvinh",
-      "url": "https://x.com/lehuuquangvinh/status/2083095199295905976",
+      "url": "https://x.com/LeHuuQuangVinh/status/2083095199295905976",
       "text": "MOU Signing ceremony between @scexofficial & @WeTheIvy at @Convictionvn Press Conference today\n\nEarlier this year, SCEX passed the Ministry of Finance's first evaluation round to obtain a pilot license for operating a crypto asset trading platform.\nIvy is the media arm of @ninetyeight_hq",
       "postedAt": "2026-07-31T07:39:32.000Z",
-      "sentiment": "bullish",
+      "sentiment": "neutral",
       "hidden": false,
-      "notes": "Blue Verified mention · since:2026-07-27 until:2026-08-04",
+      "notes": "manual radar update · user batch",
       "media": [
-        "https://pbs.twimg.com/media/HOikChbbIAAR2Xg.jpg?name=orig"
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/bb8d30580c904c98b4b1598c"
       ],
-      "likes": 22,
+      "likes": 23,
       "reposts": 2,
       "replies": 0,
-      "views": 528
+      "views": 557
     },
     {
       "id": "p_2082997625025081432",
@@ -5238,19 +5253,19 @@
     {
       "id": "p_2082469946303316438",
       "handle": "tyrsui",
-      "url": "https://x.com/tyrsui/status/2082469946303316438",
+      "url": "https://x.com/TyrSui/status/2082469946303316438",
       "text": "🙌Congrats @scexofficial!  \n\nSCEX Simulator just smashed 50,000 accounts in under a month. When the real, Vietnam-made CEX drops, expect even bigger milestones. Vietnam's crypto and digital asset framework is rapidly being standardized — laws and policies are racing to catch up with the market. \n\nAnd Vietnam has always been a key market for us. Let's cook cool stuff. Stay tuned 🤝",
       "postedAt": "2026-07-29T14:15:00.000Z",
-      "sentiment": "bullish",
+      "sentiment": "neutral",
       "hidden": false,
-      "notes": "Blue Verified mention · since:2026-07-27 until:2026-08-04",
+      "notes": "manual radar update · user batch",
       "media": [
-        "https://pbs.twimg.com/media/HOYJIsdaEAAO8jE.jpg?name=orig"
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/1550661efc4e94869ebc4603"
       ],
       "likes": 12,
       "reposts": 0,
       "replies": 3,
-      "views": 289
+      "views": 302
     },
     {
       "id": "p_2082464951420264804",

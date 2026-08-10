@@ -29,18 +29,20 @@ describe('convictionEvents helpers', () => {
     const n = normalizeDataset(CONVICTION_EVENTS_SEED)
     expect(n).not.toBeNull()
     expect(n!.event).toBe('conviction-2026')
-    expect(n!.events).toHaveLength(13)
+    expect(n!.events).toHaveLength(18)
     expect(n!.events.every((e) => !!e.imageUrl && !!e.link)).toBe(true)
     // Main forum is venue chrome only — not a side-event pin
     expect(n!.events.some((e) => isMainEvent(e))).toBe(false)
     const ai = n!.events.find((e) => e.id === 'special-ai-forum-conviction')
     expect(ai && isMainVenueSideStage(ai)).toBe(true)
-    // Luma calendar covers: uploads / gallery / event-covers (not event-social)
+    // Prefer square covers (Luma uploads/gallery or other CDN) — never event-social OG banners
     expect(
       n!.events.every(
         (e) =>
-          /\/(uploads|gallery-images|event-covers)\//.test(e.imageUrl || '') &&
-          !/event-social\//.test(e.imageUrl || ''),
+          !!e.imageUrl &&
+          !/event-social\//.test(e.imageUrl || '') &&
+          (/\/(uploads|gallery-images|event-covers)\//.test(e.imageUrl || '') ||
+            /cloudfront\.net|gradual\.com|arc\.io/i.test(e.imageUrl || '')),
       ),
     ).toBe(true)
     expect(n!.venue.lat).toBeCloseTo(10.772, 2)
@@ -60,6 +62,7 @@ describe('convictionEvents helpers', () => {
       '2026-08-13',
       '2026-08-14',
       '2026-08-15',
+      '2026-08-16',
     ])
   })
 

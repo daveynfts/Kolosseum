@@ -1078,6 +1078,28 @@ const SIDE_EVENTS: SideEvent[] = [
       'Premium side event: payments & infrastructure leaders — opening remarks, project intros, networking. À-la-carte dinner & cocktails · Approval required.',
     featured: true,
   },
+  {
+    id: 'arc-community-meetup-stablecoin-hcmc',
+    title:
+      'HCMC | Arc Community Meetup & New Location Kickoff: The Stablecoin Movement',
+    host: 'Arc Meetups · Lecter Vu',
+    venue: 'Home Hotel',
+    address:
+      'G Floor, Home Hotel · 158 Nguyễn Đình Chính, Phú Nhuận, TP. Hồ Chí Minh',
+    lat: 10.7956116,
+    lng: 106.6755465,
+    date: '2026-08-16',
+    startTime: '09:00',
+    endTime: '12:00',
+    type: 'meetup',
+    link: 'https://community.arc.io/public/clubs/vietnam/events/hcmc-or-community-meetup-and-new-location-kickoff-the-stablecoin-movement-1s1r2ck6sm',
+    imageUrl:
+      'https://d2xo500swnpgl1.cloudfront.net/uploads/arc/Vietnam-General-Meetup-1--2905f765-43f7-4265-ac8d-bb2c978a210f-1784744297269.jpeg',
+    description:
+      'Arc community meetup — stablecoins reshaping payments, savings & investing; infrastructure on Arc; opportunities for builders in Vietnam. Free · New location kickoff at Home Hotel Phú Nhuận.',
+    free: true,
+    featured: true,
+  },
 ]
 
 export const CONVICTION_EVENTS_SEED: SideEventDataset = {
@@ -1086,10 +1108,10 @@ export const CONVICTION_EVENTS_SEED: SideEventDataset = {
   event: 'conviction-2026',
   title: 'Conviction 2026 — Side Events Map',
   venue: SALA_VENUE,
-  dateRange: { start: '2026-08-13', end: '2026-08-15' },
+  dateRange: { start: '2026-08-13', end: '2026-08-16' },
   events: SIDE_EVENTS,
-  updatedAt: '2026-08-06T08:30:00.000Z',
-  note: 'ONE OF US Run & Coffee + Liminal Custody Meetup · 14/08',
+  updatedAt: '2026-08-10T04:00:00.000Z',
+  note: 'Arc Community Meetup · Stablecoin Movement · 16/08 Home Hotel Phú Nhuận',
 }
 
 function isEventType(v: unknown): v is SideEventType {

@@ -872,6 +872,50 @@ const SIDE_EVENTS: SideEvent[] = [
     featured: true,
   },
   {
+    id: 'one-of-us-run-coffee',
+    title:
+      'ONE OF US Run & Coffee // Aya, Cudis, 071Labs, Superteam Vietnam & Aethir',
+    host: 'Aya Trade · ONE OF US',
+    venue: 'Sala Park',
+    address: 'Sala Park, An Khánh, Thủ Đức, TP. Hồ Chí Minh',
+    lat: 10.770365,
+    lng: 106.725919,
+    date: '2026-08-14',
+    startTime: '07:30',
+    endTime: '09:00',
+    type: 'meetup',
+    link: 'https://luma.com/i98g8zzc',
+    imageUrl: lumaSquareCover(
+      'uploads/uk/b25c7e0b-eaad-4775-8d28-d3534f749d55.png',
+    ),
+    description:
+      'Run & Coffee morning session with ONE OF US, Aya Trade, Cudis, 071Labs, Superteam VN & Aethir — networking before the main forum.',
+    free: true,
+    featured: true,
+  },
+  {
+    id: 'liminal-custody-meetup-conviction',
+    title: 'Liminal Custody Meetup @ Conviction 2026',
+    host: 'Nguyen Steven',
+    venue: 'Starbucks - Thiso Mall',
+    address:
+      'Starbucks · Thiso Mall / SALA Shopping Mall, 10 Mai Chí Thọ, An Khánh, Thủ Đức, TP.HCM',
+    lat: 10.7720392,
+    lng: 106.7225104,
+    date: '2026-08-14',
+    startTime: '09:00',
+    endTime: '18:00',
+    type: 'meetup',
+    link: 'https://luma.com/yj5vu7oc',
+    imageUrl: lumaSquareCover(
+      'gallery-images/8y/d9f86a31-556f-454f-923f-16fecc8e742b',
+    ),
+    description:
+      'Buổi gặp gỡ Liminal Custody bên lề Conviction — digital asset custody & security. 09:00–18:00 tại Starbucks Thiso Mall (Sala).',
+    free: true,
+    featured: true,
+  },
+  {
     id: 'builders-happy-hours-hcmc',
     title: 'Builders Happy Hours HCMC',
     host: 'APAC DAO · Utila · ETHGlobal · Unlimit',
@@ -1044,8 +1088,8 @@ export const CONVICTION_EVENTS_SEED: SideEventDataset = {
   venue: SALA_VENUE,
   dateRange: { start: '2026-08-13', end: '2026-08-15' },
   events: SIDE_EVENTS,
-  updatedAt: '2026-08-06T03:30:00.000Z',
-  note: 'Pudgy × Renaiss TCG Coffee Meet Up · 13/08 13:30–16:00 · Nexus Café',
+  updatedAt: '2026-08-06T08:30:00.000Z',
+  note: 'ONE OF US Run & Coffee + Liminal Custody Meetup · 14/08',
 }
 
 function isEventType(v: unknown): v is SideEventType {

@@ -1059,6 +1059,27 @@ const SIDE_EVENTS: SideEvent[] = [
     featured: true,
   },
   {
+    id: 'web3-builders-breakfast-hiding-the-chain',
+    title: "Web3 Builders' Breakfast: Hiding the Chain ☕",
+    host: "sqrDAO's Curated Events · Sky Mavis",
+    venue: 'The Sentry L',
+    address: 'The Sentry L, Thành phố Hồ Chí Minh, Hồ Chí Minh',
+    lat: 10.780275,
+    lng: 106.704758,
+    date: '2026-08-15',
+    startTime: '09:00',
+    endTime: '12:00',
+    type: 'meetup',
+    link: 'https://luma.com/buildersbreakfast4',
+    imageUrl: lumaSquareCover(
+      'uploads/oc/8862f35a-54c5-43db-b7e9-cdf56d6c6ca0.jpg',
+    ),
+    description:
+      "Web3 Builders' Breakfast 4th edition · sqrDAO × Sky Mavis — casual morning with builders, food & strategy. Hiding the Chain · free meetup.",
+    free: true,
+    featured: true,
+  },
+  {
     id: 'unlimited-conviction-sundowner',
     title: 'Unlimit(ed) Conviction Sundowner',
     host: 'APAC DAO · Unlimit',
@@ -1110,8 +1131,8 @@ export const CONVICTION_EVENTS_SEED: SideEventDataset = {
   venue: SALA_VENUE,
   dateRange: { start: '2026-08-13', end: '2026-08-16' },
   events: SIDE_EVENTS,
-  updatedAt: '2026-08-10T04:00:00.000Z',
-  note: 'Arc Community Meetup · Stablecoin Movement · 16/08 Home Hotel Phú Nhuận',
+  updatedAt: '2026-08-10T05:00:00.000Z',
+  note: "Web3 Builders' Breakfast: Hiding the Chain · 15/08 The Sentry L",
 }
 
 function isEventType(v: unknown): v is SideEventType {

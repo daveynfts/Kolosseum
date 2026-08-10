@@ -105,6 +105,23 @@ const SEARCH_FEATURES = {
 
 /** Manual harvest backup (original posts found via live search research) */
 const FALLBACK_STATUS_IDS = [
+  // 10/08
+  '2086736508170694737', // trhonbtc
+  '2086687369118556623', // trhonbtc
+  // 09/08
+  '2086428547141513495', // trhonbtc
+  '2086428143880114182', // bachkhoabnb
+  '2086365032213000219', // bachkhoabnb
+  '2086318727994421539', // Iam_T_HUY
+  '2086293218996408748', // 0xkenyaz
+  '2086273959532896592', // 0xDoraSol
+  '2086266627516194819', // KT_BTC
+  '2086246110859874338', // PhanXuanThang5
+  '2086442617089499362', // vuntqn91
+  '2086338985786548228', // ni_celeb
+  '2086372403123482809', // trungmanict
+  // 08/08
+  '2086137991450476759', // DuyPhm91
   // 02/08
   '2083898577068453957', // Convictionvn
   '2083793578221089061', // Gynis_TAO

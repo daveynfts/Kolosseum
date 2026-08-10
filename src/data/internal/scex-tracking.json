@@ -1,9 +1,9 @@
 {
   "version": 1,
   "kind": "scex-tracking",
-  "asOf": "2026-08-03",
-  "updatedAt": "2026-08-10T02:44:37.908Z",
-  "note": "SCEX mention export sync · 133 accounts · 82 original posts linked · matrix volume = gốc+reply · views → reach7d. Livefeed filter by KOL. Tone Hỗn hợp/Trung lập → neutral. Media on R2: 74/82 posts (hydrate_scex_media). Batch posts +32 (KT, shuigvn, SucVat, bachkhoabnb, KienGold, …). Media on R2: 102/114 posts (hydrate_scex_media). Batch posts +19 (KhiemBNB, dinhthang97, Blockmedia, KaiBGR, Lens, …). Media on R2: 118/133 posts (hydrate_scex_media). Batch posts +27 (PeterTran, htp96, RiceFarmer, Liquid100x, …). Media on R2: 140/160 posts (hydrate_scex_media). Batch posts +28 (tdcrypto, NickyPham, BiCanTho, GF_Capital, …). Media on R2: 168/188 posts (hydrate_scex_media). Batch posts +25 (vangemxin1, TranNinh9, maybach, PTGinKing, …). Media on R2: 192/213 posts (hydrate_scex_media). Batch posts +26 (Tungthuocno, DaveyNFTsAI, VnInvestBlogger, hang1856, …). Media on R2: 214/239 posts (hydrate_scex_media). Scores recomputed (log volume + map-tier quality; eng weight low). Scores recomputed (log volume + map-tier quality; eng weight low). · Official @scexofficial posts upsert since:2026-07-27 until:2026-08-03 (+7/~0 upd, 7 posts; no post 30/07). · Blue Verified mentions 2026-07-27→2026-08-04: +20 posts · +10 actors · ~8 upd · 18 blue handles. Scores recomputed (log volume + map-tier quality; eng weight low). · Blue Verified mentions 2026-07-27→2026-08-04: +1 posts · +1 actors · ~18 upd · 19 blue handles. Scores recomputed (log volume + map-tier quality; eng weight low). · list58 curated mentions: +54 posts · +34 actors · ~14 actor upd · 58 links. Scores recomputed (log volume + map-tier quality; eng weight low). · Avatar warm 2026-08-03: ok 179 skip 0 fail 0; radar candidates tagged ~63. Manual batch · HuevaToi 03/08 + refresh KT_BTC/LeHuuQuangVinh/TyrSui. Manual luong4101992 28/07 status 2082052365931483155.",
+  "asOf": "2026-08-10",
+  "updatedAt": "2026-08-10T10:32:15.574Z",
+  "note": "SCEX mention export sync · 133 accounts · 82 original posts linked · matrix volume = gốc+reply · views → reach7d. Livefeed filter by KOL. Tone Hỗn hợp/Trung lập → neutral. Media on R2: 74/82 posts (hydrate_scex_media). Batch posts +32 (KT, shuigvn, SucVat, bachkhoabnb, KienGold, …). Media on R2: 102/114 posts (hydrate_scex_media). Batch posts +19 (KhiemBNB, dinhthang97, Blockmedia, KaiBGR, Lens, …). Media on R2: 118/133 posts (hydrate_scex_media). Batch posts +27 (PeterTran, htp96, RiceFarmer, Liquid100x, …). Media on R2: 140/160 posts (hydrate_scex_media). Batch posts +28 (tdcrypto, NickyPham, BiCanTho, GF_Capital, …). Media on R2: 168/188 posts (hydrate_scex_media). Batch posts +25 (vangemxin1, TranNinh9, maybach, PTGinKing, …). Media on R2: 192/213 posts (hydrate_scex_media). Batch posts +26 (Tungthuocno, DaveyNFTsAI, VnInvestBlogger, hang1856, …). Media on R2: 214/239 posts (hydrate_scex_media). Scores recomputed (log volume + map-tier quality; eng weight low). Scores recomputed (log volume + map-tier quality; eng weight low). · Official @scexofficial posts upsert since:2026-07-27 until:2026-08-03 (+7/~0 upd, 7 posts; no post 30/07). · Blue Verified mentions 2026-07-27→2026-08-04: +20 posts · +10 actors · ~8 upd · 18 blue handles. Scores recomputed (log volume + map-tier quality; eng weight low). · Blue Verified mentions 2026-07-27→2026-08-04: +1 posts · +1 actors · ~18 upd · 19 blue handles. Scores recomputed (log volume + map-tier quality; eng weight low). · list58 curated mentions: +54 posts · +34 actors · ~14 actor upd · 58 links. Scores recomputed (log volume + map-tier quality; eng weight low). · Avatar warm 2026-08-03: ok 179 skip 0 fail 0; radar candidates tagged ~63. Manual batch · HuevaToi 03/08 + refresh KT_BTC/LeHuuQuangVinh/TyrSui. Manual luong4101992 28/07 status 2082052365931483155. · Blue Verified mentions 2026-08-04→2026-08-11: +0 posts · +0 actors · ~0 upd · 0 blue handles. · Blue week feed 2026-08-04→2026-08-11: +14 new · ~0 refresh · 11 KOL handles · 5 new actors. Media on R2: 253/336 posts (hydrate_scex_media).",
   "config": {
     "brandName": "SCEX",
     "brandHandle": "scexofficial",
@@ -138,20 +138,20 @@
     {
       "id": "a_bachkhoabnb",
       "handle": "bachkhoabnb",
-      "displayName": "bachkhoabnb",
+      "displayName": "Thành Phan",
       "kind": "kol",
       "tier": "diamond",
-      "followers": 47200,
+      "followers": 48382,
       "reach7d": 16994,
       "postsVolume": 40,
       "qualityScore": 79.1,
-      "sentiment": "neutral",
+      "sentiment": "bullish",
       "sentimentConfidence": 0.55,
       "quadrant": "stars",
       "isWhitelisted": true,
-      "notes": "Gốc 3 · Reply 37 · Views 16994 · Tone: Hỗn hợp",
-      "tags": "goc:3,reply:37,mixed",
-      "lastPostAt": "2026-07-20T04:21:42.206Z",
+      "notes": "Gốc 3 · Reply 37 · Views 16994 · Tone: Hỗn hợp · Blue week 2026-08-04→2026-08-11 +2",
+      "tags": "goc:3,reply:37,mixed,blue_verified",
+      "lastPostAt": "2026-08-09T12:23:28.000Z",
       "gocPosts": 3,
       "replyPosts": 37,
       "volumeScore": 100,
@@ -227,8 +227,8 @@
       "sentimentConfidence": 0.55,
       "quadrant": "stars",
       "isWhitelisted": true,
-      "notes": "Gốc 4 · Reply 11 · Views 53387 · Tone: Hỗn hợp · Blue 7d 2026-07-27→2026-08-04 goc:1 reply:0 · Blue 7d 2026-07-27→2026-08-04 goc:1 reply:0 · list58 +1 links",
-      "lastPostAt": "2026-08-01T05:41:52.000Z",
+      "notes": "Gốc 4 · Reply 11 · Views 53387 · Tone: Hỗn hợp · Blue 7d 2026-07-27→2026-08-04 goc:1 reply:0 · Blue 7d 2026-07-27→2026-08-04 goc:1 reply:0 · list58 +1 links · Blue week 2026-08-04→2026-08-11 +1",
+      "lastPostAt": "2026-08-09T01:41:39.000Z",
       "tags": "goc:4,reply:11,mixed,blue_verified,list58,radar_candidate",
       "gocPosts": 4,
       "replyPosts": 11,
@@ -399,17 +399,17 @@
       "displayName": "TrHon",
       "kind": "kol",
       "tier": "Challenger",
-      "followers": 3711,
+      "followers": 3804,
       "reach7d": 1658,
       "postsVolume": 5,
       "qualityScore": 63.5,
-      "sentiment": "neutral",
+      "sentiment": "bullish",
       "sentimentConfidence": 0.55,
       "quadrant": "stars",
       "isWhitelisted": true,
-      "notes": "Gốc 5 · Reply 0 · Views 1,635 · Tone: Hỗn hợp · list58 +1 links",
-      "lastPostAt": "2026-08-01T19:00:42.000Z",
-      "tags": "goc:5,reply:0,mixed,list58,radar_candidate",
+      "notes": "Gốc 5 · Reply 0 · Views 1,635 · Tone: Hỗn hợp · list58 +1 links · Blue week 2026-08-04→2026-08-11 +3",
+      "lastPostAt": "2026-08-10T08:48:47.000Z",
+      "tags": "goc:5,reply:0,mixed,list58,radar_candidate,blue_verified",
       "gocPosts": 5,
       "replyPosts": 0,
       "volumeScore": 75.2,
@@ -2632,14 +2632,14 @@
       "displayName": "Ni North",
       "kind": "kol",
       "followers": 43700,
-      "reach7d": 19,
-      "postsVolume": 1,
+      "reach7d": 25,
+      "postsVolume": 2,
       "qualityScore": 54.7,
       "sentiment": "bullish",
       "isWhitelisted": true,
-      "notes": "list58 · 1 link(s) · posts in feed 1",
-      "tags": "list58,goc:1,bullish,radar_candidate",
-      "lastPostAt": "2026-07-29T10:16:52.000Z",
+      "notes": "list58 · 1 link(s) · posts in feed 1 · Blue week 2026-08-04→2026-08-11 +1",
+      "tags": "list58,goc:1,bullish,radar_candidate,blue_verified",
+      "lastPostAt": "2026-08-09T06:29:11.000Z",
       "gocPosts": 1,
       "replyPosts": 0,
       "volumeScore": 39.5,
@@ -2755,15 +2755,15 @@
       "handle": "duyphm91",
       "displayName": "Dui Phạm",
       "kind": "kol",
-      "followers": 1844,
+      "followers": 1968,
       "reach7d": 302,
       "postsVolume": 1,
       "qualityScore": 56.7,
       "sentiment": "bullish",
       "isWhitelisted": true,
-      "notes": "Blue Verified · 2026-07-27→2026-08-04 · goc 1 · reply 0",
+      "notes": "Blue Verified · 2026-07-27→2026-08-04 · goc 1 · reply 0 · Blue week 2026-08-04→2026-08-11 +1",
       "tags": "blue_verified,goc:1,reply:0,bullish,radar_candidate",
-      "lastPostAt": "2026-07-29T10:28:43.000Z",
+      "lastPostAt": "2026-08-08T17:10:30.000Z",
       "gocPosts": 1,
       "replyPosts": 0,
       "volumeScore": 38.5,
@@ -4052,20 +4052,20 @@
     {
       "id": "a_phanxuanthang5",
       "handle": "phanxuanthang5",
-      "displayName": "PhanXuanThang5",
+      "displayName": "ALPHA Crypto research ⚡💵",
       "kind": "user",
       "tier": "Rising",
-      "followers": 1616,
-      "reach7d": 48,
+      "followers": 4519,
+      "reach7d": 385,
       "postsVolume": 1,
       "qualityScore": 49.3,
       "sentiment": "neutral",
       "sentimentConfidence": 0.65,
       "quadrant": "ignore",
       "isWhitelisted": false,
-      "notes": "Gốc 1 · Reply 0 · Views 48 · Tone: Trung lập",
-      "tags": "goc:1,reply:0,neutral",
-      "lastPostAt": "2026-07-07T13:16:02.139Z",
+      "notes": "Gốc 1 · Reply 0 · Views 48 · Tone: Trung lập · Blue week 2026-08-04→2026-08-11 +1",
+      "tags": "goc:1,reply:0,neutral,blue_verified",
+      "lastPostAt": "2026-08-09T00:20:08.000Z",
       "gocPosts": 1,
       "replyPosts": 0,
       "volumeScore": 35.2,
@@ -4456,9 +4456,314 @@
       "avatarWarmedAt": "2026-08-03T03:08:53.981Z",
       "radarPipeline": "candidate",
       "sourcedAt": "2026-08-03"
+    },
+    {
+      "id": "a_iam_t_huy",
+      "handle": "iam_t_huy",
+      "displayName": "H U Y",
+      "kind": "kol",
+      "followers": 16687,
+      "reach7d": 448,
+      "postsVolume": 1,
+      "qualityScore": 55,
+      "sentiment": "bullish",
+      "isWhitelisted": true,
+      "notes": "Blue week feed 2026-08-04→2026-08-11 · goc 1 · reply 0",
+      "tags": "blue_verified,goc:1,reply:0,bullish",
+      "lastPostAt": "2026-08-09T05:08:41.000Z"
+    },
+    {
+      "id": "a_0xkenyaz",
+      "handle": "0xkenyaz",
+      "displayName": "0xkenyaz",
+      "kind": "kol",
+      "followers": 2936,
+      "reach7d": 34,
+      "postsVolume": 1,
+      "qualityScore": 55,
+      "sentiment": "neutral",
+      "isWhitelisted": true,
+      "notes": "Blue week feed 2026-08-04→2026-08-11 · goc 1 · reply 0",
+      "tags": "blue_verified,goc:1,reply:0,neutral",
+      "lastPostAt": "2026-08-09T03:27:19.000Z"
+    },
+    {
+      "id": "a_0xdorasol",
+      "handle": "0xdorasol",
+      "displayName": "Doran",
+      "kind": "kol",
+      "followers": 10465,
+      "reach7d": 311,
+      "postsVolume": 1,
+      "qualityScore": 55,
+      "sentiment": "bullish",
+      "isWhitelisted": true,
+      "notes": "Blue week feed 2026-08-04→2026-08-11 · goc 1 · reply 0",
+      "tags": "blue_verified,goc:1,reply:0,bullish",
+      "lastPostAt": "2026-08-09T02:10:47.000Z"
+    },
+    {
+      "id": "a_vuntqn91",
+      "handle": "vuntqn91",
+      "displayName": "Spyder",
+      "kind": "kol",
+      "followers": 3077,
+      "reach7d": 26,
+      "postsVolume": 2,
+      "qualityScore": 55,
+      "sentiment": "bullish",
+      "isWhitelisted": true,
+      "notes": "Blue week feed 2026-08-04→2026-08-11 · goc 1 · reply 1",
+      "tags": "blue_verified,goc:1,reply:1,bullish",
+      "lastPostAt": "2026-08-09T13:20:58.000Z"
+    },
+    {
+      "id": "a_trungmanict",
+      "handle": "trungmanict",
+      "displayName": "trungmanict",
+      "kind": "kol",
+      "followers": 3356,
+      "reach7d": 33,
+      "postsVolume": 2,
+      "qualityScore": 55,
+      "sentiment": "bullish",
+      "isWhitelisted": true,
+      "notes": "Blue week feed 2026-08-04→2026-08-11 · goc 1 · reply 1",
+      "tags": "blue_verified,goc:1,reply:1,bullish",
+      "lastPostAt": "2026-08-09T08:41:58.000Z"
     }
   ],
   "posts": [
+    {
+      "id": "p_2086736508170694737",
+      "handle": "trhonbtc",
+      "url": "https://x.com/trhonbtc/status/2086736508170694737",
+      "text": "Bảng dự đoán Top 10 Token tiềm năng có thể được niêm yết trên #SCEX\n\n=> Lưu ý: Đây là đánh giá và dự đoán của AI\nĐáng chú ý trong bảng xếp hạng này có sự góp mặt của #C98 và tomochain:native với tỷ lệ cũng khá cao.\n\nNếu điều này là sự thật mình nghĩ các token mang danh hiệu cây nhà lá vườn sẽ có nhiều cơ hội tiếp xúc với nhà đầu tư F0 và mang đến nhiều lợi ích cải cách tư duy đầu tư đa dạng hơn đối với cộng đồng nđt web2 ở Việt Nam\n\nAnh em nghĩ sao về bảng dự đoán này?",
+      "postedAt": "2026-08-10T08:48:47.000Z",
+      "sentiment": "bullish",
+      "hidden": false,
+      "notes": "Blue Verified week feed · 2026-08-04→2026-08-11 · media→R2",
+      "media": [
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/f610d6b823331c7f950f200c"
+      ],
+      "likes": 4,
+      "reposts": 0,
+      "replies": 3,
+      "views": 81
+    },
+    {
+      "id": "p_2086687369118556623",
+      "handle": "trhonbtc",
+      "url": "https://x.com/trhonbtc/status/2086687369118556623",
+      "text": "Đầu tuần chill chill thế này thôi anh em!\n\nĐang ngồi tập vẽ chart trên sàn #SCEX :)))\n\nTập dần cho quen, để sau đỡ bỡ ngỡ\n\nMà chắc chỉ dám tập vẽ đi lên thôi chứ ko có long short sao dám vẽ đi xuống 😭",
+      "postedAt": "2026-08-10T05:33:32.000Z",
+      "sentiment": "bullish",
+      "hidden": false,
+      "notes": "Blue Verified week feed · 2026-08-04→2026-08-11 · media→R2",
+      "media": [
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/63c89d1c63e50420ea4ea659"
+      ],
+      "likes": 3,
+      "reposts": 0,
+      "replies": 2,
+      "views": 185
+    },
+    {
+      "id": "p_2086442617089499362",
+      "handle": "vuntqn91",
+      "url": "https://x.com/vuntqn91/status/2086442617089499362",
+      "text": "@Iam_T_HUY ngày xưa trend list Binance, sau đó là trend list Upbit. Sắp tới market maker muốn bơm coin thì bắt buộc phải list SCEX. Mình đang nghĩ đến trường hợp này.",
+      "postedAt": "2026-08-09T13:20:58.000Z",
+      "sentiment": "bullish",
+      "hidden": false,
+      "notes": "Blue Verified week feed · 2026-08-04→2026-08-11 · media→R2",
+      "media": [],
+      "likes": 0,
+      "reposts": 0,
+      "replies": 0,
+      "views": 26
+    },
+    {
+      "id": "p_2086428547141513495",
+      "handle": "trhonbtc",
+      "url": "https://x.com/trhonbtc/status/2086428547141513495",
+      "text": "Một buổi tối cafe của một trader tập sự trên sàn #SCEX, tập sự là tại vì đang phải trade bằng tiền giả nên mới có cái danh như vậy kkk\n\nNhưng biết đâu tập được một thơi gian sau lên trình cho trade bằng tiền thật cái gặt quả ngọt thì sao anh em nhỉ ^^\n\nLúc đó mới nhận ra sàn SCEX đang tạo điều kiện cho ae holder tập hold coin để sau hold hết con này đến con khác cho đỡ bỡ ngỡ ;)))",
+      "postedAt": "2026-08-09T12:25:04.000Z",
+      "sentiment": "bullish",
+      "hidden": false,
+      "notes": "Blue Verified week feed · 2026-08-04→2026-08-11 · media→R2",
+      "media": [
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/3e2d7228f33216ca260ad8e4"
+      ],
+      "likes": 6,
+      "reposts": 3,
+      "replies": 3,
+      "views": 344
+    },
+    {
+      "id": "p_2086428143880114182",
+      "handle": "bachkhoabnb",
+      "url": "https://x.com/bachkhoabnb/status/2086428143880114182",
+      "text": "TÀI SẢN CỦA BẠN ĐƯỢC BẢO VỆ  BỞI CÁC TỔ CHỨC HÀNG ĐẦU\n\nĐó là câu được in đậm trên Website của sàn SCEX\n\nCác đối tác chiến lược toàn diện:\n- Ngân hàng LP Bank \n- LP Bank Securities\n- Thai Group\n- Sàn Remitano\n- GFI Research\n- Ngân hàng Sacombank\n- Chainalysis\n\nLiệu đây có phải là sàn đầu tiên chính thức mở bát sau 1/9? 🧐🧐\nAnh em sẵn sàng chuyển dịch tài sản về sàn quốc nội chưa?",
+      "postedAt": "2026-08-09T12:23:28.000Z",
+      "sentiment": "bullish",
+      "hidden": false,
+      "notes": "Blue Verified week feed · 2026-08-04→2026-08-11 · media→R2",
+      "media": [
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/bde4ea4209f240105a6b0c4d"
+      ],
+      "likes": 56,
+      "reposts": 1,
+      "replies": 37,
+      "views": 7469
+    },
+    {
+      "id": "p_2086372403123482809",
+      "handle": "trungmanict",
+      "url": "https://x.com/trungmanict/status/2086372403123482809",
+      "text": "@Seven_Nguyen666 Nhìn web SCEX bảo vệ tài sản ngon đét",
+      "postedAt": "2026-08-09T08:41:58.000Z",
+      "sentiment": "bullish",
+      "hidden": false,
+      "notes": "Blue Verified week feed · 2026-08-04→2026-08-11 · media→R2",
+      "media": [],
+      "likes": 0,
+      "reposts": 0,
+      "replies": 0,
+      "views": 33
+    },
+    {
+      "id": "p_2086365032213000219",
+      "handle": "bachkhoabnb",
+      "url": "https://x.com/bachkhoabnb/status/2086365032213000219",
+      "text": "SCEX chính thức trở thành Đối tác Chiến lược của Conviction 2026\n\nLiệu chúng ta sẽ có thêm vài cái cốc này nữa về GA\n\nMay túi ba gang mà theo mà đựng..!!",
+      "postedAt": "2026-08-09T08:12:41.000Z",
+      "sentiment": "bullish",
+      "hidden": false,
+      "notes": "Blue Verified week feed · 2026-08-04→2026-08-11 · media→R2",
+      "media": [
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/4ec74a70affd028390f44ed2"
+      ],
+      "likes": 24,
+      "reposts": 0,
+      "replies": 20,
+      "views": 1540
+    },
+    {
+      "id": "p_2086338985786548228",
+      "handle": "ni_celeb",
+      "url": "https://x.com/ni_celeb/status/2086338985786548228",
+      "text": "@Iam_T_HUY Hóng con SCEX lên sàn chính luôn chứ đùa",
+      "postedAt": "2026-08-09T06:29:11.000Z",
+      "sentiment": "bullish",
+      "hidden": false,
+      "notes": "Blue Verified week feed · 2026-08-04→2026-08-11 · media→R2",
+      "media": [],
+      "likes": 0,
+      "reposts": 0,
+      "replies": 0,
+      "views": 25
+    },
+    {
+      "id": "p_2086318727994421539",
+      "handle": "iam_t_huy",
+      "url": "https://x.com/iam_t_huy/status/2086318727994421539",
+      "text": "SCEX ĐỒNG HÀNH CÙNG CONVICTION 2026 🔥\n\nSCEX chính thức trở thành Đối tác Chiến lược của Conviction 2026 – diễn đàn công nghệ hàng đầu quy tụ các chuyên gia về Blockchain, AI và Tài sản mã hóa tại Việt Nam!\n\nLiệu tomochain:native và $C98 sắp tới có là con cưng của sàn Việt Nam không đây \n\nHóng bản Live của SCEX sắp tới thôi",
+      "postedAt": "2026-08-09T05:08:41.000Z",
+      "sentiment": "bullish",
+      "hidden": false,
+      "notes": "Blue Verified week feed · 2026-08-04→2026-08-11 · media→R2",
+      "media": [
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/8b0110baff40bac3d640d6a2"
+      ],
+      "likes": 20,
+      "reposts": 3,
+      "replies": 17,
+      "views": 448
+    },
+    {
+      "id": "p_2086293218996408748",
+      "handle": "0xkenyaz",
+      "url": "https://x.com/0xkenyaz/status/2086293218996408748",
+      "text": "🇻🇳 ANH EM CRYPTO VIỆT, SẮP CÓ “SÂN NHÀ” ĐỂ CHƠI RỒI!\n\nSCEX chuẩn bị LIVE, có vài điểm mình nghĩ anh em nên để ý 👇\n\n🔥 PHÁP LÝ ĐÃ BẮT ĐẦU VÀO CUỘC  \nSàn crypto hoạt động trong khuôn khổ pháp lý rõ ràng hơn → yêu cầu về quản lý, minh bạch và bảo vệ nhà đầu tư cũng sẽ chặt hơn.\n\n💰 THUẾ 0,1%/GIAO DỊCH — ĐỪNG HOẢNG  \nTính trên từng giao dịch thì không phải con số quá lớn. Nhưng anh em trade nhiều thì vẫn nên tính khoản này vào chi phí.\n\n🌎 CÁI ĐÁNG CHÚ Ý NHẤT  \nViệt Nam đang bắt đầu bước vào cuộc chơi crypto một cách chính thức hơn.\n\nTừ trước giờ phần lớn anh em phải chơi trên các nền tảng quốc tế.\n\nNếu thị trường trong nước vận hành tốt, đây có thể là bước đầu để crypto Việt Nam đủ sức cạnh tranh trên sân chơi quốc tế.\n\n*SCEX chỉ là một cái tên.  \nThứ đáng chờ đợi hơn là: 🇻🇳 Việt Nam chính thức bước vào cuộc chơi tài sản số.",
+      "postedAt": "2026-08-09T03:27:19.000Z",
+      "sentiment": "neutral",
+      "hidden": false,
+      "notes": "Blue Verified week feed · 2026-08-04→2026-08-11 · media→R2",
+      "media": [
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/ce4543235fde2e74947b6d09"
+      ],
+      "likes": 6,
+      "reposts": 0,
+      "replies": 4,
+      "views": 34
+    },
+    {
+      "id": "p_2086273959532896592",
+      "handle": "0xdorasol",
+      "url": "https://x.com/0xdorasol/status/2086273959532896592",
+      "text": "🎒Anh em đang chờ gì vào thời điểm này ? Sàn SCEX Việt Nam ra mắt vào 1/9 ? !! \n\nDù sàn Việt Nam ra mắt anh em vẫn còn thời gian 6 tháng để giao dịch trên Global !! \n\nTrong thời điểm chờ đợi. @TxFlow_L1 vẫn là dự án mình quan tâm và tham gia ở thời điểm này !! \n\nVới hệ sinh thái PerpDEX vẫn là một hệ sinh thái không thể thiếu trong Crypto. \n\nVolume luôn được duy trì ở mức cao. Với các tiêu chí và phần thưởng được cập nhật rõ ràng. TxFlow đang tạo ra sân chơi mới dành cho anh em !!  \n\nAnh em đam mê Trading muốn tham khảo sớm có thể tham gia nhé : \nhttps://app.txflow.com/r/TXDORAN",
+      "postedAt": "2026-08-09T02:10:47.000Z",
+      "sentiment": "bullish",
+      "hidden": false,
+      "notes": "Blue Verified week feed · 2026-08-04→2026-08-11 · media→R2",
+      "media": [
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/ba80357a54beb155edf2ad08"
+      ],
+      "likes": 6,
+      "reposts": 1,
+      "replies": 3,
+      "views": 311
+    },
+    {
+      "id": "p_2086266627516194819",
+      "handle": "kt_btc",
+      "url": "https://x.com/kt_btc/status/2086266627516194819",
+      "text": "🇻🇳Sàn SCEX sắp ra mắt rồi - ae bắt đầu cần chú ý này!\n\nCó tin vui, tin buồn và quan trọng nhất là 2 mốc thời gian cần nhớ.\n\n📌Tin vui:\n\n- Việt Nam bắt đầu bước vào cuộc chơi crypto với hành lang pháp lý rõ ràng hơn, tăng cường bảo vệ nhà đầu tư.\n- Thuế 0,1% mỗi giao dịch, không phải mức quá lớn.\n- Thị trường crypto Việt Nam có cơ hội chuyên nghiệp hóa và cạnh tranh quốc tế.\n\n📌Tin buồn:\n\n- Thói quen giao dịch trên các sàn global có thể sẽ phải thay đổi.\n- Giai đoạn đầu sàn nội có thể chưa nhiều cặp, chủ yếu là Spot.\n- Ít nhất 6 tháng đầu vẫn còn thời gian để giao dịch trên sàn global.\n\n📌2 mốc cần nhớ:\n\n1⃣ 01/09/2026: Nghị định 284/2026 có hiệu lực.\n\n2⃣ 6 tháng sau khi sàn crypto nội địa đầu tiên ra mắt: cần đặc biệt chú ý đến việc chuyển tài sản và hoạt động giao dịch về sàn nội theo quy định.\n\nVẫn còn nhiều vấn đề chưa rõ như coin chưa được hỗ trợ sẽ xử lý thế nào, giao dịch DEX/global khai báo thuế ra sao...\n\nAe lưu lại và chờ update chi tiết tiếp theo nhé!",
+      "postedAt": "2026-08-09T01:41:39.000Z",
+      "sentiment": "neutral",
+      "hidden": false,
+      "notes": "Blue Verified week feed · 2026-08-04→2026-08-11 · media→R2",
+      "media": [
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/ed4fef7010bd24083e2850b6"
+      ],
+      "likes": 111,
+      "reposts": 10,
+      "replies": 58,
+      "views": 22041
+    },
+    {
+      "id": "p_2086246110859874338",
+      "handle": "phanxuanthang5",
+      "url": "https://x.com/phanxuanthang5/status/2086246110859874338",
+      "text": "SCEX sắp ra mắt LIVE rồi\nthuế chỉ 0.1% mỗi giao dịch,\nTương lai tất cả các nước đều ra quy định về crypto thì mảng coin kiếm tiền ngày càng khó rồi, để tiền trên binance hay cac sàn lớn mới có tiền để chơi game lớn\nchưa kể khoản bảo hiểm tài sản còn mập mờ\nTheo ae nên để tiền trên sàn hay rút về",
+      "postedAt": "2026-08-09T00:20:08.000Z",
+      "sentiment": "neutral",
+      "hidden": false,
+      "notes": "Blue Verified week feed · 2026-08-04→2026-08-11 · media→R2",
+      "media": [],
+      "likes": 7,
+      "reposts": 0,
+      "replies": 4,
+      "views": 385
+    },
+    {
+      "id": "p_2086137991450476759",
+      "handle": "duyphm91",
+      "url": "https://x.com/duyphm91/status/2086137991450476759",
+      "text": "Ngon không anh em \n\nBắt ngay BNB bú mạnh, tiếc cái là demo #scex  lại nhả vía giàu ảo cho anh em nhé 🫡",
+      "postedAt": "2026-08-08T17:10:30.000Z",
+      "sentiment": "bullish",
+      "hidden": false,
+      "notes": "Blue Verified week feed · 2026-08-04→2026-08-11 · media→R2",
+      "media": [
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/c94d89d7c51c4ffc2116c118"
+      ],
+      "likes": 12,
+      "reposts": 0,
+      "replies": 15,
+      "views": 97
+    },
     {
       "id": "p_2084271038704300112",
       "handle": "huevatoi",
@@ -4467,7 +4772,7 @@
       "postedAt": "2026-08-03T13:31:54.000Z",
       "sentiment": "neutral",
       "hidden": false,
-      "notes": "manual radar update · user batch · reply",
+      "notes": "manual radar update · user batch · reply · media→R2",
       "likes": 1,
       "reposts": 0,
       "replies": 0,
@@ -4482,12 +4787,14 @@
       "postedAt": "2026-08-02T12:51:52.000Z",
       "sentiment": "bullish",
       "hidden": false,
-      "notes": "Blue Verified mention · since:2026-07-27 until:2026-08-04",
-      "media": [],
-      "likes": 8,
+      "notes": "Blue Verified mention · since:2026-07-27 until:2026-08-04 · media→R2",
+      "media": [
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/a2744ee7450cd4ac24be14bc"
+      ],
+      "likes": 22,
       "reposts": 2,
       "replies": 2,
-      "views": 212
+      "views": 689
     },
     {
       "id": "p_2083793578221089061",
@@ -4497,14 +4804,14 @@
       "postedAt": "2026-08-02T05:54:38.000Z",
       "sentiment": "bullish",
       "hidden": false,
-      "notes": "Blue Verified mention · since:2026-07-27 until:2026-08-04",
+      "notes": "Blue Verified mention · since:2026-07-27 until:2026-08-04 · media→R2",
       "media": [
-        "https://pbs.twimg.com/media/HOsfNnybAAAEKkT.jpg?name=orig"
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/e6849e636b8807fdc9df3184"
       ],
-      "likes": 28,
+      "likes": 29,
       "reposts": 0,
       "replies": 27,
-      "views": 324
+      "views": 390
     },
     {
       "id": "p_2083754280218173601",
@@ -4514,12 +4821,12 @@
       "postedAt": "2026-08-02T03:18:29.000Z",
       "sentiment": "bullish",
       "hidden": false,
-      "notes": "list58 #1 · curated SCEX mention harvest",
+      "notes": "list58 #1 · curated SCEX mention harvest · media→R2",
       "media": [],
       "likes": 1,
       "reposts": 0,
       "replies": 0,
-      "views": 15
+      "views": 21
     },
     {
       "id": "p_2083734533610885231",
@@ -4529,13 +4836,14 @@
       "postedAt": "2026-08-02T02:00:01.000Z",
       "sentiment": "bullish",
       "hidden": false,
-      "notes": "Official · CHỈ CÒN 1 NGÀY · since:2026-07-27 until:2026-08-03",
+      "notes": "Official · CHỈ CÒN 1 NGÀY · since:2026-07-27 until:2026-08-03 · media→R2",
       "media": [
-        "https://pbs.twimg.com/media/HOpO5CDbgAEiKZO.jpg?name=orig"
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/c1e4ea376860d0929c07322d"
       ],
-      "likes": 11,
+      "likes": 12,
       "replies": 1,
-      "views": 584
+      "views": 858,
+      "reposts": 0
     },
     {
       "id": "p_2083719794260685098",
@@ -4545,12 +4853,12 @@
       "postedAt": "2026-08-02T01:01:27.000Z",
       "sentiment": "bullish",
       "hidden": false,
-      "notes": "list58 #2 · curated SCEX mention harvest",
+      "notes": "list58 #2 · curated SCEX mention harvest · media→R2",
       "media": [],
       "likes": 0,
       "reposts": 0,
       "replies": 0,
-      "views": 10
+      "views": 15
     },
     {
       "id": "p_2083629010467364976",
@@ -4560,12 +4868,12 @@
       "postedAt": "2026-08-01T19:00:42.000Z",
       "sentiment": "neutral",
       "hidden": false,
-      "notes": "list58 #3 · curated SCEX mention harvest",
+      "notes": "list58 #3 · curated SCEX mention harvest · media→R2",
       "media": [],
       "likes": 0,
       "reposts": 0,
       "replies": 0,
-      "views": 23
+      "views": 28
     },
     {
       "id": "p_2083615913421820101",
@@ -4575,12 +4883,12 @@
       "postedAt": "2026-08-01T18:08:40.000Z",
       "sentiment": "neutral",
       "hidden": false,
-      "notes": "list58 #4 · curated SCEX mention harvest",
+      "notes": "list58 #4 · curated SCEX mention harvest · media→R2",
       "media": [],
       "likes": 0,
       "reposts": 0,
       "replies": 0,
-      "views": 6
+      "views": 8
     },
     {
       "id": "p_2083596836087210420",
@@ -4590,15 +4898,15 @@
       "postedAt": "2026-08-01T16:52:51.000Z",
       "sentiment": "bearish",
       "hidden": false,
-      "notes": "Blue Verified mention · since:2026-07-27 until:2026-08-04",
+      "notes": "Blue Verified mention · since:2026-07-27 until:2026-08-04 · media→R2",
       "media": [
-        "https://pbs.twimg.com/media/HOpsRhpawAAHhsS.jpg?name=orig",
-        "https://pbs.twimg.com/media/HOpsRhgawAAAGbw.jpg?name=orig"
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/1ff6394740b92c28c389a209",
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/5b6643b80346e30f9f9929ee"
       ],
       "likes": 5,
       "reposts": 1,
       "replies": 2,
-      "views": 932
+      "views": 1423
     },
     {
       "id": "p_2083548284711526501",
@@ -4608,12 +4916,12 @@
       "postedAt": "2026-08-01T13:39:56.000Z",
       "sentiment": "neutral",
       "hidden": false,
-      "notes": "list58 #5 · curated SCEX mention harvest",
+      "notes": "list58 #5 · curated SCEX mention harvest · media→R2",
       "media": [],
       "likes": 0,
       "reposts": 0,
       "replies": 0,
-      "views": 28
+      "views": 32
     },
     {
       "id": "p_2083547958679949772",
@@ -4623,12 +4931,12 @@
       "postedAt": "2026-08-01T13:38:38.000Z",
       "sentiment": "bullish",
       "hidden": false,
-      "notes": "list58 #6 · curated SCEX mention harvest",
+      "notes": "list58 #6 · curated SCEX mention harvest · media→R2",
       "media": [],
       "likes": 0,
       "reposts": 0,
       "replies": 0,
-      "views": 37
+      "views": 40
     },
     {
       "id": "p_2083511693926375770",
@@ -4638,12 +4946,12 @@
       "postedAt": "2026-08-01T11:14:32.000Z",
       "sentiment": "neutral",
       "hidden": false,
-      "notes": "list58 #7 · curated SCEX mention harvest",
+      "notes": "list58 #7 · curated SCEX mention harvest · media→R2",
       "media": [],
       "likes": 0,
       "reposts": 0,
       "replies": 0,
-      "views": 39
+      "views": 44
     },
     {
       "id": "p_2083481614030630918",
@@ -4653,12 +4961,12 @@
       "postedAt": "2026-08-01T09:15:00.000Z",
       "sentiment": "bullish",
       "hidden": false,
-      "notes": "list58 #8 · curated SCEX mention harvest",
+      "notes": "list58 #8 · curated SCEX mention harvest · media→R2",
       "media": [],
       "likes": 0,
       "reposts": 0,
       "replies": 0,
-      "views": 149
+      "views": 154
     },
     {
       "id": "p_2083481311726203218",
@@ -4668,14 +4976,14 @@
       "postedAt": "2026-08-01T09:13:48.000Z",
       "sentiment": "bearish",
       "hidden": false,
-      "notes": "Blue Verified mention · since:2026-07-27 until:2026-08-04",
+      "notes": "Blue Verified mention · since:2026-07-27 until:2026-08-04 · media→R2",
       "media": [
-        "https://pbs.twimg.com/media/HOoDNXjbEAAieRD.jpg?name=orig"
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/f443e78bc41ad4a21ebe5717"
       ],
-      "likes": 11,
+      "likes": 12,
       "reposts": 2,
-      "replies": 4,
-      "views": 306
+      "replies": 5,
+      "views": 413
     },
     {
       "id": "p_2083470288545820972",
@@ -4685,14 +4993,14 @@
       "postedAt": "2026-08-01T08:30:00.000Z",
       "sentiment": "bullish",
       "hidden": false,
-      "notes": "Blue Verified mention · since:2026-07-27 until:2026-08-04",
+      "notes": "Blue Verified mention · since:2026-07-27 until:2026-08-04 · media→R2",
       "media": [
-        "https://pbs.twimg.com/media/HOnRu6caYAAGu6b.png?name=orig"
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/333b27ea0122aab6b6eeb183"
       ],
       "likes": 29,
       "reposts": 2,
       "replies": 32,
-      "views": 1125
+      "views": 1215
     },
     {
       "id": "p_2083465823373631664",
@@ -4702,12 +5010,12 @@
       "postedAt": "2026-08-01T08:12:15.000Z",
       "sentiment": "neutral",
       "hidden": false,
-      "notes": "list58 #9 · curated SCEX mention harvest",
+      "notes": "list58 #9 · curated SCEX mention harvest · media→R2",
       "media": [],
       "likes": 0,
       "reposts": 0,
       "replies": 0,
-      "views": 41
+      "views": 43
     },
     {
       "id": "p_2083465344983924858",
@@ -4717,12 +5025,12 @@
       "postedAt": "2026-08-01T08:10:21.000Z",
       "sentiment": "neutral",
       "hidden": false,
-      "notes": "list58 #10 · curated SCEX mention harvest",
+      "notes": "list58 #10 · curated SCEX mention harvest · media→R2",
       "media": [],
       "likes": 0,
       "reposts": 0,
       "replies": 0,
-      "views": 40
+      "views": 42
     },
     {
       "id": "p_2083464560825266326",
@@ -4732,12 +5040,12 @@
       "postedAt": "2026-08-01T08:07:14.000Z",
       "sentiment": "neutral",
       "hidden": false,
-      "notes": "list58 #11 · curated SCEX mention harvest",
+      "notes": "list58 #11 · curated SCEX mention harvest · media→R2",
       "media": [],
       "likes": 0,
       "reposts": 0,
       "replies": 0,
-      "views": 44
+      "views": 46
     },
     {
       "id": "p_2083463653958029396",
@@ -4747,15 +5055,15 @@
       "postedAt": "2026-08-01T08:03:38.000Z",
       "sentiment": "neutral",
       "hidden": false,
-      "notes": "Blue Verified mention · since:2026-07-27 until:2026-08-04",
+      "notes": "Blue Verified mention · since:2026-07-27 until:2026-08-04 · media→R2",
       "media": [
-        "https://pbs.twimg.com/media/HOnzJL5aYAAskJX.jpg?name=orig",
-        "https://pbs.twimg.com/media/HOnzJLzbYAAe6AO.jpg?name=orig"
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/04c94e3e6f1ccf360035a405",
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/173037b25b30d66d7f58f51f"
       ],
       "likes": 14,
       "reposts": 0,
       "replies": 15,
-      "views": 166
+      "views": 168
     },
     {
       "id": "p_2083463141124669763",
@@ -4765,12 +5073,12 @@
       "postedAt": "2026-08-01T08:01:36.000Z",
       "sentiment": "bullish",
       "hidden": false,
-      "notes": "list58 #12 · curated SCEX mention harvest",
+      "notes": "list58 #12 · curated SCEX mention harvest · media→R2",
       "media": [],
       "likes": 0,
       "reposts": 0,
       "replies": 0,
-      "views": 28
+      "views": 29
     },
     {
       "id": "p_2083442690377838777",
@@ -4780,12 +5088,12 @@
       "postedAt": "2026-08-01T06:40:20.000Z",
       "sentiment": "neutral",
       "hidden": false,
-      "notes": "list58 #13 · curated SCEX mention harvest",
+      "notes": "list58 #13 · curated SCEX mention harvest · media→R2",
       "media": [],
       "likes": 0,
       "reposts": 0,
       "replies": 0,
-      "views": 251
+      "views": 259
     },
     {
       "id": "p_2083441636428980450",
@@ -4795,7 +5103,7 @@
       "postedAt": "2026-08-01T06:36:09.000Z",
       "sentiment": "bullish",
       "hidden": false,
-      "notes": "list58 #14 · curated SCEX mention harvest",
+      "notes": "list58 #14 · curated SCEX mention harvest · media→R2",
       "media": [],
       "likes": 0,
       "reposts": 0,
@@ -4810,12 +5118,12 @@
       "postedAt": "2026-08-01T06:31:54.000Z",
       "sentiment": "neutral",
       "hidden": false,
-      "notes": "list58 #15 · curated SCEX mention harvest",
+      "notes": "list58 #15 · curated SCEX mention harvest · media→R2",
       "media": [],
       "likes": 0,
       "reposts": 0,
       "replies": 0,
-      "views": 56
+      "views": 58
     },
     {
       "id": "p_2083439778243174434",
@@ -4825,12 +5133,12 @@
       "postedAt": "2026-08-01T06:28:46.000Z",
       "sentiment": "neutral",
       "hidden": false,
-      "notes": "list58 #16 · curated SCEX mention harvest",
+      "notes": "list58 #16 · curated SCEX mention harvest · media→R2",
       "media": [],
       "likes": 0,
       "reposts": 0,
       "replies": 0,
-      "views": 72
+      "views": 74
     },
     {
       "id": "p_2083438846231093635",
@@ -4840,12 +5148,12 @@
       "postedAt": "2026-08-01T06:25:04.000Z",
       "sentiment": "neutral",
       "hidden": false,
-      "notes": "list58 #17 · curated SCEX mention harvest",
+      "notes": "list58 #17 · curated SCEX mention harvest · media→R2",
       "media": [],
       "likes": 0,
       "reposts": 0,
       "replies": 0,
-      "views": 164
+      "views": 165
     },
     {
       "id": "p_2083434674316353898",
@@ -4855,12 +5163,12 @@
       "postedAt": "2026-08-01T06:08:29.000Z",
       "sentiment": "neutral",
       "hidden": false,
-      "notes": "list58 #18 · curated SCEX mention harvest",
+      "notes": "list58 #18 · curated SCEX mention harvest · media→R2",
       "media": [],
       "likes": 0,
       "reposts": 0,
       "replies": 0,
-      "views": 86
+      "views": 88
     },
     {
       "id": "p_2083433901360644291",
@@ -4870,12 +5178,12 @@
       "postedAt": "2026-08-01T06:05:25.000Z",
       "sentiment": "neutral",
       "hidden": false,
-      "notes": "list58 #19 · curated SCEX mention harvest",
+      "notes": "list58 #19 · curated SCEX mention harvest · media→R2",
       "media": [],
       "likes": 0,
       "reposts": 0,
       "replies": 0,
-      "views": 102
+      "views": 104
     },
     {
       "id": "p_2083433591514812448",
@@ -4885,12 +5193,12 @@
       "postedAt": "2026-08-01T06:04:11.000Z",
       "sentiment": "neutral",
       "hidden": false,
-      "notes": "list58 #20 · curated SCEX mention harvest",
+      "notes": "list58 #20 · curated SCEX mention harvest · media→R2",
       "media": [],
       "likes": 0,
       "reposts": 0,
       "replies": 0,
-      "views": 60
+      "views": 62
     },
     {
       "id": "p_2083432180970369122",
@@ -4900,12 +5208,12 @@
       "postedAt": "2026-08-01T05:58:34.000Z",
       "sentiment": "neutral",
       "hidden": false,
-      "notes": "list58 #21 · curated SCEX mention harvest",
+      "notes": "list58 #21 · curated SCEX mention harvest · media→R2",
       "media": [],
       "likes": 0,
       "reposts": 0,
       "replies": 0,
-      "views": 62
+      "views": 63
     },
     {
       "id": "p_2083429944496111703",
@@ -4915,12 +5223,12 @@
       "postedAt": "2026-08-01T05:49:41.000Z",
       "sentiment": "neutral",
       "hidden": false,
-      "notes": "list58 #22 · curated SCEX mention harvest",
+      "notes": "list58 #22 · curated SCEX mention harvest · media→R2",
       "media": [],
       "likes": 1,
       "reposts": 0,
       "replies": 1,
-      "views": 159
+      "views": 161
     },
     {
       "id": "p_2083429436092043710",
@@ -4930,12 +5238,12 @@
       "postedAt": "2026-08-01T05:47:40.000Z",
       "sentiment": "neutral",
       "hidden": false,
-      "notes": "list58 #23 · curated SCEX mention harvest",
+      "notes": "list58 #23 · curated SCEX mention harvest · media→R2",
       "media": [],
       "likes": 0,
       "reposts": 0,
       "replies": 0,
-      "views": 127
+      "views": 128
     },
     {
       "id": "p_2083429374372561016",
@@ -4945,12 +5253,12 @@
       "postedAt": "2026-08-01T05:47:25.000Z",
       "sentiment": "bullish",
       "hidden": false,
-      "notes": "list58 #24 · curated SCEX mention harvest",
+      "notes": "list58 #24 · curated SCEX mention harvest · media→R2",
       "media": [],
       "likes": 0,
       "reposts": 0,
       "replies": 0,
-      "views": 179
+      "views": 180
     },
     {
       "id": "p_2083428861807923509",
@@ -4960,12 +5268,12 @@
       "postedAt": "2026-08-01T05:45:23.000Z",
       "sentiment": "neutral",
       "hidden": false,
-      "notes": "list58 #25 · curated SCEX mention harvest",
+      "notes": "list58 #25 · curated SCEX mention harvest · media→R2",
       "media": [],
       "likes": 0,
       "reposts": 0,
       "replies": 0,
-      "views": 265
+      "views": 269
     },
     {
       "id": "p_2083428534769651810",
@@ -4975,12 +5283,12 @@
       "postedAt": "2026-08-01T05:44:05.000Z",
       "sentiment": "neutral",
       "hidden": false,
-      "notes": "list58 #26 · curated SCEX mention harvest",
+      "notes": "list58 #26 · curated SCEX mention harvest · media→R2",
       "media": [],
       "likes": 0,
       "reposts": 0,
       "replies": 0,
-      "views": 95
+      "views": 96
     },
     {
       "id": "p_2083428245505294643",
@@ -4990,12 +5298,12 @@
       "postedAt": "2026-08-01T05:42:56.000Z",
       "sentiment": "neutral",
       "hidden": false,
-      "notes": "list58 #27 · curated SCEX mention harvest",
+      "notes": "list58 #27 · curated SCEX mention harvest · media→R2",
       "media": [],
       "likes": 0,
       "reposts": 0,
       "replies": 0,
-      "views": 101
+      "views": 103
     },
     {
       "id": "p_2083427976298017245",
@@ -5023,12 +5331,12 @@
       "postedAt": "2026-08-01T05:24:25.000Z",
       "sentiment": "neutral",
       "hidden": false,
-      "notes": "list58 #29 · curated SCEX mention harvest",
+      "notes": "list58 #29 · curated SCEX mention harvest · media→R2",
       "media": [],
       "likes": 1,
       "reposts": 0,
       "replies": 0,
-      "views": 17
+      "views": 18
     },
     {
       "id": "p_2083421505812099123",
@@ -5038,14 +5346,14 @@
       "postedAt": "2026-08-01T05:16:09.000Z",
       "sentiment": "bearish",
       "hidden": false,
-      "notes": "Blue Verified mention · since:2026-07-27 until:2026-08-04",
+      "notes": "Blue Verified mention · since:2026-07-27 until:2026-08-04 · media→R2",
       "media": [
-        "https://pbs.twimg.com/media/HOnMzQDaAAAK9-1.jpg?name=orig"
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/5ffe1fdbdadba462fa46cca3"
       ],
-      "likes": 23,
+      "likes": 24,
       "reposts": 2,
       "replies": 2,
-      "views": 3250
+      "views": 3480
     },
     {
       "id": "p_2083420769745539504",
@@ -5055,12 +5363,12 @@
       "postedAt": "2026-08-01T05:13:14.000Z",
       "sentiment": "neutral",
       "hidden": false,
-      "notes": "list58 #30 · curated SCEX mention harvest",
+      "notes": "list58 #30 · curated SCEX mention harvest · media→R2",
       "media": [],
       "likes": 1,
       "reposts": 0,
       "replies": 1,
-      "views": 19
+      "views": 21
     },
     {
       "id": "p_2083384723909620046",
@@ -5070,14 +5378,14 @@
       "postedAt": "2026-08-01T02:50:00.000Z",
       "sentiment": "bullish",
       "hidden": false,
-      "notes": "Blue Verified mention · since:2026-07-27 until:2026-08-04",
+      "notes": "Blue Verified mention · since:2026-07-27 until:2026-08-04 · media→R2",
       "media": [
-        "https://pbs.twimg.com/media/HOmlVqga4AAlHA8.jpg?name=orig"
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/2a0432688d7f5e96a72a1f18"
       ],
       "likes": 20,
       "reposts": 1,
       "replies": 23,
-      "views": 282
+      "views": 306
     },
     {
       "id": "p_2083372149381669315",
@@ -5087,14 +5395,14 @@
       "postedAt": "2026-08-01T02:00:02.000Z",
       "sentiment": "bullish",
       "hidden": false,
-      "notes": "Official · CHỈ CÒN 2 NGÀY · since:2026-07-27 until:2026-08-03",
+      "notes": "Official · CHỈ CÒN 2 NGÀY · since:2026-07-27 until:2026-08-03 · media→R2",
       "media": [
-        "https://pbs.twimg.com/media/HOkgMajaMAAztSt.jpg?name=orig"
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/781a15974faac24d5c92b3b4"
       ],
-      "likes": 18,
+      "likes": 19,
       "reposts": 1,
       "replies": 1,
-      "views": 1060
+      "views": 1228
     },
     {
       "id": "p_2083120067462705466",
@@ -5104,12 +5412,14 @@
       "postedAt": "2026-07-31T09:18:21.000Z",
       "sentiment": "bullish",
       "hidden": false,
-      "notes": "Official · Checklist chặng nước rút · since:2026-07-27 until:2026-08-03",
+      "notes": "Official · Checklist chặng nước rút · since:2026-07-27 until:2026-08-03 · media→R2",
       "media": [
-        "https://pbs.twimg.com/media/HOi6deoaIAAjnZz.jpg?name=orig"
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/df2767eb040df765876261cd"
       ],
       "likes": 8,
-      "views": 739
+      "views": 852,
+      "reposts": 1,
+      "replies": 0
     },
     {
       "id": "p_2083095199295905976",
@@ -5136,7 +5446,7 @@
       "postedAt": "2026-07-31T01:11:48.000Z",
       "sentiment": "neutral",
       "hidden": false,
-      "notes": "list58 #32 · curated SCEX mention harvest",
+      "notes": "list58 #32 · curated SCEX mention harvest · media→R2",
       "media": [],
       "likes": 0,
       "reposts": 0,
@@ -5151,7 +5461,7 @@
       "postedAt": "2026-07-30T14:48:23.000Z",
       "sentiment": "neutral",
       "hidden": false,
-      "notes": "list58 #33 · curated SCEX mention harvest",
+      "notes": "list58 #33 · curated SCEX mention harvest · media→R2",
       "media": [],
       "likes": 0,
       "reposts": 0,
@@ -5166,7 +5476,7 @@
       "postedAt": "2026-07-30T06:09:22.000Z",
       "sentiment": "bullish",
       "hidden": false,
-      "notes": "list58 #34 · curated SCEX mention harvest",
+      "notes": "list58 #34 · curated SCEX mention harvest · media→R2",
       "media": [],
       "likes": 0,
       "reposts": 0,
@@ -5181,7 +5491,7 @@
       "postedAt": "2026-07-30T05:26:38.000Z",
       "sentiment": "neutral",
       "hidden": false,
-      "notes": "list58 #35 · curated SCEX mention harvest",
+      "notes": "list58 #35 · curated SCEX mention harvest · media→R2",
       "media": [],
       "likes": 0,
       "reposts": 0,
@@ -5196,7 +5506,7 @@
       "postedAt": "2026-07-29T17:14:10.000Z",
       "sentiment": "neutral",
       "hidden": false,
-      "notes": "list58 #36 · curated SCEX mention harvest",
+      "notes": "list58 #36 · curated SCEX mention harvest · media→R2",
       "media": [],
       "likes": 0,
       "reposts": 0,
@@ -5211,14 +5521,14 @@
       "postedAt": "2026-07-29T16:38:23.000Z",
       "sentiment": "bullish",
       "hidden": false,
-      "notes": "Blue Verified mention · since:2026-07-27 until:2026-08-04",
+      "notes": "Blue Verified mention · since:2026-07-27 until:2026-08-04 · media→R2",
       "media": [
-        "https://pbs.twimg.com/media/HOaMMlTakAAuFbG.jpg?name=orig"
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/f98fa07096b6baec4d969c93"
       ],
       "likes": 3,
       "reposts": 0,
       "replies": 3,
-      "views": 2457
+      "views": 2597
     },
     {
       "id": "p_2082500830306148834",
@@ -5228,7 +5538,7 @@
       "postedAt": "2026-07-29T16:17:43.000Z",
       "sentiment": "neutral",
       "hidden": false,
-      "notes": "list58 #37 · curated SCEX mention harvest",
+      "notes": "list58 #37 · curated SCEX mention harvest · media→R2",
       "media": [],
       "likes": 0,
       "reposts": 0,
@@ -5243,7 +5553,7 @@
       "postedAt": "2026-07-29T14:35:17.000Z",
       "sentiment": "bullish",
       "hidden": false,
-      "notes": "list58 #38 · curated SCEX mention harvest",
+      "notes": "list58 #38 · curated SCEX mention harvest · media→R2",
       "media": [],
       "likes": 0,
       "reposts": 0,
@@ -5275,7 +5585,7 @@
       "postedAt": "2026-07-29T13:55:09.000Z",
       "sentiment": "neutral",
       "hidden": false,
-      "notes": "list58 #40 · curated SCEX mention harvest",
+      "notes": "list58 #40 · curated SCEX mention harvest · media→R2",
       "media": [],
       "likes": 0,
       "reposts": 0,
@@ -5290,14 +5600,14 @@
       "postedAt": "2026-07-29T13:30:01.000Z",
       "sentiment": "bullish",
       "hidden": false,
-      "notes": "Official · Tổng kết Đấu trường sau 3 tuần · since:2026-07-27 until:2026-08-03",
+      "notes": "Official · Tổng kết Đấu trường sau 3 tuần · since:2026-07-27 until:2026-08-03 · media→R2",
       "media": [
-        "https://pbs.twimg.com/media/HOZSThMaAAEk57a.jpg?name=orig"
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/3106a60fb69aab71ada6c3d6"
       ],
       "likes": 7,
       "reposts": 2,
       "replies": 1,
-      "views": 624
+      "views": 704
     },
     {
       "id": "p_2082413862352306341",
@@ -5307,7 +5617,7 @@
       "postedAt": "2026-07-29T10:32:08.000Z",
       "sentiment": "bullish",
       "hidden": false,
-      "notes": "list58 #41 · curated SCEX mention harvest",
+      "notes": "list58 #41 · curated SCEX mention harvest · media→R2",
       "media": [],
       "likes": 0,
       "reposts": 0,
@@ -5322,14 +5632,14 @@
       "postedAt": "2026-07-29T10:28:43.000Z",
       "sentiment": "bullish",
       "hidden": false,
-      "notes": "Blue Verified mention · since:2026-07-27 until:2026-08-04",
+      "notes": "Blue Verified mention · since:2026-07-27 until:2026-08-04 · media→R2",
       "media": [
-        "https://pbs.twimg.com/media/HOY3lcGacAAc3WM.jpg?name=orig"
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/5b1a80c493e268df67da6485"
       ],
       "likes": 17,
       "reposts": 0,
       "replies": 19,
-      "views": 302
+      "views": 318
     },
     {
       "id": "p_2082410017639260505",
@@ -5339,7 +5649,7 @@
       "postedAt": "2026-07-29T10:16:52.000Z",
       "sentiment": "bullish",
       "hidden": false,
-      "notes": "list58 #42 · curated SCEX mention harvest",
+      "notes": "list58 #42 · curated SCEX mention harvest · media→R2",
       "media": [],
       "likes": 0,
       "reposts": 0,
@@ -5354,7 +5664,7 @@
       "postedAt": "2026-07-29T09:07:12.000Z",
       "sentiment": "neutral",
       "hidden": false,
-      "notes": "list58 #43 · curated SCEX mention harvest",
+      "notes": "list58 #43 · curated SCEX mention harvest · media→R2",
       "media": [],
       "likes": 0,
       "reposts": 0,
@@ -5369,14 +5679,14 @@
       "postedAt": "2026-07-29T09:03:34.000Z",
       "sentiment": "bullish",
       "hidden": false,
-      "notes": "Blue Verified mention · since:2026-07-27 until:2026-08-04",
+      "notes": "Blue Verified mention · since:2026-07-27 until:2026-08-04 · media→R2",
       "media": [
-        "https://pbs.twimg.com/media/HOYicrPa8AAobsU.png?name=orig"
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/36c6e215ac28977fd1be441f"
       ],
       "likes": 28,
       "reposts": 1,
       "replies": 29,
-      "views": 255
+      "views": 257
     },
     {
       "id": "p_2082371590780793145",
@@ -5386,7 +5696,7 @@
       "postedAt": "2026-07-29T07:44:10.000Z",
       "sentiment": "bullish",
       "hidden": false,
-      "notes": "list58 #44 · curated SCEX mention harvest",
+      "notes": "list58 #44 · curated SCEX mention harvest · media→R2",
       "media": [],
       "likes": 0,
       "reposts": 0,
@@ -5401,13 +5711,14 @@
       "postedAt": "2026-07-29T07:43:25.000Z",
       "sentiment": "bullish",
       "hidden": false,
-      "notes": "Official · Công bố BXH tuần 3 · since:2026-07-27 until:2026-08-03",
+      "notes": "Official · Công bố BXH tuần 3 · since:2026-07-27 until:2026-08-03 · media→R2",
       "media": [
-        "https://pbs.twimg.com/media/HOYRpBIbAAA0ILr.png?name=orig"
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/b9315c3766fadbf4d7c9777c"
       ],
       "likes": 12,
       "reposts": 1,
-      "views": 1050
+      "views": 1106,
+      "replies": 0
     },
     {
       "id": "p_2082297982565978229",
@@ -5417,14 +5728,14 @@
       "postedAt": "2026-07-29T02:51:40.000Z",
       "sentiment": "bullish",
       "hidden": false,
-      "notes": "Blue Verified mention · since:2026-07-27 until:2026-08-04",
+      "notes": "Blue Verified mention · since:2026-07-27 until:2026-08-04 · media→R2",
       "media": [
-        "https://pbs.twimg.com/media/HOXODoCaoAA9oG0.jpg?name=orig"
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/67752fbf4933b10147d0f906"
       ],
       "likes": 19,
       "reposts": 0,
       "replies": 11,
-      "views": 232
+      "views": 241
     },
     {
       "id": "p_2082145415210860815",
@@ -5434,7 +5745,7 @@
       "postedAt": "2026-07-28T16:45:26.000Z",
       "sentiment": "bullish",
       "hidden": false,
-      "notes": "list58 #45 · curated SCEX mention harvest",
+      "notes": "list58 #45 · curated SCEX mention harvest · media→R2",
       "media": [],
       "likes": 0,
       "reposts": 0,
@@ -5449,7 +5760,7 @@
       "postedAt": "2026-07-28T13:57:11.000Z",
       "sentiment": "bullish",
       "hidden": false,
-      "notes": "list58 #46 · curated SCEX mention harvest",
+      "notes": "list58 #46 · curated SCEX mention harvest · media→R2",
       "media": [],
       "likes": 1,
       "reposts": 0,
@@ -5464,7 +5775,7 @@
       "postedAt": "2026-07-28T12:17:56.000Z",
       "sentiment": "neutral",
       "hidden": false,
-      "notes": "list58 #47 · curated SCEX mention harvest",
+      "notes": "list58 #47 · curated SCEX mention harvest · media→R2",
       "media": [],
       "likes": 0,
       "reposts": 0,
@@ -5479,7 +5790,7 @@
       "postedAt": "2026-07-28T11:33:27.000Z",
       "sentiment": "neutral",
       "hidden": false,
-      "notes": "list58 #48 · curated SCEX mention harvest",
+      "notes": "list58 #48 · curated SCEX mention harvest · media→R2",
       "media": [],
       "likes": 1,
       "reposts": 0,
@@ -5494,7 +5805,7 @@
       "postedAt": "2026-07-28T11:25:18.000Z",
       "sentiment": "neutral",
       "hidden": false,
-      "notes": "list58 #49 · curated SCEX mention harvest",
+      "notes": "list58 #49 · curated SCEX mention harvest · media→R2",
       "media": [],
       "likes": 1,
       "reposts": 0,
@@ -5509,7 +5820,7 @@
       "postedAt": "2026-07-28T11:03:50.000Z",
       "sentiment": "neutral",
       "hidden": false,
-      "notes": "list58 #50 · curated SCEX mention harvest",
+      "notes": "list58 #50 · curated SCEX mention harvest · media→R2",
       "media": [],
       "likes": 0,
       "reposts": 0,
@@ -5524,7 +5835,7 @@
       "postedAt": "2026-07-28T10:57:11.000Z",
       "sentiment": "bullish",
       "hidden": false,
-      "notes": "list58 #51 · curated SCEX mention harvest",
+      "notes": "list58 #51 · curated SCEX mention harvest · media→R2",
       "media": [],
       "likes": 1,
       "reposts": 0,
@@ -5539,12 +5850,12 @@
       "postedAt": "2026-07-28T10:46:17.000Z",
       "sentiment": "neutral",
       "hidden": false,
-      "notes": "list58 #52 · curated SCEX mention harvest",
+      "notes": "list58 #52 · curated SCEX mention harvest · media→R2",
       "media": [],
       "likes": 0,
       "reposts": 0,
       "replies": 0,
-      "views": 15
+      "views": 16
     },
     {
       "id": "p_2082054842961506340",
@@ -5554,7 +5865,7 @@
       "postedAt": "2026-07-28T10:45:31.000Z",
       "sentiment": "neutral",
       "hidden": false,
-      "notes": "list58 #53 · curated SCEX mention harvest",
+      "notes": "list58 #53 · curated SCEX mention harvest · media→R2",
       "media": [],
       "likes": 0,
       "reposts": 0,
@@ -5569,7 +5880,7 @@
       "postedAt": "2026-07-28T10:44:53.000Z",
       "sentiment": "neutral",
       "hidden": false,
-      "notes": "list58 #54 · curated SCEX mention harvest",
+      "notes": "list58 #54 · curated SCEX mention harvest · media→R2",
       "media": [],
       "likes": 1,
       "reposts": 0,
@@ -5584,7 +5895,7 @@
       "postedAt": "2026-07-28T10:40:04.000Z",
       "sentiment": "bullish",
       "hidden": false,
-      "notes": "list58 #55 · curated SCEX mention harvest",
+      "notes": "list58 #55 · curated SCEX mention harvest · media→R2",
       "media": [],
       "likes": 0,
       "reposts": 0,
@@ -5599,12 +5910,12 @@
       "postedAt": "2026-07-28T10:36:56.000Z",
       "sentiment": "neutral",
       "hidden": false,
-      "notes": "list58 #56 · curated SCEX mention harvest",
+      "notes": "list58 #56 · curated SCEX mention harvest · media→R2",
       "media": [],
       "likes": 0,
       "reposts": 0,
       "replies": 1,
-      "views": 27
+      "views": 28
     },
     {
       "id": "p_2082052365931483155",
@@ -5631,14 +5942,14 @@
       "postedAt": "2026-07-28T08:39:44.000Z",
       "sentiment": "bullish",
       "hidden": false,
-      "notes": "Blue Verified mention · since:2026-07-27 until:2026-08-04",
+      "notes": "Blue Verified mention · since:2026-07-27 until:2026-08-04 · media→R2",
       "media": [
-        "https://pbs.twimg.com/media/HOTU4EVaAAA_Epb.jpg?name=orig"
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/da1a5bb0c0e98093f56fd7d6"
       ],
-      "likes": 16,
+      "likes": 15,
       "reposts": 0,
       "replies": 1,
-      "views": 4706
+      "views": 4802
     },
     {
       "id": "p_2081950299296825656",
@@ -5648,14 +5959,14 @@
       "postedAt": "2026-07-28T03:50:06.000Z",
       "sentiment": "bullish",
       "hidden": false,
-      "notes": "Blue Verified mention · since:2026-07-27 until:2026-08-04",
+      "notes": "Blue Verified mention · since:2026-07-27 until:2026-08-04 · media→R2",
       "media": [
-        "https://pbs.twimg.com/media/HOSRg96bgAA3uBJ.png?name=orig"
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/fe081f598b52d99380cdd232"
       ],
       "likes": 2,
       "reposts": 0,
       "replies": 0,
-      "views": 2456
+      "views": 2481
     },
     {
       "id": "p_2081945304694481038",
@@ -5665,14 +5976,14 @@
       "postedAt": "2026-07-28T03:30:15.000Z",
       "sentiment": "bullish",
       "hidden": false,
-      "notes": "Blue Verified mention · since:2026-07-27 until:2026-08-04",
+      "notes": "Blue Verified mention · since:2026-07-27 until:2026-08-04 · media→R2",
       "media": [
-        "https://pbs.twimg.com/media/HOSONvvbkAACVkU.jpg?name=orig"
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/309fe421ed22a3ce90b92948"
       ],
-      "likes": 12,
-      "reposts": 1,
-      "replies": 3,
-      "views": 1401
+      "likes": 57,
+      "reposts": 8,
+      "replies": 9,
+      "views": 4075
     },
     {
       "id": "p_2081943683063304622",
@@ -5682,14 +5993,14 @@
       "postedAt": "2026-07-28T03:23:49.000Z",
       "sentiment": "bullish",
       "hidden": false,
-      "notes": "Blue Verified mention · since:2026-07-27 until:2026-08-04",
+      "notes": "Blue Verified mention · since:2026-07-27 until:2026-08-04 · media→R2",
       "media": [
-        "https://pbs.twimg.com/media/HOSMtDVbwAA1Fgx.png?name=orig"
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/013b710fca691764d6313b39"
       ],
       "likes": 110,
       "reposts": 1,
-      "replies": 106,
-      "views": 3107
+      "replies": 105,
+      "views": 3123
     },
     {
       "id": "p_2081929513618018513",
@@ -5699,12 +6010,12 @@
       "postedAt": "2026-07-28T02:27:31.000Z",
       "sentiment": "neutral",
       "hidden": false,
-      "notes": "list58 #58 · curated SCEX mention harvest",
+      "notes": "list58 #58 · curated SCEX mention harvest · media→R2",
       "media": [],
       "likes": 0,
       "reposts": 0,
       "replies": 0,
-      "views": 49
+      "views": 51
     },
     {
       "id": "p_2081924512917115155",
@@ -5714,14 +6025,14 @@
       "postedAt": "2026-07-28T02:07:38.000Z",
       "sentiment": "bullish",
       "hidden": false,
-      "notes": "Official · Điểm chung cuộc không chỉ từ giao dịch · since:2026-07-27 until:2026-08-03",
+      "notes": "Official · Điểm chung cuộc không chỉ từ giao dịch · since:2026-07-27 until:2026-08-03 · media→R2",
       "media": [
-        "https://pbs.twimg.com/media/HOR5JYVasAAL8SX.jpg?name=orig"
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/caf5c6a3c75297fa1527cfe7"
       ],
-      "likes": 18,
-      "reposts": 1,
+      "likes": 19,
+      "reposts": 2,
       "replies": 3,
-      "views": 913
+      "views": 973
     },
     {
       "id": "p_2081625848415699198",
@@ -5731,14 +6042,14 @@
       "postedAt": "2026-07-27T06:20:51.000Z",
       "sentiment": "bullish",
       "hidden": false,
-      "notes": "Blue Verified mention · since:2026-07-27 until:2026-08-04",
+      "notes": "Blue Verified mention · since:2026-07-27 until:2026-08-04 · media→R2",
       "media": [
-        "https://pbs.twimg.com/media/HONrqwQWcAAb1h7.jpg?name=orig"
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/7198e0b53698377dff0c4cf8"
       ],
       "likes": 2,
       "reposts": 0,
       "replies": 1,
-      "views": 317
+      "views": 319
     },
     {
       "id": "p_2081575260126912874",
@@ -5748,14 +6059,14 @@
       "postedAt": "2026-07-27T02:59:50.000Z",
       "sentiment": "bullish",
       "hidden": false,
-      "notes": "Official · Tuần quyết định bắt đầu · since:2026-07-27 until:2026-08-03 · không có bài 30/07",
+      "notes": "Official · Tuần quyết định bắt đầu · since:2026-07-27 until:2026-08-03 · không có bài 30/07 · media→R2",
       "media": [
-        "https://pbs.twimg.com/media/HOM9AZuaEAAtlKo.jpg?name=orig"
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/9b1e7e93bdb8cfd7a14b82e2"
       ],
       "likes": 19,
-      "reposts": 1,
+      "reposts": 2,
       "replies": 2,
-      "views": 1138
+      "views": 1187
     },
     {
       "id": "p_2080124599636004870",
@@ -5767,10 +6078,10 @@
       "hidden": false,
       "notes": "STT 13 · Blue Verified mention · 23/06–23/07/2026 via x-status · media→R2",
       "media": [],
-      "likes": 0,
+      "likes": 1,
       "reposts": 0,
       "replies": 0,
-      "views": 31
+      "views": 43
     },
     {
       "id": "p_2080123242954850748",
@@ -6499,10 +6810,10 @@
       "hidden": false,
       "notes": "export batch · Hỗn hợp · media→R2",
       "media": [],
-      "likes": 115,
-      "reposts": 4,
+      "likes": 116,
+      "reposts": 3,
       "replies": 117,
-      "views": 136315
+      "views": 157777
     },
     {
       "id": "p_2075068928771129848",
@@ -6690,7 +7001,7 @@
       "likes": 6,
       "reposts": 0,
       "replies": 3,
-      "views": 237
+      "views": 249
     },
     {
       "id": "p_2074466305353408841",
@@ -7166,7 +7477,7 @@
       "likes": 2,
       "reposts": 0,
       "replies": 0,
-      "views": 84
+      "views": 85
     },
     {
       "id": "p_2073396777374675203",
@@ -7266,7 +7577,7 @@
       "likes": 6,
       "reposts": 0,
       "replies": 3,
-      "views": 1235
+      "views": 1238
     },
     {
       "id": "p_2073301264637808831",
@@ -7400,7 +7711,7 @@
       "likes": 5,
       "reposts": 0,
       "replies": 0,
-      "views": 257
+      "views": 259
     },
     {
       "id": "p_2072986530583633946",
@@ -7672,7 +7983,7 @@
       "likes": 0,
       "reposts": 0,
       "replies": 0,
-      "views": 121
+      "views": 122
     },
     {
       "id": "p_2072716853865255134",
@@ -8203,7 +8514,7 @@
       "likes": 2,
       "reposts": 0,
       "replies": 0,
-      "views": 80
+      "views": 81
     },
     {
       "id": "p_2072554006246051847",
@@ -8286,7 +8597,7 @@
       "likes": 5,
       "reposts": 0,
       "replies": 1,
-      "views": 1490
+      "views": 1498
     },
     {
       "id": "p_2072521259020374178",
@@ -8318,7 +8629,7 @@
       "likes": 6,
       "reposts": 0,
       "replies": 2,
-      "views": 282
+      "views": 287
     },
     {
       "id": "p_2072513387670688149",
@@ -8416,7 +8727,7 @@
       "likes": 2,
       "reposts": 0,
       "replies": 2,
-      "views": 62
+      "views": 65
     },
     {
       "id": "p_2072500850464043059",
@@ -8497,10 +8808,10 @@
       "hidden": false,
       "notes": "export batch · Hỗn hợp · media→R2",
       "media": [],
-      "likes": 63,
+      "likes": 64,
       "reposts": 2,
       "replies": 67,
-      "views": 2875
+      "views": 2910
     },
     {
       "id": "p_2072310411278655514",
@@ -8805,7 +9116,7 @@
       "likes": 9,
       "reposts": 0,
       "replies": 7,
-      "views": 274
+      "views": 294
     },
     {
       "id": "p_2072235957802488276",
@@ -9384,7 +9695,7 @@
       "likes": 2,
       "reposts": 0,
       "replies": 2,
-      "views": 52
+      "views": 56
     },
     {
       "id": "p_2072115468706443307",
@@ -9516,12 +9827,12 @@
       "hidden": false,
       "notes": "export · Hỗn hợp · media→R2",
       "media": [
-        "https://pbs.twimg.com/media/HMElocDX0AAYDBn.jpg?name=orig"
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/d5bdcd65c32e5288ccbbd12c"
       ],
       "likes": 5,
       "reposts": 0,
       "replies": 0,
-      "views": 836
+      "views": 846
     },
     {
       "id": "p_2071973046374854807",
@@ -9656,8 +9967,8 @@
       "media": [],
       "likes": 5,
       "reposts": 1,
-      "replies": 2,
-      "views": 1819
+      "replies": 1,
+      "views": 1829
     },
     {
       "id": "p_2071949178893402619",

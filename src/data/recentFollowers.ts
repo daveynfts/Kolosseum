@@ -1977,6 +1977,23 @@ export const RECENT_FOLLOWERS_BY_HANDLE: Record<string, RecentFollower[]> = {
       followedAt: '2026-05-27T00:00:00.000Z',
     },
   ],
+  /**
+   * Nam OK (@NamOK_bnb) — recent follows (X snapshot 2026-08-11).
+   */
+  namok_bnb: [
+    {
+      handle: 'flcjbtc',
+      displayName: '飞龙财经',
+      followedAgo: '3 months ago',
+      followedAt: '2026-05-11T00:00:00.000Z',
+    },
+    {
+      handle: 'definitivefi',
+      displayName: 'DEFINITIVE',
+      followedAgo: 'a year ago',
+      followedAt: '2025-08-11T00:00:00.000Z',
+    },
+  ],
 }
 
 /** Smart followers seed — key = KOL handle lowercase */

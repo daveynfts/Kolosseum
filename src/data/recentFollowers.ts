@@ -2090,6 +2090,17 @@ export const RECENT_FOLLOWERS_BY_HANDLE: Record<string, RecentFollower[]> = {
     },
   ],
   /**
+   * Phạm Hương (@PhamHuong_GFI) — recent follows (X snapshot 2026-08-11).
+   */
+  phamhuong_gfi: [
+    {
+      handle: 'inkymaze',
+      displayName: 'Nicholas Cannon',
+      followedAgo: 'a year ago',
+      followedAt: '2025-08-11T00:00:00.000Z',
+    },
+  ],
+  /**
    * Tobi (@tobi24) — recent follows (X snapshot 2026-08-11).
    */
   tobi24: [

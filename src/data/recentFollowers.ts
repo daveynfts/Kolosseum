@@ -2535,6 +2535,59 @@ export const RECENT_FOLLOWERS_BY_HANDLE: Record<string, RecentFollower[]> = {
       followedAt: '2025-08-04T00:00:00.000Z',
     },
   ],
+  /**
+   * Yiwi (@YiwiJR) — recent follows (X snapshot 2026-08-11).
+   */
+  yiwijr: [
+    {
+      handle: 'oceansbaby_',
+      displayName: 'Cruise橘子哥',
+      followedAgo: '2 months ago',
+      followedAt: '2026-06-11T00:00:00.000Z',
+    },
+    {
+      handle: 'idmintthat',
+      displayName: 'mick.artisan.cash',
+      followedAgo: '3 months ago',
+      followedAt: '2026-05-11T00:00:00.000Z',
+    },
+    {
+      handle: '0xjelly',
+      displayName: 'Jelly✨',
+      followedAgo: '3 months ago',
+      followedAt: '2026-05-10T00:00:00.000Z',
+    },
+    {
+      handle: 'aweb3going',
+      displayName: 'Fisher RIVER | Renaiss',
+      followedAgo: '3 months ago',
+      followedAt: '2026-05-09T00:00:00.000Z',
+    },
+    {
+      handle: 'dachshundwizard',
+      displayName: 'DachshundWizard',
+      followedAgo: '3 months ago',
+      followedAt: '2026-05-08T00:00:00.000Z',
+    },
+    {
+      handle: 'plus_ultra_715',
+      displayName: 'Winchman@Renaiss',
+      followedAgo: '3 months ago',
+      followedAt: '2026-05-07T00:00:00.000Z',
+    },
+    {
+      handle: 'renaissxyz',
+      displayName: 'Renaiss.xyz',
+      followedAgo: '3 months ago',
+      followedAt: '2026-05-06T00:00:00.000Z',
+    },
+    {
+      handle: 'kybernetwork',
+      displayName: 'Kyber Network',
+      followedAgo: '10 months ago',
+      followedAt: '2025-10-11T00:00:00.000Z',
+    },
+  ],
 }
 
 /** Smart followers seed — key = KOL handle lowercase */

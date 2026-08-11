@@ -2440,6 +2440,101 @@ export const RECENT_FOLLOWERS_BY_HANDLE: Record<string, RecentFollower[]> = {
       followedAt: '2025-10-11T00:00:00.000Z',
     },
   ],
+  /**
+   * Fong Phở (@Fong_Pho) — recent follows (X snapshot 2026-08-11).
+   */
+  fong_pho: [
+    {
+      handle: 'skarly',
+      displayName: 'skarly',
+      followedAgo: '7 months ago',
+      followedAt: '2026-01-11T00:00:00.000Z',
+    },
+    {
+      handle: 'yayaa_nancy',
+      displayName: 'Nancy X.',
+      followedAgo: '8 months ago',
+      followedAt: '2025-12-11T00:00:00.000Z',
+    },
+    {
+      handle: 'cryptoguy777',
+      displayName: 'CG777',
+      followedAgo: '9 months ago',
+      followedAt: '2025-11-11T00:00:00.000Z',
+    },
+    {
+      handle: 'miaferrariii',
+      displayName: 'Mia',
+      followedAgo: '9 months ago',
+      followedAt: '2025-11-10T00:00:00.000Z',
+    },
+    {
+      handle: '466anan',
+      displayName: 'Crypto Nan',
+      followedAgo: '9 months ago',
+      followedAt: '2025-11-09T00:00:00.000Z',
+    },
+    {
+      handle: 'eeelistar',
+      displayName: 'Elisa',
+      followedAgo: '9 months ago',
+      followedAt: '2025-11-08T00:00:00.000Z',
+    },
+    {
+      handle: 'aaronteng',
+      displayName: 'Aaron Teng 安伦',
+      followedAgo: '10 months ago',
+      followedAt: '2025-10-11T00:00:00.000Z',
+    },
+    {
+      handle: 'dailax',
+      displayName: 'Daila',
+      followedAgo: 'a year ago',
+      followedAt: '2025-08-11T00:00:00.000Z',
+    },
+    {
+      handle: 'lukedanielg',
+      displayName: 'Luke ✳️',
+      followedAgo: 'a year ago',
+      followedAt: '2025-08-10T00:00:00.000Z',
+    },
+    {
+      handle: 'thepeengwin',
+      displayName: 'AL ✳️',
+      followedAgo: 'a year ago',
+      followedAt: '2025-08-09T00:00:00.000Z',
+    },
+    {
+      handle: 'raidenkrn',
+      displayName: 'Raiden',
+      followedAgo: 'a year ago',
+      followedAt: '2025-08-08T00:00:00.000Z',
+    },
+    {
+      handle: 'cashbowie',
+      displayName: 'Michael Lee',
+      followedAgo: 'a year ago',
+      followedAt: '2025-08-07T00:00:00.000Z',
+    },
+    {
+      handle: 'proofofely',
+      displayName: 'Ely',
+      followedAgo: 'a year ago',
+      followedAt: '2025-08-06T00:00:00.000Z',
+    },
+    {
+      handle: 'iceyyy_gaming',
+      displayName: 'iceyyy',
+      followedAgo: 'a year ago',
+      followedAt: '2025-08-05T00:00:00.000Z',
+    },
+    {
+      handle: '0xyy_7',
+      displayName: '进击的鸭鸭 | AD | AmazingDuck',
+      followedAgo: 'a year ago',
+      followedAt: '2025-08-04T00:00:00.000Z',
+    },
+  ],
 }
 
 /** Smart followers seed — key = KOL handle lowercase */

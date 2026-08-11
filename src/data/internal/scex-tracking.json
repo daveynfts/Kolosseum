@@ -76,8 +76,8 @@
         "color": "#94a3b8"
       }
     },
-    "matrixTitle": "Ma trận mention SCEX",
-    "feedTitle": "Bảng tin mention · SCEX",
+    "matrixTitle": "Ma trận SCEX",
+    "feedTitle": "SCEX Live Feed",
     "enabled": true,
     "scoring": {
       "volGocWeight": 1,

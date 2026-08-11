@@ -287,8 +287,8 @@ export function defaultScexConfig(): ScexConfig {
     qualitySplit: 55,
     quadrantLabels: { ...DEFAULT_QUAD },
     sentimentLabels: { ...DEFAULT_SENTIMENT },
-    matrixTitle: 'Ma trận mention SCEX',
-    feedTitle: 'Bảng tin mention · SCEX',
+    matrixTitle: 'Ma trận SCEX',
+    feedTitle: 'SCEX Live Feed',
     enabled: true,
     scoring: defaultScexScoring(),
   }

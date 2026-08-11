@@ -250,12 +250,6 @@ function formatTime(iso: string): string {
   }
 }
 
-/** Prefer Vietnamese labels even if seed still has English. */
-function viFeedTitle(raw: string): string {
-  if (!raw || /livefeed/i.test(raw)) return 'Bảng tin X · mention SCEX'
-  return raw
-}
-
 export function ScexTrackingPage() {
   const [dataset, setDataset] = useState<ScexDataset | null>(null)
   const [mapKols, setMapKols] = useState<Kol[]>([])
@@ -585,11 +579,11 @@ export function ScexTrackingPage() {
       <div className="scex-page__grid">
         <section
           className={`scex-card scex-matrix ${matrixFullscreen ? 'is-fullscreen' : ''}`}
-          aria-label="Ma trận mention SCEX"
+          aria-label="Ma trận SCEX"
         >
           <div className="scex-card__head">
             <div>
-              <h2>Ai đang nói về SCEX</h2>
+              <h2>Ma trận SCEX</h2>
               <p className="scex-card__sub">Bấm avatar để xem chi tiết</p>
             </div>
             <div className="scex-matrix__toolbar">
@@ -661,7 +655,7 @@ export function ScexTrackingPage() {
         <section className="scex-card scex-feed">
           <div className="scex-card__head">
             <div>
-              <h2>{viFeedTitle(config.feedTitle)}</h2>
+              <h2>SCEX Live Feed</h2>
               <p>
                 {filteredPosts.length}
                 {feedFilter || feedQuery ? ` / ${allPosts.length}` : ''} bài

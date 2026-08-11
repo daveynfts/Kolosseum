@@ -251,10 +251,6 @@ function formatTime(iso: string): string {
 }
 
 /** Prefer Vietnamese labels even if seed still has English. */
-function viMatrixTitle(raw: string): string {
-  if (!raw || /mention matrix|matrix/i.test(raw)) return 'Ma trận mention SCEX'
-  return raw
-}
 function viFeedTitle(raw: string): string {
   if (!raw || /livefeed/i.test(raw)) return 'Bảng tin X · mention SCEX'
   return raw
@@ -593,17 +589,8 @@ export function ScexTrackingPage() {
         >
           <div className="scex-card__head">
             <div>
-              <h2>{viMatrixTitle(config.matrixTitle)}</h2>
-              <p>
-                Ai đang nói về SCEX · bấm avatar để xem · {visible.length} KOL
-                {matrixFilters.size ? ' (đã lọc)' : ''}
-                {onMapCount ? (
-                  <>
-                    {' '}
-                    · {onMapCount} On <DaveysRadarLink />
-                  </>
-                ) : null}
-              </p>
+              <h2>Ai đang nói về SCEX</h2>
+              <p className="scex-card__sub">Bấm avatar để xem chi tiết</p>
             </div>
             <div className="scex-matrix__toolbar">
               <button

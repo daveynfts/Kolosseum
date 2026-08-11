@@ -2896,6 +2896,185 @@ export const RECENT_FOLLOWERS_BY_HANDLE: Record<string, RecentFollower[]> = {
       followedAt: '2026-08-06T00:00:00.000Z',
     },
   ],
+  /**
+   * Danh Tran (@danhtran68) — recent follows (X snapshot 2026-08-11).
+   */
+  danhtran68: [
+    {
+      handle: 'chouchou_tx',
+      displayName: '丑丑TX',
+      followedAgo: '12 days ago',
+      followedAt: '2026-07-30T00:00:00.000Z',
+    },
+    {
+      handle: 'leonzr1394',
+      displayName: '蟾哥TermMax',
+      followedAgo: '12 days ago',
+      followedAt: '2026-07-29T00:00:00.000Z',
+    },
+    {
+      handle: 'qiuseoflove',
+      displayName: '叶知秋',
+      followedAgo: '16 days ago',
+      followedAt: '2026-07-26T00:00:00.000Z',
+    },
+    {
+      handle: 'gustan0119',
+      displayName: 'Gus Tan',
+      followedAgo: '21 days ago',
+      followedAt: '2026-07-21T00:00:00.000Z',
+    },
+    {
+      handle: 'web3xwg',
+      displayName: '小伍哥 | Gate 美股0费率',
+      followedAgo: 'a month ago',
+      followedAt: '2026-07-11T00:00:00.000Z',
+    },
+    {
+      handle: 'wongwangwung',
+      displayName: 'pallase',
+      followedAgo: '2 months ago',
+      followedAt: '2026-06-11T00:00:00.000Z',
+    },
+    {
+      handle: 'drdavecoin',
+      displayName: 'drdavecoin.eth',
+      followedAgo: '2 months ago',
+      followedAt: '2026-06-10T00:00:00.000Z',
+    },
+    {
+      handle: 'sunnymq1',
+      displayName: 'Sunny Tang',
+      followedAgo: '2 months ago',
+      followedAt: '2026-06-09T00:00:00.000Z',
+    },
+    {
+      handle: 'jasonmdesimone',
+      displayName: 'Jason Desimone ⚔️',
+      followedAgo: '2 months ago',
+      followedAt: '2026-06-08T00:00:00.000Z',
+    },
+    {
+      handle: 'steam_diary123',
+      displayName: '区块链日记 ｜TermMax｜买美股上WEEX',
+      followedAgo: '3 months ago',
+      followedAt: '2026-05-11T00:00:00.000Z',
+    },
+    {
+      handle: 'btc99m',
+      displayName: 'Dylan.迪伦丨 买美股上WEEXTermMax',
+      followedAgo: '3 months ago',
+      followedAt: '2026-05-10T00:00:00.000Z',
+    },
+    {
+      handle: 'lijiaoshou12',
+      displayName: '陈较瘦｜TermMax',
+      followedAgo: '3 months ago',
+      followedAt: '2026-05-09T00:00:00.000Z',
+    },
+    {
+      handle: 'kinglong66666',
+      displayName: 'king long',
+      followedAgo: '3 months ago',
+      followedAt: '2026-05-08T00:00:00.000Z',
+    },
+    {
+      handle: 'evans666666',
+      displayName: 'Evans.eth',
+      followedAgo: '4 months ago',
+      followedAt: '2026-04-11T00:00:00.000Z',
+    },
+    {
+      handle: '0xsexybanana',
+      displayName: '郡主Christine (✱,✱)',
+      followedAgo: '4 months ago',
+      followedAt: '2026-04-10T00:00:00.000Z',
+    },
+    {
+      handle: 'airdropalchemis',
+      displayName: '炼金叔叔',
+      followedAgo: '5 months ago',
+      followedAt: '2026-03-11T00:00:00.000Z',
+    },
+    {
+      handle: 'affinity_matrix',
+      displayName: 'Akasha ★',
+      followedAgo: '5 months ago',
+      followedAt: '2026-03-10T00:00:00.000Z',
+    },
+    {
+      handle: 'minhxdynasty',
+      displayName: 'minhxdynasty',
+      followedAgo: '6 months ago',
+      followedAt: '2026-02-11T00:00:00.000Z',
+    },
+    {
+      handle: 'nateliason',
+      displayName: 'Nat Eliason',
+      followedAgo: '6 months ago',
+      followedAt: '2026-02-10T00:00:00.000Z',
+    },
+    {
+      handle: 'camolnft',
+      displayName: 'camol',
+      followedAgo: '8 months ago',
+      followedAt: '2025-12-11T00:00:00.000Z',
+    },
+    {
+      handle: 'wallchain',
+      displayName: 'Wallchain Quacks',
+      followedAgo: '8 months ago',
+      followedAt: '2025-12-10T00:00:00.000Z',
+    },
+    {
+      handle: 'xiaoniu6161',
+      displayName: '小牛',
+      followedAgo: '9 months ago',
+      followedAt: '2025-11-11T00:00:00.000Z',
+    },
+    {
+      handle: 'xiaofeilong99',
+      displayName: '币天天',
+      followedAgo: 'a year ago',
+      followedAt: '2025-08-11T00:00:00.000Z',
+    },
+    {
+      handle: 'feifan7686',
+      displayName: '飞凡',
+      followedAgo: 'a year ago',
+      followedAt: '2025-08-10T00:00:00.000Z',
+    },
+    {
+      handle: 'lovecity0088',
+      displayName: '人在币圈（Lovecity） (小爱)./',
+      followedAgo: 'a year ago',
+      followedAt: '2025-08-09T00:00:00.000Z',
+    },
+    {
+      handle: 'taojukfc',
+      displayName: '桃川',
+      followedAgo: 'a year ago',
+      followedAt: '2025-08-08T00:00:00.000Z',
+    },
+    {
+      handle: 'huijiu68',
+      displayName: '小灰韭',
+      followedAgo: 'a year ago',
+      followedAt: '2025-08-07T00:00:00.000Z',
+    },
+    {
+      handle: 'boa1314666',
+      displayName: 'Boa宝儿',
+      followedAgo: 'a year ago',
+      followedAt: '2025-08-06T00:00:00.000Z',
+    },
+    {
+      handle: 'btc100000015252',
+      displayName: '加密贝姐LK',
+      followedAgo: 'a year ago',
+      followedAt: '2025-08-05T00:00:00.000Z',
+    },
+  ],
 }
 
 /** Smart followers seed — key = KOL handle lowercase */

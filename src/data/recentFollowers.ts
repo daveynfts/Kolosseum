@@ -1401,6 +1401,25 @@ export const RECENT_FOLLOWERS_BY_HANDLE: Record<string, RecentFollower[]> = {
       score: 9077,
     },
   ],
+  /**
+   * GF Capital (@GF_Capital) — recent follows (X snapshot 2026-08-11).
+   * 泰德.eth · @ted55668 · 3 months ago
+   * Evans.eth · @evans666666 · 8 months ago
+   */
+  gf_capital: [
+    {
+      handle: 'ted55668',
+      displayName: '泰德.eth｜黄金汇指尽在Gate CFD',
+      followedAgo: '3 months ago',
+      followedAt: '2026-05-11T00:00:00.000Z',
+    },
+    {
+      handle: 'evans666666',
+      displayName: 'Evans.eth',
+      followedAgo: '8 months ago',
+      followedAt: '2025-12-11T00:00:00.000Z',
+    },
+  ],
 }
 
 /** Smart followers seed — key = KOL handle lowercase */

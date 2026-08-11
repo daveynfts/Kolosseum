@@ -2423,6 +2423,23 @@ export const RECENT_FOLLOWERS_BY_HANDLE: Record<string, RecentFollower[]> = {
       followedAt: '2025-08-09T00:00:00.000Z',
     },
   ],
+  /**
+   * LuxubuVBS / PhanLeTuan (@LuxubuVBS) — recent follows (X snapshot 2026-08-11).
+   */
+  luxubuvbs: [
+    {
+      handle: 'alpen',
+      displayName: 'Alpen',
+      followedAgo: '8 months ago',
+      followedAt: '2025-12-11T00:00:00.000Z',
+    },
+    {
+      handle: 'gcsbtc',
+      displayName: 'Crypto攻城狮',
+      followedAgo: '10 months ago',
+      followedAt: '2025-10-11T00:00:00.000Z',
+    },
+  ],
 }
 
 /** Smart followers seed — key = KOL handle lowercase */

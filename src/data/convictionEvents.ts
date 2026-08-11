@@ -895,7 +895,7 @@ const SIDE_EVENTS: SideEvent[] = [
   },
   {
     id: 'liminal-custody-meetup-conviction',
-    title: 'Liminal Custody Meetup @ Conviction 2026',
+    title: 'Liminal Networking Meetup',
     host: 'Nguyen Steven',
     venue: 'Starbucks - Thiso Mall',
     address:
@@ -911,7 +911,7 @@ const SIDE_EVENTS: SideEvent[] = [
       'gallery-images/8y/d9f86a31-556f-454f-923f-16fecc8e742b',
     ),
     description:
-      'Buổi gặp gỡ Liminal Custody bên lề Conviction — digital asset custody & security. 09:00–18:00 tại Starbucks Thiso Mall (Sala).',
+      'Liminal Networking Meetup bên lề Conviction — digital asset custody & security. 09:00–18:00 tại Starbucks Thiso Mall (Sala).',
     free: true,
     featured: true,
   },

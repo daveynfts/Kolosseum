@@ -1,0 +1,537 @@
+/**
+ * Surf AI analysis UI + in-app KOL Report viewer.
+ * Shared by main Radar map and /scex (must not live only in App.css).
+ */
+
+.surf-analysis {
+  padding: 12px 12px 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(34, 211, 238, 0.22);
+  background:
+    radial-gradient(80% 80% at 100% 0%, rgba(232, 121, 249, 0.12), transparent 55%),
+    radial-gradient(70% 60% at 0% 100%, rgba(34, 211, 238, 0.1), transparent 50%),
+    rgba(8, 12, 24, 0.55);
+}
+
+.surf-analysis__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.surf-analysis__brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.surf-analysis__ready,
+.surf-analysis__missing,
+.surf-analysis__pending {
+  flex-shrink: 0;
+  font-size: 0.62rem;
+  font-weight: 650;
+  letter-spacing: 0.02em;
+  padding: 3px 8px;
+  border-radius: 999px;
+}
+
+.surf-analysis__ready {
+  color: #67e8f9;
+  background: rgba(34, 211, 238, 0.12);
+  border: 1px solid rgba(34, 211, 238, 0.28);
+}
+
+.surf-analysis__missing {
+  color: #fbbf24;
+  background: rgba(251, 191, 36, 0.1);
+  border: 1px solid rgba(251, 191, 36, 0.25);
+}
+
+.surf-analysis__pending {
+  color: #94a3b8;
+  background: rgba(148, 163, 184, 0.1);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+.surf-analysis__hint {
+  margin: 8px 0 0;
+  font-size: 0.68rem;
+  color: #64748b;
+  line-height: 1.4;
+}
+
+.surf-analysis__brand-logo {
+  width: 22px;
+  height: 22px;
+  object-fit: cover;
+  border-radius: 6px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.45);
+  flex-shrink: 0;
+}
+
+.surf-analysis__title {
+  margin: 0;
+  font-size: 0.92rem;
+  letter-spacing: -0.02em;
+}
+
+.surf-analysis__sub {
+  margin: 6px 0 0;
+  font-size: 0.7rem;
+  color: #94a3b8;
+  line-height: 1.4;
+}
+
+/* Match daveynfts.com archive-surf-btn branding */
+.surf-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  height: 40px;
+  box-sizing: border-box;
+  border: 1px solid rgba(0, 205, 255, 0.35);
+  border-radius: 10px;
+  padding: 0 16px 0 12px;
+  cursor: pointer;
+  color: #00cdff;
+  font-weight: 800;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  background: linear-gradient(
+    135deg,
+    rgba(0, 205, 255, 0.12) 0%,
+    rgba(0, 85, 255, 0.08) 100%
+  );
+  box-shadow:
+    0 2px 8px rgba(0, 205, 255, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  white-space: nowrap;
+}
+
+.surf-btn:hover:not(:disabled) {
+  color: #fff;
+  border-color: rgba(0, 205, 255, 0.6);
+  background: linear-gradient(
+    135deg,
+    rgba(0, 205, 255, 0.22) 0%,
+    rgba(0, 85, 255, 0.15) 100%
+  );
+  transform: translateY(-2px);
+  box-shadow:
+    0 8px 24px rgba(0, 205, 255, 0.25),
+    0 0 16px rgba(0, 205, 255, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+.surf-btn:disabled {
+  cursor: wait;
+  opacity: 0.9;
+}
+
+.surf-btn.is-running {
+  animation: surf-pulse 1.2s ease-in-out infinite;
+}
+
+.surf-btn.is-done {
+  border-color: rgba(52, 211, 153, 0.45);
+  color: #6ee7b7;
+}
+
+@keyframes surf-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(0, 205, 255, 0.35);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(0, 205, 255, 0);
+  }
+}
+
+.surf-btn__logo {
+  width: 16px;
+  height: 16px;
+  object-fit: cover;
+  border-radius: 4px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+  flex-shrink: 0;
+}
+
+.surf-btn__label {
+  line-height: 1;
+  display: inline-block;
+}
+
+.surf-progress {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.surf-progress__track {
+  flex: 1;
+  height: 6px;
+  border-radius: 99px;
+  background: rgba(148, 163, 184, 0.18);
+  overflow: hidden;
+}
+
+.surf-progress__fill {
+  height: 100%;
+  border-radius: 99px;
+  background: linear-gradient(90deg, #22d3ee, #818cf8, #e879f9);
+  transition: width 0.08s linear;
+}
+
+.surf-progress__pct {
+  font-size: 0.68rem;
+  font-variant-numeric: tabular-nums;
+  color: #cbd5e1;
+  min-width: 2.4em;
+  text-align: right;
+}
+
+.surf-analysis__msg {
+  margin: 10px 0 0;
+  font-size: 0.72rem;
+  color: #a5b4fc;
+  line-height: 1.4;
+}
+
+.surf-analysis__msg.is-error {
+  color: #fca5a5;
+}
+
+.surf-pdf-link,
+.surf-report-link {
+  display: inline-flex;
+  align-items: center;
+  margin-top: 8px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #67e8f9;
+  text-decoration: none;
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.surf-pdf-link:hover,
+.surf-report-link:hover {
+  text-decoration: underline;
+  color: #a5f3fc;
+}
+
+/* In-app KOL Report viewer (replaces PDF tab).
+   Above SCEX feed/matrix fullscreen (20050) and KOL detail modal (20110). */
+.kol-report-viewer {
+  position: fixed;
+  inset: 0;
+  z-index: 35000;
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  padding: 0;
+}
+.kol-report-viewer__backdrop {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  background: rgba(2, 6, 23, 0.72);
+  backdrop-filter: blur(8px);
+}
+.kol-report-viewer__panel {
+  position: relative;
+  z-index: 1;
+  width: min(860px, 100%);
+  max-width: 100%;
+  margin: 0 auto;
+  height: 100%;
+  max-height: 100%;
+  display: flex;
+  flex-direction: column;
+  border-radius: 0;
+  border-left: 1px solid rgba(148, 163, 184, 0.16);
+  border-right: 1px solid rgba(148, 163, 184, 0.16);
+  background:
+    radial-gradient(ellipse 80% 40% at 50% 0%, rgba(34, 211, 238, 0.1), transparent 55%),
+    linear-gradient(180deg, rgba(15, 23, 42, 0.97) 0%, rgba(2, 6, 23, 0.98) 100%);
+  box-shadow: 0 0 60px rgba(0, 0, 0, 0.45);
+  overflow: hidden;
+}
+@media (min-width: 900px) {
+  .kol-report-viewer {
+    padding: 24px 16px;
+  }
+  .kol-report-viewer__panel {
+    height: min(920px, calc(100vh - 48px));
+    max-height: calc(100vh - 48px);
+    border-radius: 18px;
+    border: 1px solid rgba(148, 163, 184, 0.18);
+  }
+}
+.kol-report-viewer__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 16px;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+  flex-shrink: 0;
+  background: rgba(2, 6, 23, 0.55);
+}
+.kol-report-viewer__brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #67e8f9;
+}
+.kol-report-viewer__brand img {
+  border-radius: 6px;
+}
+.kol-report-viewer__close {
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  background: rgba(15, 23, 42, 0.6);
+  color: #e2e8f0;
+  font: inherit;
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.kol-report-viewer__close:hover {
+  border-color: rgba(125, 211, 252, 0.4);
+  color: #fff;
+}
+.kol-report-viewer__cover {
+  height: 120px;
+  background-size: cover;
+  background-position: center;
+  position: relative;
+  flex-shrink: 0;
+}
+.kol-report-viewer__cover-fade {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    transparent 20%,
+    rgba(2, 6, 23, 0.95)
+  );
+}
+.kol-report-viewer__scroll {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.kol-report-viewer__article {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 20px 20px 48px;
+  box-sizing: border-box;
+}
+.kol-report-viewer__identity {
+  display: grid;
+  grid-template-columns: 48px 1fr;
+  gap: 14px;
+  align-items: start;
+}
+.kol-report-viewer__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 28px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(148, 163, 184, 0.12);
+}
+.kol-report-viewer__tags span {
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: #94a3b8;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: rgba(148, 163, 184, 0.1);
+  border: 1px solid rgba(148, 163, 184, 0.18);
+}
+
+/* Reader typography on map (AdminDashboard.css not loaded outside #/admin) */
+.kol-report-viewer .akr-reader__head {
+  margin-bottom: 22px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.14);
+}
+.kol-report-viewer .akr-reader__kicker {
+  margin: 0 0 6px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #67e8f9;
+}
+.kol-report-viewer .akr-reader__title {
+  margin: 0 0 10px;
+  font-size: clamp(1.25rem, 2.2vw, 1.65rem);
+  font-weight: 750;
+  letter-spacing: -0.03em;
+  line-height: 1.25;
+  color: #f8fafc;
+}
+.kol-report-viewer .akr-reader__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  align-items: center;
+  font-size: 0.78rem;
+  color: #94a3b8;
+}
+.kol-report-viewer .akr-score-chip {
+  font-weight: 700;
+  color: #fbbf24;
+  background: rgba(251, 191, 36, 0.12);
+  border: 1px solid rgba(251, 191, 36, 0.28);
+  border-radius: 999px;
+  padding: 1px 8px;
+  font-size: 0.7rem;
+}
+
+/* Minimal ReportMarkdown styles for map viewer */
+.kol-report-viewer .report-md {
+  color: #d1d5db;
+  font-size: 1rem;
+  line-height: 1.75;
+  word-break: break-word;
+}
+.kol-report-viewer .report-md__h1 {
+  font-size: clamp(1.35rem, 2.4vw, 1.75rem);
+  margin: 0 0 0.65em;
+  color: #f8fafc;
+  letter-spacing: -0.03em;
+}
+.kol-report-viewer .report-md__h2 {
+  font-size: 1.2rem;
+  margin: 1.5em 0 0.5em;
+  padding-bottom: 0.3em;
+  border-bottom: 1px solid rgba(103, 232, 249, 0.2);
+  color: #e0f2fe;
+}
+.kol-report-viewer .report-md__h3 {
+  font-size: 1.05rem;
+  margin: 1.3em 0 0.45em;
+  color: #f1f5f9;
+}
+.kol-report-viewer .report-md__h4 {
+  font-size: 0.95rem;
+  margin: 1.1em 0 0.4em;
+  color: #e2e8f0;
+}
+.kol-report-viewer .report-md__p {
+  margin: 0 0 0.9em;
+}
+.kol-report-viewer .report-md__ul,
+.kol-report-viewer .report-md__ol {
+  margin: 0.4em 0 1em;
+  padding-left: 1.35em;
+}
+.kol-report-viewer .report-md__quote {
+  margin: 1em 0;
+  padding: 10px 14px;
+  border-left: 3px solid rgba(103, 232, 249, 0.55);
+  background: rgba(34, 211, 238, 0.06);
+  border-radius: 0 10px 10px 0;
+  color: #94a3b8;
+}
+.kol-report-viewer .report-md__table-wrap {
+  overflow-x: auto;
+  margin: 0.9em 0 1.1em;
+  border-radius: 12px;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+}
+.kol-report-viewer .report-md__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+}
+.kol-report-viewer .report-md__table th,
+.kol-report-viewer .report-md__table td {
+  padding: 9px 11px;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+  text-align: left;
+}
+.kol-report-viewer .report-md__table th {
+  color: #a5b4fc;
+  background: rgba(99, 102, 241, 0.12);
+}
+.kol-report-viewer .report-md__img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 14px;
+  display: block;
+  margin: 0.8em auto;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.35);
+}
+.kol-report-viewer .report-md__hr {
+  border: 0;
+  height: 1px;
+  margin: 1.5em 0;
+  background: linear-gradient(90deg, transparent, rgba(148, 163, 184, 0.35), transparent);
+}
+.kol-report-viewer .report-md strong {
+  color: #fff;
+}
+.kol-report-viewer .report-md__a {
+  color: #67e8f9;
+}
+
+.surf-analysis__steps {
+  list-style: none;
+  margin: 14px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+
+.surf-analysis__steps li {
+  font-size: 0.68rem;
+  color: #64748b;
+  padding-left: 16px;
+  position: relative;
+}
+
+.surf-analysis__steps li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.35em;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: rgba(148, 163, 184, 0.35);
+}
+
+.surf-analysis__steps li.is-on {
+  color: #e2e8f0;
+}
+
+.surf-analysis__steps li.is-on::before {
+  background: #22d3ee;
+  box-shadow: 0 0 8px rgba(34, 211, 238, 0.55);
+}

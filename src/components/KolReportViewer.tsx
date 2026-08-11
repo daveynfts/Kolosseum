@@ -4,6 +4,8 @@ import type { KolReport } from '../data/kolReports'
 import { ReportMarkdown } from './ReportMarkdown'
 import { XProfileAvatar } from './XProfileAvatar'
 import { resolveAvatarHandle } from '../lib/avatar'
+/** Required on /scex (does not load App.css). Shared with main Radar. */
+import '../styles/surfAnalysis.css'
 
 interface Props {
   report: KolReport

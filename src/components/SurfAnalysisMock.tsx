@@ -5,6 +5,8 @@ import {
   loadPublicReportForHandle,
 } from '../lib/kolReportsStore'
 import { KolReportViewer } from './KolReportViewer'
+/** Required on /scex (does not load App.css). Shared with main Radar. */
+import '../styles/surfAnalysis.css'
 
 type Phase = 'idle' | 'running' | 'done' | 'error'
 

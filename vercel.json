@@ -12,6 +12,11 @@
       "source": "/api/event-share",
       "destination": "https://radar.daveynfts.com/event-preview.html",
       "permanent": false
+    },
+    {
+      "source": "/api/scex-share",
+      "destination": "https://radar.daveynfts.com/scex-preview.html",
+      "permanent": false
     }
   ],
   "rewrites": [

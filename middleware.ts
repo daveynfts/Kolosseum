@@ -10,15 +10,20 @@ const BOT_UA =
   /TelegramBot|twitterbot|facebookexternalhit|Facebot|LinkedInBot|Slackbot|Discordbot|WhatsApp|redditbot|Pinterest|vkShare|SkypeUriPreview|Embedly|Iframely|Slack-ImgProxy|Quora Link Preview|Showyoubot|outbrain|W3C_Validator|Qwantify|bitlybot|nuzzel|Googlebot|bingbot|Applebot|Baiduspider|YandexBot|DuckDuckBot|Slurp|Viber|line-poker|SteamChatURLLookup|Discordbot|Xing-preview|ZoominfoBot/i
 
 export const config = {
-  matcher: ['/event', '/event/(.*)'],
+  matcher: ['/event', '/event/(.*)', '/scex', '/scex/(.*)'],
 }
 
 export default function middleware(request: Request) {
   const ua = request.headers.get('user-agent') || ''
-  if (BOT_UA.test(ua)) {
-    // Static file in public/ — does not count toward Hobby serverless limit
-    return rewrite(new URL('/event-preview.html', request.url))
+  if (!BOT_UA.test(ua)) {
+    // Humans: fall through to static SPA + vercel.json path rewrites
+    return next()
   }
-  // Humans: fall through to static SPA + vercel.json /event rewrite
-  return next()
+
+  const { pathname } = new URL(request.url)
+  // Static files in public/ — do not count toward Hobby serverless limit
+  if (pathname === '/scex' || pathname.startsWith('/scex/')) {
+    return rewrite(new URL('/scex-preview.html', request.url))
+  }
+  return rewrite(new URL('/event-preview.html', request.url))
 }

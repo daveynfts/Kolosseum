@@ -18,6 +18,7 @@ import { DaveysRadarLink } from '../components/DaveysRadarLink'
 import { ScexMatrix2D } from '../components/ScexMatrix2D'
 import { ScexKolDetail } from '../components/ScexKolDetail'
 import { resolveMediaUrl } from '../lib/avatar'
+import { applyScexSeo } from '../lib/scexSeo'
 import './ScexTrackingPage.css'
 
 const FILTER_KEY = 'scex-matrix-filters-v1'
@@ -267,6 +268,10 @@ export function ScexTrackingPage() {
     const saved = readFilters()
     return MORE_FILTER_PILLS.some((p) => saved.has(p.id))
   })
+
+  useEffect(() => {
+    applyScexSeo()
+  }, [])
 
   useEffect(() => {
     let cancelled = false

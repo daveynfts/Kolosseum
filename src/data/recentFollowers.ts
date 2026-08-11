@@ -1420,6 +1420,32 @@ export const RECENT_FOLLOWERS_BY_HANDLE: Record<string, RecentFollower[]> = {
       followedAt: '2025-12-11T00:00:00.000Z',
     },
   ],
+  /**
+   * ShengMo.eth (@ShengMo0x) — recent follows (X snapshot 2026-08-11).
+   * Allo · @allodev · 16 hours ago
+   * Lawyered · @bitgrateful · 8 months ago
+   * Irene Zhao · @irenezhao_ · a year ago
+   */
+  shengmo0x: [
+    {
+      handle: 'allodev',
+      displayName: 'Allo',
+      followedAgo: '16 hours ago',
+      followedAt: '2026-08-10T17:00:00.000Z',
+    },
+    {
+      handle: 'bitgrateful',
+      displayName: 'Lawyered',
+      followedAgo: '8 months ago',
+      followedAt: '2025-12-11T00:00:00.000Z',
+    },
+    {
+      handle: 'irenezhao_',
+      displayName: 'Irene Zhao',
+      followedAgo: 'a year ago',
+      followedAt: '2025-08-11T00:00:00.000Z',
+    },
+  ],
 }
 
 /** Smart followers seed — key = KOL handle lowercase */

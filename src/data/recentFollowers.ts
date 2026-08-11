@@ -2844,6 +2844,47 @@ export const RECENT_FOLLOWERS_BY_HANDLE: Record<string, RecentFollower[]> = {
       followedAt: '2025-08-11T00:00:00.000Z',
     },
   ],
+  /**
+   * Doodles (@DG_doodles) — recent follows (X snapshot 2026-08-11).
+   */
+  dg_doodles: [
+    {
+      handle: 'jasonmdesimone',
+      displayName: 'Jason Desimone ⚔️',
+      followedAgo: '2 months ago',
+      followedAt: '2026-06-11T00:00:00.000Z',
+    },
+    {
+      handle: 'renaissxyz',
+      displayName: 'Renaiss.xyz',
+      followedAgo: '3 months ago',
+      followedAt: '2026-05-11T00:00:00.000Z',
+    },
+    {
+      handle: 'ripeth',
+      displayName: 'rip.eth',
+      followedAgo: '7 months ago',
+      followedAt: '2026-01-11T00:00:00.000Z',
+    },
+    {
+      handle: 'parallelairev',
+      displayName: 'AiRev',
+      followedAgo: '7 months ago',
+      followedAt: '2026-01-10T00:00:00.000Z',
+    },
+    {
+      handle: '0xchenlaoshi',
+      displayName: '舵主陈老师 | FWA Trade Club',
+      followedAgo: '7 months ago',
+      followedAt: '2026-01-09T00:00:00.000Z',
+    },
+    {
+      handle: 'affinity_matrix',
+      displayName: 'Akasha ★',
+      followedAgo: '9 months ago',
+      followedAt: '2025-11-11T00:00:00.000Z',
+    },
+  ],
 }
 
 /** Smart followers seed — key = KOL handle lowercase */

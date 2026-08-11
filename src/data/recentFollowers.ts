@@ -2711,6 +2711,35 @@ export const RECENT_FOLLOWERS_BY_HANDLE: Record<string, RecentFollower[]> = {
       followedAt: '2025-08-09T00:00:00.000Z',
     },
   ],
+  /**
+   * KryptOrbz (@kryptorbz) — recent follows (X snapshot 2026-08-11).
+   */
+  kryptorbz: [
+    {
+      handle: 'jasonmdesimone',
+      displayName: 'Jason Desimone ⚔️',
+      followedAgo: '5 months ago',
+      followedAt: '2026-03-11T00:00:00.000Z',
+    },
+    {
+      handle: 'btccexchange',
+      displayName: 'BTCC',
+      followedAgo: '6 months ago',
+      followedAt: '2026-02-11T00:00:00.000Z',
+    },
+    {
+      handle: 'r0maniakk',
+      displayName: '0x∆Ξ',
+      followedAgo: 'a year ago',
+      followedAt: '2025-08-11T00:00:00.000Z',
+    },
+    {
+      handle: '466anan',
+      displayName: 'Crypto Nan',
+      followedAgo: 'a year ago',
+      followedAt: '2025-08-10T00:00:00.000Z',
+    },
+  ],
 }
 
 /** Smart followers seed — key = KOL handle lowercase */

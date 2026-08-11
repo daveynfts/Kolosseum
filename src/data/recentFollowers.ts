@@ -2670,6 +2670,47 @@ export const RECENT_FOLLOWERS_BY_HANDLE: Record<string, RecentFollower[]> = {
       followedAt: '2025-08-10T00:00:00.000Z',
     },
   ],
+  /**
+   * SUTUONG (@Tuong_Degennft) — recent follows (X snapshot 2026-08-11).
+   */
+  tuong_degennft: [
+    {
+      handle: 'tyhvip',
+      displayName: 'sunflower',
+      followedAgo: '9 months ago',
+      followedAt: '2025-11-11T00:00:00.000Z',
+    },
+    {
+      handle: 'chinawhaleeth',
+      displayName: '6哥 ⁶⁶⁶ chinawhalecapital.eth',
+      followedAgo: '10 months ago',
+      followedAt: '2025-10-11T00:00:00.000Z',
+    },
+    {
+      handle: 'syk233',
+      displayName: 'syk233 MemeMax ⚡️|TermMax',
+      followedAgo: '10 months ago',
+      followedAt: '2025-10-10T00:00:00.000Z',
+    },
+    {
+      handle: 'cryptoamandal',
+      displayName: '阿曼达要吃肉Amanda.eth',
+      followedAgo: 'a year ago',
+      followedAt: '2025-08-11T00:00:00.000Z',
+    },
+    {
+      handle: 'blockjengirl',
+      displayName: 'Jen Jen Aura Queen',
+      followedAgo: 'a year ago',
+      followedAt: '2025-08-10T00:00:00.000Z',
+    },
+    {
+      handle: 'yellowpantherx',
+      displayName: 'yellowpanther (prediction arc)',
+      followedAgo: 'a year ago',
+      followedAt: '2025-08-09T00:00:00.000Z',
+    },
+  ],
 }
 
 /** Smart followers seed — key = KOL handle lowercase */

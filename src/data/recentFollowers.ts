@@ -2885,6 +2885,17 @@ export const RECENT_FOLLOWERS_BY_HANDLE: Record<string, RecentFollower[]> = {
       followedAt: '2025-11-11T00:00:00.000Z',
     },
   ],
+  /**
+   * Lucky Student (@LuckyStudent02) — recent follows (X snapshot 2026-08-11).
+   */
+  luckystudent02: [
+    {
+      handle: 'tuge8888',
+      displayName: '寻一方净土',
+      followedAgo: '5 days ago',
+      followedAt: '2026-08-06T00:00:00.000Z',
+    },
+  ],
 }
 
 /** Smart followers seed — key = KOL handle lowercase */

@@ -2762,6 +2762,53 @@ export const RECENT_FOLLOWERS_BY_HANDLE: Record<string, RecentFollower[]> = {
       followedAt: '2025-08-11T00:00:00.000Z',
     },
   ],
+  /**
+   * Steven | Crypto Research (@Steven_Research) — recent follows (X snapshot 2026-08-11).
+   */
+  steven_research: [
+    {
+      handle: 'jupiterexchange',
+      displayName: 'Jupiter',
+      followedAgo: '5 months ago',
+      followedAt: '2026-03-11T00:00:00.000Z',
+    },
+    {
+      handle: 'layerggofficial',
+      displayName: 'Layergg',
+      followedAgo: '8 months ago',
+      followedAt: '2025-12-11T00:00:00.000Z',
+    },
+    {
+      handle: 'loi_luu',
+      displayName: 'Loi Luu',
+      followedAgo: '8 months ago',
+      followedAt: '2025-12-10T00:00:00.000Z',
+    },
+    {
+      handle: 'spottiewifi',
+      displayName: 'Spottie',
+      followedAgo: '8 months ago',
+      followedAt: '2025-12-09T00:00:00.000Z',
+    },
+    {
+      handle: 'kybernetwork',
+      displayName: 'Kyber Network',
+      followedAgo: '10 months ago',
+      followedAt: '2025-10-11T00:00:00.000Z',
+    },
+    {
+      handle: 'cryptoamandal',
+      displayName: '阿曼达要吃肉Amanda.eth',
+      followedAgo: 'a year ago',
+      followedAt: '2025-08-11T00:00:00.000Z',
+    },
+    {
+      handle: 'inkymaze',
+      displayName: 'Nicholas Cannon',
+      followedAgo: 'a year ago',
+      followedAt: '2025-08-10T00:00:00.000Z',
+    },
+  ],
 }
 
 /** Smart followers seed — key = KOL handle lowercase */

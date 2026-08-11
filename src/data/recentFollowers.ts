@@ -3075,6 +3075,29 @@ export const RECENT_FOLLOWERS_BY_HANDLE: Record<string, RecentFollower[]> = {
       followedAt: '2025-08-05T00:00:00.000Z',
     },
   ],
+  /**
+   * ThanhCryptoBnb (@ThanhCryptoBnb) — recent follows (X snapshot 2026-08-11).
+   */
+  thanhcryptobnb: [
+    {
+      handle: 'jasonmdesimone',
+      displayName: 'Jason Desimone ⚔️',
+      followedAgo: '3 months ago',
+      followedAt: '2026-05-11T00:00:00.000Z',
+    },
+    {
+      handle: 'evans666666',
+      displayName: 'Evans.eth',
+      followedAgo: '4 months ago',
+      followedAt: '2026-04-11T00:00:00.000Z',
+    },
+    {
+      handle: 'logearn_cn',
+      displayName: 'LogEarn 中文 ｜AI Driven ｜ 100x MEME Hunter',
+      followedAgo: '8 months ago',
+      followedAt: '2025-12-11T00:00:00.000Z',
+    },
+  ],
 }
 
 /** Smart followers seed — key = KOL handle lowercase */

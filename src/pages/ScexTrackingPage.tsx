@@ -1149,6 +1149,7 @@ export function ScexTrackingPage() {
                           if (a) onSelectActor(a)
                         }}
                         index={index}
+                        fullMedia
                       />
                     ))}
                   </ul>
@@ -1263,6 +1264,7 @@ function ScexFeedCard({
   onToggleExpand,
   onOpenActor,
   index,
+  fullMedia = false,
 }: {
   post: ScexPost
   actor?: ScexActor
@@ -1272,8 +1274,11 @@ function ScexFeedCard({
   onToggleExpand: () => void
   onOpenActor: () => void
   index: number
+  /** Research fullscreen: show full images (no crop) + all media items */
+  fullMedia?: boolean
 }) {
   const media = post.media || []
+  const mediaItems = fullMedia ? media : media.slice(0, 1)
   const likes = post.likes
   const replies = post.replies
   const reposts = post.reposts
@@ -1286,7 +1291,7 @@ function ScexFeedCard({
 
   return (
     <li
-      className="scex-feed-card"
+      className={`scex-feed-card ${fullMedia ? 'scex-feed-card--full-media' : ''}`}
       style={{ animationDelay: `${Math.min(index, 10) * 28}ms` }}
     >
       <div
@@ -1365,26 +1370,35 @@ function ScexFeedCard({
         </button>
       )}
 
-      {media[0] && (
-        <a
-          href={post.url || media[0]}
-          target="_blank"
-          rel="noreferrer"
-          className="scex-feed-media"
+      {mediaItems.length > 0 && (
+        <div
+          className={`scex-feed-media-wrap ${fullMedia ? 'is-full' : ''} ${mediaItems.length > 1 ? 'is-multi' : ''}`}
         >
-          <img
-            src={resolveMediaUrl(media[0])}
-            alt=""
-            loading="lazy"
-            referrerPolicy="no-referrer"
-            onError={(e) => {
-              const el = e.currentTarget
-              el.style.display = 'none'
-              const wrap = el.closest('.scex-feed-media') as HTMLElement | null
-              if (wrap) wrap.style.display = 'none'
-            }}
-          />
-        </a>
+          {mediaItems.map((src, mi) => (
+            <a
+              key={`${post.id}-m${mi}`}
+              href={post.url || src}
+              target="_blank"
+              rel="noreferrer"
+              className={`scex-feed-media ${fullMedia ? 'is-full' : ''}`}
+            >
+              <img
+                src={resolveMediaUrl(src)}
+                alt=""
+                loading="lazy"
+                referrerPolicy="no-referrer"
+                onError={(e) => {
+                  const el = e.currentTarget
+                  el.style.display = 'none'
+                  const wrap = el.closest(
+                    '.scex-feed-media',
+                  ) as HTMLElement | null
+                  if (wrap) wrap.style.display = 'none'
+                }}
+              />
+            </a>
+          ))}
+        </div>
       )}
 
       {(likes != null || replies != null || reposts != null || views != null) && (

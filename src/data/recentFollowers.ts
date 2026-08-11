@@ -2135,6 +2135,23 @@ export const RECENT_FOLLOWERS_BY_HANDLE: Record<string, RecentFollower[]> = {
       followedAt: '2025-08-09T00:00:00.000Z',
     },
   ],
+  /**
+   * HC Gems Alert (@HCGemAlerts) — recent follows (X snapshot 2026-08-11).
+   */
+  hcgemalerts: [
+    {
+      handle: 'lc_hk0x',
+      displayName: 'LC',
+      followedAgo: '2 months ago',
+      followedAt: '2026-06-11T00:00:00.000Z',
+    },
+    {
+      handle: 'zama',
+      displayName: 'Zama',
+      followedAgo: '8 months ago',
+      followedAt: '2025-12-11T00:00:00.000Z',
+    },
+  ],
 }
 
 /** Smart followers seed — key = KOL handle lowercase */

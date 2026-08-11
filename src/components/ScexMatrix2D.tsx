@@ -628,11 +628,12 @@ export function ScexMatrix2D({
             {/*
               Background: never shrink below 1× (fixes empty corners at 75%).
               Only expand + pan when zoomed in so washes still fill the plot.
+              Bubbles still use the real zoom step (0.75 → denser cluster).
             */}
             <div
               className="scex2d-zoom-layer scex2d-zoom-layer--bg"
               style={{
-                transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
+                transform: `translate(${zoom > 1 ? pan.x : 0}px, ${zoom > 1 ? pan.y : 0}px) scale(${Math.max(1, zoom)})`,
               }}
               aria-hidden
             >

@@ -2152,6 +2152,29 @@ export const RECENT_FOLLOWERS_BY_HANDLE: Record<string, RecentFollower[]> = {
       followedAt: '2025-12-11T00:00:00.000Z',
     },
   ],
+  /**
+   * Jasmine (@Gemhunter88) — recent follows (X snapshot 2026-08-11).
+   */
+  gemhunter88: [
+    {
+      handle: 'defiapp',
+      displayName: 'Defi App',
+      followedAgo: 'a year ago',
+      followedAt: '2025-08-11T00:00:00.000Z',
+    },
+    {
+      handle: 'liaoblove520',
+      displayName: '龙猫·liaoblove',
+      followedAgo: 'a year ago',
+      followedAt: '2025-08-10T00:00:00.000Z',
+    },
+    {
+      handle: 'cryptoamandal',
+      displayName: '阿曼达要吃肉Amanda.eth',
+      followedAgo: 'a year ago',
+      followedAt: '2025-08-09T00:00:00.000Z',
+    },
+  ],
 }
 
 /** Smart followers seed — key = KOL handle lowercase */

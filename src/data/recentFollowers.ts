@@ -2175,6 +2175,23 @@ export const RECENT_FOLLOWERS_BY_HANDLE: Record<string, RecentFollower[]> = {
       followedAt: '2025-08-09T00:00:00.000Z',
     },
   ],
+  /**
+   * Lê Duy (@LeDuyCryptoMan) — recent follows (X snapshot 2026-08-11).
+   */
+  leduycryptoman: [
+    {
+      handle: 'tokenmore',
+      displayName: '（TokenMore)萌小主',
+      followedAgo: '7 days ago',
+      followedAt: '2026-08-04T00:00:00.000Z',
+    },
+    {
+      handle: 'jasonmdesimone',
+      displayName: 'Jason Desimone ⚔️',
+      followedAgo: '4 months ago',
+      followedAt: '2026-04-11T00:00:00.000Z',
+    },
+  ],
 }
 
 /** Smart followers seed — key = KOL handle lowercase */

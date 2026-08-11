@@ -2751,6 +2751,17 @@ export const RECENT_FOLLOWERS_BY_HANDLE: Record<string, RecentFollower[]> = {
       followedAt: '2026-03-11T00:00:00.000Z',
     },
   ],
+  /**
+   * Zoey Crypto (@ZoeyCrypto0811) — recent follows (X snapshot 2026-08-11).
+   */
+  zoeycrypto0811: [
+    {
+      handle: 'x_may_crypto',
+      displayName: 'May',
+      followedAgo: 'a year ago',
+      followedAt: '2025-08-11T00:00:00.000Z',
+    },
+  ],
 }
 
 /** Smart followers seed — key = KOL handle lowercase */

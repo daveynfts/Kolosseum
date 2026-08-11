@@ -61,10 +61,7 @@
 .scex-page__hero--lite .scex-page__title {
   font-size: clamp(1.28rem, 2.2vw, 1.65rem);
 }
-.scex-page__hero--lite .scex-page__subtitle {
-  margin-top: 4px;
-  font-size: 0.82rem;
-}
+
 .scex-page__hero--lite .scex-stat {
   min-width: 76px;
   padding: 10px 12px;
@@ -118,7 +115,7 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 8px;
+  gap: 8px 10px;
   margin-bottom: 6px;
 }
 
@@ -127,6 +124,47 @@
   font-weight: 600;
   color: rgba(226, 232, 240, 0.45);
   letter-spacing: 0.04em;
+}
+
+.scex-page__socials {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.scex-page__social {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  color: rgba(226, 232, 240, 0.72);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  text-decoration: none;
+  transition:
+    color 0.15s ease,
+    background 0.15s ease,
+    border-color 0.15s ease,
+    transform 0.15s ease;
+}
+
+.scex-page__social:hover {
+  color: #f8fafc;
+  background: rgba(56, 189, 248, 0.14);
+  border-color: rgba(125, 211, 252, 0.35);
+  transform: translateY(-1px);
+}
+
+.scex-page__social:focus-visible {
+  outline: 2px solid rgba(56, 189, 248, 0.65);
+  outline-offset: 2px;
+}
+
+.scex-page__social svg {
+  display: block;
+  flex-shrink: 0;
 }
 
 /* Brand link → radar.daveynfts.com */

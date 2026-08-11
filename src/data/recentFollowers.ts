@@ -2629,6 +2629,47 @@ export const RECENT_FOLLOWERS_BY_HANDLE: Record<string, RecentFollower[]> = {
       followedAt: '2025-08-11T00:00:00.000Z',
     },
   ],
+  /**
+   * B4dMan (@b4dmantrading) — recent follows (X snapshot 2026-08-11).
+   */
+  b4dmantrading: [
+    {
+      handle: 'mikadontlouz',
+      displayName: 'Mika',
+      followedAgo: '8 days ago',
+      followedAt: '2026-08-03T00:00:00.000Z',
+    },
+    {
+      handle: 'tuge8888',
+      displayName: '寻一方净土',
+      followedAgo: '14 days ago',
+      followedAt: '2026-07-28T00:00:00.000Z',
+    },
+    {
+      handle: 'crypto_biubiu',
+      displayName: 'biubiu',
+      followedAgo: '2 months ago',
+      followedAt: '2026-06-11T00:00:00.000Z',
+    },
+    {
+      handle: 'useteller',
+      displayName: 'Teller',
+      followedAgo: '7 months ago',
+      followedAt: '2026-01-11T00:00:00.000Z',
+    },
+    {
+      handle: 'blessedhannah21',
+      displayName: 'tangtang_',
+      followedAgo: 'a year ago',
+      followedAt: '2025-08-11T00:00:00.000Z',
+    },
+    {
+      handle: 'bitcoin136',
+      displayName: '七喜 | 7UP',
+      followedAgo: 'a year ago',
+      followedAt: '2025-08-10T00:00:00.000Z',
+    },
+  ],
 }
 
 /** Smart followers seed — key = KOL handle lowercase */

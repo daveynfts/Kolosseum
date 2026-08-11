@@ -1446,6 +1446,191 @@ export const RECENT_FOLLOWERS_BY_HANDLE: Record<string, RecentFollower[]> = {
       followedAt: '2025-08-11T00:00:00.000Z',
     },
   ],
+  /**
+   * Richard Dang (@RichardDang) — recent follows (X snapshot 2026-08-11).
+   */
+  richarddang: [
+    {
+      handle: '0x2222_',
+      displayName: '鸽子',
+      followedAgo: '16 days ago',
+      followedAt: '2026-07-26T00:00:00.000Z',
+    },
+    {
+      handle: 'chouchou_tx',
+      displayName: '丑丑TX',
+      followedAgo: 'a month ago',
+      followedAt: '2026-07-11T00:00:00.000Z',
+    },
+    {
+      handle: 'ventureweb3',
+      displayName: 'ar://web3vc',
+      followedAgo: 'a month ago',
+      followedAt: '2026-07-10T00:00:00.000Z',
+    },
+    {
+      handle: 'jasonmdesimone',
+      displayName: 'Jason Desimone ⚔️',
+      followedAgo: 'a month ago',
+      followedAt: '2026-07-09T00:00:00.000Z',
+    },
+    {
+      handle: 'xingzhanai',
+      displayName: 'XZ 星展',
+      followedAgo: 'a month ago',
+      followedAt: '2026-07-08T00:00:00.000Z',
+    },
+    {
+      handle: 'sjl166',
+      displayName: '斯嘉丽 Scar',
+      followedAgo: '2 months ago',
+      followedAt: '2026-06-11T00:00:00.000Z',
+    },
+    {
+      handle: 'nicjiang7',
+      displayName: 'Nic',
+      followedAgo: '2 months ago',
+      followedAt: '2026-06-10T00:00:00.000Z',
+    },
+    {
+      handle: '0xethanh',
+      displayName: 'EH',
+      followedAgo: '2 months ago',
+      followedAt: '2026-06-09T00:00:00.000Z',
+    },
+    {
+      handle: 'web3xwg',
+      displayName: '小伍哥 | Gate 美股0费率',
+      followedAgo: '2 months ago',
+      followedAt: '2026-06-08T00:00:00.000Z',
+    },
+    {
+      handle: 'phill76815',
+      displayName: '龙神-Dragon God',
+      followedAgo: '2 months ago',
+      followedAt: '2026-06-07T00:00:00.000Z',
+    },
+    {
+      handle: 'jimmyshequ',
+      displayName: "JIM'S FRIENDS 买美股上币安",
+      followedAgo: '2 months ago',
+      followedAt: '2026-06-06T00:00:00.000Z',
+    },
+    {
+      handle: 'chanceyawn',
+      displayName: '阳成AI',
+      followedAgo: '2 months ago',
+      followedAt: '2026-06-05T00:00:00.000Z',
+    },
+    {
+      handle: 'oknextlin',
+      displayName: '大栗子',
+      followedAgo: '2 months ago',
+      followedAt: '2026-06-04T00:00:00.000Z',
+    },
+    {
+      handle: 'tuge8888',
+      displayName: '寻一方净土',
+      followedAgo: '2 months ago',
+      followedAt: '2026-06-03T00:00:00.000Z',
+    },
+    {
+      handle: 'flcjbtc',
+      displayName: '飞龙财经',
+      followedAgo: '2 months ago',
+      followedAt: '2026-06-02T00:00:00.000Z',
+    },
+    {
+      handle: 'wilsonye2025',
+      displayName: 'Wilson Ye',
+      followedAgo: '2 months ago',
+      followedAt: '2026-06-01T00:00:00.000Z',
+    },
+    {
+      handle: 'chenchen4410999',
+      displayName: '藍色彈塗魚',
+      followedAgo: '2 months ago',
+      followedAt: '2026-05-31T00:00:00.000Z',
+    },
+    {
+      handle: 'btcbears',
+      displayName: '旺牛牛仔',
+      followedAgo: '2 months ago',
+      followedAt: '2026-05-30T00:00:00.000Z',
+    },
+    {
+      handle: 'hunter_nft',
+      displayName: 'hunter berg',
+      followedAgo: '2 months ago',
+      followedAt: '2026-05-29T00:00:00.000Z',
+    },
+    {
+      handle: 'nftunit01',
+      displayName: 'NFT特攻队(,)',
+      followedAgo: '4 months ago',
+      followedAt: '2026-04-11T00:00:00.000Z',
+    },
+    {
+      handle: 'evans666666',
+      displayName: 'Evans.eth',
+      followedAgo: '4 months ago',
+      followedAt: '2026-04-10T00:00:00.000Z',
+    },
+    {
+      handle: 'garyvgroup',
+      displayName: 'GaryCoinAnk',
+      followedAgo: '6 months ago',
+      followedAt: '2026-02-11T00:00:00.000Z',
+    },
+    {
+      handle: 'bitgrateful',
+      displayName: 'Lawyered',
+      followedAgo: '8 months ago',
+      followedAt: '2025-12-11T00:00:00.000Z',
+    },
+    {
+      handle: 'miaferrariii',
+      displayName: 'Mia',
+      followedAgo: '10 months ago',
+      followedAt: '2025-10-11T00:00:00.000Z',
+    },
+    {
+      handle: 'randhindi',
+      displayName: 'Rand',
+      followedAgo: 'a year ago',
+      followedAt: '2025-08-11T00:00:00.000Z',
+    },
+    {
+      handle: 'afangyuan',
+      displayName: '方源',
+      followedAgo: 'a year ago',
+      followedAt: '2025-08-10T00:00:00.000Z',
+    },
+    {
+      handle: 'cryptoamandal',
+      displayName: '阿曼达要吃肉Amanda.eth',
+      followedAgo: 'a year ago',
+      followedAt: '2025-08-09T00:00:00.000Z',
+    },
+    {
+      handle: 'liaoblove520',
+      displayName: '龙猫·liaoblove',
+      followedAgo: 'a year ago',
+      followedAt: '2025-08-08T00:00:00.000Z',
+    },
+    {
+      handle: 'ripeth',
+      displayName: 'rip.eth',
+      followedAgo: 'a year ago',
+      followedAt: '2025-08-07T00:00:00.000Z',
+    },
+    {
+      handle: 'btcdefidadi',
+      displayName: 'Vincent',
+      followedAgo: 'a year ago',
+      followedAt: '2025-08-06T00:00:00.000Z',
+    },
+  ],
 }
 
 /** Smart followers seed — key = KOL handle lowercase */

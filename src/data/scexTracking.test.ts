@@ -3,8 +3,13 @@ import {
   audienceTrustScore,
   computeQuadrant,
   defaultScexConfig,
+  dominantScexSentiment,
+  inferScexSentiment,
+  recomputeScexSentiments,
   scoreScexActor,
   type ScexActor,
+  type ScexDataset,
+  type ScexPost,
 } from './scexTracking'
 
 describe('computeQuadrant', () => {
@@ -133,5 +138,85 @@ describe('scoreScexActor quality / uy tín', () => {
     )
     expect(on.qualityScore).toBeGreaterThan(off.qualityScore)
     expect(on.mapRank).toBe('diamond')
+  })
+})
+
+describe('inferScexSentiment', () => {
+  it('tags partnership / MOU news as bullish (not bearish)', () => {
+    const text =
+      'SCEX VÀ IVY KÝ KẾT HỢP TÁC CHIẾN LƯỢC nhằm thúc đẩy hệ sinh thái tài sản số tại Việt Nam'
+    expect(inferScexSentiment(text)).toBe('bullish')
+  })
+
+  it('tags hard product dismissal as bearish', () => {
+    expect(
+      inferScexSentiment(
+        'SCEX có bác nào đăng kí được sàn chưa? Chứ mình test thì thấy không ra gì rồi.',
+      ),
+    ).toBe('bearish')
+  })
+
+  it('tags mild demo critique as neutral', () => {
+    expect(
+      inferScexSentiment(
+        'Test thử demo sàn SCEX, hơi lag nhẹ, đơn sơ. Mong làm mượt chút.',
+      ),
+    ).toBe('neutral')
+  })
+
+  it('tags sponsorship / awards as bullish', () => {
+    expect(
+      inferScexSentiment(
+        'Chúc mừng SCEX trở thành Nhà tài trợ Vàng của Vietnam RWA Summit 2026',
+      ),
+    ).toBe('bullish')
+  })
+
+  it('does not treat “rắc rối” (hassle) as hard negative', () => {
+    expect(
+      inferScexSentiment(
+        '@KT_BTC @scexofficial thế càng đỡ rắc rối cho anh em dùng sau này bro',
+      ),
+    ).not.toBe('bearish')
+  })
+})
+
+describe('recomputeScexSentiments', () => {
+  it('fixes actor ring when sole post was mislabeled partnership news', () => {
+    const post: ScexPost = {
+      id: 'p1',
+      handle: 'gm_upside',
+      url: 'https://x.com/x/status/1',
+      text: 'SCEX và IVY ký kết hợp tác chiến lược, thúc đẩy hệ sinh thái tài sản số',
+      postedAt: '2026-08-01T00:00:00.000Z',
+      sentiment: 'bearish',
+    }
+    const ds: ScexDataset = {
+      version: 1,
+      kind: 'scex',
+      asOf: '2026-08-11',
+      config: defaultScexConfig(),
+      actors: [
+        baseActor({
+          id: 'a1',
+          handle: 'gm_upside',
+          sentiment: 'bearish',
+        }),
+      ],
+      posts: [post],
+    }
+    const next = recomputeScexSentiments(ds)
+    expect(next.posts[0].sentiment).toBe('bullish')
+    expect(next.actors[0].sentiment).toBe('bullish')
+  })
+
+  it('dominantScexSentiment prefers clear majority', () => {
+    expect(
+      dominantScexSentiment([
+        { sentiment: 'bullish' },
+        { sentiment: 'bullish' },
+        { sentiment: 'neutral' },
+      ]),
+    ).toBe('bullish')
   })
 })

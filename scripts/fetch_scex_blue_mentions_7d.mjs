@@ -504,18 +504,37 @@ async function resolveBlue(handle) {
   }
 }
 
+/** Keep in sync with src/data/scexTracking.ts inferScexSentiment */
 function guessSentiment(text) {
-  const t = text.toLowerCase()
-  if (/scam|lừa|rác|đểu|sập/.test(t)) return 'bearish'
-  if (/lỗ|thuế|cảnh báo|rủi ro|rén/.test(t) && !/giải thưởng|top/.test(t))
-    return 'neutral'
-  if (
-    /chúc mừng|bullish|tham gia|hợp tác|giải thưởng|tuyệt|ổn|mốc|ký kết|MOU|chiến|top/.test(
+  const raw = String(text || '').trim()
+  if (raw.length < 8) return 'neutral'
+  const t = raw
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/\p{M}/gu, '')
+  if (/\bscam\b|lua dao|rug\b|sap san|phot scex/.test(t)) return 'scam'
+  const hardNeg =
+    /khong ra gi|qua rac|toan rac|rac qua|deu qua|tranh xa|dung dung|otp.*khong gui|cong nghe v sao|buc minh/.test(
+      t,
+    ) || /không ra gì|tránh xa|bực mình/.test(raw.toLowerCase())
+  const strongBull =
+    /ky ket|hop tac|thoa thuan|mou\b|bat tay|chuc mung|nha tai tro|giai thuong|thuc day|chien luoc|partnership|sponsor|bullish|tich cuc|he sinh thai|dang cap/.test(
       t,
     )
-  )
-    return 'bullish'
-  return 'bullish'
+  const mildCrit =
+    /lag|don so|non tre|ton dung luong|chua ho tro|con nhieu|cai thien|phai sinh|khong chiu noi|fomo|thac mac|phan anh|chua tot|giao dien|thanh khoan/.test(
+      t,
+    )
+  const softBull =
+    /tham gia|dang ky|thu nghiem|demo|giao dich tren|lai duoc|top \d|bxh|dau truong|ref_code|ma gioi thieu/.test(
+      t,
+    )
+  if (hardNeg && !strongBull) return 'bearish'
+  if (strongBull && !hardNeg) return 'bullish'
+  if (strongBull && hardNeg) return 'neutral'
+  if (mildCrit && !strongBull) return 'neutral'
+  if (softBull && !hardNeg) return 'bullish'
+  return 'neutral'
 }
 
 function mapToneToQuality(sent, followers, views, goc) {

@@ -603,6 +603,177 @@ function normalizeSentiment(raw: unknown): ScexSentiment {
   return 'neutral'
 }
 
+/** Strip VN diacritics for keyword matching. */
+function foldVi(s: string): string {
+  return String(s || '')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/\p{M}/gu, '')
+}
+
+/**
+ * Infer SCEX post sentiment from body text.
+ * Fixes common export mistakes (e.g. partnership news labeled “Bearish”).
+ */
+export function inferScexSentiment(text: string): ScexSentiment {
+  const raw = String(text || '').trim()
+  if (raw.length < 8) return 'neutral'
+  const t = foldVi(raw)
+
+  // Hard scam / brand attack
+  if (
+    /\bscam\b|lua dao|lua đảo|rug\s*pull|\brug\b|sap san|sập sàn|phot scex|phốt scex/.test(
+      t,
+    ) || /lừa đảo|sập sàn/.test(raw.toLowerCase())
+  ) {
+    return 'scam'
+  }
+
+  // Hard negative product / brand dismissal
+  // Note: do NOT match bare "rac" — folds "rắc rối" (hassle) → false bearish
+  const hardNeg =
+    /khong ra gi|không ra gì|qua rac|toan rac|rac qua|đểu|deu qua|tranh xa|đừng dùng|dung dung|canh bao scam|otp.*khong gui|otp.*không gửi|cong nghe v sao|công nghệ v sao|buc minh|bực mình/.test(
+      t,
+    ) || /không ra gì|tránh xa|đừng dùng|bực mình/.test(raw.toLowerCase())
+
+  // Strong positive: partnerships, sponsorship, awards, celebration
+  const strongBull =
+    /ky ket|ký kết|hop tac|hợp tác|thoa thuan|thỏa thuận|mou\b|bat tay|bắt tay|chuc mung|chúc mừng|nha tai tro|nhà tài trợ|tai tro vang|tài trợ vàng|giai thuong|giải thưởng|thuc day|thúc đẩy|chien luoc|chiến lược|partnership|sponsor|bullish|tich cuc|tích cực|he sinh thai|hệ sinh thái|dang cap|đẳng cấp|chinh thuc|chính thức góp|tro thanh nha|trở thành nhà/.test(
+      t,
+    )
+
+  // Mild product critique / observation (not brand hate)
+  const mildCrit =
+    /lag|don so|đơn sơ|non tre|non trẻ|ton dung luong|tốn dung lượng|chua ho tro|chưa hỗ trợ|con nhieu|còn nhiều|cai thien|cải thiện|phai sinh|phái sinh|khong chiu noi|không chịu nổi|fomo|thac mac|thắc mắc|lieu co phai|liệu có phải|phản ánh|phan anh|thuế|thue 0|mong .*muot|mượt chút|chua tot|chưa tốt|giao dien|giao diện|thanh khoan|thanh khoản/.test(
+      t,
+    )
+
+  // Promo / trial experience (lean positive unless hard-neg)
+  const softBull =
+    /tham gia|đăng ký|dang ky|thu nghiem|thử nghiệm|demo|giao dich tren|giao dịch trên|lai duoc|lãi được|top \d|bxh|đấu trường|dau truong|giai thuong|ref_code|ma gioi thieu|mã giới thiệu/.test(
+      t,
+    )
+
+  if (hardNeg && !strongBull) return 'bearish'
+  if (strongBull && !hardNeg) return 'bullish'
+  if (strongBull && hardNeg) return 'neutral'
+  if (mildCrit && !strongBull) return 'neutral'
+  if (softBull && !hardNeg) return 'bullish'
+  return 'neutral'
+}
+
+/** Majority sentiment across an actor’s posts (hidden excluded). */
+export function dominantScexSentiment(
+  posts: Pick<ScexPost, 'sentiment' | 'hidden'>[],
+): ScexSentiment {
+  const counts: Record<ScexSentiment, number> = {
+    bullish: 0,
+    bearish: 0,
+    neutral: 0,
+    shill: 0,
+    scam: 0,
+  }
+  for (const p of posts) {
+    if (p.hidden) continue
+    const s = normalizeSentiment(p.sentiment)
+    counts[s]++
+  }
+  const total =
+    counts.bullish +
+    counts.bearish +
+    counts.neutral +
+    counts.shill +
+    counts.scam
+  if (total === 0) return 'neutral'
+  if (counts.scam > 0 && counts.scam >= counts.bullish) return 'scam'
+  // Mixed bullish + bearish without clear majority → neutral (UI “Hỗn hợp” via tags)
+  if (counts.bullish > 0 && counts.bearish > 0) {
+    if (counts.bullish >= counts.bearish * 2) return 'bullish'
+    if (counts.bearish >= counts.bullish * 2) return 'bearish'
+    return 'neutral'
+  }
+  let best: ScexSentiment = 'neutral'
+  let bestN = -1
+  for (const k of [
+    'bullish',
+    'neutral',
+    'bearish',
+    'shill',
+    'scam',
+  ] as ScexSentiment[]) {
+    if (counts[k] > bestN) {
+      bestN = counts[k]
+      best = k
+    }
+  }
+  return best
+}
+
+/**
+ * Re-tag every post with real body text from content, then roll up actor tone.
+ * Skips thin export placeholders so manual admin tags are kept when no text.
+ */
+export function recomputeScexSentiments(dataset: ScexDataset): ScexDataset {
+  const posts = dataset.posts.map((p) => {
+    const text = String(p.text || '').trim()
+    const thin =
+      text.length < 20 ||
+      /mention SCEX \(export|export gốc|export batch|list58|curated SCEX mention/i.test(
+        text,
+      )
+    if (thin) return p
+    const next = inferScexSentiment(text)
+    if (next === p.sentiment) return p
+    return {
+      ...p,
+      sentiment: next,
+      notes: [p.notes, `sentiment:auto→${next}`]
+        .filter(Boolean)
+        .join(' · ')
+        .slice(0, 400),
+    }
+  })
+
+  const byHandle = new Map<string, ScexPost[]>()
+  for (const p of posts) {
+    const h = p.handle.toLowerCase()
+    if (!byHandle.has(h)) byHandle.set(h, [])
+    byHandle.get(h)!.push(p)
+  }
+
+  const actors = dataset.actors.map((a) => {
+    const list = byHandle.get(a.handle.toLowerCase()) || []
+    if (!list.length) return a
+    const sentiment = dominantScexSentiment(list)
+    const counts = { bullish: 0, bearish: 0 }
+    for (const p of list) {
+      if (p.hidden) continue
+      if (p.sentiment === 'bullish') counts.bullish++
+      if (p.sentiment === 'bearish' || p.sentiment === 'scam') counts.bearish++
+    }
+    let tags = a.tags || ''
+    const mixed = counts.bullish > 0 && counts.bearish > 0
+    if (mixed && !/mixed|hỗn|hon hop/i.test(tags)) {
+      tags = tags ? `${tags},mixed` : 'mixed'
+    }
+    if (!mixed && /(?:^|,)mixed(?:,|$)/i.test(tags)) {
+      tags = tags
+        .split(',')
+        .map((x) => x.trim())
+        .filter((x) => x && !/^mixed$/i.test(x))
+        .join(',')
+    }
+    return {
+      ...a,
+      sentiment,
+      tags: tags || undefined,
+      notes: a.notes,
+    }
+  })
+
+  return { ...dataset, posts, actors }
+}
+
 function normalizeActor(raw: unknown, i: number): ScexActor | null {
   if (!raw || typeof raw !== 'object') return null
   const o = raw as Record<string, unknown>

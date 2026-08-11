@@ -107,6 +107,13 @@ export async function saveTwitterScoreToServer(
     updatedAt: new Date().toISOString(),
     note: note || dataset.note,
   })
+  let baseUpdatedAt: string | undefined
+  try {
+    const server = await fetchServerTwitterScore()
+    baseUpdatedAt = server?.updatedAt
+  } catch {
+    /* ignore */
+  }
   try {
     const res = await fetch(apiUrl(), {
       method: 'PUT',
@@ -114,7 +121,7 @@ export async function saveTwitterScoreToServer(
         'Content-Type': 'application/json',
         Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify(next),
+      body: JSON.stringify({ ...next, baseUpdatedAt }),
     })
     const body = (await res.json().catch(() => ({}))) as {
       error?: string
@@ -125,7 +132,14 @@ export async function saveTwitterScoreToServer(
       return {
         ok: false,
         status: res.status,
-        error: body.message || body.error || `Server ${res.status}`,
+        error:
+          body.message ||
+          body.error ||
+          `Server ${res.status}${
+            res.status === 409
+              ? ' — server có TwitterScore mới hơn, Reload rồi Save'
+              : ''
+          }`,
       }
     }
     const saved = {

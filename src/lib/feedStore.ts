@@ -112,12 +112,6 @@ export async function loadFeed(): Promise<Tier1Feed> {
 export async function loadFeedWithSource(): Promise<LoadFeedResult> {
   const server = await fetchServerFeed()
   if (server) {
-    // Mirror server → local cache so offline / fast reopen works
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(server))
-    } catch {
-      /* ignore */
-    }
     return { feed: server, source: 'server' }
   }
 
@@ -250,6 +244,8 @@ export async function clearFeedServer(): Promise<ServerSaveResult> {
         error: body.message || `Server ${res.status}`,
       }
     }
+    localStorage.removeItem(STORAGE_KEY)
+    emitFeedEvent(null)
     return { ok: true, feed: await fetchSeedFeed() }
   } catch (e) {
     return {

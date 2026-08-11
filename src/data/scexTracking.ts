@@ -770,7 +770,7 @@ export function normalizeScexDataset(raw: unknown): ScexDataset | null {
     actors,
     posts,
   }
-  ds = recomputeScexActors(ds)
+  ds = recomputeScexScores(ds)
   return ds
 }
 

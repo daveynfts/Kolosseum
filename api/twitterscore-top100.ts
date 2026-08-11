@@ -15,7 +15,12 @@ import {
   r2GetJson,
   r2PutJson,
 } from '../lib/server/r2.js'
-import { isGetOrHead, sendJson } from '../lib/server/apiHelpers.js'
+import {
+  assertNotStale,
+  isGetOrHead,
+  readBaseUpdatedAt,
+  sendJson,
+} from '../lib/server/apiHelpers.js'
 
 type Body = {
   version?: number
@@ -31,6 +36,7 @@ type Body = {
   accounts?: unknown[]
   updatedAt?: string
   note?: string
+  baseUpdatedAt?: string
   [k: string]: unknown
 }
 
@@ -103,6 +109,21 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           message: 'Need accounts[] with at least 1 row',
         })
       }
+      const current = await r2GetJson<Body>(
+        client,
+        TWITTERSCORE_TOP100_OBJECT_KEY,
+      )
+      const stale = assertNotStale(
+        current?.updatedAt,
+        readBaseUpdatedAt(body as Record<string, unknown>),
+      )
+      if (stale.ok === false) {
+        return res.status(409).json({
+          error: 'conflict',
+          message: 'Server có TwitterScore mới hơn. Reload rồi Save lại.',
+          serverUpdatedAt: stale.serverUpdatedAt,
+        })
+      }
       const payload: Body = {
         ...body,
         version: body.version ?? 1,
@@ -110,6 +131,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         updatedAt: new Date().toISOString(),
         source: body.source || 'admin server',
       }
+      delete (payload as { baseUpdatedAt?: string }).baseUpdatedAt
       await r2PutJson(client, TWITTERSCORE_TOP100_OBJECT_KEY, payload)
       return res.status(200).json({
         ok: true,

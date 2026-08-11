@@ -4,7 +4,7 @@
 import {
   SCEX_TRACKING_SEED,
   normalizeScexDataset,
-  recomputeScexActors,
+  recomputeScexScores,
   type ScexDataset,
 } from '../data/scexTracking'
 import { withBase } from './base'
@@ -107,13 +107,16 @@ export async function saveScexToServer(
     /* ignore */
   }
 
-  const payload = recomputeScexActors({
+  const payload = recomputeScexScores({
     ...dataset,
     note: note ?? dataset.note,
     updatedAt: new Date().toISOString(),
     asOf: new Date().toISOString(),
     baseUpdatedAt,
   } as ScexDataset & { baseUpdatedAt?: string })
+  const { baseUpdatedAt: _drop, ...toCache } = payload as ScexDataset & {
+    baseUpdatedAt?: string
+  }
   try {
     const res = await fetch(apiUrl(), {
       method: 'PUT',
@@ -140,10 +143,10 @@ export async function saveScexToServer(
         status: res.status,
       }
     }
-    writeCache(payload)
+    writeCache(toCache as ScexDataset)
     return {
       ok: true,
-      dataset: payload,
+      dataset: toCache as ScexDataset,
       updatedAt: j.updatedAt || payload.updatedAt || new Date().toISOString(),
     }
   } catch (e) {
@@ -164,7 +167,7 @@ export function clearScexCache() {
 }
 
 export function exportScexJson(dataset: ScexDataset): string {
-  return JSON.stringify(recomputeScexActors(dataset), null, 2)
+  return JSON.stringify(recomputeScexScores(dataset), null, 2)
 }
 
 export function importScexJson(text: string): ScexDataset {

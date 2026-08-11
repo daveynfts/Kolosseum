@@ -629,10 +629,7 @@ export function ScexMatrix2D({
             <div
               className="scex2d-zoom-layer scex2d-zoom-layer--bg"
               style={{
-                transform:
-                  zoom >= 1
-                    ? `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`
-                    : 'none',
+                transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
               }}
               aria-hidden
             >
@@ -696,12 +693,15 @@ export function ScexMatrix2D({
                     : b.x > plotSize.w * 0.78
                       ? 'left'
                       : 'center'
+                const sizeVal = actorSizeValue(a, config)
+                const sizeLabel =
+                  config.sizeMetric === 'reach7d' ? 'Reach 7d' : 'Followers'
                 const tipRows: Array<[string, string]> = [
                   ['Vùng', zoneLabel],
                   ['Tần suất', volPhrase],
                   ['Uy tín', qualPhrase],
                   ['Góc nhìn', sentLabel],
-                  ['Reach', `${formatCompact(a.followers)} followers`],
+                  [sizeLabel, `${formatCompact(sizeVal)}`],
                 ]
                 return (
                   <button

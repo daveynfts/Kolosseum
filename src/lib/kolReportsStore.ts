@@ -179,7 +179,13 @@ export async function saveKolReportsToServer(
 ): Promise<{ ok: boolean; status: number; message?: string }> {
   const t = (token ?? getAdminToken()).trim()
   if (!t) return { ok: false, status: 0, message: 'Missing admin token' }
-  const baseUpdatedAt = dataset.updatedAt
+  let baseUpdatedAt: string | undefined
+  try {
+    const server = await fetchKolReportsAdmin(t)
+    baseUpdatedAt = server?.updatedAt
+  } catch {
+    /* ignore */
+  }
   const payload: KolReportsDataset & { baseUpdatedAt?: string } = {
     ...dataset,
     kind: 'kol-reports' as const,

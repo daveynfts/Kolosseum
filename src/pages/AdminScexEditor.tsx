@@ -11,7 +11,6 @@ import {
   createEmptyActor,
   createEmptyPost,
   defaultScexScoring,
-  recomputeScexActors,
   recomputeScexScores,
   type ScexActor,
   type ScexConfig,
@@ -95,7 +94,7 @@ export function AdminScexEditor({ onToast }: Props) {
 
   const patchConfig = (patch: Partial<ScexConfig>) => {
     setDataset((prev) =>
-      recomputeScexActors({
+      recomputeScexScores({
         ...prev,
         config: { ...prev.config, ...patch },
       }),
@@ -121,7 +120,7 @@ export function AdminScexEditor({ onToast }: Props) {
           ...(patch.sentimentScores || {}),
         },
       }
-      return recomputeScexActors({
+      return recomputeScexScores({
         ...prev,
         config: { ...prev.config, scoring: next },
       })
@@ -328,7 +327,7 @@ export function AdminScexEditor({ onToast }: Props) {
         }
         return next
       })
-      return recomputeScexActors({ ...prev, actors })
+      return recomputeScexScores({ ...prev, actors })
     })
     setDirty(true)
   }
@@ -419,7 +418,7 @@ export function AdminScexEditor({ onToast }: Props) {
   const addActor = (kind: 'kol' | 'user') => {
     const a = createEmptyActor(kind)
     setDataset((prev) =>
-      recomputeScexActors({ ...prev, actors: [...prev.actors, a] }),
+      recomputeScexScores({ ...prev, actors: [...prev.actors, a] }),
     )
     setSelectedActorId(a.id)
     setDirty(true)

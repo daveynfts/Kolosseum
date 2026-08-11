@@ -26,6 +26,7 @@ export function FeedPanel({ open, onClose, kols, onSelectKol }: Props) {
   const [highlightId, setHighlightId] = useState<string | null>(null)
   const [expanded, setExpanded] = useState<Record<string, boolean>>({})
   const listRef = useRef<HTMLDivElement>(null)
+  const loadSeqRef = useRef(0)
 
   const kolByHandle = useMemo(() => {
     const m = new Map<string, Kol>()
@@ -34,16 +35,24 @@ export function FeedPanel({ open, onClose, kols, onSelectKol }: Props) {
   }, [kols])
 
   const load = useCallback(async (silent = false) => {
+    const seq = ++loadSeqRef.current
     if (!silent) setLoading(true)
     setError(null)
     try {
-      // Prefer Admin localStorage override; else seed /feed/tier1-feed.json
       const data = await loadFeed()
+      if (seq !== loadSeqRef.current) return
       setFeed(data)
     } catch (e) {
+      if (seq !== loadSeqRef.current) return
       setError(e instanceof Error ? e.message : 'Load failed')
     } finally {
-      if (!silent) setLoading(false)
+      if (seq === loadSeqRef.current && !silent) setLoading(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    return () => {
+      loadSeqRef.current += 1
     }
   }, [])
 
@@ -72,12 +81,21 @@ export function FeedPanel({ open, onClose, kols, onSelectKol }: Props) {
     return () => window.clearInterval(id)
   }, [open, load])
 
+  const newestPostId = useMemo(() => {
+    if (!feed?.posts.length) return null
+    let latest = feed.posts[0]
+    for (const p of feed.posts) {
+      if (p.createdAt.localeCompare(latest.createdAt) > 0) latest = p
+    }
+    return latest.id
+  }, [feed?.generatedAt, feed?.posts])
+
   useEffect(() => {
-    if (!feed?.posts[0]) return
-    setHighlightId(feed.posts[0].id)
+    if (!newestPostId) return
+    setHighlightId(newestPostId)
     const t = window.setTimeout(() => setHighlightId(null), 1800)
     return () => window.clearTimeout(t)
-  }, [feed?.generatedAt, feed?.posts[0]?.id])
+  }, [newestPostId])
 
   const voiceStats = useMemo(() => {
     if (!feed) return [] as Array<{ handle: string; name: string; count: number; color: string }>
@@ -363,7 +381,7 @@ export function FeedPanel({ open, onClose, kols, onSelectKol }: Props) {
             Hiển thị <strong>{posts.length}</strong>
             {feed ? ` / ${feed.postCount}` : ''}
           </span>
-          <span className="feed-foot__right">Snapshot demo · auto 45s</span>
+          <span className="feed-foot__right">Snapshot demo · auto 60s</span>
         </footer>
       )}
     </aside>

@@ -16,6 +16,11 @@ import {
   actorVolumeMetric,
   partnerQuadrantTitle,
 } from '../data/scexTracking'
+import {
+  extractKolReportSummary,
+  type KolReport,
+} from '../data/kolReports'
+import { loadPublicReportForHandle } from '../lib/kolReportsStore'
 import { AvatarImg } from './AvatarImg'
 import { BioRichText } from './BioRichText'
 import { RankBadge } from './RankBadge'
@@ -23,6 +28,28 @@ import { SurfAnalysisMock } from './SurfAnalysisMock'
 import { XProfileAvatar } from './XProfileAvatar'
 import { DaveysRadarLink } from './DaveysRadarLink'
 import { resolveMediaUrl } from '../lib/avatar'
+
+/** Minimal Kol for Surf AI when actor is off Radar map but has a public report. */
+function stubKolFromActor(actor: ScexActor): Kol {
+  return {
+    id: `scex_${actor.handle}`,
+    handle: actor.handle,
+    displayName: actor.displayName || actor.handle,
+    niche: 'Multi',
+    smartFollowers: 0,
+    followers: actor.followers || 0,
+    posts24h: 0,
+    likes24h: 0,
+    replies24h: 0,
+    reposts24h: 0,
+    baseScore: actor.qualityScore || 0,
+    hotScore: 0,
+    score: actor.qualityScore || 0,
+    deltaPct: 0,
+    bio: '',
+    avatarUrl: actor.avatarUrl,
+  }
+}
 
 type Tab = 'overview' | 'analysis' | 'scex'
 
@@ -67,13 +94,35 @@ export function ScexKolDetail({
 }) {
   const [tab, setTab] = useState<Tab>('scex')
   const [expanded, setExpanded] = useState<Record<string, boolean>>({})
+  const [pubReport, setPubReport] = useState<KolReport | null>(null)
+  const [reportLoading, setReportLoading] = useState(false)
   const sent = config.sentimentLabels[actor.sentiment]
   const isPanel = variant === 'panel'
+  const surfKol = mapKol || stubKolFromActor(actor)
+  const hasReport = !!pubReport
+  const reportSummary = useMemo(
+    () => (pubReport ? extractKolReportSummary(pubReport, 560) : ''),
+    [pubReport],
+  )
 
   useEffect(() => {
     setTab('scex')
     setExpanded({})
+    setPubReport(null)
   }, [actor.id])
+
+  useEffect(() => {
+    let cancelled = false
+    setReportLoading(true)
+    void loadPublicReportForHandle(actor.handle).then((r) => {
+      if (cancelled) return
+      setPubReport(r)
+      setReportLoading(false)
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [actor.handle])
 
   useEffect(() => {
     // Panel mode: parent feed research owns Esc stack (clear selection → exit FS)
@@ -227,7 +276,7 @@ export function ScexKolDetail({
             <em className="scex-detail__tab-n">{sortedPosts.length}</em>
           )}
         </button>
-        {mapKol && (
+        {(mapKol || hasReport || reportLoading) && (
           <button
             type="button"
             role="tab"
@@ -238,17 +287,16 @@ export function ScexKolDetail({
             Tổng quan
           </button>
         )}
-        {mapKol && (
-          <button
-            type="button"
-            role="tab"
-            className={`scex-detail__tab ${tab === 'analysis' ? 'is-active' : ''}`}
-            aria-selected={tab === 'analysis'}
-            onClick={() => setTab('analysis')}
-          >
-            Surf AI
-          </button>
-        )}
+        <button
+          type="button"
+          role="tab"
+          className={`scex-detail__tab ${tab === 'analysis' ? 'is-active' : ''}`}
+          aria-selected={tab === 'analysis'}
+          onClick={() => setTab('analysis')}
+        >
+          Surf AI
+          {hasReport && <em className="scex-detail__tab-n">✓</em>}
+        </button>
       </div>
 
       <div className="scex-detail__scroll">
@@ -372,70 +420,141 @@ export function ScexKolDetail({
           </div>
         )}
 
-        {tab === 'overview' && mapKol && (
+        {tab === 'overview' && (
           <div className="scex-detail__body">
-            <p className="scex-detail__label">Hoạt động &amp; assessment (AI)</p>
-            <BioRichText
-              text={mapKol.bio || ''}
-              className="scex-detail__bio"
-            />
-            <div className="scex-detail__tags">
-              <RankBadge
-                tier={mapKol.tier}
-                score={mapKol.score}
-                isTop30={mapKol.isTop30}
-                rank={mapKol.rank}
-                size="sm"
-              />
-              {mapKol.statusLabel && (
-                <span
-                  className="scex-detail__tag"
-                  title={STATUS_LABELS[mapKol.statusLabel]}
+            {reportLoading && (
+              <p className="scex-detail__label">Đang tải tóm tắt report…</p>
+            )}
+
+            {hasReport && reportSummary ? (
+              <>
+                <p className="scex-detail__label">
+                  Tóm tắt SurfAI report
+                  {pubReport?.structured?.overallScore != null && (
+                    <span className="scex-detail__score-inline">
+                      {' '}
+                      · {pubReport.structured.overallScore}/100
+                    </span>
+                  )}
+                </p>
+                <div className="scex-detail__report-summary">
+                  {reportSummary.split(/\n+/).map((line, i) => (
+                    <p key={i}>{line}</p>
+                  ))}
+                </div>
+                <button
+                  type="button"
+                  className="scex-detail__open-report"
+                  onClick={() => setTab('analysis')}
                 >
-                  {formatStatus(mapKol.statusLabel)}
-                </span>
-              )}
-              {getKolNiches(mapKol).map((n) => (
-                <span
-                  key={n}
-                  className="scex-detail__tag"
-                  style={{
-                    color: NICHE_COLORS[n],
-                    borderColor: `${NICHE_COLORS[n]}55`,
-                  }}
-                >
-                  {n}
-                </span>
-              ))}
-            </div>
-            <div className="scex-detail__stats">
-              <div>
-                <span>Followers (X)</span>
-                <strong>{fmt(mapKol.followers)}</strong>
+                  Xem full report trên tab Surf AI →
+                </button>
+              </>
+            ) : (
+              !reportLoading && (
+                <>
+                  <p className="scex-detail__label">
+                    {mapKol
+                      ? 'Hoạt động & assessment (map)'
+                      : 'Chưa có SurfAI report public'}
+                  </p>
+                  {mapKol?.bio ? (
+                    <BioRichText
+                      text={mapKol.bio}
+                      className="scex-detail__bio scex-detail__bio--clamp"
+                    />
+                  ) : (
+                    <p className="scex-detail__feed-empty">
+                      Publish report public trong Admin → KOL Reports để hiện
+                      tóm tắt tại đây.
+                    </p>
+                  )}
+                </>
+              )
+            )}
+
+            {mapKol && (
+              <>
+                <div className="scex-detail__tags">
+                  <RankBadge
+                    tier={mapKol.tier}
+                    score={mapKol.score}
+                    isTop30={mapKol.isTop30}
+                    rank={mapKol.rank}
+                    size="sm"
+                  />
+                  {mapKol.statusLabel && (
+                    <span
+                      className="scex-detail__tag"
+                      title={STATUS_LABELS[mapKol.statusLabel]}
+                    >
+                      {formatStatus(mapKol.statusLabel)}
+                    </span>
+                  )}
+                  {getKolNiches(mapKol).map((n) => (
+                    <span
+                      key={n}
+                      className="scex-detail__tag"
+                      style={{
+                        color: NICHE_COLORS[n],
+                        borderColor: `${NICHE_COLORS[n]}55`,
+                      }}
+                    >
+                      {n}
+                    </span>
+                  ))}
+                </div>
+                <div className="scex-detail__stats">
+                  <div>
+                    <span>Followers (X)</span>
+                    <strong>{fmt(mapKol.followers)}</strong>
+                  </div>
+                  <div>
+                    <span>Score map</span>
+                    <strong>{mapKol.score.toFixed(1)}</strong>
+                  </div>
+                  <div>
+                    <span>7d posts</span>
+                    <strong>
+                      {mapKol.activity7dPosts != null
+                        ? mapKol.activity7dPosts
+                        : '—'}
+                    </strong>
+                  </div>
+                  <div>
+                    <span>Lần nhắc SCEX</span>
+                    <strong>{actor.postsVolume}</strong>
+                  </div>
+                </div>
+              </>
+            )}
+
+            {!mapKol && (
+              <div className="scex-detail__stats">
+                <div>
+                  <span>Followers</span>
+                  <strong>{fmt(actor.followers)}</strong>
+                </div>
+                <div>
+                  <span>Uy tín SCEX</span>
+                  <strong>{Math.round(actor.qualityScore)}</strong>
+                </div>
+                <div>
+                  <span>Lần nhắc SCEX</span>
+                  <strong>{actor.postsVolume}</strong>
+                </div>
+                <div>
+                  <span>Map</span>
+                  <strong>Off-map</strong>
+                </div>
               </div>
-              <div>
-                <span>Score</span>
-                <strong>{mapKol.score.toFixed(1)}</strong>
-              </div>
-              <div>
-                <span>7d posts</span>
-                <strong>
-                  {mapKol.activity7dPosts != null
-                    ? mapKol.activity7dPosts
-                    : '—'}
-                </strong>
-              </div>
-              <div>
-                <span>Lần nhắc SCEX</span>
-                <strong>{actor.postsVolume}</strong>
-              </div>
-            </div>
+            )}
           </div>
         )}
 
-        {tab === 'analysis' && mapKol && (
+        {tab === 'analysis' && (
           <div className="scex-detail__body scex-detail__body--surf">
-            <SurfAnalysisMock kol={mapKol} />
+            <SurfAnalysisMock kol={surfKol} />
           </div>
         )}
       </div>

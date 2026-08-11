@@ -108,6 +108,100 @@ export function emptyKolReportsDataset(): KolReportsDataset {
   }
 }
 
+/** Strip light markdown for overview blurbs. */
+function stripMdLite(s: string): string {
+  return String(s || '')
+    .replace(/!\[[^\]]*\]\([^)]*\)/g, '')
+    .replace(/\[([^\]]+)\]\([^)]*\)/g, '$1')
+    .replace(/`{1,3}[^`]*`{1,3}/g, '')
+    .replace(/\*\*([^*]+)\*\*/g, '$1')
+    .replace(/\*([^*]+)\*/g, '$1')
+    .replace(/^#{1,6}\s+/gm, '')
+    .replace(/^\s*[-*+]\s+/gm, '• ')
+    .replace(/^\s*\d+\.\s+/gm, '• ')
+    .replace(/\|[^\n]*\|/g, '')
+    .replace(/^[-*_]{3,}\s*$/gm, '')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim()
+}
+
+/**
+ * Short partner-facing blurb from a KOL report (TL;DR / executive summary).
+ * Falls back to structured strengths/risks, then first body paragraphs.
+ */
+export function extractKolReportSummary(
+  report: Pick<KolReport, 'text' | 'structured' | 'title'>,
+  maxLen = 520,
+): string {
+  const structured = report.structured
+  if (structured) {
+    const bits: string[] = []
+    if (structured.overallScore != null) {
+      bits.push(`Điểm SurfAI: ${structured.overallScore}/100.`)
+    }
+    if (structured.strengths?.length) {
+      bits.push(`Mạnh: ${structured.strengths.slice(0, 3).join('; ')}.`)
+    }
+    if (structured.risks?.length) {
+      bits.push(`Rủi ro: ${structured.risks.slice(0, 2).join('; ')}.`)
+    }
+    if (structured.engagementNotes) {
+      bits.push(String(structured.engagementNotes))
+    }
+    if (structured.audienceNotes) {
+      bits.push(String(structured.audienceNotes))
+    }
+    const joined = stripMdLite(bits.join(' '))
+    if (joined.length > 60) {
+      return joined.length > maxLen
+        ? `${joined.slice(0, maxLen).replace(/\s+\S*$/, '')}…`
+        : joined
+    }
+  }
+
+  const raw = String(report.text || '').replace(/\r/g, '')
+  const sectionRes = [
+    /(?:^|\n)#+\s*(?:TL;?\s*DR|Tóm tắt(?:\s+điều\s+hành)?|TÓM TẮT(?:\s+ĐIỀU\s+HÀNH)?|Executive Summary)[^\n]*\n+([\s\S]*?)(?=\n#+\s|\n---+\s*\n|\n\*\*[A-Z0-9ĐÀÁẢÃẠĂẮẰẲẴẶÂẤẦẨẪẬÈÉẺẼẸÊẾỀỂỄỆÌÍỈĨỊÒÓỎÕỌÔỐỒỔỖỘƠỚỜỞỠỢÙÚỦŨỤƯỨỪỬỮỰỲÝỶỸỴ])/i,
+    /(?:^|\n)\*\*(?:TL;?\s*DR|Tóm tắt(?:\s+điều\s+hành)?|TÓM TẮT(?:\s+ĐIỀU\s+HÀNH)?)[^*]*\*\*[^\n]*\n+([\s\S]*?)(?=\n#+\s|\n---+\s*\n|\n\*\*[A-Z0-9Đ])/i,
+  ]
+  for (const re of sectionRes) {
+    const m = raw.match(re)
+    if (m?.[1] && m[1].trim().length > 40) {
+      let s = stripMdLite(m[1])
+      // Keep first 4 bullet/paragraph chunks
+      const parts = s
+        .split(/\n{2,}|\n(?=• )/)
+        .map((p) => p.trim())
+        .filter((p) => p.length > 12)
+        .slice(0, 5)
+      s = parts.join('\n')
+      if (s.length > maxLen) {
+        s = `${s.slice(0, maxLen).replace(/\s+\S*$/, '')}…`
+      }
+      if (s.length > 40) return s
+    }
+  }
+
+  const body = stripMdLite(
+    raw
+      .replace(/^#.*$/gm, '')
+      .replace(/^\s*\|.*$/gm, ''),
+  )
+  const paras = body
+    .split(/\n{2,}/)
+    .map((p) => p.trim())
+    .filter(
+      (p) =>
+        p.length > 40 &&
+        !/^[-*_]{3,}$/.test(p) &&
+        !/SURFAI|BÁO CÁO|REPORT|Ngày lập/i.test(p.slice(0, 40)),
+    )
+  let s = paras.slice(0, 2).join('\n\n')
+  if (!s && report.title) s = report.title
+  if (s.length > maxLen) s = `${s.slice(0, maxLen).replace(/\s+\S*$/, '')}…`
+  return s
+}
+
 /** Offline/admin fallback when R2 unreachable — empty (full seed via kolReportsAdminSeed). */
 export function defaultKolReportsDataset(): KolReportsDataset {
   return emptyKolReportsDataset()

@@ -2244,6 +2244,8 @@
   box-shadow: none;
   animation: none;
   z-index: 1;
+  /* Avoid transform/filter stacking that traps nested fixed modals */
+  isolation: auto;
   background:
     radial-gradient(ellipse 90% 35% at 50% 0%, rgba(56, 189, 248, 0.1), transparent 55%),
     linear-gradient(
@@ -2254,6 +2256,63 @@
     transparent;
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
+}
+
+.scex-detail--panel .scex-detail__body--surf {
+  padding: 10px 12px 16px;
+}
+.scex-detail--panel .surf-analysis {
+  margin: 0;
+}
+.scex-detail--panel .scex-detail__quick {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+  padding: 8px 12px;
+}
+
+.scex-detail__report-summary {
+  margin: 0 0 12px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(34, 211, 238, 0.22);
+  background:
+    radial-gradient(80% 80% at 100% 0%, rgba(34, 211, 238, 0.08), transparent 55%),
+    rgba(8, 12, 24, 0.45);
+  font-size: 0.84rem;
+  line-height: 1.55;
+  color: rgba(226, 232, 240, 0.88);
+}
+.scex-detail__report-summary p {
+  margin: 0 0 0.55em;
+}
+.scex-detail__report-summary p:last-child {
+  margin-bottom: 0;
+}
+.scex-detail__score-inline {
+  color: #67e8f9;
+  font-weight: 700;
+}
+.scex-detail__open-report {
+  appearance: none;
+  border: 1px solid rgba(34, 211, 238, 0.35);
+  background: rgba(34, 211, 238, 0.1);
+  color: #a5f3fc;
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 650;
+  padding: 7px 12px;
+  border-radius: 999px;
+  cursor: pointer;
+  margin-bottom: 14px;
+}
+.scex-detail__open-report:hover {
+  background: rgba(34, 211, 238, 0.16);
+  border-color: rgba(34, 211, 238, 0.5);
+}
+.scex-detail__bio--clamp {
+  max-height: 9.5rem;
+  overflow: auto;
+  margin-bottom: 10px;
 }
 
 .scex-feed-card.is-selected {

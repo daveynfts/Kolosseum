@@ -77,6 +77,14 @@ export function SurfAnalysisMock({ kol }: Props) {
   const runAnalysis = () => {
     if (phase === 'running') return
 
+    // Already have a public report — open immediately (skip fake delay)
+    if (hasReport === true && report) {
+      setPhase('done')
+      setProgress(100)
+      openReport(report)
+      return
+    }
+
     const runId = ++runIdRef.current
     setPhase('running')
     setProgress(0)
@@ -176,8 +184,8 @@ export function SurfAnalysisMock({ kol }: Props) {
           <span className="surf-btn__label">
             {phase === 'running'
               ? 'Analyzing…'
-              : phase === 'done' && ready
-                ? 'Xem lại report'
+              : ready
+                ? 'Xem report'
                 : 'Surf AI'}
           </span>
         </button>

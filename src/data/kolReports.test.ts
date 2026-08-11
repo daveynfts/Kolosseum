@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   emptyKolReportsDataset,
+  extractKolReportSummary,
   publicKolReportsView,
   type KolReport,
 } from './kolReports'
@@ -35,5 +36,31 @@ describe('publicKolReportsView', () => {
     expect(pub.reports).toHaveLength(1)
     expect(pub.reports[0].handle).toBe('public1')
     expect(pub.trash).toEqual([])
+  })
+})
+
+describe('extractKolReportSummary', () => {
+  it('prefers TL;DR section over title noise', () => {
+    const r: KolReport = {
+      ...sampleReport('demo', 'public'),
+      text: `# REPORT TITLE\n\n## TL;DR\n\nKOL mạnh community, engagement tốt, phù hợp brand awareness.\nKhông copy-trade.\n\n## Chi tiết\n\n${'x'.repeat(200)}`,
+    }
+    const s = extractKolReportSummary(r, 400)
+    expect(s.toLowerCase()).toContain('community')
+    expect(s.length).toBeLessThan(420)
+  })
+
+  it('uses structured strengths when present', () => {
+    const r: KolReport = {
+      ...sampleReport('demo2', 'public'),
+      structured: {
+        overallScore: 82,
+        strengths: ['Nội dung sâu', 'Cộng đồng VN'],
+        risks: ['Disclosure COI'],
+      },
+    }
+    const s = extractKolReportSummary(r)
+    expect(s).toMatch(/82\/100/)
+    expect(s).toMatch(/Nội dung sâu/)
   })
 })

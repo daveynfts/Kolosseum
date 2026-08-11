@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import type { KolReport } from '../data/kolReports'
 import { ReportMarkdown } from './ReportMarkdown'
 import { XProfileAvatar } from './XProfileAvatar'
@@ -13,6 +14,8 @@ interface Props {
 
 /**
  * Full-screen reader for a public KOL evaluation report (replaces PDF tab).
+ * Portaled to document.body so it is never trapped under SCEX feed fullscreen
+ * (z-index 20050+) or overflow:hidden ancestors.
  */
 export function KolReportViewer({ report, avatarHandle, onClose }: Props) {
   const handle = resolveAvatarHandle(
@@ -27,17 +30,19 @@ export function KolReportViewer({ report, avatarHandle, onClose }: Props) {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         e.preventDefault()
+        e.stopPropagation()
         onClose()
       }
     }
-    window.addEventListener('keydown', onKey)
+    // Capture phase so we win over SCEX feed / matrix Esc handlers
+    window.addEventListener('keydown', onKey, true)
     return () => {
       document.body.style.overflow = prev
-      window.removeEventListener('keydown', onKey)
+      window.removeEventListener('keydown', onKey, true)
     }
   }, [onClose])
 
-  return (
+  const ui = (
     <div
       className="kol-report-viewer"
       role="dialog"
@@ -129,4 +134,7 @@ export function KolReportViewer({ report, avatarHandle, onClose }: Props) {
       </div>
     </div>
   )
+
+  if (typeof document === 'undefined') return ui
+  return createPortal(ui, document.body)
 }

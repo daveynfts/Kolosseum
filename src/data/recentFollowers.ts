@@ -2192,6 +2192,35 @@ export const RECENT_FOLLOWERS_BY_HANDLE: Record<string, RecentFollower[]> = {
       followedAt: '2026-04-11T00:00:00.000Z',
     },
   ],
+  /**
+   * Vinh Vuong (@vinvin_100) — recent follows (X snapshot 2026-08-11).
+   */
+  vinvin_100: [
+    {
+      handle: 'evans666666',
+      displayName: 'Evans.eth',
+      followedAgo: '4 months ago',
+      followedAt: '2026-04-11T00:00:00.000Z',
+    },
+    {
+      handle: 'miaferrariii',
+      displayName: 'Mia',
+      followedAgo: '8 months ago',
+      followedAt: '2025-12-11T00:00:00.000Z',
+    },
+    {
+      handle: 'cryptoamandal',
+      displayName: '阿曼达要吃肉Amanda.eth',
+      followedAgo: 'a year ago',
+      followedAt: '2025-08-11T00:00:00.000Z',
+    },
+    {
+      handle: 'definitivefi',
+      displayName: 'DEFINITIVE',
+      followedAgo: 'a year ago',
+      followedAt: '2025-08-10T00:00:00.000Z',
+    },
+  ],
 }
 
 /** Smart followers seed — key = KOL handle lowercase */

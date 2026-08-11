@@ -316,8 +316,15 @@ export function ScexTrackingPage() {
     document.body.style.overflow = 'hidden'
     const onKey = (e: KeyboardEvent) => {
       if (e.key !== 'Escape') return
-      // Let KOL detail close first (detail is above fullscreen)
-      if (selectedActor) return
+      // Modal detail has its own Esc; panel mode clears selection here first
+      if (selectedActor) {
+        if (feedFullscreen) {
+          e.preventDefault()
+          e.stopPropagation()
+          setSelectedActor(null)
+        }
+        return
+      }
       e.preventDefault()
       e.stopPropagation()
       if (feedFullscreen) {
@@ -1118,49 +1125,86 @@ export function ScexTrackingPage() {
           </div>
 
           {feedFullscreen && feedDayGroups ? (
-            <div className="scex-feed__timeline">
-              {feedDayGroups.map((g) => (
-                <section key={g.day} className="scex-feed__day">
-                  <header className="scex-feed__day-head">
-                    <h3>{g.day}</h3>
-                    <span>{g.posts.length} bài</span>
-                  </header>
-                  <ul className="scex-feed__list scex-feed__list--research">
-                    {g.posts.map((p, index) => (
-                      <ScexFeedCard
-                        key={p.id}
-                        post={p}
-                        actor={dataset.actors.find(
-                          (a) => a.handle === p.handle,
-                        )}
-                        sentimentLabel={config.sentimentLabels[p.sentiment]}
-                        onMap={mapHandles.has(p.handle.toLowerCase())}
-                        expanded={feedExpandAll || !!expanded[p.id]}
-                        onToggleExpand={() =>
-                          setExpanded((prev) => ({
-                            ...prev,
-                            [p.id]: !prev[p.id],
-                          }))
-                        }
-                        onOpenActor={() => {
-                          const a = dataset.actors.find(
-                            (x) => x.handle === p.handle,
-                          )
-                          if (a) onSelectActor(a)
-                        }}
-                        index={index}
-                        fullMedia
-                      />
-                    ))}
-                  </ul>
-                </section>
-              ))}
-              {!feedDayGroups.length && (
-                <div className="scex-empty scex-empty--cta">
-                  <strong>Không có bài khớp bộ lọc nghiên cứu</strong>
-                  <p>Thử nới tone / thời gian / bỏ “Có media”.</p>
+            <div className="scex-feed__fs-body">
+              <div className="scex-feed__fs-main">
+                <div className="scex-feed__timeline">
+                  {feedDayGroups.map((g) => (
+                    <section key={g.day} className="scex-feed__day">
+                      <header className="scex-feed__day-head">
+                        <h3>{g.day}</h3>
+                        <span>{g.posts.length} bài</span>
+                      </header>
+                      <ul className="scex-feed__list scex-feed__list--research">
+                        {g.posts.map((p, index) => (
+                          <ScexFeedCard
+                            key={p.id}
+                            post={p}
+                            actor={dataset.actors.find(
+                              (a) => a.handle === p.handle,
+                            )}
+                            sentimentLabel={
+                              config.sentimentLabels[p.sentiment]
+                            }
+                            onMap={mapHandles.has(p.handle.toLowerCase())}
+                            expanded={feedExpandAll || !!expanded[p.id]}
+                            onToggleExpand={() =>
+                              setExpanded((prev) => ({
+                                ...prev,
+                                [p.id]: !prev[p.id],
+                              }))
+                            }
+                            onOpenActor={() => {
+                              const a = dataset.actors.find(
+                                (x) => x.handle === p.handle,
+                              )
+                              if (a) onSelectActor(a)
+                            }}
+                            index={index}
+                            fullMedia
+                            selected={
+                              selectedHandleLc === p.handle.toLowerCase()
+                            }
+                          />
+                        ))}
+                      </ul>
+                    </section>
+                  ))}
+                  {!feedDayGroups.length && (
+                    <div className="scex-empty scex-empty--cta">
+                      <strong>Không có bài khớp bộ lọc nghiên cứu</strong>
+                      <p>Thử nới tone / thời gian / bỏ “Có media”.</p>
+                    </div>
+                  )}
                 </div>
-              )}
+              </div>
+              <aside
+                className="scex-feed__fs-side"
+                aria-label="Chi tiết KOL"
+              >
+                {selectedActor ? (
+                  <ScexKolDetail
+                    actor={selectedActor}
+                    mapKol={selectedMapKol}
+                    config={config}
+                    posts={allPosts.filter(
+                      (p) =>
+                        p.handle.toLowerCase() ===
+                        selectedActor.handle.toLowerCase(),
+                    )}
+                    onClose={() => setSelectedActor(null)}
+                    variant="panel"
+                  />
+                ) : (
+                  <div className="scex-feed__fs-empty">
+                    <strong>Chi tiết KOL</strong>
+                    <p>
+                      Bấm avatar hoặc tên KOL trên timeline bên trái để xem
+                      thống kê, tone, On Radar và toàn bộ mention SCEX của
+                      họ.
+                    </p>
+                  </div>
+                )}
+              </aside>
             </div>
           ) : (
             <ul className="scex-feed__list">
@@ -1230,7 +1274,8 @@ export function ScexTrackingPage() {
         </section>
       </div>
 
-      {selectedActor && (
+      {/* Modal detail only outside feed research (research docks panel on the right) */}
+      {selectedActor && !feedFullscreen && (
         <>
           <button
             type="button"
@@ -1265,6 +1310,7 @@ function ScexFeedCard({
   onOpenActor,
   index,
   fullMedia = false,
+  selected = false,
 }: {
   post: ScexPost
   actor?: ScexActor
@@ -1276,6 +1322,8 @@ function ScexFeedCard({
   index: number
   /** Research fullscreen: show full images (no crop) + all media items */
   fullMedia?: boolean
+  /** Highlight card when KOL is shown in research side panel */
+  selected?: boolean
 }) {
   const media = post.media || []
   const mediaItems = fullMedia ? media : media.slice(0, 1)
@@ -1291,7 +1339,7 @@ function ScexFeedCard({
 
   return (
     <li
-      className={`scex-feed-card ${fullMedia ? 'scex-feed-card--full-media' : ''}`}
+      className={`scex-feed-card ${fullMedia ? 'scex-feed-card--full-media' : ''} ${selected ? 'is-selected' : ''}`}
       style={{ animationDelay: `${Math.min(index, 10) * 28}ms` }}
     >
       <div

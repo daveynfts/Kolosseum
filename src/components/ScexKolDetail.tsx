@@ -51,6 +51,7 @@ export function ScexKolDetail({
   config,
   posts,
   onClose,
+  variant = 'modal',
 }: {
   actor: ScexActor
   mapKol: Kol | null
@@ -58,10 +59,16 @@ export function ScexKolDetail({
   /** Posts by this actor mentioning SCEX (already filtered) */
   posts: ScexPost[]
   onClose: () => void
+  /**
+   * modal — fixed overlay (default, matrix / compact feed)
+   * panel — docked research column inside Live Feed fullscreen
+   */
+  variant?: 'modal' | 'panel'
 }) {
   const [tab, setTab] = useState<Tab>('scex')
   const [expanded, setExpanded] = useState<Record<string, boolean>>({})
   const sent = config.sentimentLabels[actor.sentiment]
+  const isPanel = variant === 'panel'
 
   useEffect(() => {
     setTab('scex')
@@ -69,6 +76,8 @@ export function ScexKolDetail({
   }, [actor.id])
 
   useEffect(() => {
+    // Panel mode: parent feed research owns Esc stack (clear selection → exit FS)
+    if (isPanel) return
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         e.preventDefault()
@@ -77,7 +86,7 @@ export function ScexKolDetail({
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [onClose])
+  }, [onClose, isPanel])
 
   const accent = mapKol
     ? NICHE_COLORS[primaryNiche(mapKol)]
@@ -93,16 +102,17 @@ export function ScexKolDetail({
 
   return (
     <aside
-      className="scex-detail glass"
-      role="dialog"
-      aria-modal="true"
+      className={`scex-detail glass ${isPanel ? 'scex-detail--panel' : ''}`}
+      role={isPanel ? 'region' : 'dialog'}
+      aria-modal={isPanel ? undefined : true}
       aria-label={`Chi tiết @${actor.handle}`}
     >
       <button
         type="button"
         className="scex-detail__close"
         onClick={onClose}
-        aria-label="Đóng"
+        aria-label={isPanel ? 'Bỏ chọn KOL' : 'Đóng'}
+        title={isPanel ? 'Bỏ chọn' : 'Đóng'}
       >
         ×
       </button>

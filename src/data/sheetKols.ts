@@ -2775,7 +2775,8 @@ export const SHEET_KOLS: Kol[] = [
     "tweetsPerDay": 1.757,
     "xFollowing": 302,
     "dataSource": "x-live",
-    "isTop30": false
+    "isTop30": false,
+    "hidden": true
   },
   {
     "id": "sheet-daveynftsai",

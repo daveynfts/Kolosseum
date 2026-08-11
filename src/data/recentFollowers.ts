@@ -2400,6 +2400,29 @@ export const RECENT_FOLLOWERS_BY_HANDLE: Record<string, RecentFollower[]> = {
       followedAt: '2025-12-23T00:00:00.000Z',
     },
   ],
+  /**
+   * Thanhtalus (@Thanhtalus) — recent follows (X snapshot 2026-08-11).
+   */
+  thanhtalus: [
+    {
+      handle: 'gala_nft2',
+      displayName: 'gala⚡',
+      followedAgo: 'a year ago',
+      followedAt: '2025-08-11T00:00:00.000Z',
+    },
+    {
+      handle: 'hashnewshk',
+      displayName: '哈世链闻',
+      followedAgo: 'a year ago',
+      followedAt: '2025-08-10T00:00:00.000Z',
+    },
+    {
+      handle: 'wjf110',
+      displayName: '好家伙',
+      followedAgo: 'a year ago',
+      followedAt: '2025-08-09T00:00:00.000Z',
+    },
+  ],
 }
 
 /** Smart followers seed — key = KOL handle lowercase */

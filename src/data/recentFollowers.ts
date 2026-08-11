@@ -1994,6 +1994,101 @@ export const RECENT_FOLLOWERS_BY_HANDLE: Record<string, RecentFollower[]> = {
       followedAt: '2025-08-11T00:00:00.000Z',
     },
   ],
+  /**
+   * KT (@kt_btc) — recent follows (X snapshot 2026-08-11).
+   */
+  kt_btc: [
+    {
+      handle: 'qiuseoflove',
+      displayName: '叶知秋',
+      followedAgo: '4 days ago',
+      followedAt: '2026-08-07T00:00:00.000Z',
+    },
+    {
+      handle: 'bitcoinpalmer',
+      displayName: 'palmer // not for everyone',
+      followedAgo: '12 days ago',
+      followedAt: '2026-07-30T00:00:00.000Z',
+    },
+    {
+      handle: 'evans666666',
+      displayName: 'Evans.eth',
+      followedAgo: '2 months ago',
+      followedAt: '2026-06-11T00:00:00.000Z',
+    },
+    {
+      handle: 'renaissxyz',
+      displayName: 'Renaiss.xyz',
+      followedAgo: '3 months ago',
+      followedAt: '2026-05-11T00:00:00.000Z',
+    },
+    {
+      handle: 'erickpinos',
+      displayName: 'Erick Pinos',
+      followedAgo: '3 months ago',
+      followedAt: '2026-05-10T00:00:00.000Z',
+    },
+    {
+      handle: 'alpha_co',
+      displayName: 'Alpha co',
+      followedAgo: '8 months ago',
+      followedAt: '2025-12-11T00:00:00.000Z',
+    },
+    {
+      handle: 'joensmoon',
+      displayName: '乔帮主退休月球收租',
+      followedAgo: 'a year ago',
+      followedAt: '2025-08-11T00:00:00.000Z',
+    },
+    {
+      handle: 'cryptoamandal',
+      displayName: '阿曼达要吃肉Amanda.eth',
+      followedAgo: 'a year ago',
+      followedAt: '2025-08-10T00:00:00.000Z',
+    },
+    {
+      handle: '466anan',
+      displayName: 'Crypto Nan',
+      followedAgo: 'a year ago',
+      followedAt: '2025-08-09T00:00:00.000Z',
+    },
+    {
+      handle: 'defiapp',
+      displayName: 'Defi App',
+      followedAgo: 'a year ago',
+      followedAt: '2025-08-08T00:00:00.000Z',
+    },
+    {
+      handle: 'dakuan_x',
+      displayName: '大匡',
+      followedAgo: 'a year ago',
+      followedAt: '2025-08-07T00:00:00.000Z',
+    },
+    {
+      handle: 'daxianvip',
+      displayName: '大仙 |Gate美股0费率',
+      followedAgo: 'a year ago',
+      followedAt: '2025-08-06T00:00:00.000Z',
+    },
+    {
+      handle: 'jetxbt',
+      displayName: 'Jet',
+      followedAgo: 'a year ago',
+      followedAt: '2025-08-05T00:00:00.000Z',
+    },
+    {
+      handle: 'gala_nft1',
+      displayName: 'gala⚡',
+      followedAgo: 'a year ago',
+      followedAt: '2025-08-04T00:00:00.000Z',
+    },
+    {
+      handle: 'gala_nft2',
+      displayName: 'gala⚡',
+      followedAgo: 'a year ago',
+      followedAt: '2025-08-03T00:00:00.000Z',
+    },
+  ],
 }
 
 /** Smart followers seed — key = KOL handle lowercase */

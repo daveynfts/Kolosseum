@@ -2221,6 +2221,185 @@ export const RECENT_FOLLOWERS_BY_HANDLE: Record<string, RecentFollower[]> = {
       followedAt: '2025-08-10T00:00:00.000Z',
     },
   ],
+  /**
+   * Ni Celeb (@ni_celeb) — recent follows (X snapshot 2026-08-11).
+   */
+  ni_celeb: [
+    {
+      handle: 'xbriansumner',
+      displayName: 'Brian Sumner  BNB',
+      followedAgo: '11 days ago',
+      followedAt: '2026-07-31T00:00:00.000Z',
+    },
+    {
+      handle: 'qiuseoflove',
+      displayName: '叶知秋',
+      followedAgo: '22 days ago',
+      followedAt: '2026-07-20T00:00:00.000Z',
+    },
+    {
+      handle: 'xingzhanai',
+      displayName: 'XZ 星展',
+      followedAgo: 'a month ago',
+      followedAt: '2026-07-11T00:00:00.000Z',
+    },
+    {
+      handle: 'leigesee',
+      displayName: 'Leige',
+      followedAgo: '2 months ago',
+      followedAt: '2026-06-11T00:00:00.000Z',
+    },
+    {
+      handle: 'ciciyingying',
+      displayName: 'Cici',
+      followedAgo: '2 months ago',
+      followedAt: '2026-06-10T00:00:00.000Z',
+    },
+    {
+      handle: 'poof_eth',
+      displayName: 'poof',
+      followedAgo: '6 months ago',
+      followedAt: '2026-02-11T00:00:00.000Z',
+    },
+    {
+      handle: 'ff_v12',
+      displayName: 'FFV',
+      followedAgo: '6 months ago',
+      followedAt: '2026-02-10T00:00:00.000Z',
+    },
+    {
+      handle: 'leaf_swan',
+      displayName: 'Leafswan',
+      followedAgo: '6 months ago',
+      followedAt: '2026-02-09T00:00:00.000Z',
+    },
+    {
+      handle: 'superl9',
+      displayName: 'Wick李 BNB',
+      followedAgo: '6 months ago',
+      followedAt: '2026-02-08T00:00:00.000Z',
+    },
+    {
+      handle: 'ericclfung',
+      displayName: 'EricF',
+      followedAgo: '7 months ago',
+      followedAt: '2026-01-11T00:00:00.000Z',
+    },
+    {
+      handle: 'chouchou_tx',
+      displayName: '丑丑TX',
+      followedAgo: '7 months ago',
+      followedAt: '2026-01-10T00:00:00.000Z',
+    },
+    {
+      handle: 'tortugo',
+      displayName: 'Tortugo.HL',
+      followedAgo: '7 months ago',
+      followedAt: '2026-01-09T00:00:00.000Z',
+    },
+    {
+      handle: 'krystal_eth',
+      displayName: '加密Krystal',
+      followedAgo: '7 months ago',
+      followedAt: '2026-01-08T00:00:00.000Z',
+    },
+    {
+      handle: 'chaozuoye',
+      displayName: '作业借你抄 （吃瓜版）',
+      followedAgo: '7 months ago',
+      followedAt: '2026-01-07T00:00:00.000Z',
+    },
+    {
+      handle: 'vegahao',
+      displayName: 'Vega Hao',
+      followedAgo: '7 months ago',
+      followedAt: '2026-01-06T00:00:00.000Z',
+    },
+    {
+      handle: 'x_sanjin',
+      displayName: '熊三金Cole买美股上币安',
+      followedAgo: '7 months ago',
+      followedAt: '2026-01-05T00:00:00.000Z',
+    },
+    {
+      handle: 'oceansbaby_',
+      displayName: 'Cruise橘子哥',
+      followedAgo: '7 months ago',
+      followedAt: '2026-01-04T00:00:00.000Z',
+    },
+    {
+      handle: 'scarlettweb3',
+      displayName: 'Jingle Bell 初号机',
+      followedAgo: '7 months ago',
+      followedAt: '2026-01-03T00:00:00.000Z',
+    },
+    {
+      handle: 'peiopeixiao',
+      displayName: '加密笑哥|Gate美股0费率',
+      followedAgo: '7 months ago',
+      followedAt: '2026-01-02T00:00:00.000Z',
+    },
+    {
+      handle: 'phill76815',
+      displayName: '龙神-Dragon God',
+      followedAgo: '7 months ago',
+      followedAt: '2026-01-01T00:00:00.000Z',
+    },
+    {
+      handle: 'li888real',
+      displayName: 'Mr.理想三旬(,)(FREE,WON)',
+      followedAgo: '7 months ago',
+      followedAt: '2025-12-31T00:00:00.000Z',
+    },
+    {
+      handle: 'wangy112375',
+      displayName: '阿里嘎多美羊羊桑',
+      followedAgo: '7 months ago',
+      followedAt: '2025-12-30T00:00:00.000Z',
+    },
+    {
+      handle: 'reboottttttt',
+      displayName: 'Reboot.Btc',
+      followedAgo: '7 months ago',
+      followedAt: '2025-12-29T00:00:00.000Z',
+    },
+    {
+      handle: 'jimmyshequ',
+      displayName: "JIM'S FRIENDS 买美股上币安",
+      followedAgo: '7 months ago',
+      followedAt: '2025-12-28T00:00:00.000Z',
+    },
+    {
+      handle: 'ripeth',
+      displayName: 'rip.eth',
+      followedAgo: '7 months ago',
+      followedAt: '2025-12-27T00:00:00.000Z',
+    },
+    {
+      handle: 'daxianvip',
+      displayName: '大仙 |Gate美股0费率',
+      followedAgo: '7 months ago',
+      followedAt: '2025-12-26T00:00:00.000Z',
+    },
+    {
+      handle: 'butongren6',
+      displayName: 'BuTongRen',
+      followedAgo: '7 months ago',
+      followedAt: '2025-12-25T00:00:00.000Z',
+    },
+    {
+      handle: '0xshunshun',
+      displayName: '0xshun 順',
+      followedAgo: '7 months ago',
+      followedAt: '2025-12-24T00:00:00.000Z',
+    },
+    {
+      handle: 'qmmmike',
+      displayName: 'Miqi*',
+      followedAgo: '7 months ago',
+      followedAt: '2025-12-23T00:00:00.000Z',
+    },
+  ],
 }
 
 /** Smart followers seed — key = KOL handle lowercase */

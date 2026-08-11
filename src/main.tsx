@@ -34,9 +34,19 @@ function RouteFallback() {
   )
 }
 
+function normalizePathname(): string {
+  const p = window.location.pathname.toLowerCase()
+  // strip trailing slash except root
+  if (p.length > 1 && p.endsWith('/')) return p.slice(0, -1)
+  return p || '/'
+}
+
 function getRoute(): 'map' | 'admin' | 'scex' | 'event' {
-  const path = window.location.pathname.toLowerCase()
+  const path = normalizePathname()
+  // Path-based routes (preferred — no #)
   if (path.startsWith('/event')) return 'event'
+  if (path === '/scex' || path.startsWith('/scex/')) return 'scex'
+  // Legacy hash routes (#/admin, #/scex, #/event)
   const h = window.location.hash.replace(/^#\/?/, '').toLowerCase()
   if (h === 'admin' || h.startsWith('admin/') || h.startsWith('admin?'))
     return 'admin'
@@ -45,6 +55,23 @@ function getRoute(): 'map' | 'admin' | 'scex' | 'event' {
   if (h === 'event' || h.startsWith('event/') || h.startsWith('event?'))
     return 'event'
   return 'map'
+}
+
+/** Redirect legacy #/scex → /scex (keeps bookmarks working). */
+function migrateLegacyScexHash() {
+  const h = window.location.hash.replace(/^#\/?/, '').toLowerCase()
+  if (!(h === 'scex' || h.startsWith('scex/') || h.startsWith('scex?'))) return
+  const path = normalizePathname()
+  if (path === '/scex' || path.startsWith('/scex/')) {
+    // already on path route — just clear hash
+    window.history.replaceState(
+      null,
+      '',
+      `/scex${window.location.search}`,
+    )
+    return
+  }
+  window.history.replaceState(null, '', `/scex${window.location.search}`)
 }
 
 function AdminGate({ children }: { children: ReactNode }) {
@@ -92,10 +119,18 @@ function AdminGate({ children }: { children: ReactNode }) {
 }
 
 function Root() {
-  const [route, setRoute] = useState(getRoute)
+  const [route, setRoute] = useState(() => {
+    migrateLegacyScexHash()
+    return getRoute()
+  })
 
   useEffect(() => {
-    const onHash = () => setRoute(getRoute())
+    migrateLegacyScexHash()
+    setRoute(getRoute())
+    const onHash = () => {
+      migrateLegacyScexHash()
+      setRoute(getRoute())
+    }
     const onPop = () => setRoute(getRoute())
     window.addEventListener('hashchange', onHash)
     window.addEventListener('popstate', onPop)
@@ -123,11 +158,22 @@ function Root() {
     )
   }
 
+  if (route === 'scex') {
+    return (
+      <Suspense fallback={<RouteFallback />}>
+        <div className="app-shell">
+          <ScexEventBanner />
+          <ScexTrackingPage />
+        </div>
+      </Suspense>
+    )
+  }
+
   return (
     <Suspense fallback={<RouteFallback />}>
       <div className="app-shell">
         <ScexEventBanner />
-        {route === 'scex' ? <ScexTrackingPage /> : <App />}
+        <App />
       </div>
     </Suspense>
   )

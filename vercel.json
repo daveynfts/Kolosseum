@@ -30,6 +30,14 @@
     {
       "source": "/event/:path*",
       "destination": "/"
+    },
+    {
+      "source": "/scex",
+      "destination": "/"
+    },
+    {
+      "source": "/scex/:path*",
+      "destination": "/"
     }
   ],
   "headers": [

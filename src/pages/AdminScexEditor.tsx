@@ -468,7 +468,7 @@ export function AdminScexEditor({ onToast }: Props) {
           {dirty ? ' · unsaved' : ''} · {dataset.actors.length} actors ·{' '}
           {dataset.posts.length} posts · window {config.timeWindowDays}d.
           R2 <code>scex/tracking/v1.json</code> · public preview{' '}
-          <a href="#/scex">#/scex</a>.
+          <a href="/scex">/scex</a>.
         </span>
         <label className="admin-token-row">
           Token
@@ -598,7 +598,7 @@ export function AdminScexEditor({ onToast }: Props) {
                   checked={config.enabled}
                   onChange={(e) => patchConfig({ enabled: e.target.checked })}
                 />
-                Enabled (show on public #/scex)
+                Enabled (show on public /scex)
               </label>
             </div>
           </section>

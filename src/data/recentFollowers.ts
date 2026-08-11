@@ -2089,6 +2089,41 @@ export const RECENT_FOLLOWERS_BY_HANDLE: Record<string, RecentFollower[]> = {
       followedAt: '2025-08-03T00:00:00.000Z',
     },
   ],
+  /**
+   * Tobi (@tobi24) — recent follows (X snapshot 2026-08-11).
+   */
+  tobi24: [
+    {
+      handle: 'fugui8',
+      displayName: '香港王富贵',
+      followedAgo: '10 months ago',
+      followedAt: '2025-10-11T00:00:00.000Z',
+    },
+    {
+      handle: 'sethipow',
+      displayName: 'SETH AI Ecosystem',
+      followedAgo: '10 months ago',
+      followedAt: '2025-10-10T00:00:00.000Z',
+    },
+    {
+      handle: 'afangyuan',
+      displayName: '方源',
+      followedAgo: 'a year ago',
+      followedAt: '2025-08-11T00:00:00.000Z',
+    },
+    {
+      handle: 'hongchen1476842',
+      displayName: '彭鱼宴',
+      followedAgo: 'a year ago',
+      followedAt: '2025-08-10T00:00:00.000Z',
+    },
+    {
+      handle: 'chinapumpwxc',
+      displayName: '中国密码鲸公司 WHALE CHINESE',
+      followedAgo: 'a year ago',
+      followedAt: '2025-08-09T00:00:00.000Z',
+    },
+  ],
 }
 
 /** Smart followers seed — key = KOL handle lowercase */

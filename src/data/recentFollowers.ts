@@ -2809,6 +2809,41 @@ export const RECENT_FOLLOWERS_BY_HANDLE: Record<string, RecentFollower[]> = {
       followedAt: '2025-08-10T00:00:00.000Z',
     },
   ],
+  /**
+   * Titans Ventures (@Titans_ventures) — recent follows (X snapshot 2026-08-11).
+   */
+  titans_ventures: [
+    {
+      handle: 'hunter_nft',
+      displayName: 'hunter berg',
+      followedAgo: '2 months ago',
+      followedAt: '2026-06-11T00:00:00.000Z',
+    },
+    {
+      handle: 'skylinee',
+      displayName: 'SKYLINE',
+      followedAgo: '2 months ago',
+      followedAt: '2026-06-10T00:00:00.000Z',
+    },
+    {
+      handle: 'digiii',
+      displayName: 'Digi',
+      followedAgo: '5 months ago',
+      followedAt: '2026-03-11T00:00:00.000Z',
+    },
+    {
+      handle: 'evanluza',
+      displayName: 'ELU',
+      followedAgo: '7 months ago',
+      followedAt: '2026-01-11T00:00:00.000Z',
+    },
+    {
+      handle: 'calilyliu',
+      displayName: 'Lily Liu',
+      followedAgo: 'a year ago',
+      followedAt: '2025-08-11T00:00:00.000Z',
+    },
+  ],
 }
 
 /** Smart followers seed — key = KOL handle lowercase */

@@ -2588,6 +2588,47 @@ export const RECENT_FOLLOWERS_BY_HANDLE: Record<string, RecentFollower[]> = {
       followedAt: '2025-10-11T00:00:00.000Z',
     },
   ],
+  /**
+   * Huy Le (@HuyLe_HC) — recent follows (X snapshot 2026-08-11).
+   */
+  huyle_hc: [
+    {
+      handle: 'cryptoamandal',
+      displayName: '阿曼达要吃肉Amanda.eth',
+      followedAgo: '13 days ago',
+      followedAt: '2026-07-29T00:00:00.000Z',
+    },
+    {
+      handle: '0xsexybanana',
+      displayName: '郡主Christine (✱,✱)',
+      followedAgo: 'a month ago',
+      followedAt: '2026-07-11T00:00:00.000Z',
+    },
+    {
+      handle: 'jasonmdesimone',
+      displayName: 'Jason Desimone ⚔️',
+      followedAgo: '3 months ago',
+      followedAt: '2026-05-11T00:00:00.000Z',
+    },
+    {
+      handle: 'erickpinos',
+      displayName: 'Erick Pinos',
+      followedAgo: '7 months ago',
+      followedAt: '2026-01-11T00:00:00.000Z',
+    },
+    {
+      handle: '0xmichael',
+      displayName: 'Michael',
+      followedAgo: '8 months ago',
+      followedAt: '2025-12-11T00:00:00.000Z',
+    },
+    {
+      handle: 'ripeth',
+      displayName: 'rip.eth',
+      followedAgo: 'a year ago',
+      followedAt: '2025-08-11T00:00:00.000Z',
+    },
+  ],
 }
 
 /** Smart followers seed — key = KOL handle lowercase */

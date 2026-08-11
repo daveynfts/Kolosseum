@@ -218,16 +218,19 @@ function packBubbles(
         }
       }
     }
-    // Soft pull back to true matrix anchor so spread doesn't destroy meaning
-    const anchorPull = 0.035 / Math.sqrt(gapBoost)
+    // Pull back to true matrix anchor so collision packing doesn't dump
+    // large (high-follower) bubbles into the wrong uy-tín band.
+    // Slightly stronger on Y (quality / uy tín) — the critical partner axis.
+    const anchorPullX = 0.05 / Math.sqrt(gapBoost)
+    const anchorPullY = 0.1 / Math.sqrt(gapBoost)
     for (let i = 0; i < items.length; i++) {
       const a = actors[i]
       const { x, y } = actorMatrixPos(a, config)
       const r = items[i].r
       const ax = pad + r + x * Math.max(1, width - 2 * pad - 2 * r)
       const ay = pad + r + (1 - y) * Math.max(1, height - 2 * pad - 2 * r)
-      items[i].x += (ax - items[i].x) * anchorPull
-      items[i].y += (ay - items[i].y) * anchorPull
+      items[i].x += (ax - items[i].x) * anchorPullX
+      items[i].y += (ay - items[i].y) * anchorPullY
       items[i].x = clamp(items[i].x, r + pad, width - r - pad)
       items[i].y = clamp(items[i].y, r + pad, height - r - pad)
     }

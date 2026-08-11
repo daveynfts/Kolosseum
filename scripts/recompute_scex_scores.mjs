@@ -115,16 +115,31 @@ function isMixed(actor) {
   return /mixed|hỗn hợp|hon hop|hỗn/.test(t)
 }
 
-function resolveMapRank(mapKol) {
-  if (!mapKol) return 'none'
-  const r = String(mapKol.rank || '').toLowerCase()
-  if (['challenger', 'master', 'diamond', 'platinum', 'gold'].includes(r))
-    return r
-  const tier = mapKol.tier ?? 3
-  const score = mapKol.score ?? 50
-  if (tier <= 1) return score >= 96 ? 'challenger' : 'master'
-  if (tier === 2) return score >= 92 ? 'diamond' : 'platinum'
-  return 'gold'
+const MAP_RANK_KEYS = ['challenger', 'master', 'diamond', 'platinum', 'gold']
+
+/** Off-map audience trust — keep in sync with src/data/scexTracking.ts */
+function audienceTrustScore(followers) {
+  const f = Math.max(0, Number(followers) || 0)
+  return clamp01(14 + Math.log10(f + 120) * 10)
+}
+
+function resolveMapRank(mapKol, actor) {
+  if (mapKol) {
+    const r = String(mapKol.rank || '')
+      .toLowerCase()
+      .trim()
+    if (MAP_RANK_KEYS.includes(r)) return r
+    const tier = mapKol.tier ?? 3
+    const score = mapKol.score ?? 50
+    if (tier <= 1) return score >= 96 ? 'challenger' : 'master'
+    if (tier === 2) return score >= 92 ? 'diamond' : 'platinum'
+    return 'gold'
+  }
+  const stored = String(actor?.mapRank || '')
+    .toLowerCase()
+    .trim()
+  if (MAP_RANK_KEYS.includes(stored)) return stored
+  return 'none'
 }
 
 function computeQuadrant(volume, quality, volumeSplit, qualitySplit) {
@@ -149,8 +164,11 @@ function scoreActor(actor, config, mapKol) {
   const { goc, reply } = parseGocReply(actor)
   const views = Number(actor.reach7d) || 0
   const followers = Math.max(0, Number(actor.followers) || 0)
-  const mapKey = resolveMapRank(mapKol)
-  const mapPart = sc.mapTierScores[mapKey] ?? 40
+  const mapKey = resolveMapRank(mapKol, actor)
+  const onMap = mapKey !== 'none'
+  const mapPart = onMap
+    ? (sc.mapTierScores[mapKey] ?? 40)
+    : audienceTrustScore(followers)
 
   const viewsSoft = Math.log1p(views) * (sc.volViewsSoftWeight ?? 0.12)
   const activity =
@@ -158,7 +176,7 @@ function scoreActor(actor, config, mapKol) {
     reply * (sc.volReplyWeight ?? 0.35) +
     viewsSoft
   let volumeScore = logScale(activity, sc.volLogCap ?? 14)
-  if (mapKey !== 'none') volumeScore += sc.volMapBoost ?? 6
+  if (onMap) volumeScore += sc.volMapBoost ?? 6
   volumeScore = clamp01(volumeScore)
 
   const mixed = isMixed(actor)
@@ -195,9 +213,9 @@ function scoreActor(actor, config, mapKol) {
     qualitySplit,
   )
 
-  const mapLabel = mapKey === 'none' ? 'off-map' : mapKey
+  const mapLabel = onMap ? mapKey : 'audience'
   const scoreLog = [
-    `V=${Math.round(volumeScore)}(act=${activity.toFixed(2)} goc=${goc} reply=${reply} viewsSoft=${viewsSoft.toFixed(2)}${mapKey !== 'none' ? ` +mapBoost${sc.volMapBoost ?? 6}` : ''})`,
+    `V=${Math.round(volumeScore)}(act=${activity.toFixed(2)} goc=${goc} reply=${reply} viewsSoft=${viewsSoft.toFixed(2)}${onMap ? ` +mapBoost${sc.volMapBoost ?? 6}` : ''})`,
     `Q=${Math.round(qualityScore)}(map=${mapLabel}:${Math.round(mapPart)}×${wM} sent=${Math.round(sentPart)}×${wS} depth=${Math.round(depth)}×${wD} eng=${Math.round(eng)}×${wE})`,
     `quad=${quadrant} splitV=${volumeSplit}/Q=${qualitySplit}`,
   ].join(' · ')
@@ -210,8 +228,8 @@ function scoreActor(actor, config, mapKol) {
     volumeScore: Math.round(volumeScore * 10) / 10,
     qualityScore: Math.round(qualityScore * 10) / 10,
     quadrant,
-    mapRank: mapKey === 'none' ? undefined : mapKey,
-    tier: mapKey === 'none' ? actor.tier : mapKey,
+    mapRank: onMap ? mapKey : undefined,
+    tier: onMap ? mapKey : actor.tier,
     scoreLog,
   }
 }
@@ -252,8 +270,33 @@ const seedPaths = [
   path.join(ROOT, 'data/internal/scex-tracking.json'),
 ]
 
-const dataset = JSON.parse(fs.readFileSync(seedPaths[0], 'utf8'))
+// Prefer live R2 so we don't clobber newer harvests
+let dataset = JSON.parse(fs.readFileSync(seedPaths[0], 'utf8'))
+let baseUpdatedAt = dataset.updatedAt
+try {
+  const liveRes = await fetch(`${base}/api/scex-tracking?t=${Date.now()}`)
+  if (liveRes.ok) {
+    const live = await liveRes.json()
+    if (live?.actors?.length) {
+      dataset = live
+      baseUpdatedAt = live.updatedAt
+      console.log('loaded live SCEX', live.actors.length, live.updatedAt)
+    }
+  }
+} catch (e) {
+  console.warn('live SCEX load fail, using seed', e.message)
+}
+
 const mapKols = await loadMapKols()
+// Normalize map inputs (API rank may be missing → derive from tier+score)
+for (const [h, k] of mapKols) {
+  mapKols.set(h, {
+    handle: h,
+    rank: k.rank,
+    tier: k.tier,
+    score: k.score,
+  })
+}
 
 // Ensure scoring config present with 0–100 axes
 const scoring = {
@@ -274,16 +317,26 @@ dataset.config = {
   volumeAxis: {
     min: 0,
     max: 100,
-    label: 'Điểm tần suất (log activity)',
+    label: 'Tần suất mention',
   },
   qualityAxis: {
     min: 0,
     max: 100,
-    label: 'Điểm chất lượng (tier + signal)',
+    label: 'Uy tín',
   },
   volumeSplit: dataset.config.volumeSplit > 20 ? dataset.config.volumeSplit : 42,
-  qualitySplit: dataset.config.qualitySplit ?? 55,
+  // Keep partner mid-line at 50 so audience-lifted mid KOLs clear “Uy tín thấp”
+  qualitySplit: 50,
 }
+
+const beforeBig = dataset.actors
+  .filter((a) => (a.followers || 0) >= 25_000)
+  .map((a) => ({
+    h: a.handle,
+    fl: a.followers,
+    oldQ: a.qualityScore,
+    oldMap: a.mapRank || '-',
+  }))
 
 const actors = dataset.actors.map((a) =>
   scoreActor(a, dataset.config, mapKols.get(a.handle.toLowerCase())),
@@ -301,9 +354,10 @@ actors.sort((a, b) => {
 
 dataset.actors = actors
 dataset.updatedAt = new Date().toISOString()
+dataset.asOf = new Date().toISOString().slice(0, 10)
 dataset.note = [
   String(dataset.note || '').replace(/\s*· Scores[^.]*\.?/gi, ''),
-  `Scores recomputed (log volume + map-tier quality; eng weight low).`,
+  `Scores recomputed (log volume + map-tier / audience trust; eng weight low).`,
 ]
   .filter(Boolean)
   .join(' ')
@@ -314,8 +368,25 @@ const onMap = actors.filter((a) => a.mapRank).length
 const vols = actors.map((a) => a.volumeScore).sort((a, b) => a - b)
 const qs = actors.map((a) => a.qualityScore).sort((a, b) => a - b)
 
+const byHandle = new Map(actors.map((a) => [a.handle.toLowerCase(), a]))
+const bigDelta = beforeBig
+  .map((b) => {
+    const a = byHandle.get(b.h.toLowerCase())
+    return {
+      h: b.h,
+      fl: b.fl,
+      oldQ: b.oldQ,
+      newQ: a?.qualityScore,
+      dQ: a ? Math.round((a.qualityScore - b.oldQ) * 10) / 10 : null,
+      map: a?.mapRank || '-',
+      quad: a?.quadrant,
+    }
+  })
+  .sort((a, b) => (a.newQ ?? 0) - (b.newQ ?? 0))
+
 const json = JSON.stringify(dataset, null, 2) + '\n'
 for (const p of seedPaths) {
+  fs.mkdirSync(path.dirname(p), { recursive: true })
   fs.writeFileSync(p, json, 'utf8')
   console.log('wrote', p)
 }
@@ -336,6 +407,7 @@ console.log(
         p50: qs[Math.floor(qs.length / 2)],
         max: qs[qs.length - 1],
       },
+      bigKolFl25k: bigDelta,
       top: actors.slice(0, 10).map((a) => ({
         h: a.handle,
         V: a.volumeScore,
@@ -356,13 +428,14 @@ if (doPut) {
     console.error('FEED_ADMIN_TOKEN missing')
     process.exit(1)
   }
+  const putBody = { ...dataset, baseUpdatedAt }
   const putRes = await fetch(`${base}/api/scex-tracking`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${token}`,
     },
-    body: JSON.stringify(dataset),
+    body: JSON.stringify(putBody),
   })
   console.log('PUT', putRes.status, (await putRes.text()).slice(0, 280))
   if (!putRes.ok) process.exit(1)

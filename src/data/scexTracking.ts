@@ -45,7 +45,8 @@ export interface ScexSentimentLabel {
 /**
  * Matrix scoring formula (admin-editable).
  * Volume (X) = log activity (gốc + reply weight), NOT followers.
- * Quality (Y) = map tier + sentiment + depth + mild engagement.
+ * Quality (Y / “Uy tín”) = map tier (or audience trust if off-map)
+ *   + sentiment + depth + mild engagement.
  */
 export interface ScexScoringConfig {
   /** Weight of original posts in volume activity */
@@ -280,11 +281,11 @@ export function defaultScexConfig(): ScexConfig {
     userMinFollowers: 5000,
     userMinQuality: 40,
     volumeAxis: { min: 0, max: 100, label: 'Tần suất mention' },
-    qualityAxis: { min: 0, max: 100, label: 'Chất lượng' },
+    qualityAxis: { min: 0, max: 100, label: 'Uy tín' },
     sizeMetric: 'followers',
     /** Mid of 0–100 volume score */
     volumeSplit: 42,
-    qualitySplit: 55,
+    qualitySplit: 50,
     quadrantLabels: { ...DEFAULT_QUAD },
     sentimentLabels: { ...DEFAULT_SENTIMENT },
     matrixTitle: 'Ma trận SCEX',
@@ -382,32 +383,66 @@ export type MapRankInput = {
   score?: number
 }
 
+const MAP_RANK_KEYS = [
+  'challenger',
+  'master',
+  'diamond',
+  'platinum',
+  'gold',
+] as const
+
+type MapRankKey = (typeof MAP_RANK_KEYS)[number] | 'none'
+
+function isMapRankKey(s: string): s is Exclude<MapRankKey, 'none'> {
+  return (MAP_RANK_KEYS as readonly string[]).includes(s)
+}
+
+/**
+ * Audience trust proxy for off-map accounts (0–100).
+ * Used as the "map/trust" quality leg when not verified on Davey's Radar.
+ * Calibrated so micro accounts stay in the lower band while large KOLs
+ * clear the mid split (50) — without matching map diamond (78):
+ *   ~500 fl → ~42, ~5k → ~50, ~25k → ~58, ~80k → ~63, ~300k → ~69
+ */
+export function audienceTrustScore(followers: number): number {
+  const f = Math.max(0, Number(followers) || 0)
+  // log10(f+120): 500→2.79, 5k→3.72, 25k→4.40, 80k→4.90, 300k→5.48
+  return clamp01(14 + Math.log10(f + 120) * 10)
+}
+
+/**
+ * Resolve Radar map rank for scoring.
+ * Priority: live map join → stored actor.mapRank.
+ * Does NOT use actor.tier — export scripts write follower-band labels
+ * (e.g. Challenger @3k) that are NOT Radar ranks.
+ */
 function resolveMapRankKey(
   mapKol: MapRankInput | undefined,
-): keyof ScexScoringConfig['mapTierScores'] {
-  if (!mapKol) return 'none'
-  const r = String(mapKol.rank || '')
+  actor?: ScexActor,
+): MapRankKey {
+  if (mapKol) {
+    const r = String(mapKol.rank || '')
+      .toLowerCase()
+      .trim()
+    if (isMapRankKey(r)) return r
+    // Derive from tier band + score (same as map)
+    const tier = mapKol.tier ?? 3
+    const score = mapKol.score ?? 50
+    if (tier <= 1) return score >= 96 ? 'challenger' : 'master'
+    if (tier === 2) return score >= 92 ? 'diamond' : 'platinum'
+    return 'gold'
+  }
+  const stored = String(actor?.mapRank || '')
     .toLowerCase()
     .trim()
-  if (
-    r === 'challenger' ||
-    r === 'master' ||
-    r === 'diamond' ||
-    r === 'platinum' ||
-    r === 'gold'
-  )
-    return r
-  // Derive from tier band + score (same as map)
-  const tier = mapKol.tier ?? 3
-  const score = mapKol.score ?? 50
-  if (tier <= 1) return score >= 96 ? 'challenger' : 'master'
-  if (tier === 2) return score >= 92 ? 'diamond' : 'platinum'
-  return 'gold'
+  if (isMapRankKey(stored)) return stored
+  return 'none'
 }
 
 /**
  * Recompute volumeScore + qualityScore + quadrant for one actor.
  * Map KOLs (verified on Radar) get higher map-tier quality.
+ * Off-map accounts use audience size as trust proxy (not flat 40).
  */
 export function scoreScexActor(
   actor: ScexActor,
@@ -419,9 +454,12 @@ export function scoreScexActor(
   const views = Number(actor.reach7d) || 0
   const followers = Math.max(0, Number(actor.followers) || 0)
 
-  // —— Quality parts (map rank first — used for volume boost too) ——
-  const mapKey = resolveMapRankKey(mapKol)
-  const mapPart = sc.mapTierScores[mapKey] ?? sc.mapTierScores.none
+  // —— Trust / map leg (Y) — used for volume boost when on-map ——
+  const mapKey = resolveMapRankKey(mapKol, actor)
+  const onMap = mapKey !== 'none'
+  const mapPart = onMap
+    ? (sc.mapTierScores[mapKey] ?? sc.mapTierScores.none)
+    : audienceTrustScore(followers)
 
   // —— Volume (X): log activity + soft views + map boost (not followers-led) ——
   const viewsSoft =
@@ -431,7 +469,7 @@ export function scoreScexActor(
     reply * (sc.volReplyWeight ?? 0.35) +
     viewsSoft
   let volumeScore = logScale(activity, sc.volLogCap ?? 14)
-  if (mapKey !== 'none') {
+  if (onMap) {
     volumeScore += sc.volMapBoost ?? 6
   }
   volumeScore = clamp01(volumeScore)
@@ -476,9 +514,9 @@ export function scoreScexActor(
     qualitySplit,
   )
 
-  const mapLabel = mapKey === 'none' ? 'off-map' : mapKey
+  const mapLabel = onMap ? mapKey : `audience`
   const scoreLog = [
-    `V=${Math.round(volumeScore)}(act=${activity.toFixed(2)} goc=${goc} reply=${reply} viewsSoft=${viewsSoft.toFixed(2)}${mapKey !== 'none' ? ` +mapBoost${sc.volMapBoost ?? 6}` : ''})`,
+    `V=${Math.round(volumeScore)}(act=${activity.toFixed(2)} goc=${goc} reply=${reply} viewsSoft=${viewsSoft.toFixed(2)}${onMap ? ` +mapBoost${sc.volMapBoost ?? 6}` : ''})`,
     `Q=${Math.round(qualityScore)}(map=${mapLabel}:${Math.round(mapPart)}×${wM} sent=${Math.round(sentPart)}×${wS} depth=${Math.round(depth)}×${wD} eng=${Math.round(eng)}×${wE})`,
     `quad=${quadrant} splitV=${volumeSplit}/Q=${qualitySplit}`,
   ].join(' · ')
@@ -493,8 +531,8 @@ export function scoreScexActor(
     volumeScore: Math.round(volumeScore * 10) / 10,
     qualityScore: Math.round(qualityScore * 10) / 10,
     quadrant,
-    mapRank: mapKey === 'none' ? undefined : mapKey,
-    tier: mapKey === 'none' ? actor.tier : mapKey,
+    mapRank: onMap ? mapKey : undefined,
+    tier: onMap ? mapKey : actor.tier,
     scoreLog,
   }
 }

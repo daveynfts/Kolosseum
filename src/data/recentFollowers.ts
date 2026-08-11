@@ -2740,6 +2740,17 @@ export const RECENT_FOLLOWERS_BY_HANDLE: Record<string, RecentFollower[]> = {
       followedAt: '2025-08-10T00:00:00.000Z',
     },
   ],
+  /**
+   * Alan Nguyen (@AlanNguyen2909) — recent follows (X snapshot 2026-08-11).
+   */
+  alannguyen2909: [
+    {
+      handle: 'flowtradertm',
+      displayName: 'Flow',
+      followedAgo: '5 months ago',
+      followedAt: '2026-03-11T00:00:00.000Z',
+    },
+  ],
 }
 
 /** Smart followers seed — key = KOL handle lowercase */

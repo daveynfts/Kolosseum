@@ -1034,10 +1034,11 @@ const SIDE_EVENTS: SideEvent[] = [
     title:
       'Stellar After Hours — Ho Chi Minh City Ambassador Meetup #3',
     host: 'Harry · Stellar · Rise In',
-    venue: 'Register to See Address',
-    address: 'Đăng ký Luma để xem địa điểm (HCMC)',
-    lat: SALA_VENUE.lat,
-    lng: SALA_VENUE.lng,
+    venue: 'Galaxy Coffee & Tea',
+    address:
+      'A2.00-01, Khu Chung Cư Phức Hợp M1, M2 (Sarimi, Tháp A2), 74 Nguyễn Cơ Thạch, An Khánh, Hồ Chí Minh 700000, Vietnam',
+    lat: 10.77255,
+    lng: 106.72035,
     date: '2026-08-14',
     startTime: '16:30',
     endTime: '18:30',
@@ -1047,10 +1048,9 @@ const SIDE_EVENTS: SideEvent[] = [
       'uploads/xx/10dd7233-69c2-4181-9edd-c52dea61177c.png',
     ),
     description:
-      'Stellar builder / ambassador meetup #3 (HCMC): intro Stellar · Q&A · builder project sharing · networking · limited merch. Payments, remittances & stablecoin use cases. Address only after Luma registration.',
+      'Stellar builder / ambassador meetup #3 (HCMC) @ Galaxy Coffee & Tea (Sarimi A2): intro Stellar · Q&A · builder project sharing · networking · limited merch. Payments, remittances & stablecoin use cases.',
     free: true,
     featured: true,
-    locationTbd: true,
   },
   {
     id: 'zbit-grand-prix',
@@ -1269,8 +1269,8 @@ export const CONVICTION_EVENTS_SEED: SideEventDataset = {
   venue: SALA_VENUE,
   dateRange: { start: '2026-08-13', end: '2026-08-16' },
   events: SIDE_EVENTS,
-  updatedAt: '2026-08-12T09:30:00.000Z',
-  note: 'Stellar After Hours HCMC #3 · 14/08 16:30 location TBD',
+  updatedAt: '2026-08-12T10:00:00.000Z',
+  note: 'Stellar After Hours → Galaxy Coffee & Tea Sarimi A2',
 }
 
 function isEventType(v: unknown): v is SideEventType {

@@ -808,6 +808,27 @@ const SIDE_EVENTS: SideEvent[] = [
     featured: true,
   },
   {
+    id: 'building-ai-powered-marketing-5k-walk',
+    title: 'Building AI-Powered Marketing Systems + 5K Walk',
+    host: 'Techies Lab · Screate Labs',
+    venue: 'Đạm Home Café',
+    address: '69 Tôn Thất Đạm, Sài Gòn, Hồ Chí Minh 700000, Vietnam',
+    lat: 10.7714522,
+    lng: 106.7030263,
+    date: '2026-08-13',
+    startTime: '16:30',
+    endTime: '18:00',
+    type: 'workshop',
+    link: 'https://luma.com/gza7215m',
+    imageUrl: lumaSquareCover(
+      'uploads/2l/a2fc66b4-7f3b-41d8-bd3d-e6f93c3bc115.png',
+    ),
+    description:
+      'Hands-on AI UGC / marketing systems workshop (Techies Lab · Maddy Lê) 16:30–18:00 tại Đạm Home Café (tầng 2, 69 Tôn Thất Đạm) · sau 18:00: 5K+ walk với Curious Walking Club (Screate Labs · Hien Nguyen). Approval required · mặc đồ đi bộ thoải mái.',
+    free: true,
+    featured: true,
+  },
+  {
     id: 'university-night',
     title: 'University Night',
     host: 'Kanga Global University',
@@ -1198,8 +1219,8 @@ export const CONVICTION_EVENTS_SEED: SideEventDataset = {
   venue: SALA_VENUE,
   dateRange: { start: '2026-08-13', end: '2026-08-16' },
   events: SIDE_EVENTS,
-  updatedAt: '2026-08-11T12:30:00.000Z',
-  note: 'Builders Breakfast → The Sentry C · zBit Grand Prix · Builders Happy Hours TBD',
+  updatedAt: '2026-08-12T08:15:00.000Z',
+  note: 'Techies Lab AI Marketing + 5K Walk · 13/08 Đạm Home Café',
 }
 
 function isEventType(v: unknown): v is SideEventType {

@@ -42,6 +42,11 @@ export type SideEvent = {
   dateTbd?: boolean
   /** Exact pin is provisional until venue is announced */
   locationTbd?: boolean
+  /**
+   * Soft-hide from public map/list (keep in seed for later unhide).
+   * Stripped in normalizeDataset for public consumers.
+   */
+  hidden?: boolean
 }
 
 export type MainVenue = {
@@ -827,6 +832,7 @@ const SIDE_EVENTS: SideEvent[] = [
       'Hands-on AI UGC / marketing systems workshop (Techies Lab · Maddy Lê) 16:30–18:00 tại Đạm Home Café (tầng 2, 69 Tôn Thất Đạm) · sau 18:00: 5K+ walk với Curious Walking Club (Screate Labs · Hien Nguyen). Approval required · mặc đồ đi bộ thoải mái.',
     free: true,
     featured: true,
+    hidden: true,
   },
   {
     id: 'university-night',
@@ -1186,6 +1192,7 @@ const SIDE_EVENTS: SideEvent[] = [
     description:
       'Golf Meets Pilates Party tại ParTee: 1h mini golf · 1h mat pilates · matcha DIY · wellness goodie bags · networking KOCs/KOLs · dress code white/blue/mint/beige. Full Day Pass ~495k VND (approval + deposit).',
     featured: true,
+    hidden: true,
   },
   {
     id: 'unlimited-conviction-sundowner',
@@ -1239,8 +1246,8 @@ export const CONVICTION_EVENTS_SEED: SideEventDataset = {
   venue: SALA_VENUE,
   dateRange: { start: '2026-08-13', end: '2026-08-16' },
   events: SIDE_EVENTS,
-  updatedAt: '2026-08-12T08:30:00.000Z',
-  note: 'ECV Wellness Golf×Pilates · 15/08 ParTee · Techies Lab 13/08',
+  updatedAt: '2026-08-12T09:00:00.000Z',
+  note: 'Hide ECV Wellness + Techies Lab AI Marketing (soft hidden in seed)',
 }
 
 function isEventType(v: unknown): v is SideEventType {
@@ -1289,6 +1296,7 @@ export function normalizeSideEvent(raw: unknown): SideEvent | null {
     featured: o.featured === true,
     dateTbd: o.dateTbd === true,
     locationTbd: o.locationTbd === true,
+    hidden: o.hidden === true,
   }
 }
 
@@ -1298,7 +1306,7 @@ export function normalizeDataset(raw: unknown): SideEventDataset | null {
   const eventsRaw = Array.isArray(o.events) ? o.events : []
   const events = eventsRaw
     .map(normalizeSideEvent)
-    .filter((e): e is SideEvent => !!e)
+    .filter((e): e is SideEvent => !!e && !e.hidden)
 
   const venueRaw =
     o.venue && typeof o.venue === 'object'

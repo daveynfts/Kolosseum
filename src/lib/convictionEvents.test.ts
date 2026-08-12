@@ -29,8 +29,15 @@ describe('convictionEvents helpers', () => {
     const n = normalizeDataset(CONVICTION_EVENTS_SEED)
     expect(n).not.toBeNull()
     expect(n!.event).toBe('conviction-2026')
-    expect(n!.events).toHaveLength(CONVICTION_EVENTS_SEED.events.length)
-    expect(n!.events.length).toBeGreaterThanOrEqual(21)
+    const visibleSeed = CONVICTION_EVENTS_SEED.events.filter((e) => !e.hidden)
+    expect(n!.events).toHaveLength(visibleSeed.length)
+    expect(n!.events.length).toBeGreaterThanOrEqual(20)
+    expect(
+      n!.events.some((e) => e.id === 'ecv-wellness-golf-meets-pilates'),
+    ).toBe(false)
+    expect(
+      n!.events.some((e) => e.id === 'building-ai-powered-marketing-5k-walk'),
+    ).toBe(false)
     expect(n!.events.every((e) => !!e.imageUrl && !!e.link)).toBe(true)
     // Main forum is venue chrome only — not a side-event pin
     expect(n!.events.some((e) => isMainEvent(e))).toBe(false)

@@ -1003,6 +1003,28 @@ const SIDE_EVENTS: SideEvent[] = [
     featured: true,
   },
   {
+    id: 'zbit-grand-prix',
+    title: 'zBit Grand Prix',
+    host: 'GlobalzBit',
+    venue: 'Infinity Racing · Vincom Mega Mall Thảo Điền (L5)',
+    address:
+      '161 Võ Nguyên Giáp, An Khánh, Thủ Đức, Thành phố Hồ Chí Minh 70000, Vietnam',
+    lat: 10.8023796,
+    lng: 106.7409716,
+    date: '2026-08-14',
+    startTime: '17:30',
+    endTime: '21:00',
+    type: 'party',
+    link: 'https://luma.com/b5oy4f5z',
+    imageUrl: lumaSquareCover(
+      'uploads/k2/c412e8b9-6288-468f-afda-f7932a6884b9.jpg',
+    ),
+    description:
+      'Karting + networking side event (Conviction week): Infinity Racing L5 Vincom Thảo Điền · open bar & finger food · founders/KOLs/market makers · chance to win free go-kart ticket · zBit perks & Grand Prix swag. Approval required · register on Luma.',
+    free: true,
+    featured: true,
+  },
+  {
     id: 'lbank-labs-vip-saigon-nights',
     title: 'LBANK Labs VIP Saigon Nights',
     host: 'LBank Labs',
@@ -1176,8 +1198,8 @@ export const CONVICTION_EVENTS_SEED: SideEventDataset = {
   venue: SALA_VENUE,
   dateRange: { start: '2026-08-13', end: '2026-08-16' },
   events: SIDE_EVENTS,
-  updatedAt: '2026-08-10T08:00:00.000Z',
-  note: 'Busan Blockchain Global Summit · Business Meet-Up + Networking Dinner · 14/08 Sala',
+  updatedAt: '2026-08-11T12:00:00.000Z',
+  note: 'zBit Grand Prix · 14/08 17:30 Vincom Thảo Điền · Builders Happy Hours location TBD',
 }
 
 function isEventType(v: unknown): v is SideEventType {

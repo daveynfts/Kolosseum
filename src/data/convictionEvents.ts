@@ -1168,6 +1168,26 @@ const SIDE_EVENTS: SideEvent[] = [
     featured: true,
   },
   {
+    id: 'ecv-wellness-golf-meets-pilates',
+    title: 'ECV Wellness | Edition 1: Golf Meets Pilates Party',
+    host: 'Entrepreneur Collective Vietnam · Quinn Mong',
+    venue: 'ParTee Golf',
+    address: '12 Nguyễn Hữu Thọ, Nhà Bè, Hồ Chí Minh 70000, Vietnam',
+    lat: 10.7138791,
+    lng: 106.7073602,
+    date: '2026-08-15',
+    startTime: '13:30',
+    endTime: '17:00',
+    type: 'party',
+    link: 'https://luma.com/sq24a3z7',
+    imageUrl: lumaSquareCover(
+      'uploads/9m/adc98c82-94f8-4469-98b9-3d2761326709.png',
+    ),
+    description:
+      'Golf Meets Pilates Party tại ParTee: 1h mini golf · 1h mat pilates · matcha DIY · wellness goodie bags · networking KOCs/KOLs · dress code white/blue/mint/beige. Full Day Pass ~495k VND (approval + deposit).',
+    featured: true,
+  },
+  {
     id: 'unlimited-conviction-sundowner',
     title: 'Unlimit(ed) Conviction Sundowner',
     host: 'APAC DAO · Unlimit',
@@ -1219,8 +1239,8 @@ export const CONVICTION_EVENTS_SEED: SideEventDataset = {
   venue: SALA_VENUE,
   dateRange: { start: '2026-08-13', end: '2026-08-16' },
   events: SIDE_EVENTS,
-  updatedAt: '2026-08-12T08:15:00.000Z',
-  note: 'Techies Lab AI Marketing + 5K Walk · 13/08 Đạm Home Café',
+  updatedAt: '2026-08-12T08:30:00.000Z',
+  note: 'ECV Wellness Golf×Pilates · 15/08 ParTee · Techies Lab 13/08',
 }
 
 function isEventType(v: unknown): v is SideEventType {

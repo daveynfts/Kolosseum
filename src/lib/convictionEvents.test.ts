@@ -29,7 +29,8 @@ describe('convictionEvents helpers', () => {
     const n = normalizeDataset(CONVICTION_EVENTS_SEED)
     expect(n).not.toBeNull()
     expect(n!.event).toBe('conviction-2026')
-    expect(n!.events).toHaveLength(20)
+    expect(n!.events).toHaveLength(CONVICTION_EVENTS_SEED.events.length)
+    expect(n!.events.length).toBeGreaterThanOrEqual(21)
     expect(n!.events.every((e) => !!e.imageUrl && !!e.link)).toBe(true)
     // Main forum is venue chrome only — not a side-event pin
     expect(n!.events.some((e) => isMainEvent(e))).toBe(false)

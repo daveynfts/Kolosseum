@@ -1129,10 +1129,10 @@ const SIDE_EVENTS: SideEvent[] = [
     id: 'web3-builders-breakfast-hiding-the-chain',
     title: "Web3 Builders' Breakfast: Hiding the Chain ☕",
     host: "sqrDAO's Curated Events · Sky Mavis",
-    venue: 'The Sentry L',
-    address: 'The Sentry L, Thành phố Hồ Chí Minh, Hồ Chí Minh',
-    lat: 10.780275,
-    lng: 106.704758,
+    venue: 'The Sentry C',
+    address: '15 Lê Thánh Tôn, Sài Gòn, Hồ Chí Minh 70000, Vietnam',
+    lat: 10.776889,
+    lng: 106.700892,
     date: '2026-08-15',
     startTime: '09:00',
     endTime: '12:00',
@@ -1142,7 +1142,7 @@ const SIDE_EVENTS: SideEvent[] = [
       'uploads/oc/8862f35a-54c5-43db-b7e9-cdf56d6c6ca0.jpg',
     ),
     description:
-      "Web3 Builders' Breakfast 4th edition · sqrDAO × Sky Mavis — casual morning with builders, food & strategy. Hiding the Chain · free meetup.",
+      "Web3 Builders' Breakfast 4th edition · sqrDAO × Sky Mavis — casual morning with builders, food & strategy. Hiding the Chain · free meetup. Venue: The Sentry C (không còn The Sentry L).",
     free: true,
     featured: true,
   },
@@ -1198,8 +1198,8 @@ export const CONVICTION_EVENTS_SEED: SideEventDataset = {
   venue: SALA_VENUE,
   dateRange: { start: '2026-08-13', end: '2026-08-16' },
   events: SIDE_EVENTS,
-  updatedAt: '2026-08-11T12:00:00.000Z',
-  note: 'zBit Grand Prix · 14/08 17:30 Vincom Thảo Điền · Builders Happy Hours location TBD',
+  updatedAt: '2026-08-11T12:30:00.000Z',
+  note: 'Builders Breakfast → The Sentry C · zBit Grand Prix · Builders Happy Hours TBD',
 }
 
 function isEventType(v: unknown): v is SideEventType {

@@ -3,6 +3,7 @@
  * Source: https://luma.com/conviction-2026 (as of 2026-08-04)
  * Venue: Thiskyhall Sala, TP.HCM · Main forum 14–15 Aug 2026.
  */
+import { sanitizeLumaText } from '../lib/lumaText'
 
 export const EVENT_TYPES = [
   'mixer',
@@ -1286,11 +1287,16 @@ function str(v: unknown, fallback = ''): string {
   return typeof v === 'string' ? v.trim() : fallback
 }
 
+/** Luma-sourced copy: keep Unicode, drop theme HTML / decorative fonts. */
+function lumaStr(v: unknown, fallback = ''): string {
+  return sanitizeLumaText(v) || fallback
+}
+
 export function normalizeSideEvent(raw: unknown): SideEvent | null {
   if (!raw || typeof raw !== 'object') return null
   const o = raw as Record<string, unknown>
   const id = str(o.id)
-  const title = str(o.title)
+  const title = lumaStr(o.title)
   const lat = num(o.lat, NaN)
   const lng = num(o.lng, NaN)
   const date = str(o.date)
@@ -1299,12 +1305,18 @@ export function normalizeSideEvent(raw: unknown): SideEvent | null {
   }
   if (lat < -90 || lat > 90 || lng < -180 || lng > 180) return null
   const type: SideEventType = isEventType(o.type) ? o.type : 'other'
+  const description =
+    lumaStr(o.description) ||
+    lumaStr(o.descriptionHtml) ||
+    lumaStr(o.description_html) ||
+    lumaStr(o.html_description) ||
+    undefined
   return {
     id,
     title,
-    host: str(o.host),
-    venue: str(o.venue),
-    address: str(o.address),
+    host: lumaStr(o.host),
+    venue: lumaStr(o.venue),
+    address: lumaStr(o.address),
     lat,
     lng,
     date,
@@ -1314,7 +1326,7 @@ export function normalizeSideEvent(raw: unknown): SideEvent | null {
     type,
     link: str(o.link) || undefined,
     imageUrl: str(o.imageUrl) || undefined,
-    description: str(o.description) || undefined,
+    description,
     free: o.free === true,
     featured: o.featured === true,
     dateTbd: o.dateTbd === true,
@@ -1345,8 +1357,8 @@ export function normalizeDataset(
       ? (o.venue as Record<string, unknown>)
       : null
   const venue: MainVenue = {
-    name: str(venueRaw?.name, SALA_VENUE.name) || SALA_VENUE.name,
-    address: str(venueRaw?.address, SALA_VENUE.address) || SALA_VENUE.address,
+    name: lumaStr(venueRaw?.name, SALA_VENUE.name) || SALA_VENUE.name,
+    address: lumaStr(venueRaw?.address, SALA_VENUE.address) || SALA_VENUE.address,
     lat: num(venueRaw?.lat, SALA_VENUE.lat),
     lng: num(venueRaw?.lng, SALA_VENUE.lng),
   }
@@ -1361,7 +1373,8 @@ export function normalizeDataset(
     kind: 'conviction-side-events',
     event: 'conviction-2026',
     title:
-      str(o.title, CONVICTION_EVENTS_SEED.title) || CONVICTION_EVENTS_SEED.title,
+      lumaStr(o.title, CONVICTION_EVENTS_SEED.title) ||
+      CONVICTION_EVENTS_SEED.title,
     venue,
     dateRange: {
       start:
@@ -1373,7 +1386,7 @@ export function normalizeDataset(
     },
     events,
     updatedAt: str(o.updatedAt) || new Date().toISOString(),
-    note: str(o.note) || undefined,
+    note: lumaStr(o.note) || undefined,
   }
 }
 

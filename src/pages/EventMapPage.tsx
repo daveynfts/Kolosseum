@@ -267,18 +267,18 @@ function popupHtml(
     <div class="emp-popup__inner">
       ${img}
       <div class="emp-popup__body">
-        <h3 class="emp-popup__title">${escapeHtml(ev.title)}</h3>
+        <h3 class="emp-popup__title emp-luma-copy">${escapeHtml(ev.title)}</h3>
         <div class="emp__badges emp-popup__badges">${badges}</div>
         <p class="emp-popup__row emp-popup__when">${escapeHtml(when)}</p>
         ${dist}
-        ${ev.host ? `<p class="emp-popup__row"><span class="emp-popup__k">${escapeHtml(L.host)}</span> ${escapeHtml(ev.host)}</p>` : ''}
-        <p class="emp-popup__row"><span class="emp-popup__k">${escapeHtml(L.place)}</span> ${escapeHtml(placeLine)}</p>
+        ${ev.host ? `<p class="emp-popup__row emp-luma-copy"><span class="emp-popup__k">${escapeHtml(L.host)}</span> ${escapeHtml(ev.host)}</p>` : ''}
+        <p class="emp-popup__row emp-luma-copy"><span class="emp-popup__k">${escapeHtml(L.place)}</span> ${escapeHtml(placeLine)}</p>
         ${
           ev.locationTbd
             ? `<p class="emp-popup__row emp-popup__note">${escapeHtml(L.pinTempNote)}</p>`
             : ''
         }
-        ${ev.description ? `<p class="emp-popup__desc">${escapeHtml(ev.description)}</p>` : ''}
+        ${ev.description ? `<p class="emp-popup__desc emp-luma-copy">${escapeHtml(ev.description)}</p>` : ''}
         <div class="emp-popup__actions">
           ${directions}
           ${reg}
@@ -367,7 +367,7 @@ function buildLumaPinEl(
   }
 
   const label = document.createElement('div')
-  label.className = 'emp-pin__label'
+  label.className = 'emp-pin__label emp-luma-copy'
   label.textContent = shortEventTitle(ev.title, main ? 28 : 22)
 
   visual.appendChild(status)
@@ -1459,11 +1459,11 @@ export function EventMapPage() {
     >
       <header className="emp__header">
         <div className="emp__brand">
-          <h1 className="emp__brand-title">
+          <h1 className="emp__brand-title emp-luma-copy">
             <span className="emp__brand-title-full">{tt('pageTitle')}</span>
             <span className="emp__brand-title-short">{tt('pageTitleShort')}</span>
           </h1>
-          <p className="emp__brand-sub">
+          <p className="emp__brand-sub emp-luma-copy">
             {tt('mainHeader', {
               window: MAIN_FORUM_SCHEDULE.windowLabel,
               venue: MAIN_FORUM_SCHEDULE.venue,
@@ -2193,9 +2193,9 @@ export function EventMapPage() {
                             : ''}
                           {st.phase === 'ended' ? ' · END' : ''}
                         </p>
-                        <p className="emp__card-title">{ev.title}</p>
+                        <p className="emp__card-title emp-luma-copy">{ev.title}</p>
                         {ev.host ? (
-                          <p className="emp__card-host">
+                          <p className="emp__card-host emp-luma-copy">
                             <span
                               className="emp__card-host-dot"
                               aria-hidden
@@ -2203,7 +2203,7 @@ export function EventMapPage() {
                             By {ev.host}
                           </p>
                         ) : null}
-                        <p className="emp__card-place">
+                        <p className="emp__card-place emp-luma-copy">
                           <span className="emp__card-pin" aria-hidden>
                             ⌖
                           </span>
@@ -2289,7 +2289,7 @@ export function EventMapPage() {
                     {isActive && (
                       <div className="emp__card-detail">
                         {ev.description ? (
-                          <p className="emp__card-detail-desc">
+                          <p className="emp__card-detail-desc emp-luma-copy">
                             {ev.description}
                           </p>
                         ) : null}

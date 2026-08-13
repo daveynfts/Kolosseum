@@ -8,12 +8,9 @@
     <link rel="apple-touch-icon" href="/favicon-64.png" />
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap&subset=latin,latin-ext,vietnamese"
-      rel="stylesheet"
-    />
+    <link rel="preload" href="/fonts/be-vietnam-pro-400.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/be-vietnam-pro-600.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="stylesheet" href="/fonts/vn-fonts.css" />
     <title>Davey's Radar — VN KOL Map</title>
     <meta
       name="description"
@@ -30,7 +27,7 @@
         justify-content: center;
         gap: 10px;
         color: rgba(255,255,255,.7);
-        font-family: Inter, "Be Vietnam Pro", sans-serif;
+        font-family: "Be Vietnam Pro", "Noto Sans", Inter, system-ui, sans-serif;
       }
       .boot-splash__mark {
         width: 36px; height: 36px; border-radius: 11px;

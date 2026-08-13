@@ -108,8 +108,8 @@
   --emp-radius-md: 12px;
   --emp-radius-sm: 8px;
   --emp-radius-pill: 999px;
-  --emp-font: 'Be Vietnam Pro', 'Inter', -apple-system, BlinkMacSystemFont,
-    'Segoe UI', Roboto, sans-serif;
+  --emp-font: 'Be Vietnam Pro', 'Noto Sans', Inter, system-ui, -apple-system,
+    BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --emp-shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
 
   height: 100dvh;
@@ -136,6 +136,28 @@
   -webkit-font-smoothing: antialiased;
   overscroll-behavior: none;
   touch-action: manipulation;
+}
+
+/* Luma-sourced copy: never inherit decorative theme fonts (missing VN glyphs). */
+.emp-luma-copy,
+.emp__card-title,
+.emp__card-host,
+.emp__card-place,
+.emp__card-detail-desc,
+.emp__brand-title,
+.emp__brand-sub,
+.emp-popup__title,
+.emp-popup__desc,
+.emp-popup__row,
+.emp-pin__label {
+  font-family: var(--emp-font) !important;
+}
+
+.emp [style*='font-family'],
+.emp [style*='font-family'] *,
+.emp-popup [style*='font-family'],
+.emp-popup [style*='font-family'] * {
+  font-family: var(--emp-font) !important;
 }
 
 .emp__header {

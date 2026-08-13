@@ -6,6 +6,8 @@ import type { Kol } from '../types'
 import { FEED_EVENT, loadFeed } from '../lib/feedStore'
 import { resolveMediaUrl } from '../lib/avatar'
 import { isSafeImageUrl, safeHref } from '../lib/safeUrl'
+import { RankBadge } from './RankBadge'
+import { StatusBadge } from './StatusBadge'
 
 type SortMode = 'latest' | 'hot'
 
@@ -171,18 +173,12 @@ export function FeedPanel({ open, onClose, kols, onSelectKol }: Props) {
           <div className="feed-title-row">
             <span className="live-dot" aria-hidden />
             <h2>X Feed</h2>
-            <span className="feed-badge">
-              {feed?.mode === 'admin' || (feed?.source || '').startsWith('admin')
-                ? 'ADMIN'
-                : 'DEMO'}
-            </span>
+            <span className="feed-badge feed-badge--live">LIVE</span>
           </div>
           <p className="feed-sub">
-            {feed?.mode === 'admin' || (feed?.source || '').startsWith('admin')
-              ? 'Admin curated'
-              : 'Tổng hợp X'}{' '}
-            · {feed?.kolCount ?? '—'} KOL · cập nhật{' '}
-            {feed?.generatedAt ? formatTime(feed.generatedAt) : '…'}
+            {feed
+              ? `${feed.postCount} bài · ${totals.voices} KOL · ${relTime(feed.generatedAt)}`
+              : 'Đang tải timeline…'}
           </p>
         </div>
         <div className="feed-actions">
@@ -192,7 +188,11 @@ export function FeedPanel({ open, onClose, kols, onSelectKol }: Props) {
             title={compact ? 'Mở rộng' : 'Thu gọn'}
             onClick={() => setCompact((v) => !v)}
           >
-            {compact ? '▣' : '▬'}
+            {compact ? (
+              <ChevronDownIcon />
+            ) : (
+              <ChevronUpIcon />
+            )}
           </button>
           <button
             type="button"
@@ -201,44 +201,25 @@ export function FeedPanel({ open, onClose, kols, onSelectKol }: Props) {
             onClick={() => void load()}
             disabled={loading}
           >
-            ↻
+            <RefreshIcon />
           </button>
           <button type="button" className="icon-btn" title="Đóng" onClick={onClose}>
-            ×
+            <CloseIcon />
           </button>
         </div>
       </header>
 
       {!compact && (
         <>
-          {/* Stats strip */}
-          <div className="feed-stats-bar">
-            <div className="feed-stat">
-              <em>{feed?.postCount ?? '—'}</em>
-              <span>posts</span>
-            </div>
-            <div className="feed-stat">
-              <em>{totals.voices || '—'}</em>
-              <span>voices</span>
-            </div>
-            <div className="feed-stat">
-              <em>{fmt(totals.likes)}</em>
-              <span>likes</span>
-            </div>
-            <div className="feed-stat">
-              <em>{fmt(totals.views)}</em>
-              <span>views</span>
-            </div>
-          </div>
-
-          {/* Search + sort */}
           <div className="feed-toolbar">
             <label className="feed-search">
-              <span className="feed-search-icon">⌕</span>
+              <span className="feed-search-icon" aria-hidden>
+                <SearchIcon />
+              </span>
               <input
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Tìm post, @handle…"
+                placeholder="Tìm bài, @handle…"
                 aria-label="Search feed"
               />
               {query && (
@@ -246,6 +227,7 @@ export function FeedPanel({ open, onClose, kols, onSelectKol }: Props) {
                   type="button"
                   className="feed-search-clear"
                   onClick={() => setQuery('')}
+                  aria-label="Xóa tìm kiếm"
                 >
                   ×
                 </button>
@@ -269,7 +251,6 @@ export function FeedPanel({ open, onClose, kols, onSelectKol }: Props) {
             </div>
           </div>
 
-          {/* Voice chips with avatars */}
           <div className="feed-filters" role="tablist" aria-label="Filter by KOL">
             <button
               type="button"
@@ -295,7 +276,7 @@ export function FeedPanel({ open, onClose, kols, onSelectKol }: Props) {
                 <AvatarImg
                   handle={v.handle}
                   name={v.name}
-                  size={22}
+                  size={20}
                   color={v.color}
                   className="voice-chip__av"
                 />
@@ -336,9 +317,9 @@ export function FeedPanel({ open, onClose, kols, onSelectKol }: Props) {
             <FeedCard
               key={p.id}
               post={p}
+              kol={kol}
               index={i}
               color={color}
-              niche={kol?.niche}
               highlight={p.id === highlightId}
               expanded={!!expanded[p.id]}
               onToggleExpand={() =>
@@ -382,7 +363,7 @@ export function FeedPanel({ open, onClose, kols, onSelectKol }: Props) {
             Hiển thị <strong>{posts.length}</strong>
             {feed ? ` / ${feed.postCount}` : ''}
           </span>
-          <span className="feed-foot__right">Snapshot demo · auto 60s</span>
+          <span className="feed-foot__right">Tự làm mới 60s</span>
         </footer>
       )}
     </aside>
@@ -391,8 +372,8 @@ export function FeedPanel({ open, onClose, kols, onSelectKol }: Props) {
 
 function FeedCard({
   post,
+  kol,
   color,
-  niche,
   highlight,
   expanded,
   index,
@@ -400,8 +381,8 @@ function FeedCard({
   onFocusKol,
 }: {
   post: FeedPost
+  kol?: Kol
   color: string
-  niche?: string
   highlight: boolean
   expanded: boolean
   index: number
@@ -415,6 +396,7 @@ function FeedCard({
   const postHref = safeHref(post.url)
   const mediaSrc = post.media[0] ? resolveMediaUrl(post.media[0]) : ''
   const mediaOk = isSafeImageUrl(mediaSrc)
+  const [mediaBroken, setMediaBroken] = useState(false)
 
   return (
     <article
@@ -427,70 +409,67 @@ function FeedCard({
         .join(' ')}
       style={{ animationDelay: `${Math.min(index, 8) * 35}ms` }}
     >
-      <div
-        className="feed-card__accent"
-        style={{ background: color }}
-        aria-hidden
-      />
-
       <div className="feed-card-top">
         <button type="button" className="feed-author" onClick={onFocusKol}>
-          <div className="feed-av-wrap" style={{ boxShadow: `0 0 0 2px ${color}55` }}>
+          <div
+            className="feed-av-wrap"
+            style={{ ['--voice' as string]: color }}
+          >
             <AvatarImg
               handle={post.handle}
               name={post.displayName}
-              size={42}
+              size={40}
               color={color}
             />
+            {kol && (
+              <span className="feed-av-rank">
+                <RankBadge
+                  rank={kol.rank}
+                  tier={kol.tier}
+                  score={kol.score}
+                  isTop30={kol.isTop30}
+                  size="pip"
+                />
+              </span>
+            )}
           </div>
           <div className="feed-author-meta">
             <div className="feed-author-name">
               <strong>{post.displayName}</strong>
-              {hot && <span className="hot-pill">HOT</span>}
-              {niche && (
-                <span className="niche-pill" style={{ color, borderColor: `${color}55` }}>
-                  {niche}
-                </span>
-              )}
+              {hot && <StatusBadge status="hot" size="pip" />}
             </div>
             <span className="feed-author-sub">
               @{post.handle}
               <span className="feed-dot">·</span>
-              <time dateTime={post.createdAt}>{relTime(post.createdAt)}</time>
+              <time dateTime={post.createdAt} title={formatTime(post.createdAt)}>
+                {relTime(post.createdAt)}
+              </time>
             </span>
           </div>
         </button>
-        <div className="feed-card-actions">
-          <button
-            type="button"
-            className="icon-btn icon-btn--sm"
-            title="Focus trên map"
-            onClick={onFocusKol}
+        {postHref ? (
+          <a
+            className="feed-open-x"
+            href={postHref}
+            target="_blank"
+            rel="noreferrer"
+            title="Mở trên X"
           >
-            ◎
-          </button>
-          {postHref ? (
-            <a
-              className="icon-btn icon-btn--sm"
-              href={postHref}
-              target="_blank"
-              rel="noreferrer"
-              title="Mở trên X"
-            >
-              ↗
-            </a>
-          ) : null}
-        </div>
+            <XLogoIcon />
+          </a>
+        ) : null}
       </div>
 
-      <p className={`feed-text ${expanded ? 'is-expanded' : ''}`}>{displayText}</p>
+      <p className={`feed-text ${expanded ? 'is-expanded' : ''}`}>
+        {linkify(displayText)}
+      </p>
       {long && (
         <button type="button" className="feed-more" onClick={onToggleExpand}>
           {expanded ? 'Thu gọn' : 'Xem thêm'}
         </button>
       )}
 
-      {mediaOk &&
+      {mediaOk && !mediaBroken &&
         (postHref ? (
           <a
             href={postHref}
@@ -503,6 +482,7 @@ function FeedCard({
               alt=""
               loading="lazy"
               referrerPolicy="no-referrer"
+              onError={() => setMediaBroken(true)}
             />
           </a>
         ) : (
@@ -512,22 +492,23 @@ function FeedCard({
               alt=""
               loading="lazy"
               referrerPolicy="no-referrer"
+              onError={() => setMediaBroken(true)}
             />
           </div>
         ))}
 
       <div className="feed-metrics">
         <span title="Likes">
-          <i>♥</i> {fmt(post.likes)}
+          <HeartIcon /> {fmt(post.likes)}
         </span>
         <span title="Reposts">
-          <i>↻</i> {fmt(post.reposts)}
+          <RepostIcon /> {fmt(post.reposts)}
         </span>
         <span title="Replies">
-          <i>💬</i> {fmt(post.replies)}
+          <ReplyIcon /> {fmt(post.replies)}
         </span>
         <span title="Views">
-          <i>👁</i> {fmt(post.views)}
+          <ViewIcon /> {fmt(post.views)}
         </span>
       </div>
     </article>
@@ -589,4 +570,162 @@ function shortName(name: string, handle: string) {
   const n = name.split('|')[0].trim()
   if (n.length <= 14) return n
   return handle.length <= 12 ? handle : handle.slice(0, 11) + '…'
+}
+
+function linkify(text: string) {
+  const parts = text.split(/((?:https?:\/\/[^\s]+)|(?:@[A-Za-z0-9_]{1,20}))/g)
+  return parts.map((part, i) => {
+    if (part.startsWith('http')) {
+      const trimmed = part.replace(/[),.;!?]+$/g, '')
+      const href = safeHref(trimmed)
+      if (!href) return part
+      const label = trimmed.replace(/^https?:\/\//, '').replace(/^www\./, '')
+      return (
+        <a
+          key={i}
+          className="feed-link"
+          href={href}
+          target="_blank"
+          rel="noreferrer"
+        >
+          {label.length > 36 ? `${label.slice(0, 34)}…` : label}
+        </a>
+      )
+    }
+    if (part.startsWith('@') && part.length > 1) {
+      return (
+        <span key={i} className="feed-mention">
+          {part}
+        </span>
+      )
+    }
+    return part
+  })
+}
+
+function iconProps() {
+  return {
+    width: 14,
+    height: 14,
+    viewBox: '0 0 24 24',
+    fill: 'none',
+    'aria-hidden': true as const,
+  }
+}
+
+function SearchIcon() {
+  return (
+    <svg {...iconProps()} width={13} height={13}>
+      <circle cx="11" cy="11" r="6.25" stroke="currentColor" strokeWidth="1.8" />
+      <path d="M16 16.5 20.5 21" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+function RefreshIcon() {
+  return (
+    <svg {...iconProps()}>
+      <path
+        d="M20 12a8 8 0 1 1-2.2-5.5"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+      />
+      <path
+        d="M20 4.5V9h-4.5"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  )
+}
+
+function CloseIcon() {
+  return (
+    <svg {...iconProps()}>
+      <path d="M6 6l12 12M18 6 6 18" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+function ChevronUpIcon() {
+  return (
+    <svg {...iconProps()}>
+      <path d="M6 14l6-6 6 6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
+function ChevronDownIcon() {
+  return (
+    <svg {...iconProps()}>
+      <path d="M6 10l6 6 6-6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
+function XLogoIcon() {
+  return (
+    <svg width={11} height={11} viewBox="0 0 24 24" aria-hidden>
+      <path
+        fill="currentColor"
+        d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.74l7.73-8.835L1.254 2.25H8.08l4.253 5.622L18.244 2.25zm-1.161 17.52h1.833L7.084 4.126H5.117z"
+      />
+    </svg>
+  )
+}
+
+function HeartIcon() {
+  return (
+    <svg {...iconProps()}>
+      <path
+        d="M12 20s-7-4.4-9.2-8.2C1 9.2 2.4 6 5.6 6c1.9 0 3.2 1.1 4 2.2C10.4 7.1 11.7 6 13.6 6c3.2 0 4.6 3.2 2.8 5.8C16.2 15.6 12 20 12 20z"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinejoin="round"
+      />
+    </svg>
+  )
+}
+
+function RepostIcon() {
+  return (
+    <svg {...iconProps()}>
+      <path
+        d="M7 7h9.5a3.5 3.5 0 0 1 0 7H15M17 17H7.5a3.5 3.5 0 0 1 0-7H9"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+      />
+      <path d="M9 4.5 7 7l2 2.5M15 19.5 17 17l-2-2.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
+function ReplyIcon() {
+  return (
+    <svg {...iconProps()}>
+      <path
+        d="M5 12c0-3.6 3.1-6.5 7-6.5s7 2.9 7 6.5-3.1 6.5-7 6.5c-.7 0-1.4-.1-2-.3L5 19.5 6.2 16A6.4 6.4 0 0 1 5 12z"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinejoin="round"
+      />
+    </svg>
+  )
+}
+
+function ViewIcon() {
+  return (
+    <svg {...iconProps()}>
+      <path
+        d="M2.8 12S6.2 6.8 12 6.8 21.2 12 21.2 12 17.8 17.2 12 17.2 2.8 12 2.8 12z"
+        stroke="currentColor"
+        strokeWidth="1.6"
+      />
+      <circle cx="12" cy="12" r="2.4" stroke="currentColor" strokeWidth="1.6" />
+    </svg>
+  )
 }

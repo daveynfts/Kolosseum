@@ -434,8 +434,6 @@ export function EventMapPage() {
   const initialParams = useMemo(() => parseEventMapParams(), [])
 
   const [dataset, setDataset] = useState<SideEventDataset | null>(null)
-  const datasetRef = useRef<SideEventDataset | null>(null)
-  datasetRef.current = dataset
   const [source, setSource] = useState<'server' | 'cache' | 'seed'>('seed')
   const [loading, setLoading] = useState(true)
   const [dateFilter, setDateFilter] = useState<string>(

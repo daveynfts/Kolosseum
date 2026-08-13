@@ -252,7 +252,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }
 
       const parsed = parseJsonBody<Body>(req)
-      if (!parsed.ok) {
+      if (parsed.ok === false) {
         return jsonError(res, 400, parsed.error, {
           message: 'Need href and title at minimum (or ?slot=logo|art for images)',
         })

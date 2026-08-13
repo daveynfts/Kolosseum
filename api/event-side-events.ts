@@ -119,7 +119,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (req.method === 'PUT') {
       if (!requireAdmin(req, res)) return
       const parsed = parseJsonBody<Body>(req)
-      if (!parsed.ok) {
+      if (parsed.ok === false) {
         return jsonError(res, 400, parsed.error, {
           message:
             'Need events[] with id, title, date (YYYY-MM-DD), lat, lng per item',

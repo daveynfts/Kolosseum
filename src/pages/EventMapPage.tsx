@@ -441,7 +441,7 @@ export function EventMapPage() {
   const [source, setSource] = useState<'server' | 'cache' | 'seed'>('seed')
   const [loading, setLoading] = useState(true)
   const [dateFilter, setDateFilter] = useState<string>(
-    () => initialParams.date || '__default__',
+    () => initialParams.date || 'all',
   )
   const [typeFilter, setTypeFilter] = useState<SideEventType | 'all'>('all')
   const [timeOfDay, setTimeOfDay] = useState<TimeOfDayBucket | 'all'>('all')
@@ -575,13 +575,6 @@ export function EventMapPage() {
       document.removeEventListener('visibilitychange', onVis)
     }
   }, [])
-
-  // Default date: deep link → today (if has events) → all
-  useEffect(() => {
-    if (!dataset || dateFilter !== '__default__') return
-    const hasToday = dataset.events.some((e) => eventOccursOnDate(e, today))
-    setDateFilter(hasToday ? today : 'all')
-  }, [dataset, dateFilter, today])
 
   // Sync deep link when filters/selection change
   useEffect(() => {

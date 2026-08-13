@@ -93,12 +93,14 @@ function AvatarNode({
   const placeholderColor = loadState === 'loading' ? '#1e293b' : '#0f172a'
   const faceColor = hasFace ? color : placeholderColor
   const quiet = rank === 'gold' || rank === 'platinum'
+  const outerFade =
+    rank === 'gold' ? 0.88 : rank === 'platinum' ? 0.93 : 1
   const rankRingOpacity = dimmed
     ? 0.12
     : isFocus
       ? 1
       : quiet
-        ? 0.62 + depth * 0.18
+        ? (0.52 + depth * 0.16) * outerFade
         : rank === 'challenger'
           ? 0.82 + depth * 0.16
           : 0.72 + depth * 0.18
@@ -119,14 +121,14 @@ function AvatarNode({
               ? 0.05
               : 0.03
 
-  const idleScale = 0.86 + depth * 0.16
+  const idleScale = (0.86 + depth * 0.16) * outerFade
   const faceOpacity = dimmed
     ? 0.2
     : isFocus
       ? 1
       : recessed
-        ? 0.58 + depth * 0.28
-        : 0.7 + depth * 0.3
+        ? (0.58 + depth * 0.28) * outerFade
+        : (0.7 + depth * 0.3) * (rank === 'gold' ? 0.9 : outerFade)
   const layer = isFocus ? 20 : Math.round(depth * 12)
   const translucent = faceOpacity < 0.98
   const glassOp = dimmed ? 0 : isFocus ? 1 : 0.45 + depth * 0.55

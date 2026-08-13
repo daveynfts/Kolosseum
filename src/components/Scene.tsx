@@ -4,7 +4,7 @@ import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib'
 import { useEffect, useMemo, useRef } from 'react'
 import type { Kol, Niche } from '../types'
 import { kolMatchesNiche } from '../types'
-import { positionForKol25d } from '../lib/layout'
+import { layoutConstellation } from '../lib/layout'
 import { KolBubble } from './KolBubble'
 import { CosmicBackground } from './CosmicBackground'
 
@@ -22,13 +22,7 @@ function Bubbles({
   filterNiche,
   onSelect,
 }: Omit<Props, 'autoRotate'>) {
-  const positions = useMemo(() => {
-    const map = new Map<string, [number, number, number]>()
-    kols.forEach((k, i) => {
-      map.set(k.id, positionForKol25d(k, i, kols.length))
-    })
-    return map
-  }, [kols])
+  const positions = useMemo(() => layoutConstellation(kols), [kols])
 
   const zRange = useMemo(() => {
     let min = Infinity

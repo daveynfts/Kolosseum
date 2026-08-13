@@ -64,6 +64,10 @@ const RADAR_PIPELINES: ScexRadarPipeline[] = [
   'rejected',
 ]
 
+function scexHandleKey(handle: string) {
+  return handle.replace(/^@/, '').trim().toLowerCase()
+}
+
 export function AdminScexEditor({ onToast }: Props) {
   const [dataset, setDataset] = useState<ScexDataset>(() => seedScexDataset())
   const [source, setSource] = useState<'server' | 'cache' | 'seed'>('seed')
@@ -200,6 +204,15 @@ export function AdminScexEditor({ onToast }: Props) {
     () => dataset.posts.find((p) => p.id === selectedPostId) || null,
     [dataset.posts, selectedPostId],
   )
+
+  const actorsByHandle = useMemo(() => {
+    const m = new Map<string, ScexActor>()
+    for (const a of dataset.actors) {
+      const key = scexHandleKey(a.handle)
+      if (key) m.set(key, a)
+    }
+    return m
+  }, [dataset.actors])
 
   const filteredActors = useMemo(() => {
     const q = actorQuery.trim().toLowerCase()
@@ -1606,26 +1619,35 @@ export function AdminScexEditor({ onToast }: Props) {
               </button>
             </div>
             <ul className="admin-side-list admin-ts-list">
-              {dataset.posts.map((p) => (
-                <li key={p.id}>
-                  <button
-                    type="button"
-                    className={`admin-ts-list-item ${selectedPostId === p.id ? 'is-active' : ''}`}
-                    onClick={() => setSelectedPostId(p.id)}
-                  >
-                    <span className="admin-ts-row__meta">
-                      <strong>
-                        @{p.handle}
-                        {p.hidden ? ' · hidden' : ''}
-                      </strong>
-                      <small>
-                        {p.sentiment} · {p.postedAt.slice(0, 16)} ·{' '}
-                        {(p.text || '').slice(0, 48)}
-                      </small>
-                    </span>
-                  </button>
-                </li>
-              ))}
+              {dataset.posts.map((p) => {
+                const actor = actorsByHandle.get(scexHandleKey(p.handle))
+                return (
+                  <li key={p.id}>
+                    <button
+                      type="button"
+                      className={`admin-ts-list-item ${selectedPostId === p.id ? 'is-active' : ''}`}
+                      onClick={() => setSelectedPostId(p.id)}
+                      title={`@${p.handle}`}
+                    >
+                      <XProfileAvatar
+                        handle={p.handle}
+                        name={actor?.displayName || p.handle}
+                        size={28}
+                      />
+                      <span className="admin-ts-row__meta">
+                        <strong>
+                          @{p.handle}
+                          {p.hidden ? ' · hidden' : ''}
+                        </strong>
+                        <small>
+                          {p.sentiment} · {p.postedAt.slice(0, 16)} ·{' '}
+                          {(p.text || '').slice(0, 48)}
+                        </small>
+                      </span>
+                    </button>
+                  </li>
+                )
+              })}
             </ul>
           </div>
           <div className="admin-edit-main glass admin-ts-detail">
@@ -1634,10 +1656,21 @@ export function AdminScexEditor({ onToast }: Props) {
             ) : (
               <>
                 <div className="admin-ts-detail__head">
-                  <h2>Post · @{selectedPost.handle}</h2>
+                  <XProfileAvatar
+                    handle={selectedPost.handle}
+                    name={
+                      actorsByHandle.get(scexHandleKey(selectedPost.handle))
+                        ?.displayName || selectedPost.handle
+                    }
+                    size={36}
+                  />
+                  <h2>
+                    Post
+                    <span className="muted"> · @{selectedPost.handle}</span>
+                  </h2>
                   <button
                     type="button"
-                    className="btn btn--danger"
+                    className="admin-btn admin-btn--sm admin-btn--danger"
                     onClick={() => removePost(selectedPost.id)}
                   >
                     Delete

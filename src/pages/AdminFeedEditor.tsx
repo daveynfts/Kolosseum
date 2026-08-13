@@ -65,6 +65,7 @@ export function AdminFeedEditor({ kols, onToast, addSignal = 0 }: Props) {
   const [xUrl, setXUrl] = useState('')
   const [fetchingX, setFetchingX] = useState(false)
   const [lastFetchNote, setLastFetchNote] = useState<string | null>(null)
+  const [lastFetchOk, setLastFetchOk] = useState<boolean | null>(null)
 
   const refresh = useCallback(async () => {
     setLoading(true)
@@ -204,72 +205,114 @@ export function AdminFeedEditor({ kols, onToast, addSignal = 0 }: Props) {
     }
   }
 
-  const onFetchXUrl = async () => {
+  const onSyncXUrl = async () => {
     const url = xUrl.trim()
     if (!url) {
-      onToast('Dán URL bài X (x.com/.../status/...)')
+      onToast('Dán link bài X (x.com/.../status/...) rồi Sync')
       return
     }
     const token = getAdminToken()
-    if (token) setAdminToken(token)
-    setFetchingX(true)
-    setLastFetchNote(null)
-    const result = await fetchXStatusFromUrl(url, token || undefined)
-    setFetchingX(false)
-    if (!result.ok) {
-      onToast(`Fetch X lỗi: ${result.error}`)
+    if (!token) {
+      onToast('Dán FEED_ADMIN_TOKEN ở thanh ops rồi Sync')
       return
     }
-    const p = result.post
-    // Keep existing draft id if editing; else new id from tweet
-    const merged: FeedPost = normalizePost({
-      ...(draft || {}),
-      id: draft?.id || p.id,
-      handle: p.handle,
-      displayName: p.displayName,
-      text: p.text,
-      createdAt: p.createdAt,
-      likes: p.likes,
-      reposts: p.reposts,
-      replies: p.replies,
-      views: p.views,
-      media: p.media,
-      isReply: p.isReply,
-      url: p.url,
-      avatarLocal: p.avatarLocal,
-    })
-
-    // Ensure post is in feed list
-    setFeed((prev) => {
-      const base = prev ?? {
-        generatedAt: new Date().toISOString(),
-        source: 'admin',
-        mode: 'admin',
-        tier: 1,
-        kolCount: 0,
-        handles: [],
-        postCount: 0,
-        posts: [],
+    setAdminToken(token)
+    setFetchingX(true)
+    setLastFetchNote(null)
+    setLastFetchOk(null)
+    try {
+      const result = await fetchXStatusFromUrl(url, token)
+      if (!result.ok) {
+        const note = `Sync X lỗi: ${result.error}`
+        setLastFetchOk(false)
+        setLastFetchNote(note)
+        onToast(note)
+        return
       }
+      const p = result.post
+      const kol = kols.find(
+        (k) => k.handle.toLowerCase() === p.handle.toLowerCase(),
+      )
+      const merged = normalizePost({
+        id: p.id,
+        handle: p.handle,
+        displayName: kol?.displayName || p.displayName,
+        text: p.text,
+        createdAt: p.createdAt,
+        likes: p.likes,
+        reposts: p.reposts,
+        replies: p.replies,
+        views: p.views,
+        media: p.media,
+        isReply: p.isReply,
+        url: p.url,
+        avatarLocal: `/avatars/${p.handle}.jpg`,
+      })
+
+      let base = feed ?? emptyFeed()
+      if (dirty && draft && draft.id !== merged.id) {
+        const emptyStub =
+          draft.id.startsWith('admin-') &&
+          !draft.text.trim() &&
+          !(draft.media && draft.media.length)
+        if (emptyStub) {
+          base = { ...base, posts: base.posts.filter((x) => x.id !== draft.id) }
+        } else {
+          const withDraft = buildFeedWithDraft()
+          if (withDraft) base = withDraft
+        }
+      }
+
       const exists = base.posts.some((x) => x.id === merged.id)
       const posts = exists
         ? base.posts.map((x) => (x.id === merged.id ? merged : x))
         : [merged, ...base.posts]
-      return { ...base, posts }
-    })
-    setSelectedId(merged.id)
-    setDraft(merged)
-    setDirty(true)
-    setLoading(false)
+      const next = {
+        ...base,
+        posts,
+        generatedAt: new Date().toISOString(),
+      }
 
-    const cached = result.cache?.imagesCached ?? 0
-    const total = result.cache?.imagesTotal ?? p.media?.length ?? 0
-    const note =
-      total > 0
-        ? `Đã fetch @${p.handle} · ảnh cache ${cached}/${total} (snapshot lúc ${new Date().toLocaleTimeString('vi-VN')})`
-        : `Đã fetch @${p.handle} · không có ảnh · snapshot ${new Date().toLocaleTimeString('vi-VN')}`
-    setLastFetchNote(note)
-    onToast(note)
+      setSelectedId(merged.id)
+      setDraft(merged)
+      setLoading(false)
+      setSavingServer(true)
+      const local = saveFeedLocal(next, 'x sync')
+      setFeed(local)
+      const saved = await saveFeedToServer(local, 'admin x sync', token)
+
+      const cached = result.cache?.imagesCached ?? 0
+      const total = result.cache?.imagesTotal ?? p.media?.length ?? 0
+      const imgBit =
+        total > 0 ? ` · ảnh ${cached}/${total} R2` : ' · không có ảnh'
+
+      if (saved.ok) {
+        setFeed(saved.feed)
+        setFeedSource('server')
+        setIsOverride(true)
+        setDirty(false)
+        const fixed = saved.feed.posts.find((x) => x.id === merged.id)
+        if (fixed) setDraft(fixed)
+        setXUrl('')
+        const note = `Đã ${exists ? 'cập nhật' : 'thêm'} @${p.handle}${imgBit} → feed R2`
+        setLastFetchOk(true)
+        setLastFetchNote(note)
+        onToast(note)
+      } else {
+        setDirty(true)
+        const hint =
+          saved.status === 401
+            ? ' — token sai hoặc khác FEED_ADMIN_TOKEN.'
+            : ''
+        const note = `Đã fill @${p.handle}${imgBit} nhưng Save R2 lỗi: ${saved.error}${hint}`
+        setLastFetchOk(false)
+        setLastFetchNote(note)
+        onToast(note)
+      }
+    } finally {
+      setFetchingX(false)
+      setSavingServer(false)
+    }
   }
 
   const onAdd = useCallback(() => {
@@ -448,6 +491,53 @@ export function AdminFeedEditor({ kols, onToast, addSignal = 0 }: Props) {
 
   return (
     <div className="admin-feed">
+      <div className="admin-feed-sync">
+        <label className="admin-feed-sync__url">
+          <span>Link bài X</span>
+          <input
+            type="url"
+            value={xUrl}
+            onChange={(e) => setXUrl(e.target.value)}
+            placeholder="https://x.com/user/status/…"
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault()
+                void onSyncXUrl()
+              }
+            }}
+            disabled={fetchingX || savingServer}
+          />
+        </label>
+        <button
+          type="button"
+          className="btn btn--primary"
+          onClick={() => void onSyncXUrl()}
+          disabled={fetchingX || savingServer || !xUrl.trim()}
+          title="Lấy text + ảnh từ X, cache ảnh R2, rồi publish feed"
+        >
+          {fetchingX
+            ? 'Đang lấy X…'
+            : savingServer
+              ? 'Đang lưu R2…'
+              : 'Sync → R2'}
+        </button>
+        {lastFetchNote ? (
+          <span
+            className={
+              lastFetchOk === false
+                ? 'admin-feed-sync__note admin-feed-sync__note--err'
+                : 'admin-feed-sync__note'
+            }
+          >
+            {lastFetchNote}
+          </span>
+        ) : (
+          <span className="admin-feed-sync__hint">
+            Dán link → Sync: tự fill text/ảnh và lưu feed lên R2
+          </span>
+        )}
+      </div>
+
       <div className="admin-feed-toolbar">
         <label className="admin-search-wrap" style={{ flex: '1 1 160px' }}>
           <span className="admin-search-wrap__icon" aria-hidden>
@@ -463,29 +553,6 @@ export function AdminFeedEditor({ kols, onToast, addSignal = 0 }: Props) {
             autoComplete="off"
           />
         </label>
-        <label className="admin-feed-token admin-feed-xurl" style={{ flex: '2 1 240px' }}>
-          <span>URL bài X</span>
-          <input
-            type="url"
-            value={xUrl}
-            onChange={(e) => setXUrl(e.target.value)}
-            placeholder="https://x.com/user/status/…"
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') {
-                e.preventDefault()
-                void onFetchXUrl()
-              }
-            }}
-          />
-        </label>
-        <button
-          type="button"
-          className="btn"
-          onClick={() => void onFetchXUrl()}
-          disabled={fetchingX}
-        >
-          {fetchingX ? 'Fetching…' : 'Fetch'}
-        </button>
         <button type="button" className="btn" onClick={onAdd}>
           + Add
         </button>
@@ -539,11 +606,6 @@ export function AdminFeedEditor({ kols, onToast, addSignal = 0 }: Props) {
         >
           Reload
         </button>
-        {lastFetchNote && (
-          <span className="admin-count" style={{ alignSelf: 'center' }}>
-            {lastFetchNote}
-          </span>
-        )}
       </div>
 
       {loading && !feed ? (

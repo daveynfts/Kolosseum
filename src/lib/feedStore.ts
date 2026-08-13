@@ -417,11 +417,16 @@ export type XStatusFetchResult =
         fetchedAt?: string
         avatarRemote?: string
       }
-      cache?: { redis: boolean; imagesCached: number; imagesTotal: number }
+      cache?: {
+        redis?: boolean
+        r2?: boolean
+        imagesCached: number
+        imagesTotal: number
+      }
     }
   | { ok: false; error: string; status?: number }
 
-/** Fetch X status snapshot via /api/x-status (server caches images to Redis). */
+/** Fetch X status snapshot via /api/x-status (admin token caches images to R2). */
 export async function fetchXStatusFromUrl(
   xUrl: string,
   tokenOverride?: string,
@@ -443,7 +448,12 @@ export async function fetchXStatusFromUrl(
         fetchedAt?: string
         avatarRemote?: string
       }
-      cache?: { redis: boolean; imagesCached: number; imagesTotal: number }
+      cache?: {
+        redis?: boolean
+        r2?: boolean
+        imagesCached: number
+        imagesTotal: number
+      }
     }
     if (!res.ok || !body.post) {
       return {

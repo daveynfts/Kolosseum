@@ -151,6 +151,7 @@
 .emp-popup__row,
 .emp-pin__label {
   font-family: var(--emp-font) !important;
+  letter-spacing: 0;
 }
 
 .emp [style*='font-family'],

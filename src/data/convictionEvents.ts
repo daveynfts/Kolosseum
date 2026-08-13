@@ -1141,7 +1141,8 @@ const SIDE_EVENTS: SideEvent[] = [
     title: 'OnlyDevs Vietnam',
     host: 'OnlyDevs',
     venue: '22B Nguyễn Thị Diệu',
-    address: '22B Nguyễn Thị Diệu, Quận 3, TP. Hồ Chí Minh',
+    address:
+      '22B Nguyễn Thị Diệu, Xuân Hòa, Hồ Chí Minh, Vietnam',
     lat: 10.77686,
     lng: 106.68953,
     date: '2026-08-14',

@@ -1,5 +1,7 @@
 /**
- * Conviction side events — R2 first, then seed. Admin publishes via FEED_ADMIN_TOKEN.
+ * Conviction side events — R2 first, then seed. Admin publishes via FEED_ADMIN_TOKEN
+ * (PUT /api/event-side-events → R2 key events/conviction-2026/v1.json).
+ * Mojibake in live JSON is repaired on GET and in sanitizeLumaText.
  */
 import {
   CONVICTION_EVENTS_SEED,
@@ -9,7 +11,7 @@ import {
 import { withBase } from './base'
 import { getAdminToken } from './feedStore'
 
-const CACHE_KEY = 'vn-kol-map-conviction-events-v4'
+const CACHE_KEY = 'vn-kol-map-conviction-events-v5'
 export const CONVICTION_EVENTS_EVENT = 'vn-kol-conviction-events-updated'
 
 function apiUrl() {

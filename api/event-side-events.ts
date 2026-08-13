@@ -13,6 +13,7 @@ import {
   r2Client,
   r2GetJson,
 } from '../lib/server/r2.js'
+import { repairJsonStrings } from '../src/lib/lumaText.js'
 import {
   commitJsonReplace,
   enforcePublicRateLimit,
@@ -111,9 +112,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           message: 'Admin token required for full events dataset',
         })
       }
-      if (wantAll) return sendJson(req, res, 200, data)
+      if (wantAll) return sendJson(req, res, 200, repairJsonStrings(data))
       const events = data.events.filter((e) => e && e.hidden !== true)
-      return sendJson(req, res, 200, { ...data, events })
+      return sendJson(req, res, 200, repairJsonStrings({ ...data, events }))
     }
 
     if (req.method === 'PUT') {
@@ -137,14 +138,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         (body.events || []) as Array<SideEventBody & { imageUrl?: string }>,
         { deadlineMs: 8_000 },
       )
-      const payload: Body = {
+      const payload: Body = repairJsonStrings({
         ...body,
         version: 1,
         kind: 'conviction-side-events',
         event: 'conviction-2026',
         events: imagePass.events,
         updatedAt: new Date().toISOString(),
-      }
+      })
       delete (payload as { baseUpdatedAt?: string }).baseUpdatedAt
       if (
         !(await commitJsonReplace(

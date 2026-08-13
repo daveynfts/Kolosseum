@@ -56,10 +56,10 @@ function AvatarWithTexture(props: Props) {
     loader.setCrossOrigin('anonymous')
   })
   texture.colorSpace = THREE.SRGBColorSpace
-  texture.generateMipmaps = false
-  texture.minFilter = THREE.LinearFilter
+  texture.generateMipmaps = true
+  texture.minFilter = THREE.LinearMipmapLinearFilter
   texture.magFilter = THREE.LinearFilter
-  texture.anisotropy = 1
+  texture.anisotropy = 4
   texture.needsUpdate = true
   return <AvatarNode {...props} map={texture} loadState="ready" />
 }
@@ -88,47 +88,48 @@ function AvatarNode({
   const status = (kol.statusLabel ?? 'stable') as StatusLabel
   const isHot = status === 'hot' || kol.hotScore >= 78
   const isFocus = selected || hovered
-  const segs = 48
+  const segs = 96
   const hasFace = !!map
   const placeholderColor = loadState === 'loading' ? '#1e293b' : '#0f172a'
   const faceColor = hasFace ? color : placeholderColor
   const quiet = rank === 'gold' || rank === 'platinum'
   const rankRingOpacity = dimmed
-    ? 0.14
+    ? 0.12
     : isFocus
       ? 1
       : quiet
-        ? 0.72
+        ? 0.62 + depth * 0.18
         : rank === 'challenger'
-          ? 0.96
-          : 0.88
+          ? 0.82 + depth * 0.16
+          : 0.72 + depth * 0.18
 
   const haloOpacity = dimmed
-    ? 0.03
+    ? 0.02
     : !hasFace
-      ? 0.12
+      ? 0.08
       : isFocus
         ? rank === 'challenger'
-          ? 0.22
-          : 0.14
+          ? 0.14
+          : 0.09
         : quiet
-          ? 0.05
+          ? 0.025
           : rank === 'challenger'
-            ? 0.12
+            ? 0.06
             : isHot
-              ? 0.1
-              : 0.07
+              ? 0.05
+              : 0.03
 
-  const idleScale = 0.92 + depth * 0.08
+  const idleScale = 0.86 + depth * 0.16
   const faceOpacity = dimmed
-    ? 0.22
+    ? 0.2
     : isFocus
       ? 1
       : recessed
-        ? 0.68 + depth * 0.18
-        : 0.8 + depth * 0.2
+        ? 0.58 + depth * 0.28
+        : 0.7 + depth * 0.3
   const layer = isFocus ? 20 : Math.round(depth * 12)
   const translucent = faceOpacity < 0.98
+  const glassOp = dimmed ? 0 : isFocus ? 1 : 0.45 + depth * 0.55
 
   useFrame(() => {
     const g = groupRef.current
@@ -138,7 +139,7 @@ function AvatarNode({
       : recessed && !isFocus
         ? idleScale * 0.92
         : isFocus
-          ? 1.15
+          ? 1.12
           : idleScale
     g.scale.setScalar(THREE.MathUtils.lerp(g.scale.x, target, 0.14))
   })
@@ -173,23 +174,23 @@ function AvatarNode({
   return (
     <group position={position} ref={groupRef}>
       <Billboard follow lockZ={false}>
-        {/* Contact shadow — front discs sit on the cluster */}
-        <mesh position={[0.05, -0.1, -0.07]} renderOrder={layer}>
-          <circleGeometry args={[baseR * 1.06, segs]} />
+        {/* Contact shadow — soft disc under the front of the cluster */}
+        <mesh position={[0.04, -0.12, -0.08]} renderOrder={layer}>
+          <circleGeometry args={[baseR * 1.08, segs]} />
           <meshBasicMaterial
             color="#020617"
             transparent
-            opacity={dimmed ? 0.04 : 0.1 + depth * 0.16}
+            opacity={dimmed ? 0.03 : 0.08 + depth * 0.2}
             depthWrite={false}
             depthTest
             toneMapped={false}
           />
         </mesh>
 
-        {/* Barely-there rank wash — not a neon bloom */}
-        <mesh position={[0, 0, -0.035]} renderOrder={layer}>
+        {/* Barely-there rank wash — only reads on focus / Challenger */}
+        <mesh position={[0, 0, -0.04]} renderOrder={layer}>
           <circleGeometry
-            args={[baseR * (ringOuter + (isFocus ? 0.08 : 0.04)), segs]}
+            args={[baseR * (ringOuter + (isFocus ? 0.04 : 0.015)), segs]}
           />
           <meshBasicMaterial
             color={hasFace ? rankRing : placeholderColor}
@@ -243,17 +244,64 @@ function AvatarNode({
           frontSide
           animate={!dimmed}
           renderOrder={layer + 2}
+          depth={depth}
         />
 
-        {/* Crystal inner rim — flush with the portrait */}
-        <mesh position={[0, 0, 0.016]} renderOrder={layer + 4}>
-          <ringGeometry args={[baseR * 0.978, baseR * 1.01, segs]} />
+        {/* Glass volume — bottom shade + catchlight (reads as a sphere) */}
+        {hasFace && !dimmed && (
+          <>
+            <mesh position={[0, 0, 0.018]} renderOrder={layer + 3}>
+              <ringGeometry
+                args={[
+                  baseR * 0.52,
+                  baseR * 0.99,
+                  40,
+                  1,
+                  Math.PI * 1.12,
+                  Math.PI * 0.82,
+                ]}
+              />
+              <meshBasicMaterial
+                color="#020617"
+                transparent
+                opacity={0.16 * glassOp}
+                depthWrite={false}
+                depthTest
+                side={THREE.FrontSide}
+                toneMapped={false}
+              />
+            </mesh>
+            <mesh position={[0, 0, 0.02]} renderOrder={layer + 3}>
+              <ringGeometry
+                args={[
+                  baseR * 0.38,
+                  baseR * 0.9,
+                  40,
+                  1,
+                  Math.PI * 0.52,
+                  Math.PI * 0.62,
+                ]}
+              />
+              <meshBasicMaterial
+                color="#ffffff"
+                transparent
+                opacity={0.13 * glassOp}
+                depthWrite={false}
+                depthTest
+                side={THREE.FrontSide}
+                toneMapped={false}
+              />
+            </mesh>
+          </>
+        )}
+
+        {/* Hairline inner rim — crystal edge, not a second glow ring */}
+        <mesh position={[0, 0, 0.022]} renderOrder={layer + 4}>
+          <ringGeometry args={[baseR * 0.988, baseR * 1.004, segs]} />
           <meshBasicMaterial
             color={innerRim}
             transparent
-            opacity={
-              dimmed ? 0.06 : isFocus ? 0.82 : quiet ? 0.28 : 0.48
-            }
+            opacity={dimmed ? 0.04 : isFocus ? 0.55 : quiet ? 0.16 : 0.28}
             depthWrite={false}
             depthTest
             side={THREE.FrontSide}

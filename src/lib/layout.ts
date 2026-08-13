@@ -14,7 +14,7 @@ export function positionForKol(
   const theta = Math.PI * (1 + Math.sqrt(5)) * index
 
   // Spread cloud so larger avatars don't overlap as much
-  const radius = 9.5 + (1 - kol.score / 100) * 5.5
+  const radius = 10.6 + (1 - kol.score / 100) * 5.8
 
   let x = radius * Math.sin(phi) * Math.cos(theta)
   let y = radius * Math.cos(phi)
@@ -26,9 +26,9 @@ export function positionForKol(
   y += (nicheIndex - nicheOrder.length / 2) * 0.2
 
   if (kol.tier === 1) {
-    x *= 0.9
-    y *= 0.9
-    z *= 0.9
+    x *= 0.94
+    y *= 0.94
+    z *= 0.94
   }
 
   return [x, y, z]

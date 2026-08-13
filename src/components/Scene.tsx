@@ -143,7 +143,7 @@ export function Scene(props: Props) {
   return (
     <Canvas
       camera={{ position: [0, 5.5, 26], fov: 44, near: 0.1, far: 280 }}
-      dpr={[1, 1.75]}
+      dpr={[1, 2]}
       style={{
         position: 'absolute',
         inset: 0,

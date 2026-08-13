@@ -179,20 +179,20 @@ export const RANK_COLORS: Record<KolRank, string> = {
  * (inspired by LoL 2017 summoner frames, not official assets).
  */
 export const RANK_RING_COLORS: Record<KolRank, string> = {
-  challenger: '#e8c468', // warm gold armor
-  master: '#6366f1', // deep indigo
-  diamond: '#60a5fa', // crystal blue
-  platinum: '#2dd4bf', // teal metal
-  gold: '#d97706', // antique gold
+  challenger: '#d4af6a', // antique gold
+  master: '#7c83d6', // muted indigo
+  diamond: '#6eb8de', // steel blue
+  platinum: '#4ecdc4', // quiet teal
+  gold: '#c98a1a', // warm brass
 }
 
-/** Outer ring thickness multiplier by rank (watch-bezel, not neon halo) */
+/** Outer ring thickness multiplier by rank (hairline bezel, not neon halo) */
 export const RANK_RING_WIDTH: Record<KolRank, number> = {
-  challenger: 1.22,
-  master: 1.15,
-  diamond: 1.12,
-  platinum: 1.08,
-  gold: 1.055,
+  challenger: 1.13,
+  master: 1.08,
+  diamond: 1.065,
+  platinum: 1.05,
+  gold: 1.038,
 }
 
 /** Map filter tier → ranks that belong to that tier bucket */

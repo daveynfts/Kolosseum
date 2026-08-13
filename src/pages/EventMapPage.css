@@ -108,7 +108,7 @@
   --emp-radius-md: 12px;
   --emp-radius-sm: 8px;
   --emp-radius-pill: 999px;
-  --emp-font: 'Inter', 'Be Vietnam Pro', -apple-system, BlinkMacSystemFont,
+  --emp-font: 'Be Vietnam Pro', 'Inter', -apple-system, BlinkMacSystemFont,
     'Segoe UI', Roboto, sans-serif;
   --emp-shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
 
@@ -132,7 +132,7 @@
     var(--emp-bg);
   color: var(--emp-text);
   font-family: var(--emp-font);
-  letter-spacing: -0.015em;
+  letter-spacing: 0;
   -webkit-font-smoothing: antialiased;
   overscroll-behavior: none;
   touch-action: manipulation;
@@ -1586,6 +1586,11 @@
   box-shadow: none;
 }
 
+.emp__map .maplibregl-ctrl-attrib {
+  font-family: var(--emp-font);
+  letter-spacing: 0;
+}
+
 .emp__map .maplibregl-ctrl-group button {
   background: transparent;
   border-color: var(--emp-border);
@@ -2515,9 +2520,11 @@
   background: rgba(15, 23, 42, 0.92);
   border: 1px solid rgba(148, 163, 184, 0.28);
   color: #f8fafc;
+  font-family: var(--emp-font);
   font-size: 0.68rem;
   font-weight: 650;
-  line-height: 1.25;
+  letter-spacing: 0;
+  line-height: 1.35;
   text-align: center;
   white-space: normal;
   pointer-events: none;
@@ -2680,9 +2687,11 @@
 
 .emp-popup__row {
   margin: 0.28rem 0;
+  font-family: var(--emp-font);
   font-size: 0.84rem;
+  letter-spacing: 0;
   color: var(--emp-text-2);
-  line-height: 1.4;
+  line-height: 1.45;
 }
 
 .emp-popup__actions {
@@ -2906,12 +2915,14 @@
 
 .emp__card-place {
   margin: 0.25rem 0 0;
+  font-family: var(--emp-font);
   font-size: 0.72rem;
+  letter-spacing: 0;
   color: #94a3b8;
   display: flex;
   align-items: flex-start;
   gap: 0.3rem;
-  line-height: 1.35;
+  line-height: 1.45;
 }
 
 .emp__card-pin {

@@ -36,11 +36,13 @@ function Bubbles({
 
   const ordered = useMemo(() => {
     return [...kols].sort((a, b) => {
+      if (a.id === selectedId) return 1
+      if (b.id === selectedId) return -1
       const za = positions.get(a.id)?.[2] ?? 0
       const zb = positions.get(b.id)?.[2] ?? 0
       return za - zb
     })
-  }, [kols, positions])
+  }, [kols, positions, selectedId])
 
   return (
     <>

@@ -742,7 +742,7 @@ export function AdminFeedEditor({ kols, onToast, addSignal = 0 }: Props) {
                         onChange={(e) => patchDraft('displayName', e.target.value)}
                       />
                     </label>
-                    <label className="admin-field" style={{ gridColumn: '1 / -1' }}>
+                    <label className="admin-field admin-field--span">
                       <span className="admin-field-label">Text</span>
                       <textarea
                         rows={6}
@@ -806,11 +806,12 @@ export function AdminFeedEditor({ kols, onToast, addSignal = 0 }: Props) {
                         }
                       />
                     </label>
-                    <label className="admin-field" style={{ gridColumn: '1 / -1' }}>
+                    <label className="admin-field admin-field--span">
                       <span className="admin-field-label">
                         Media URLs (mỗi dòng 1 URL)
                       </span>
                       <textarea
+                        className="admin-field__media"
                         rows={3}
                         value={mediaText}
                         onChange={(e) =>
@@ -824,24 +825,26 @@ export function AdminFeedEditor({ kols, onToast, addSignal = 0 }: Props) {
                         }
                       />
                     </label>
-                    <label className="admin-field">
-                      <span className="admin-field-label">Is reply</span>
-                      <label className="admin-check">
-                        <input
-                          type="checkbox"
-                          checked={draft.isReply}
-                          onChange={(e) => patchDraft('isReply', e.target.checked)}
-                        />
-                        Reply
+                    <div className="admin-fields-row">
+                      <label className="admin-field">
+                        <span className="admin-field-label">Is reply</span>
+                        <label className="admin-check">
+                          <input
+                            type="checkbox"
+                            checked={draft.isReply}
+                            onChange={(e) => patchDraft('isReply', e.target.checked)}
+                          />
+                          Reply
+                        </label>
                       </label>
-                    </label>
-                    <label className="admin-field">
-                      <span className="admin-field-label">Avatar path</span>
-                      <input
-                        value={draft.avatarLocal}
-                        onChange={(e) => patchDraft('avatarLocal', e.target.value)}
-                      />
-                    </label>
+                      <label className="admin-field">
+                        <span className="admin-field-label">Avatar path</span>
+                        <input
+                          value={draft.avatarLocal}
+                          onChange={(e) => patchDraft('avatarLocal', e.target.value)}
+                        />
+                      </label>
+                    </div>
                   </div>
                 </section>
 

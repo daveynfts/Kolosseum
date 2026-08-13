@@ -168,6 +168,7 @@ function App() {
             </Suspense>
           </SceneErrorBoundary>
         </div>
+        <div className="map-html-layer" id="map-html-layer" />
         <SiteChrome
           overlay
           active="map"

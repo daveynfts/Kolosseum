@@ -18,6 +18,8 @@ interface Props {
   renderOrder?: number
   /** 0 = back of cloud — quieter metal */
   depth?: number
+  /** False when this bubble is selected so the bezel stays in front */
+  depthTest?: boolean
 }
 
 /**
@@ -36,6 +38,7 @@ export function RankRingDecor({
   animate = true,
   renderOrder = 2,
   depth = 0.65,
+  depthTest = true,
 }: Props) {
   const side = frontSide ? THREE.FrontSide : THREE.DoubleSide
   const outer = RANK_RING_WIDTH[rank]
@@ -65,7 +68,7 @@ export function RankRingDecor({
     transparent: true as const,
     opacity: o,
     depthWrite: false,
-    depthTest: true,
+    depthTest,
     side,
     toneMapped: false as const,
   })
@@ -118,13 +121,13 @@ export function RankRingDecor({
       {/* Color band */}
       <mesh position={[0, 0, z]} renderOrder={ro}>
         <ringGeometry args={[rBezelIn, rBezelOut, segs]} />
-        <meshBasicMaterial {...mat(color, op * (quiet ? 0.78 : 0.92))} />
+        <meshBasicMaterial {...mat(color, op * (quiet ? 0.88 : 0.94))} />
       </mesh>
       {/* Bright outer hairline */}
       <mesh position={[0, 0, z + 0.001]} renderOrder={ro}>
         <ringGeometry args={[rBezelOut * 0.985, rEdge, segs]} />
         <meshBasicMaterial
-          {...mat(metalBright, op * (quiet ? 0.35 : 0.55))}
+          {...mat(metalBright, op * (quiet ? 0.48 : 0.58))}
         />
       </mesh>
 

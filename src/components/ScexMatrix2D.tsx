@@ -578,30 +578,41 @@ export function ScexMatrix2D({
       )}
 
       <div className="scex2d-stage scex2d-stage--story">
-        <div className="scex2d-plot-shell">
+        <div
+          className="scex2d-plot-shell"
+          style={
+            {
+              ['--split-x' as string]: `${splitXPct}%`,
+              ['--split-y' as string]: `${splitYFromTopPct}%`,
+            } as CSSProperties
+          }
+        >
           {/*
-            Axis-end labels pinned to plot edges (fixed vs zoom/pan).
-            Side labels flip horizontal on hover for readability.
+            Same box as the plot so % matches the crosshair (volumeSplit /
+            qualitySplit), not the geometric 50% of the shell. Stays outside
+            the zoom layer so labels stay pinned while pan/zoom.
           */}
-          <div className="scex2d-axis-end scex2d-axis-end--n" aria-hidden>
-            <span className="scex2d-axis-end__text">Uy tín cao nhất</span>
-          </div>
-          <div className="scex2d-axis-end scex2d-axis-end--s" aria-hidden>
-            <span className="scex2d-axis-end__text">Uy tín thấp nhất</span>
-          </div>
-          <div
-            className="scex2d-axis-end scex2d-axis-end--w"
-            tabIndex={0}
-            title="Rê chuột để đọc ngang"
-          >
-            <span className="scex2d-axis-end__text">Ít bài đăng nhất</span>
-          </div>
-          <div
-            className="scex2d-axis-end scex2d-axis-end--e"
-            tabIndex={0}
-            title="Rê chuột để đọc ngang"
-          >
-            <span className="scex2d-axis-end__text">Nhiều bài đăng nhất</span>
+          <div className="scex2d-axis-overlay">
+            <div className="scex2d-axis-end scex2d-axis-end--n" aria-hidden>
+              <span className="scex2d-axis-end__text">Uy tín cao nhất</span>
+            </div>
+            <div className="scex2d-axis-end scex2d-axis-end--s" aria-hidden>
+              <span className="scex2d-axis-end__text">Uy tín thấp nhất</span>
+            </div>
+            <div
+              className="scex2d-axis-end scex2d-axis-end--w"
+              tabIndex={0}
+              title="Rê chuột để đọc ngang"
+            >
+              <span className="scex2d-axis-end__text">Ít bài đăng nhất</span>
+            </div>
+            <div
+              className="scex2d-axis-end scex2d-axis-end--e"
+              tabIndex={0}
+              title="Rê chuột để đọc ngang"
+            >
+              <span className="scex2d-axis-end__text">Nhiều bài đăng nhất</span>
+            </div>
           </div>
 
           <div
@@ -641,15 +652,7 @@ export function ScexMatrix2D({
               <div className="scex2d-wash scex2d-wash--stars" />
               <div className="scex2d-wash scex2d-wash--ignore" />
               <div className="scex2d-wash scex2d-wash--noise" />
-              <div
-                className="scex2d-crosshair scex2d-crosshair--split"
-                style={
-                  {
-                    ['--split-x' as string]: `${splitXPct}%`,
-                    ['--split-y' as string]: `${splitYFromTopPct}%`,
-                  } as CSSProperties
-                }
-              />
+              <div className="scex2d-crosshair scex2d-crosshair--split" />
             </div>
 
             {/* Bubbles: spread positions in JS (not CSS-scaled) so they open up */}

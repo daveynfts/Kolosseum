@@ -35,7 +35,7 @@ export function SiteChrome({ active, search, trailing, overlay }: Props) {
       <a className="site-chrome__brand" href="/" title="Davey's Radar">
         <img
           className="site-chrome__mark"
-          src="/brand-mark.png"
+          src="/logo.jpg"
           alt=""
           width={64}
           height={64}

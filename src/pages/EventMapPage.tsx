@@ -56,22 +56,24 @@ import './EventMapPage.css'
 const CONVICTION_LOGO = withBase('/conviction/logo-full.svg')
 const CONVICTION_HOME = 'https://www.conviction.vn/vi'
 
-/** Raster dark tiles — avoids CARTO vector TileJSON hangs with MapLibre v6. */
 /**
- * Dark basemap (Carto).
- * Note: `dark_matter` raster path 404s — use `dark_all` (proven working).
- * UI chrome stays DaveyNFTs #030305; map tiles are near-black OSM labels.
+ * Dark vector basemap (OpenFreeMap + Noto Sans glyphs).
+ * Carto `dark_all` raster bakes OSM names with a Latin-only font → tofu
+ * on Vietnamese street names (Nguyễn, Lê, Đường…). Noto covers that range.
+ * Unlabeled Carto raster is the fallback if the style/TileJSON fails.
  */
-const MAP_STYLE: maplibregl.StyleSpecification = {
+const OPENFREEMAP_DARK = 'https://tiles.openfreemap.org/styles/dark'
+
+const CARTO_DARK_NOLABELS: maplibregl.StyleSpecification = {
   version: 8,
-  name: 'Carto Dark All',
+  name: 'Carto Dark (no labels)',
   sources: {
     'carto-dark': {
       type: 'raster',
       tiles: [
-        'https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png',
-        'https://b.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png',
-        'https://c.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png',
+        'https://a.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}@2x.png',
+        'https://b.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}@2x.png',
+        'https://c.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}@2x.png',
       ],
       tileSize: 256,
       attribution:
@@ -896,7 +898,7 @@ export function EventMapPage() {
     let ready = false
     const map = new maplibregl.Map({
       container,
-      style: MAP_STYLE,
+      style: OPENFREEMAP_DARK,
       center: [SALA_VENUE.lng, SALA_VENUE.lat],
       zoom: 12.6,
       pitch: 0,
@@ -954,13 +956,66 @@ export function EventMapPage() {
     })
     map.on('rotatestart', onUserMove)
 
-    map.once('load', markReady)
     map.once('idle', markReady)
-    map.on('error', (e) => {
-      console.warn('[EventMap] map error', e?.error || e)
+    let usedLabelFallback = false
+    const fallbackToUnlabeled = () => {
+      if (cancelled || usedLabelFallback || ready) return
+      usedLabelFallback = true
+      try {
+        map.setStyle(CARTO_DARK_NOLABELS)
+      } catch {
+        markReady()
+      }
+    }
+    const localizeMapLabels = () => {
+      if (usedLabelFallback) return
+      const layers = map.getStyle()?.layers || []
+      for (const layer of layers) {
+        if (layer.type !== 'symbol') continue
+        const id = layer.id
+        try {
+          if (map.getLayoutProperty(id, 'text-transform') === 'uppercase') {
+            map.setLayoutProperty(id, 'text-transform', 'none')
+          }
+        } catch {
+          /* icon-only */
+        }
+        try {
+          map.setLayoutProperty(id, 'text-font', ['Noto Sans Regular'])
+        } catch {
+          /* no text-font on this layer */
+        }
+        try {
+          const field = map.getLayoutProperty(id, 'text-field')
+          if (!field) continue
+          const raw = JSON.stringify(field)
+          if (raw.includes('name') && !raw.includes('"ref"')) {
+            map.setLayoutProperty(id, 'text-field', [
+              'coalesce',
+              ['get', 'name:vi'],
+              ['get', 'name'],
+              ['get', 'name:latin'],
+              ['get', 'name_en'],
+            ])
+          }
+        } catch {
+          /* no text-field */
+        }
+      }
+    }
+    map.on('load', () => {
+      localizeMapLabels()
       markReady()
     })
-    const fallbackTimer = window.setTimeout(markReady, 2000)
+    map.on('error', (e) => {
+      console.warn('[EventMap] map error', e?.error || e)
+      if (!ready) fallbackToUnlabeled()
+      markReady()
+    })
+    const fallbackTimer = window.setTimeout(() => {
+      if (!ready) fallbackToUnlabeled()
+      markReady()
+    }, 4000)
 
     mapRef.current = map
     const markers = markersRef.current

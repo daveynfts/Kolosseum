@@ -24,11 +24,10 @@
 .scex-page__hero {
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 18px 28px;
+  align-items: stretch;
+  gap: 14px 20px;
   margin-bottom: 26px;
-  padding: 18px 20px 20px;
+  padding: 14px 16px;
   border-radius: 22px;
   border: 1px solid rgba(255, 255, 255, 0.1);
   background:
@@ -46,8 +45,8 @@
 .scex-page__hero--lite {
   flex-shrink: 0;
   margin-bottom: 12px;
-  padding: 10px 14px 12px;
-  gap: 10px 16px;
+  padding: 10px 14px;
+  gap: 10px 18px;
   border-radius: 16px;
 }
 .scex-page__hero--lite .scex-page__logo {
@@ -59,15 +58,16 @@
     0 0 0 3px rgba(56, 189, 248, 0.08);
 }
 .scex-page__hero--lite .scex-page__title {
-  font-size: clamp(1.28rem, 2.2vw, 1.65rem);
+  font-size: clamp(1.22rem, 2vw, 1.5rem);
+  line-height: 1.15;
 }
 
 .scex-page__hero--lite .scex-stat {
-  min-width: 76px;
-  padding: 10px 12px;
+  min-width: 0;
+  padding: 6px 8px 7px;
 }
 .scex-page__hero--lite .scex-stat em {
-  font-size: 1.15rem;
+  font-size: 1.12rem;
 }
 .scex-stat--muted em {
   color: rgba(148, 163, 184, 0.95);
@@ -76,12 +76,18 @@
 .scex-page__brand {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 12px;
+  flex: 0 1 auto;
   min-width: 0;
+  max-width: min(100%, 36rem);
 }
 
 .scex-page__brand-text {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
   min-width: 0;
+  gap: 4px;
 }
 
 .scex-page__logo {
@@ -111,25 +117,34 @@
   object-position: center !important;
 }
 
-.scex-page__eyebrow {
+.scex-page__meta {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 8px 10px;
-  margin-bottom: 6px;
+  gap: 6px 10px;
 }
 
 .scex-page__window {
-  font-size: 0.68rem;
-  font-weight: 600;
-  color: rgba(226, 232, 240, 0.45);
-  letter-spacing: 0.04em;
+  font-size: 0.7rem;
+  font-weight: 550;
+  color: rgba(226, 232, 240, 0.48);
+  letter-spacing: 0.02em;
+  line-height: 1.2;
+  white-space: nowrap;
 }
 
 .scex-page__socials {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
+}
+
+.scex-page__socials::before {
+  content: '';
+  width: 1px;
+  height: 12px;
+  margin-right: 1px;
+  background: rgba(255, 255, 255, 0.16);
 }
 
 .scex-page__social {
@@ -139,22 +154,20 @@
   width: 26px;
   height: 26px;
   border-radius: 8px;
-  color: rgba(226, 232, 240, 0.72);
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: rgba(226, 232, 240, 0.7);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   text-decoration: none;
   transition:
     color 0.15s ease,
     background 0.15s ease,
-    border-color 0.15s ease,
-    transform 0.15s ease;
+    border-color 0.15s ease;
 }
 
 .scex-page__social:hover {
   color: #f8fafc;
   background: rgba(56, 189, 248, 0.14);
   border-color: rgba(125, 211, 252, 0.35);
-  transform: translateY(-1px);
 }
 
 .scex-page__social:focus-visible {
@@ -201,30 +214,21 @@
   font-weight: 700;
   letter-spacing: -0.035em;
   line-height: 1.12;
+}
+.scex-page__name {
   background: linear-gradient(135deg, #f8fafc 0%, #bae6fd 55%, #86efac 100%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
 }
 .scex-page__legal {
-  display: inline;
-  font-size: 0.52em;
-  font-weight: 550;
+  display: block;
+  margin-top: 2px;
+  font-size: 0.72rem;
+  font-weight: 500;
   letter-spacing: -0.01em;
-  line-height: 1.3;
-  /* gradient text inherit is messy — solid muted for legal name */
-  background: none;
-  -webkit-background-clip: unset;
-  background-clip: unset;
-  color: rgba(203, 213, 225, 0.72);
-  vertical-align: baseline;
-}
-@media (max-width: 720px) {
-  .scex-page__legal {
-    display: block;
-    margin-top: 4px;
-    font-size: 0.58em;
-  }
+  line-height: 1.35;
+  color: rgba(203, 213, 225, 0.62);
 }
 
 .scex-page__subtitle {
@@ -236,28 +240,48 @@
 
 .scex-page__stats {
   display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
+  flex: 1 1 280px;
+  flex-wrap: nowrap;
+  align-items: stretch;
+  min-width: 0;
+  padding: 3px;
+  border-radius: 14px;
+  background: rgba(0, 0, 0, 0.22);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
 }
 
 .scex-stat {
-  min-width: 92px;
-  padding: 12px 16px;
-  border-radius: 16px;
-  background: rgba(0, 0, 0, 0.22);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  flex: 1 1 0;
+  min-width: 0;
+  padding: 8px 10px 9px;
+  border-radius: 11px;
+  background: transparent;
+  border: none;
   text-align: center;
-  transition: border-color 0.15s, transform 0.15s;
+  transition: background 0.15s ease;
+}
+
+.scex-stat + .scex-stat {
+  box-shadow: inset 1px 0 0 rgba(255, 255, 255, 0.08);
 }
 
 .scex-stat:hover {
-  border-color: rgba(125, 211, 252, 0.25);
-  transform: translateY(-1px);
+  background: rgba(255, 255, 255, 0.04);
 }
 
 .scex-stat--accent {
-  border-color: rgba(34, 197, 94, 0.28);
-  background: rgba(34, 197, 94, 0.08);
+  background: transparent;
+  box-shadow:
+    inset 1px 0 0 rgba(255, 255, 255, 0.08),
+    inset 0 -2px 0 #4ade80;
+}
+
+.scex-stat--accent:hover {
+  background: rgba(34, 197, 94, 0.06);
 }
 
 .scex-stat--accent em {
@@ -271,14 +295,35 @@
   font-weight: 700;
   letter-spacing: -0.03em;
   color: #7dd3fc;
-  line-height: 1.2;
+  line-height: 1.15;
 }
 
 .scex-stat span {
-  font-size: 0.66rem;
+  display: block;
+  margin-top: 2px;
+  font-size: 0.62rem;
   text-transform: uppercase;
-  letter-spacing: 0.07em;
+  letter-spacing: 0.06em;
+  line-height: 1.25;
   color: rgba(255, 255, 255, 0.42);
+}
+
+@media (max-width: 860px) {
+  .scex-page__stats {
+    flex-basis: 100%;
+  }
+}
+
+@media (max-width: 720px) {
+  .scex-page__legal {
+    font-size: 0.68rem;
+  }
+  .scex-page__socials::before {
+    display: none;
+  }
+  .scex-page__brand {
+    max-width: 100%;
+  }
 }
 
 .scex-page__grid {
@@ -581,6 +626,9 @@
 }
 .scex-matrix.is-fullscreen .scex2d-plot-shell {
   overflow: visible !important;
+}
+.scex-matrix.is-fullscreen .scex2d-axis-overlay {
+  inset: 0 10px;
 }
 .scex-matrix.is-fullscreen .scex2d-axis-end {
   z-index: 12;
@@ -1342,7 +1390,19 @@
 }
 
 /*
-  Axis-end labels: absolute on plot-shell edges (true axis tips).
+  Same inset as .scex2d-plot so --split-x / --split-y match the crosshair.
+  overflow visible: side chips expand on hover without clipping.
+*/
+.scex2d-axis-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  pointer-events: none;
+  overflow: visible;
+}
+
+/*
+  Axis-end labels: tips of the split crosshair (not geometric 50%).
   Side labels use rotate() so hover can flip to horizontal reliably.
 */
 .scex2d-axis-end {
@@ -1372,10 +1432,10 @@
   font-family: inherit;
 }
 
-/* Top / bottom of vertical (uy tín) axis — dead center of edge */
+/* Top / bottom of vertical (uy tín) axis — on the volume-split line */
 .scex2d-axis-end--n {
   top: 8px;
-  left: 50%;
+  left: var(--split-x, 50%);
   transform: translateX(-50%);
   border-color: rgba(125, 211, 252, 0.4);
   pointer-events: none;
@@ -1385,7 +1445,7 @@
 }
 .scex2d-axis-end--s {
   bottom: 8px;
-  left: 50%;
+  left: var(--split-x, 50%);
   transform: translateX(-50%);
   border-color: rgba(148, 163, 184, 0.35);
   pointer-events: none;
@@ -1397,7 +1457,7 @@
 /* Left / right of horizontal (bài đăng) axis */
 .scex2d-axis-end--w,
 .scex2d-axis-end--e {
-  top: 50%;
+  top: var(--split-y, 50%);
   width: 32px;
   min-height: 7.5rem;
   padding: 10px 4px;

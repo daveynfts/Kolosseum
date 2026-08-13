@@ -32,6 +32,13 @@
   background: transparent !important;
 }
 
+.map-html-layer {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+}
+
 .vignette {
   pointer-events: none;
   position: absolute;
@@ -2407,18 +2414,24 @@ button.hud-action:active {
 .bubble-label {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 2px;
+  align-items: flex-start;
+  gap: 1px;
   padding: 6px 10px;
   border-radius: var(--radius-sm);
   white-space: nowrap;
+  letter-spacing: 0;
+}
+
+.bubble-label--hover {
+  padding: 7px 12px;
+  border-radius: 12px;
 }
 
 .bubble-label--with-avatar {
   flex-direction: row;
   align-items: center;
   gap: 10px;
-  padding: 8px 14px 8px 8px;
+  padding: 9px 16px 9px 9px;
   border-radius: var(--radius-pill);
 }
 
@@ -2437,14 +2450,149 @@ button.hud-action:active {
 }
 
 .bubble-label__name {
-  font-size: 12px;
-  font-weight: 600;
-  color: #f1f5f9;
+  font-size: 13px;
+  font-weight: 650;
+  letter-spacing: 0;
+  color: #f8fafc;
 }
 
 .bubble-label__meta {
+  font-size: 11px;
+  letter-spacing: 0;
+  color: #cbd5e1;
+}
+
+/* drei Html portals to body so the chip sits above the map vignette */
+.bubble-html {
+  font-size: 16px;
+  pointer-events: none !important;
+}
+
+.bubble-html--selected {
+  z-index: 6;
+}
+
+.bubble-chip {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 228px;
+  max-width: min(280px, 72vw);
+  padding: 12px 14px 11px;
+  border-radius: var(--glass-panel-radius, 26px);
+  white-space: nowrap;
+  color: var(--text-primary);
+  letter-spacing: 0;
+  text-shadow: 0 1px 10px rgba(0, 0, 0, 0.45);
+}
+
+.bubble-chip__head {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.bubble-chip__id {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+
+.bubble-chip__name {
+  font-size: 16px;
+  font-weight: 650;
+  letter-spacing: 0;
+  line-height: 1.2;
+  color: #f8fafc;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bubble-chip__handle {
+  font-size: 12px;
+  font-weight: 520;
+  color: #e2e8f0;
+  letter-spacing: 0;
+}
+
+.bubble-chip__score {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 1px;
+  flex-shrink: 0;
+}
+
+.bubble-chip__score strong {
+  font-size: 18px;
+  font-weight: 720;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  color: #fff;
+}
+
+.bubble-chip__score span {
+  font-size: 9px;
+  font-weight: 650;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.52);
+}
+
+.bubble-chip__stats {
+  display: flex;
+  gap: 12px;
+  font-size: 12px;
+  font-weight: 560;
+  color: #f1f5f9;
+}
+
+.bubble-chip__stats em {
+  font-style: normal;
+  font-weight: 520;
   font-size: 10px;
-  color: #94a3b8;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.48);
+  margin-right: 5px;
+}
+
+.bubble-chip__pills {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 5px;
+}
+
+.bubble-chip__niche {
+  display: inline-flex;
+  align-items: center;
+  height: 20px;
+  padding: 0 7px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  font-size: 11px;
+  font-weight: 620;
+  letter-spacing: 0;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+@media (max-width: 720px) {
+  .bubble-chip {
+    min-width: 200px;
+    padding: 10px 12px 9px;
+  }
+
+  .bubble-chip__name {
+    font-size: 14px;
+  }
+
+  .bubble-chip__score strong {
+    font-size: 16px;
+  }
 }
 
 /* Ã¢â‚¬â€Ã¢â‚¬â€Ã¢â‚¬â€ Tier 1 Feed panel Ã¢â‚¬â€Ã¢â‚¬â€Ã¢â‚¬â€ */

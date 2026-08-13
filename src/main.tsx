@@ -34,7 +34,7 @@ function RouteFallback() {
     <div className="boot-splash" aria-busy="true">
       <img
         className="boot-splash__mark"
-        src="/brand-mark.png"
+        src="/logo.jpg"
         alt=""
         width={64}
         height={64}

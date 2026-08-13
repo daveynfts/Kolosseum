@@ -11,7 +11,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap&subset=latin,latin-ext,vietnamese"
       rel="stylesheet"
     />
     <title>Davey's Radar — VN KOL Map</title>
@@ -34,10 +34,7 @@
       }
       .boot-splash__mark {
         width: 36px; height: 36px; border-radius: 11px;
-        background: radial-gradient(circle at 28% 28%, rgba(125,211,252,.95), transparent 52%),
-          radial-gradient(circle at 78% 72%, rgba(192,132,252,.85), transparent 48%),
-          linear-gradient(145deg, rgba(255,255,255,.12), rgba(15,23,42,.5));
-        border: 1px solid rgba(255,255,255,.22);
+        object-fit: cover; display: block;
       }
       .boot-splash__title { margin: 0; font-weight: 650; color: #fff; }
       .boot-splash small { color: rgba(255,255,255,.45); font-size: 0.78rem; }
@@ -46,7 +43,7 @@
   <body>
     <div id="root">
       <div class="boot-splash" aria-busy="true">
-        <span class="boot-splash__mark" aria-hidden="true"></span>
+        <img class="boot-splash__mark" src="/logo.jpg" alt="" width="64" height="64" decoding="async" />
         <p class="boot-splash__title">Davey's Radar</p>
         <small>Bấm avatar · Lọc rank · Mở Feed</small>
       </div>

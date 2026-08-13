@@ -16,9 +16,9 @@
 
 .site-chrome--overlay {
   position: absolute;
-  top: 12px;
-  left: 12px;
-  right: 12px;
+  top: max(8px, env(safe-area-inset-top, 0px));
+  left: max(12px, env(safe-area-inset-left, 0px));
+  right: max(12px, env(safe-area-inset-right, 0px));
   z-index: 40;
   min-height: 48px;
   height: auto;
@@ -181,9 +181,9 @@
     padding: 0 8px;
   }
   .site-chrome--overlay {
-    top: 8px;
-    left: 8px;
-    right: 8px;
+    top: max(8px, env(safe-area-inset-top, 0px));
+    left: max(8px, env(safe-area-inset-left, 0px));
+    right: max(8px, env(safe-area-inset-right, 0px));
     padding: 5px 8px;
   }
   .site-chrome__name {

@@ -174,8 +174,8 @@ function Root() {
     return (
       <Suspense fallback={<RouteFallback />}>
         <SceneErrorBoundary title="Event map failed to render">
-          <div className="app-shell">
-            <SiteChrome active="event" />
+          <div className="app-shell app-shell--map">
+            <SiteChrome active="event" overlay />
             <EventMapPage />
           </div>
         </SceneErrorBoundary>

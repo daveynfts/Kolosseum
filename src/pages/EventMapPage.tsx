@@ -279,10 +279,10 @@ function popupHtml(
             : ''
         }
         ${ev.description ? `<p class="emp-popup__desc emp-luma-copy">${escapeHtml(ev.description)}</p>` : ''}
-        <div class="emp-popup__actions">
-          ${directions}
-          ${reg}
-        </div>
+      </div>
+      <div class="emp-popup__actions">
+        ${directions}
+        ${reg}
       </div>
     </div>
   `
@@ -457,6 +457,7 @@ export function EventMapPage() {
     null,
   )
   const [geoBusy, setGeoBusy] = useState(false)
+  const [geoNotice, setGeoNotice] = useState<string | null>(null)
   const [sortMode, setSortMode] = useState<SortMode>('upcoming')
   const [sheetMode, setSheetMode] = useState<SheetMode>(() =>
     isMobileViewport() ? 'half' : 'full',
@@ -470,6 +471,7 @@ export function EventMapPage() {
    */
   const [filtersOpen, setFiltersOpen] = useState(() => !isMobileViewport())
   const sheetTouchY = useRef<number | null>(null)
+  const sheetTouchDidSnapAt = useRef(0)
   /** Wall-clock tick so LIVE badges / liveCount stay correct (esp. multi-day Main). */
   const [nowTick, setNowTick] = useState(() => Date.now())
   const today = todayVn()
@@ -478,6 +480,7 @@ export function EventMapPage() {
 
   useEffect(() => {
     const mq = window.matchMedia('(max-width: 900px)')
+    const short = window.matchMedia('(max-height: 700px)')
     const sync = () => {
       const mobile = mq.matches
       setIsMobile(mobile)
@@ -487,11 +490,17 @@ export function EventMapPage() {
         setSheetMode('full')
       } else {
         setToolsOpen(false)
+        setFiltersOpen(false)
+        setSheetMode('half')
       }
     }
     sync()
     mq.addEventListener('change', sync)
-    return () => mq.removeEventListener('change', sync)
+    short.addEventListener('change', sync)
+    return () => {
+      mq.removeEventListener('change', sync)
+      short.removeEventListener('change', sync)
+    }
   }, [])
 
   // Tick pin chips + list LIVE state every second
@@ -684,23 +693,33 @@ export function EventMapPage() {
   const requestMyLocation = () => {
     if (!navigator.geolocation) {
       setDistOrigin('sala')
+      setGeoNotice(tt('geoUnavailable'))
       return
     }
     setGeoBusy(true)
+    setGeoNotice(null)
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         setUserLoc({ lat: pos.coords.latitude, lng: pos.coords.longitude })
         setDistOrigin('me')
         setSortMode('nearest')
         setGeoBusy(false)
+        setGeoNotice(null)
       },
       () => {
         setGeoBusy(false)
         setDistOrigin('sala')
+        setGeoNotice(tt('geoDenied'))
       },
       { enableHighAccuracy: true, timeout: 12000, maximumAge: 60_000 },
     )
   }
+
+  useEffect(() => {
+    if (!geoNotice) return
+    const t = window.setTimeout(() => setGeoNotice(null), 4200)
+    return () => window.clearTimeout(t)
+  }, [geoNotice])
 
   const mapEvents = useMemo(
     () => filtered.filter((ev) => !ev.locationTbd),
@@ -1102,13 +1121,15 @@ export function EventMapPage() {
     }
 
     const pop = el.getBoundingClientRect()
-    // Available band may be short — clamp max height so content scrolls
-    const availH = Math.max(160, bottomLimit - topLimit)
+    const availH = Math.max(140, bottomLimit - topLimit)
+    const capLimit = isMobileViewport()
+      ? Math.min(Math.round(window.innerHeight * 0.46), 360)
+      : 640
     const content = el.querySelector(
       '.maplibregl-popup-content',
     ) as HTMLElement | null
     if (content) {
-      content.style.maxHeight = `${Math.min(availH, 640)}px`
+      content.style.maxHeight = `${Math.min(availH, capLimit)}px`
     }
 
     let dx = 0
@@ -1135,10 +1156,10 @@ export function EventMapPage() {
     const { lng, lat } = displayLngLat(ev)
     // Width matches Luma-style 1:1 cover (square image fills card width)
     const wide = isMobileViewport()
-      ? Math.min(320, Math.max(280, map.getContainer().clientWidth - 24))
+      ? Math.min(300, Math.max(260, map.getContainer().clientWidth - 24))
       : Math.min(340, Math.max(300, map.getContainer().clientWidth - 48))
     const popup = new maplibregl.Popup({
-      offset: 96,
+      offset: isMobileViewport() ? 52 : 96,
       maxWidth: `${wide}px`,
       className: 'emp-popup emp-popup--detail',
       closeButton: true,
@@ -1433,9 +1454,18 @@ export function EventMapPage() {
     const end = e.changedTouches[0]?.clientY
     if (end == null) return
     const dy = end - start
-    // Slightly higher threshold = fewer accidental sheet snaps
-    if (dy > 56) collapseSheet()
-    else if (dy < -56) expandSheet()
+    if (dy > 56) {
+      sheetTouchDidSnapAt.current = Date.now()
+      collapseSheet()
+    } else if (dy < -56) {
+      sheetTouchDidSnapAt.current = Date.now()
+      expandSheet()
+    }
+  }
+
+  const onSheetHandleClick = () => {
+    if (Date.now() - sheetTouchDidSnapAt.current < 450) return
+    cycleSheet()
   }
 
   const panelClass =
@@ -2046,20 +2076,34 @@ export function EventMapPage() {
           <div className="emp__map-hint" aria-hidden>
             {tt('mapHint')}
           </div>
-          {isMobile && sheetMode !== 'full' && (
+          {geoNotice ? (
+            <p className="emp-geo-notice" role="status">
+              {geoNotice}
+            </p>
+          ) : null}
+          {isMobile && (
             <div className="emp-map-fabs" role="toolbar" aria-label={tt('sheetAria')}>
               <button
                 type="button"
                 className={`emp-map-fab emp-map-fab--list${sheetMode !== 'peek' ? ' is-on' : ''}`}
                 onClick={() => {
                   if (sheetMode === 'peek') setSheetMode('half')
-                  else cycleSheet()
+                  else if (sheetMode === 'full') setSheetMode('half')
+                  else setSheetMode('full')
                 }}
                 title={
-                  sheetMode === 'peek' ? tt('fabListOpen') : tt('collapseList')
+                  sheetMode === 'peek'
+                    ? tt('fabListOpen')
+                    : sheetMode === 'full'
+                      ? tt('collapseList')
+                      : tt('expandList')
                 }
                 aria-label={
-                  sheetMode === 'peek' ? tt('fabListOpen') : tt('collapseList')
+                  sheetMode === 'peek'
+                    ? tt('fabListOpen')
+                    : sheetMode === 'full'
+                      ? tt('collapseList')
+                      : tt('expandList')
                 }
               >
                 <span className="emp-map-fab__txt">
@@ -2089,7 +2133,7 @@ export function EventMapPage() {
                   '⌖'
                 )}
               </button>
-              {!filtersOpen && (
+              {!filtersOpen && sheetMode !== 'full' && (
                 <button
                   type="button"
                   className="emp-map-fab emp-map-fab--cal"
@@ -2108,7 +2152,7 @@ export function EventMapPage() {
           <button
             type="button"
             className="emp__sheet-handle"
-            onClick={cycleSheet}
+            onClick={onSheetHandleClick}
             onTouchStart={onSheetTouchStart}
             onTouchEnd={onSheetTouchEnd}
             aria-label={tt('sheetAria')}

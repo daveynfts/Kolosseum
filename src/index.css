@@ -341,6 +341,13 @@ input {
   position: relative;
 }
 
+.app-shell--map > .emp {
+  height: auto;
+  max-height: none;
+  padding-top: calc(env(safe-area-inset-top, 0px) + 64px);
+  box-sizing: border-box;
+}
+
 .app-shell--map > .app {
   flex: 1;
   height: 100%;

@@ -2,16 +2,24 @@
  * Refresh live X Feed for top-3 ranks: Challenger + Master + Diamond.
  * 1) Prefer live tweets via X guest GraphQL (UserTweets)
  * 2) Fallback: jina profile scrape → fxtwitter status
- * 3) Fill synthetic if still short of TARGET_LIVE
+ * 3) Optional --synthetic fill if still short of TARGET_LIVE (off by default)
  * 4) Archive posts older than 14 days
- * 5) Write public/feed + snapshot; PUT /api/feed if FEED_ADMIN_TOKEN set
+ * 5) Cache tweet photos to R2, overwriting the same media/{id} keys
+ * 6) Write public/feed + snapshot; PUT /api/feed (same feed/v1.json key)
  *
  *   node scripts/refresh_feed_challenger_master.mjs
- *   node scripts/refresh_feed_challenger_master.mjs --no-live   # synthetic only
+ *   node scripts/refresh_feed_challenger_master.mjs --no-live
  *   node scripts/refresh_feed_challenger_master.mjs --fresh
+ *   node scripts/refresh_feed_challenger_master.mjs --synthetic
+ *   node scripts/refresh_feed_challenger_master.mjs --skip-media
  */
 import fs from 'fs'
 import { adminPutJson } from './lib/adminPut.mjs'
+import {
+  hydratePostMedia,
+  isR2MediaUrl,
+  r2FromEnv,
+} from './lib/r2MediaOverwrite.mjs'
 import path from 'path'
 import { fileURLToPath } from 'url'
 
@@ -21,11 +29,15 @@ const ROOT = path.join(__dirname, '..')
 const LIVE_WINDOW_MS = 14 * 24 * 60 * 60 * 1000
 const WEEK_MS = LIVE_WINDOW_MS // legacy name used in archiveSplit / filters
 const TARGET_LIVE = 140
-const PER_KOL_LIVE = 6
+const PER_KOL_LIVE = 8
 const TOP_RANKS = new Set(['challenger', 'master', 'diamond'])
 const noLive = process.argv.includes('--no-live')
 /** Drop prior seed posts and rebuild live-first (still archives old) */
 const freshRebuild = process.argv.includes('--fresh')
+/** Opt-in fake NFA templates — they 404 on X and look broken in the panel */
+const fillSynthetic = process.argv.includes('--synthetic')
+/** Skip R2 photo overwrite (feed JSON still published) */
+const skipMedia = process.argv.includes('--skip-media')
 
 /** Public web client bearer (same as x.com guest sessions) */
 const X_BEARER =
@@ -52,6 +64,12 @@ function loadEnv(file) {
 }
 loadEnv('.env.local')
 loadEnv('.env.production.local')
+
+function env(k) {
+  const v = process.env[k]
+  if (!v) return ''
+  return v.trim().replace(/^["']|["']$/g, '')
+}
 
 function loadJson(p) {
   return JSON.parse(fs.readFileSync(p, 'utf8'))
@@ -703,9 +721,33 @@ async function fetchLivePostsForKol(kol) {
 
 async function main() {
   const seedPath = path.join(ROOT, 'public/feed/tier1-feed.json')
-  const prev = fs.existsSync(seedPath)
+  const apiBase = (
+    process.env.RADAR_API_BASE || 'https://radar.daveynfts.com'
+  ).replace(/\/$/, '')
+
+  let prev = fs.existsSync(seedPath)
     ? loadJson(seedPath)
     : { posts: [], archivedPosts: [] }
+  try {
+    const liveRes = await fetch(`${apiBase}/api/feed?t=${Date.now()}`, {
+      cache: 'no-store',
+      headers: { Accept: 'application/json' },
+    })
+    if (liveRes.ok) {
+      const live = await liveRes.json()
+      if (Array.isArray(live?.posts) && live.posts.length) {
+        prev = live
+        console.log(
+          'Loaded live /api/feed',
+          live.posts.length,
+          'posts ·',
+          live.generatedAt || '',
+        )
+      }
+    }
+  } catch (e) {
+    console.warn('Live feed GET failed, using local seed:', e.message || e)
+  }
 
   const snapshotPath = path.join(ROOT, 'data/kols-server-snapshot.json')
   // Prefer live API kols
@@ -826,25 +868,29 @@ async function main() {
     console.log('Skipping live fetch (--no-live)')
   }
 
-  // 3) Fill with synthetic if needed (never overwrite real)
+  // 3) Fill with synthetic only when --synthetic (fake IDs 404 on X)
   let i = 0
   let syntheticAdded = 0
   const daySalt = Number(
     new Date().toISOString().slice(0, 10).replace(/-/g, ''),
   )
-  while (liveById.size < TARGET_LIVE && i < 600) {
-    const kol = pool[i % pool.length]
-    const post = buildSynthetic(i + 1, kol, daySalt % 10000)
-    const t = Date.parse(post.createdAt)
-    if (
-      Number.isFinite(t) &&
-      t >= Date.now() - WEEK_MS &&
-      !liveById.has(post.id)
-    ) {
-      liveById.set(post.id, post)
-      syntheticAdded++
+  if (fillSynthetic) {
+    while (liveById.size < TARGET_LIVE && i < 600) {
+      const kol = pool[i % pool.length]
+      const post = buildSynthetic(i + 1, kol, daySalt % 10000)
+      const t = Date.parse(post.createdAt)
+      if (
+        Number.isFinite(t) &&
+        t >= Date.now() - WEEK_MS &&
+        !liveById.has(post.id)
+      ) {
+        liveById.set(post.id, post)
+        syntheticAdded++
+      }
+      i++
     }
-    i++
+  } else {
+    console.log('Skipping synthetic fill (pass --synthetic to opt in)')
   }
 
   // Hard live window: nothing older than LIVE_WINDOW_MS stays in posts[]
@@ -866,9 +912,11 @@ async function main() {
       if (ar !== br) return ar - br
       return b.createdAt.localeCompare(a.createdAt)
     })
-  // Prefer reals; fill remainder with synthetic up to TARGET
+  // Prefer reals; fill remainder with synthetic up to TARGET only if opted in
   const reals = livePosts.filter((p) => !isSyntheticPost(p))
-  const syns = livePosts.filter((p) => isSyntheticPost(p))
+  const syns = fillSynthetic
+    ? livePosts.filter((p) => isSyntheticPost(p))
+    : []
   let finalLive = [...reals, ...syns]
     .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
     .slice(0, TARGET_LIVE)
@@ -878,22 +926,145 @@ async function main() {
   const daySalt2 = Number(
     new Date().toISOString().slice(0, 10).replace(/-/g, ''),
   )
-  while (finalLive.length < TARGET_LIVE && fillI < 800) {
-    const kol = pool[fillI % pool.length]
-    const post = buildSynthetic(fillI + 9000, kol, (daySalt2 % 10000) + 3)
-    const t = Date.parse(post.createdAt)
-    if (
-      Number.isFinite(t) &&
-      t >= cutoffLive &&
-      !finalLive.some((x) => x.id === post.id)
-    ) {
-      finalLive.push(post)
+  if (fillSynthetic) {
+    while (finalLive.length < TARGET_LIVE && fillI < 800) {
+      const kol = pool[fillI % pool.length]
+      const post = buildSynthetic(fillI + 9000, kol, (daySalt2 % 10000) + 3)
+      const t = Date.parse(post.createdAt)
+      if (
+        Number.isFinite(t) &&
+        t >= cutoffLive &&
+        !finalLive.some((x) => x.id === post.id)
+      ) {
+        finalLive.push(post)
+      }
+      fillI++
     }
-    fillI++
   }
   finalLive = finalLive
     .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
     .slice(0, TARGET_LIVE)
+
+  // Drop leftover synthetics from a previous publish
+  if (!fillSynthetic) {
+    finalLive = finalLive.filter((p) => !isSyntheticPost(p))
+  }
+
+  // Cache photos to R2 — reuse existing media/{id} so we overwrite, not duplicate
+  if (!skipMedia) {
+    const r2 = r2FromEnv(env)
+    const tokenEarly = env('FEED_ADMIN_TOKEN')
+    const targets = finalLive.filter((p) => {
+      if (isSyntheticPost(p)) return false
+      const media = Array.isArray(p.media) ? p.media : []
+      return media.some((u) => isR2MediaUrl(u) || /twimg\.com/i.test(u || ''))
+    })
+    if (r2) {
+      console.log(
+        `Hydrating ${targets.length} posts with photos → R2 (overwrite same keys)…`,
+      )
+      let cached = 0
+      let overwritten = 0
+      let failed = 0
+      for (let hi = 0; hi < targets.length; hi++) {
+        const p = targets[hi]
+        process.stdout.write(
+          `  media [${hi + 1}/${targets.length}] @${p.handle} ${p.id}… `,
+        )
+        try {
+          const result = await hydratePostMedia(r2, p)
+          const idx = finalLive.findIndex((x) => x.id === p.id)
+          if (idx >= 0) finalLive[idx] = result.post
+          cached += result.cached
+          overwritten += result.overwritten
+          failed += result.failed
+          console.log(
+            `ok cache=${result.cached} overwrite=${result.overwritten} fail=${result.failed}`,
+          )
+        } catch (e) {
+          failed++
+          console.log('fail', e.message || e)
+        }
+        await sleep(250)
+      }
+      console.log(
+        JSON.stringify({
+          mediaCached: cached,
+          mediaOverwritten: overwritten,
+          mediaFailed: failed,
+        }),
+      )
+    } else if (tokenEarly) {
+      const twimgTargets = targets.filter((p) =>
+        (p.media || []).some((u) => /twimg\.com/i.test(u || '')),
+      )
+      console.log(
+        `R2_* missing locally — caching ${twimgTargets.length} twimg posts via /api/x-status (same hash key if re-run)…`,
+      )
+      let cached = 0
+      let failed = 0
+      for (let hi = 0; hi < twimgTargets.length; hi++) {
+        const p = twimgTargets[hi]
+        process.stdout.write(
+          `  x-status [${hi + 1}/${twimgTargets.length}] @${p.handle} ${p.id}… `,
+        )
+        try {
+          const api = `${apiBase}/api/x-status?url=${encodeURIComponent(p.url)}`
+          const res = await fetch(api, {
+            headers: {
+              Accept: 'application/json',
+              Authorization: `Bearer ${tokenEarly}`,
+            },
+          })
+          const body = await res.json().catch(() => ({}))
+          if (!res.ok || !body.post) {
+            failed++
+            console.log('fail', body.message || body.error || res.status)
+          } else {
+            const rp = body.post
+            const r2Media = [
+              ...new Set(
+                [
+                  ...(Array.isArray(rp.mediaCached) ? rp.mediaCached : []),
+                  ...(Array.isArray(rp.media) ? rp.media : []),
+                ].filter(isR2MediaUrl),
+              ),
+            ]
+            const idx = finalLive.findIndex((x) => x.id === p.id)
+            if (idx >= 0) {
+              const oldIds = (finalLive[idx].media || []).map((u) => u)
+              finalLive[idx] = {
+                ...finalLive[idx],
+                text: rp.text || finalLive[idx].text,
+                likes: rp.likes || finalLive[idx].likes,
+                reposts: rp.reposts || finalLive[idx].reposts,
+                replies: rp.replies || finalLive[idx].replies,
+                views: rp.views || finalLive[idx].views,
+                // Prefer existing R2 URLs (overwrite path); else newly cached
+                media: r2Media.length
+                  ? r2Media.slice(0, 4)
+                  : oldIds.filter((u) => isR2MediaUrl(u)).length
+                    ? oldIds.filter((u) => isR2MediaUrl(u))
+                    : rp.media || oldIds,
+              }
+            }
+            const n = r2Media.length
+            cached += n
+            console.log(`ok r2=${n}/${body.cache?.imagesTotal ?? '?'}`)
+          }
+        } catch (e) {
+          failed++
+          console.log('fail', e.message || e)
+        }
+        await sleep(400)
+      }
+      console.log(JSON.stringify({ mediaCached: cached, mediaFailed: failed }))
+    } else {
+      console.warn('R2_* and FEED_ADMIN_TOKEN missing — cannot cache photos')
+    }
+  } else {
+    console.log('Skipping media hydrate (--skip-media)')
+  }
 
   const archivedPosts = [...archById.values()].sort((a, b) =>
     b.createdAt.localeCompare(a.createdAt),
@@ -946,11 +1117,8 @@ async function main() {
     finalLive[0]?.createdAt,
   )
 
-  // Publish to R2 via API
-  const token = (process.env.FEED_ADMIN_TOKEN || '').trim()
-  const apiBase = (
-    process.env.RADAR_API_BASE || 'https://radar.daveynfts.com'
-  ).replace(/\/$/, '')
+  // Publish to R2 via API — same feed/v1.json key (overwrite, no new object)
+  const token = env('FEED_ADMIN_TOKEN')
   if (!token) {
     console.warn(
       'FEED_ADMIN_TOKEN missing — seed files only. Admin → Feed → Save (R2) to publish.',

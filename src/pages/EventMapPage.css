@@ -3792,8 +3792,23 @@
 /* Short phones / landscape-ish height */
 @media (max-width: 900px) and (max-height: 700px) {
   .emp {
-    --emp-sheet-half: min(40dvh, 280px);
-    --emp-sheet-full: min(64dvh, calc(100% - 56px));
+    --emp-sheet-half: min(36dvh, 160px);
+    --emp-sheet-full: min(58dvh, calc(100% - 52px));
+  }
+
+  .emp-map-fabs,
+  .emp--sheet-peek .emp-map-fabs,
+  .emp--sheet-half .emp-map-fabs,
+  .emp--sheet-full .emp-map-fabs {
+    top: 6px;
+    bottom: auto;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+
+  .emp-map-fab--cal {
+    display: none;
   }
 
   .emp__filters {

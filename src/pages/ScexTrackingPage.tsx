@@ -1,7 +1,7 @@
 /**
  * Public partner view — SCEX 2D mention matrix + livefeed (VI).
  */
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   actorPassesThresholds,
   actorVolumeMetric,
@@ -277,6 +277,9 @@ export function ScexTrackingPage() {
   const [feedMediaOnly, setFeedMediaOnly] = useState(false)
   const [feedOnMapOnly, setFeedOnMapOnly] = useState(false)
   const [feedExpandAll, setFeedExpandAll] = useState(false)
+  /** Fullscreen overflow: Có media / On Radar / expand / export */
+  const [feedMoreOpen, setFeedMoreOpen] = useState(false)
+  const feedFsMainRef = useRef<HTMLDivElement>(null)
   /** Lite Partner: collapse advanced matrix filters (open if any “more” filter already active) */
   const [showMoreFilters, setShowMoreFilters] = useState(() => {
     const saved = readFilters()
@@ -286,10 +289,12 @@ export function ScexTrackingPage() {
   const openFeedFullscreen = useCallback(() => {
     setMatrixFullscreen(false)
     setFeedFullscreen(true)
+    setFeedMoreOpen(false)
   }, [])
 
   const closeFeedFullscreen = useCallback(() => {
     setFeedFullscreen(false)
+    setFeedMoreOpen(false)
   }, [])
 
   useEffect(() => {
@@ -331,6 +336,7 @@ export function ScexTrackingPage() {
       e.stopPropagation()
       if (feedFullscreen) {
         setFeedFullscreen(false)
+        setFeedMoreOpen(false)
         return
       }
       setMatrixFullscreen(false)
@@ -420,6 +426,15 @@ export function ScexTrackingPage() {
     [mapByHandle],
   )
 
+  const actorsByHandle = useMemo(() => {
+    const m = new Map<string, ScexActor>()
+    if (!dataset) return m
+    for (const a of dataset.actors) {
+      m.set(a.handle.toLowerCase(), a)
+    }
+    return m
+  }, [dataset])
+
   const baseVisible = useMemo(() => {
     if (!dataset) return [] as ScexActor[]
     return dataset.actors.filter((a) =>
@@ -452,14 +467,16 @@ export function ScexTrackingPage() {
   }, [dataset])
 
   /** Handles that actually have feed posts (for filter chips) */
-  const feedKolOptions = useMemo(() => {
-    if (!dataset) return [] as ScexActor[]
+  const { feedKolOptions, feedKolCounts } = useMemo(() => {
     const counts = new Map<string, number>()
+    if (!dataset) {
+      return { feedKolOptions: [] as ScexActor[], feedKolCounts: counts }
+    }
     for (const p of allPosts) {
       const h = p.handle.toLowerCase()
       counts.set(h, (counts.get(h) || 0) + 1)
     }
-    return dataset.actors
+    const feedKolOptions = dataset.actors
       .filter((a) => counts.has(a.handle.toLowerCase()))
       .sort((a, b) => {
         const ca = counts.get(a.handle.toLowerCase()) || 0
@@ -467,6 +484,7 @@ export function ScexTrackingPage() {
         if (cb !== ca) return cb - ca
         return b.followers - a.followers
       })
+    return { feedKolOptions, feedKolCounts: counts }
   }, [dataset, allPosts])
 
   const filteredPosts = useMemo(() => {
@@ -584,6 +602,24 @@ export function ScexTrackingPage() {
     }
     return [...map.entries()].map(([day, posts]) => ({ day, posts }))
   }, [feedFullscreen, filteredPosts])
+
+  useEffect(() => {
+    if (!feedFullscreen || !selectedActor) return
+    const root = feedFsMainRef.current
+    const el = root?.querySelector('.scex-feed-card.is-selected')
+    el?.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
+  }, [feedFullscreen, selectedActor?.id])
+
+  useEffect(() => {
+    if (!feedMoreOpen) return
+    const onDown = (e: MouseEvent) => {
+      const t = e.target
+      if (!(t instanceof Element)) return
+      if (!t.closest('.scex-feed__toolbar-more')) setFeedMoreOpen(false)
+    }
+    document.addEventListener('mousedown', onDown)
+    return () => document.removeEventListener('mousedown', onDown)
+  }, [feedMoreOpen])
 
   const exportFeedResearch = useCallback(() => {
     const lines = filteredPosts.map((p, i) => {
@@ -877,18 +913,39 @@ export function ScexTrackingPage() {
             <div>
               <h2>SCEX Live Feed</h2>
               <p>
-                {filteredPosts.length}
-                {feedFilter ||
-                feedQuery ||
-                feedSentiment !== 'all' ||
-                feedDays > 0 ||
-                feedMediaOnly ||
-                feedOnMapOnly
-                  ? ` / ${allPosts.length}`
-                  : ''}{' '}
-                bài
-                {feedFilter ? ` · @${feedFilter}` : ''}
-                {feedFullscreen ? ' · nghiên cứu' : ''}
+                {feedFullscreen ? (
+                  <>
+                    {feedResearchStats.total} bài · {feedResearchStats.kols} KOL
+                    {' · '}
+                    <span className="is-bull">
+                      +{feedResearchStats.bySent.bullish}
+                    </span>
+                    {' / '}
+                    <span className="is-neu">
+                      ~{feedResearchStats.bySent.neutral}
+                    </span>
+                    {' / '}
+                    <span className="is-bear">
+                      −{feedResearchStats.bySent.bearish}
+                    </span>
+                    {' · timeline đầy đủ'}
+                    {feedFilter ? ` · @${feedFilter}` : ''}
+                  </>
+                ) : (
+                  <>
+                    {filteredPosts.length}
+                    {feedFilter ||
+                    feedQuery ||
+                    feedSentiment !== 'all' ||
+                    feedDays > 0 ||
+                    feedMediaOnly ||
+                    feedOnMapOnly
+                      ? ` / ${allPosts.length}`
+                      : ''}{' '}
+                    bài
+                    {feedFilter ? ` · @${feedFilter}` : ''}
+                  </>
+                )}
               </p>
             </div>
             <div className="scex-feed__head-actions">
@@ -949,38 +1006,179 @@ export function ScexTrackingPage() {
           </div>
 
           <div className="scex-feed__filters">
-            <div className="scex-feed__filter-row">
-              <button
-                type="button"
-                className={`scex-feed__chip ${!feedFilter ? 'is-active' : ''}`}
-                onClick={() => setFeedFilter(null)}
-              >
-                Tất cả KOL
-              </button>
-              {feedFilter && (
+            {feedFullscreen ? (
+              <div className="scex-feed__toolbar">
+                <input
+                  className="scex-feed__search"
+                  type="search"
+                  placeholder="Tìm handle / nội dung…"
+                  value={feedQuery}
+                  onChange={(e) => setFeedQuery(e.target.value)}
+                  aria-label="Tìm trong livefeed"
+                />
+                <div
+                  className="scex-feed__toolbar-groups"
+                  role="toolbar"
+                  aria-label="Bộ lọc timeline"
+                >
+                  <div className="scex-feed__research-row" aria-label="Tone">
+                    <span className="scex-feed__research-label">Tone</span>
+                    {(
+                      [
+                        ['all', 'Tất cả'],
+                        ['bullish', 'Tích cực'],
+                        ['neutral', 'Trung lập'],
+                        ['bearish', 'Tiêu cực'],
+                      ] as const
+                    ).map(([id, label]) => (
+                      <button
+                        key={id}
+                        type="button"
+                        className={`scex-feed__chip ${feedSentiment === id ? 'is-active' : ''} scex-feed__chip--${id}`}
+                        onClick={() => setFeedSentiment(id)}
+                      >
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                  <div className="scex-feed__research-row" aria-label="Thời gian">
+                    <span className="scex-feed__research-label">Thời gian</span>
+                    {(
+                      [
+                        [0, 'Toàn bộ'],
+                        [7, '7 ngày'],
+                        [14, '14 ngày'],
+                        [30, '30 ngày'],
+                      ] as const
+                    ).map(([d, label]) => (
+                      <button
+                        key={d}
+                        type="button"
+                        className={`scex-feed__chip ${feedDays === d ? 'is-active' : ''}`}
+                        onClick={() => setFeedDays(d)}
+                      >
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                  <div className="scex-feed__research-row" aria-label="Sắp xếp">
+                    <span className="scex-feed__research-label">Sắp xếp</span>
+                    {(
+                      [
+                        ['newest', 'Mới nhất'],
+                        ['oldest', 'Cũ nhất'],
+                        ['engage', 'Tương tác'],
+                      ] as const
+                    ).map(([id, label]) => (
+                      <button
+                        key={id}
+                        type="button"
+                        className={`scex-feed__chip ${feedSort === id ? 'is-active' : ''}`}
+                        onClick={() => setFeedSort(id)}
+                      >
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div className="scex-feed__toolbar-more">
+                  <button
+                    type="button"
+                    className={`scex-feed__chip ${feedMoreOpen || feedMediaOnly || feedOnMapOnly || feedExpandAll ? 'is-active' : ''}`}
+                    aria-expanded={feedMoreOpen}
+                    onClick={() => setFeedMoreOpen((v) => !v)}
+                  >
+                    Thêm
+                    {feedMediaOnly || feedOnMapOnly || feedExpandAll ? ' ·' : ''}
+                  </button>
+                  {feedMoreOpen && (
+                    <div className="scex-feed__more-pop" role="menu">
+                      <button
+                        type="button"
+                        role="menuitemcheckbox"
+                        aria-checked={feedMediaOnly}
+                        className={`scex-feed__chip ${feedMediaOnly ? 'is-active' : ''}`}
+                        onClick={() => setFeedMediaOnly((v) => !v)}
+                      >
+                        Có media
+                      </button>
+                      <button
+                        type="button"
+                        role="menuitemcheckbox"
+                        aria-checked={feedOnMapOnly}
+                        className={`scex-feed__chip ${feedOnMapOnly ? 'is-active' : ''}`}
+                        onClick={() => setFeedOnMapOnly((v) => !v)}
+                      >
+                        On Radar
+                      </button>
+                      <button
+                        type="button"
+                        role="menuitemcheckbox"
+                        aria-checked={feedExpandAll}
+                        className={`scex-feed__chip ${feedExpandAll ? 'is-active' : ''}`}
+                        onClick={() => setFeedExpandAll((v) => !v)}
+                      >
+                        {feedExpandAll ? 'Thu gọn text' : 'Mở rộng text'}
+                      </button>
+                      <button
+                        type="button"
+                        role="menuitem"
+                        className="scex-feed__chip scex-feed__chip--export"
+                        onClick={() => {
+                          exportFeedResearch()
+                          setFeedMoreOpen(false)
+                        }}
+                        title="Tải file .txt các bài đang lọc"
+                      >
+                        Export .txt
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <div className="scex-feed__filter-row">
                 <button
                   type="button"
-                  className="scex-feed__chip is-active is-clear"
+                  className={`scex-feed__chip ${!feedFilter ? 'is-active' : ''}`}
                   onClick={() => setFeedFilter(null)}
-                  title="Bỏ lọc"
                 >
-                  @{feedFilter} ×
+                  Tất cả KOL
                 </button>
-              )}
-              <input
-                className="scex-feed__search"
-                type="search"
-                placeholder="Tìm handle / nội dung…"
-                value={feedQuery}
-                onChange={(e) => setFeedQuery(e.target.value)}
-                aria-label="Tìm trong livefeed"
-              />
-            </div>
+                {feedFilter && (
+                  <button
+                    type="button"
+                    className="scex-feed__chip is-active is-clear"
+                    onClick={() => setFeedFilter(null)}
+                    title="Bỏ lọc"
+                  >
+                    @{feedFilter} ×
+                  </button>
+                )}
+                <input
+                  className="scex-feed__search"
+                  type="search"
+                  placeholder="Tìm handle / nội dung…"
+                  value={feedQuery}
+                  onChange={(e) => setFeedQuery(e.target.value)}
+                  aria-label="Tìm trong livefeed"
+                />
+              </div>
+            )}
+            {feedFullscreen && feedFilter && (
+              <button
+                type="button"
+                className="scex-feed__chip is-active is-clear"
+                onClick={() => setFeedFilter(null)}
+                title="Bỏ lọc"
+              >
+                @{feedFilter} ×
+              </button>
+            )}
             <div className="scex-feed__kol-scroll" role="listbox" aria-label="Lọc theo KOL">
               {feedKolOptions.map((a) => {
                 const h = a.handle.toLowerCase()
-                const n = allPosts.filter((p) => p.handle.toLowerCase() === h)
-                  .length
+                const n = feedKolCounts.get(h) || 0
                 const active = feedFilter === h
                 return (
                   <button
@@ -1007,127 +1205,13 @@ export function ScexTrackingPage() {
                 )
               })}
             </div>
-
-            {feedFullscreen && (
-              <div className="scex-feed__research" aria-label="Bộ lọc nghiên cứu">
-                <div className="scex-feed__research-stats" role="status">
-                  <span>
-                    <em>{feedResearchStats.total}</em> bài
-                  </span>
-                  <span>
-                    <em>{feedResearchStats.kols}</em> KOL
-                  </span>
-                  <span className="is-bull">
-                    +{feedResearchStats.bySent.bullish}
-                  </span>
-                  <span className="is-neu">
-                    ~{feedResearchStats.bySent.neutral}
-                  </span>
-                  <span className="is-bear">
-                    −{feedResearchStats.bySent.bearish}
-                  </span>
-                  <span>
-                    <em>{feedResearchStats.onMap}</em> On Radar
-                  </span>
-                  <span>
-                    <em>{feedResearchStats.withMedia}</em> media
-                  </span>
-                </div>
-                <div className="scex-feed__research-row">
-                  <span className="scex-feed__research-label">Tone</span>
-                  {(
-                    [
-                      ['all', 'Tất cả'],
-                      ['bullish', 'Tích cực'],
-                      ['neutral', 'Trung lập'],
-                      ['bearish', 'Tiêu cực'],
-                    ] as const
-                  ).map(([id, label]) => (
-                    <button
-                      key={id}
-                      type="button"
-                      className={`scex-feed__chip ${feedSentiment === id ? 'is-active' : ''} scex-feed__chip--${id}`}
-                      onClick={() => setFeedSentiment(id)}
-                    >
-                      {label}
-                    </button>
-                  ))}
-                </div>
-                <div className="scex-feed__research-row">
-                  <span className="scex-feed__research-label">Thời gian</span>
-                  {(
-                    [
-                      [0, 'Toàn bộ'],
-                      [7, '7 ngày'],
-                      [14, '14 ngày'],
-                      [30, '30 ngày'],
-                    ] as const
-                  ).map(([d, label]) => (
-                    <button
-                      key={d}
-                      type="button"
-                      className={`scex-feed__chip ${feedDays === d ? 'is-active' : ''}`}
-                      onClick={() => setFeedDays(d)}
-                    >
-                      {label}
-                    </button>
-                  ))}
-                </div>
-                <div className="scex-feed__research-row">
-                  <span className="scex-feed__research-label">Sắp xếp</span>
-                  {(
-                    [
-                      ['newest', 'Mới nhất'],
-                      ['oldest', 'Cũ nhất'],
-                      ['engage', 'Tương tác'],
-                    ] as const
-                  ).map(([id, label]) => (
-                    <button
-                      key={id}
-                      type="button"
-                      className={`scex-feed__chip ${feedSort === id ? 'is-active' : ''}`}
-                      onClick={() => setFeedSort(id)}
-                    >
-                      {label}
-                    </button>
-                  ))}
-                  <button
-                    type="button"
-                    className={`scex-feed__chip ${feedMediaOnly ? 'is-active' : ''}`}
-                    onClick={() => setFeedMediaOnly((v) => !v)}
-                  >
-                    Có media
-                  </button>
-                  <button
-                    type="button"
-                    className={`scex-feed__chip ${feedOnMapOnly ? 'is-active' : ''}`}
-                    onClick={() => setFeedOnMapOnly((v) => !v)}
-                  >
-                    On Radar
-                  </button>
-                  <button
-                    type="button"
-                    className={`scex-feed__chip ${feedExpandAll ? 'is-active' : ''}`}
-                    onClick={() => setFeedExpandAll((v) => !v)}
-                  >
-                    {feedExpandAll ? 'Thu gọn text' : 'Mở rộng text'}
-                  </button>
-                  <button
-                    type="button"
-                    className="scex-feed__chip scex-feed__chip--export"
-                    onClick={exportFeedResearch}
-                    title="Tải file .txt các bài đang lọc"
-                  >
-                    Export .txt
-                  </button>
-                </div>
-              </div>
-            )}
           </div>
 
           {feedFullscreen && feedDayGroups ? (
-            <div className="scex-feed__fs-body">
-              <div className="scex-feed__fs-main">
+            <div
+              className={`scex-feed__fs-body ${selectedActor ? 'is-docked' : ''}`}
+            >
+              <div className="scex-feed__fs-main" ref={feedFsMainRef}>
                 <div className="scex-feed__timeline">
                   {feedDayGroups.map((g) => (
                     <section key={g.day} className="scex-feed__day">
@@ -1136,102 +1220,101 @@ export function ScexTrackingPage() {
                         <span>{g.posts.length} bài</span>
                       </header>
                       <ul className="scex-feed__list scex-feed__list--research">
-                        {g.posts.map((p, index) => (
-                          <ScexFeedCard
-                            key={p.id}
-                            post={p}
-                            actor={dataset.actors.find(
-                              (a) => a.handle === p.handle,
-                            )}
-                            sentimentLabel={
-                              config.sentimentLabels[p.sentiment]
-                            }
-                            onMap={mapHandles.has(p.handle.toLowerCase())}
-                            expanded={feedExpandAll || !!expanded[p.id]}
-                            onToggleExpand={() =>
-                              setExpanded((prev) => ({
-                                ...prev,
-                                [p.id]: !prev[p.id],
-                              }))
-                            }
-                            onOpenActor={() => {
-                              const a = dataset.actors.find(
-                                (x) => x.handle === p.handle,
-                              )
-                              if (a) onSelectActor(a)
-                            }}
-                            index={index}
-                            fullMedia
-                            selected={
-                              selectedHandleLc === p.handle.toLowerCase()
-                            }
-                          />
-                        ))}
+                        {g.posts.map((p, index) => {
+                          const actor = actorsByHandle.get(
+                            p.handle.toLowerCase(),
+                          )
+                          return (
+                            <ScexFeedCard
+                              key={p.id}
+                              post={p}
+                              actor={actor}
+                              sentimentLabel={
+                                config.sentimentLabels[p.sentiment]
+                              }
+                              onMap={mapHandles.has(p.handle.toLowerCase())}
+                              expanded={feedExpandAll || !!expanded[p.id]}
+                              onToggleExpand={() =>
+                                setExpanded((prev) => ({
+                                  ...prev,
+                                  [p.id]: !prev[p.id],
+                                }))
+                              }
+                              onOpenActor={() => {
+                                if (actor) onSelectActor(actor)
+                              }}
+                              index={index}
+                              fullMedia
+                              selected={
+                                selectedHandleLc === p.handle.toLowerCase()
+                              }
+                            />
+                          )
+                        })}
                       </ul>
                     </section>
                   ))}
                   {!feedDayGroups.length && (
                     <div className="scex-empty scex-empty--cta">
-                      <strong>Không có bài khớp bộ lọc nghiên cứu</strong>
+                      <strong>Không có bài khớp bộ lọc</strong>
                       <p>Thử nới tone / thời gian / bỏ “Có media”.</p>
                     </div>
                   )}
                 </div>
               </div>
-              <aside
-                className="scex-feed__fs-side"
-                aria-label="Chi tiết KOL"
-              >
-                {selectedActor ? (
-                  <ScexKolDetail
-                    actor={selectedActor}
-                    mapKol={selectedMapKol}
-                    config={config}
-                    posts={allPosts.filter(
-                      (p) =>
-                        p.handle.toLowerCase() ===
-                        selectedActor.handle.toLowerCase(),
-                    )}
-                    onClose={() => setSelectedActor(null)}
-                    variant="panel"
+              {selectedActor && (
+                <>
+                  <button
+                    type="button"
+                    className="scex-feed__fs-scrim"
+                    aria-label="Đóng chi tiết KOL"
+                    onClick={() => setSelectedActor(null)}
                   />
-                ) : (
-                  <div className="scex-feed__fs-empty">
-                    <strong>Chi tiết KOL</strong>
-                    <p>
-                      Bấm avatar hoặc tên KOL trên timeline bên trái để xem
-                      thống kê, tone, On Radar và toàn bộ mention SCEX của
-                      họ.
-                    </p>
-                  </div>
-                )}
-              </aside>
+                  <aside
+                    className="scex-feed__fs-side"
+                    aria-label="Chi tiết KOL"
+                  >
+                    <ScexKolDetail
+                      actor={selectedActor}
+                      mapKol={selectedMapKol}
+                      config={config}
+                      posts={allPosts.filter(
+                        (p) =>
+                          p.handle.toLowerCase() ===
+                          selectedActor.handle.toLowerCase(),
+                      )}
+                      onClose={() => setSelectedActor(null)}
+                      variant="panel"
+                    />
+                  </aside>
+                </>
+              )}
             </div>
           ) : (
             <ul className="scex-feed__list">
-              {filteredPosts.map((p, index) => (
-                <ScexFeedCard
-                  key={p.id}
-                  post={p}
-                  actor={dataset.actors.find((a) => a.handle === p.handle)}
-                  sentimentLabel={config.sentimentLabels[p.sentiment]}
-                  onMap={mapHandles.has(p.handle.toLowerCase())}
-                  expanded={!!expanded[p.id]}
-                  onToggleExpand={() =>
-                    setExpanded((prev) => ({
-                      ...prev,
-                      [p.id]: !prev[p.id],
-                    }))
-                  }
-                  onOpenActor={() => {
-                    const a = dataset.actors.find(
-                      (x) => x.handle === p.handle,
-                    )
-                    if (a) onSelectActor(a)
-                  }}
-                  index={index}
-                />
-              ))}
+              {filteredPosts.map((p, index) => {
+                const actor = actorsByHandle.get(p.handle.toLowerCase())
+                return (
+                  <ScexFeedCard
+                    key={p.id}
+                    post={p}
+                    actor={actor}
+                    sentimentLabel={config.sentimentLabels[p.sentiment]}
+                    onMap={mapHandles.has(p.handle.toLowerCase())}
+                    expanded={!!expanded[p.id]}
+                    onToggleExpand={() =>
+                      setExpanded((prev) => ({
+                        ...prev,
+                        [p.id]: !prev[p.id],
+                      }))
+                    }
+                    onOpenActor={() => {
+                      if (actor) onSelectActor(actor)
+                    }}
+                    index={index}
+                  />
+                )
+              })}
               {!filteredPosts.length && (
                 <li className="scex-empty scex-empty--cta">
                   {feedFilter || feedQuery ? (
@@ -1275,7 +1358,7 @@ export function ScexTrackingPage() {
         </section>
       </div>
 
-      {/* Modal detail only outside feed research (research docks panel on the right) */}
+      {/* Modal detail only outside feed fullscreen (fullscreen docks panel / sheet) */}
       {selectedActor && !feedFullscreen && (
         <>
           <button
@@ -1341,7 +1424,11 @@ function ScexFeedCard({
   return (
     <li
       className={`scex-feed-card ${fullMedia ? 'scex-feed-card--full-media' : ''} ${selected ? 'is-selected' : ''}`}
-      style={{ animationDelay: `${Math.min(index, 10) * 28}ms` }}
+      style={
+        fullMedia
+          ? undefined
+          : { animationDelay: `${Math.min(index, 10) * 28}ms` }
+      }
     >
       <div
         className="scex-feed-card__accent"
@@ -1377,10 +1464,10 @@ function ScexFeedCard({
                   <DaveysRadarLink />
                 </span>
               )}
-              {actor?.tier && (
+              {!fullMedia && actor?.tier && (
                 <span className="scex-pill scex-pill--tier">{actor.tier}</span>
               )}
-              {actor?.kind === 'kol' && (
+              {!fullMedia && actor?.kind === 'kol' && (
                 <span className="scex-pill scex-pill--kol">KOL</span>
               )}
               <span

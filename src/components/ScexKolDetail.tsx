@@ -89,7 +89,7 @@ export function ScexKolDetail({
   onClose: () => void
   /**
    * modal — fixed overlay (default, matrix / compact feed)
-   * panel — docked research column inside Live Feed fullscreen
+   * panel — docked column or mobile sheet inside Live Feed fullscreen
    */
   variant?: 'modal' | 'panel'
 }) {

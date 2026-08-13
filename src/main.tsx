@@ -32,7 +32,14 @@ const ScexEventBanner = lazy(() =>
 function RouteFallback() {
   return (
     <div className="boot-splash" aria-busy="true">
-      <span className="boot-splash__mark" aria-hidden />
+      <img
+        className="boot-splash__mark"
+        src="/brand-mark.png"
+        alt=""
+        width={64}
+        height={64}
+        decoding="async"
+      />
       <p className="boot-splash__title">Davey's Radar</p>
       <small>Bấm avatar · Lọc rank · Mở Feed</small>
     </div>

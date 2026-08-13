@@ -57,6 +57,12 @@ import { normalizeMarkdown } from '../lib/htmlToMarkdown'
 import type { Kol } from '../types'
 import { resolveAvatarHandle } from '../lib/avatar'
 import {
+  confirmDiscardUnsaved,
+  useDirtyRef,
+  useRegisterAdminOps,
+  useRemoteDatasetLoad,
+} from '../lib/adminLoadGuard'
+import {
   collectTagStats,
   displayTags,
   normalizeTag,
@@ -105,18 +111,18 @@ export function AdminKolReportsEditor({ onToast, kols = [] }: Props) {
   const [dataset, setDataset] = useState<KolReportsDataset | null>(null)
   const [source, setSource] = useState<'server' | 'cache' | 'seed'>('seed')
   const [dirty, setDirty] = useState(false)
+  const dirtyRef = useDirtyRef(dirty)
   const [saving, setSaving] = useState(false)
   const [uploading, setUploading] = useState(false)
   const [uploadLabel, setUploadLabel] = useState('')
   const [dragOver, setDragOver] = useState(false)
-  const [tokenInput, setTokenInput] = useState(() => getAdminToken())
   const [query, setQuery] = useState('')
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [showTrash, setShowTrash] = useState(false)
   const [visFilter, setVisFilter] = useState<'all' | 'private' | 'public'>(
     'all',
   )
-  const [viewMode, setViewMode] = useState<ViewMode>('split')
+  const [viewMode, setViewMode] = useState<ViewMode>('write')
   const [sidePanel, setSidePanel] = useState<SidePanel>('meta')
   /** Split: fullscreen overlay + linked scroll Write ↔ Preview */
   const [splitFullscreen, setSplitFullscreen] = useState(false)
@@ -197,18 +203,11 @@ export function AdminKolReportsEditor({ onToast, kols = [] }: Props) {
     [kols],
   )
 
-  useEffect(() => {
-    let cancelled = false
-    void loadKolReportsWithSource().then((r) => {
-      if (cancelled) return
-      setDataset(r.dataset)
-      setSource(r.source)
-      if (r.dataset.reports[0]) setSelectedId(r.dataset.reports[0].id)
-    })
-    return () => {
-      cancelled = true
-    }
-  }, [])
+  useRemoteDatasetLoad(loadKolReportsWithSource, dirtyRef, (r) => {
+    setDataset(r.dataset)
+    setSource(r.source)
+    if (r.dataset.reports[0]) setSelectedId(r.dataset.reports[0].id)
+  })
 
   // Fullscreen: Esc to exit + lock body scroll + escape stacking contexts (.glass)
   useEffect(() => {
@@ -665,7 +664,7 @@ export function AdminKolReportsEditor({ onToast, kols = [] }: Props) {
 
   const save = async () => {
     if (!dataset) return
-    setAdminToken(tokenInput)
+    setAdminToken(getAdminToken())
     let ds = dataset
     if (draft) {
       ds = commitDraftToDataset(ds, draft)
@@ -682,7 +681,7 @@ export function AdminKolReportsEditor({ onToast, kols = [] }: Props) {
       if (committed) setDraft(cloneReport(committed))
     }
     setSaving(true)
-    const r = await saveKolReportsToServer(ds, tokenInput)
+    const r = await saveKolReportsToServer(ds)
     setSaving(false)
     if (r.ok) {
       setDirty(false)
@@ -696,8 +695,8 @@ export function AdminKolReportsEditor({ onToast, kols = [] }: Props) {
   }
 
   const reload = async () => {
-    if (dirty && !confirm('Có thay đổi chưa lưu. Reload và bỏ?')) return
-    const r = await loadKolReportsWithSource(tokenInput)
+    if (dirty && !confirmDiscardUnsaved(true)) return
+    const r = await loadKolReportsWithSource()
     setDataset(r.dataset)
     setSource(r.source)
     setDirty(false)
@@ -888,16 +887,15 @@ export function AdminKolReportsEditor({ onToast, kols = [] }: Props) {
         onToast('Chỉ PNG / JPEG / WebP / GIF — upload thẳng R2')
         return null
       }
-      const token = normalizeAdminToken(tokenInput || getAdminToken())
+      const token = normalizeAdminToken(getAdminToken())
       if (!token) {
-        onToast('Dán FEED_ADMIN_TOKEN trước khi upload ảnh lên R2')
+        onToast('Dán FEED_ADMIN_TOKEN ở thanh ops trước khi upload ảnh lên R2')
         return null
       }
       if (!draft?.id) {
         onToast('Chưa có report id')
         return null
       }
-      setTokenInput(token)
       setAdminToken(token)
       setUploading(true)
       setUploadLabel(file.name || 'image')
@@ -931,7 +929,7 @@ export function AdminKolReportsEditor({ onToast, kols = [] }: Props) {
       }
       return { url: r.url, key: r.key, overwritten: r.overwritten }
     },
-    [tokenInput, draft?.id, draft?.handle, onToast],
+    [draft?.id, draft?.handle, onToast],
   )
 
   const insertImageFromR2 = async (file: File) => {
@@ -1156,12 +1154,11 @@ export function AdminKolReportsEditor({ onToast, kols = [] }: Props) {
       return
     }
     // Prefer field → sessionStorage (AdminGate). Always normalize paste artifacts.
-    const token = normalizeAdminToken(tokenInput || getAdminToken())
+    const token = normalizeAdminToken(getAdminToken())
     if (!token) {
-      onToast('Dán FEED_ADMIN_TOKEN trước — ảnh DOCX cần upload R2')
+      onToast('Dán FEED_ADMIN_TOKEN ở thanh ops — ảnh DOCX cần upload R2')
       return
     }
-    setTokenInput(token)
     setAdminToken(token)
     setImportingDocx(true)
     setUploadLabel(file.name)
@@ -1281,6 +1278,15 @@ export function AdminKolReportsEditor({ onToast, kols = [] }: Props) {
     }
   }
 
+  useRegisterAdminOps('reports', {
+    dirty,
+    saving,
+    source,
+    updatedAt: dataset?.updatedAt ?? null,
+    save: () => void save(),
+    reload: () => void reload(),
+  })
+
   if (!dataset) {
     return (
       <div className="admin-kol-reports">
@@ -1315,20 +1321,6 @@ export function AdminKolReportsEditor({ onToast, kols = [] }: Props) {
           </p>
         </div>
         <div className="akr-head__actions">
-          <input
-            className="admin-token-input"
-            type="password"
-            placeholder="FEED_ADMIN_TOKEN"
-            value={tokenInput}
-            onChange={(e) => setTokenInput(e.target.value)}
-            onBlur={() => {
-              const t = normalizeAdminToken(tokenInput || getAdminToken())
-              setTokenInput(t)
-              setAdminToken(t)
-            }}
-            autoComplete="off"
-            title="Phải trùng FEED_ADMIN_TOKEN trên Vercel — dùng cho Save R2 / upload ảnh DOCX"
-          />
           <button
             type="button"
             className="admin-btn admin-btn--ghost admin-btn--sm"

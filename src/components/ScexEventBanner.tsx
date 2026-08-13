@@ -14,13 +14,7 @@ import {
 } from '../lib/siteBannerStore'
 import { safeHref } from '../lib/safeUrl'
 
-export function SiteBannerRibbon({
-  config,
-  variant = 'ribbon',
-}: {
-  config: SiteBannerConfig
-  variant?: 'ribbon' | 'overlay'
-}) {
+export function SiteBannerRibbon({ config }: { config: SiteBannerConfig }) {
   if (!config.enabled) return null
 
   const logoUrl = resolveBannerLogo(config)
@@ -29,11 +23,9 @@ export function SiteBannerRibbon({
   const href = safeHref(config.href)
   if (!href) return null
 
-  const overlay = variant === 'overlay'
-
   return (
     <a
-      className={`scex-event-banner${overlay ? ' scex-event-banner--overlay glass-regular' : ''}`}
+      className="scex-event-banner"
       href={href}
       target="_blank"
       rel="noopener noreferrer"
@@ -115,11 +107,7 @@ export function useSiteBanner(): SiteBannerConfig {
   return config
 }
 
-export function ScexEventBanner({
-  variant = 'ribbon',
-}: {
-  variant?: 'ribbon' | 'overlay'
-}) {
+export function ScexEventBanner() {
   const config = useSiteBanner()
-  return <SiteBannerRibbon config={config} variant={variant} />
+  return <SiteBannerRibbon config={config} />
 }

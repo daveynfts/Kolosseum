@@ -7,7 +7,6 @@ import {
   getKolRank,
   NICHE_COLORS,
   primaryNiche,
-  formatStatus,
   RANK_LABELS,
   RANK_ORDER,
   STATUS_EMOJI,
@@ -34,6 +33,16 @@ import { FIELD_META, SOURCE_LABELS, type FieldSource } from '../lib/fieldMeta'
 import { kolMatchesAdminQuery } from '../lib/adminSearch'
 import { normalizeAvatarUrl, xAvatarUrl } from '../lib/avatar'
 import {
+  confirmDiscardUnsaved,
+  datasetForAdminTab,
+  isAnyAdminDirty,
+  isDatasetDirty,
+  parseAdminTabFromHash,
+  useAdminOps,
+  useRegisterAdminOps,
+  type AdminDatasetId,
+} from '../lib/adminLoadGuard'
+import {
   suggestSurfReportFilename,
   uploadSurfReport,
 } from '../lib/surfReportUpload'
@@ -59,36 +68,32 @@ type Tab =
   | 'events'
   | 'legend'
 
+const TAB_HASH: Record<Tab, string> = {
+  list: '#/admin',
+  edit: '#/admin/edit',
+  feed: '#/admin/feed',
+  follows: '#/admin/follows',
+  data: '#/admin/data',
+  scex: '#/admin/scex',
+  banner: '#/admin/banner',
+  reports: '#/admin/reports',
+  events: '#/admin/events',
+  legend: '#/admin/legend',
+}
+
+const DATASET_FILE: Record<AdminDatasetId, string> = {
+  kols: 'kols/v1.json',
+  feed: 'feed/v1.json',
+  follows: 'recent-followers/v1.json',
+  twitterscore: 'internal/twitterscore-top100/v1.json',
+  scex: 'scex/tracking/v1.json',
+  banner: 'site/banner/v1.json',
+  reports: 'internal/kol-reports/v1.json',
+  events: 'events/conviction-2026/v1.json',
+}
+
 function tabFromHash(): Tab {
-  const h = window.location.hash.replace(/^#\/?/, '').toLowerCase()
-  // #/admin/feed or #/admin?tab=feed
-  if (h.includes('scex') || h.includes('campaign')) return 'scex'
-  if (h.includes('banner') || h.includes('ribbon')) return 'banner'
-  if (
-    h.includes('/events') ||
-    h.includes('conviction') ||
-    h.endsWith('events') ||
-    h.includes('side-event')
-  )
-    return 'events'
-  if (
-    h.includes('reports') ||
-    h.includes('kol-report') ||
-    h.includes('surf-report')
-  )
-    return 'reports'
-  if (
-    h.includes('twitterscore') ||
-    h.includes('ts-data') ||
-    h.includes('/data') ||
-    h.endsWith('data')
-  )
-    return 'data'
-  if (h.includes('follows') || h.includes('followers')) return 'follows'
-  if (h.includes('feed')) return 'feed'
-  if (h.includes('legend')) return 'legend'
-  if (h.includes('edit')) return 'edit'
-  return 'list'
+  return parseAdminTabFromHash(window.location.hash)
 }
 
 export function AdminDashboard() {
@@ -102,68 +107,89 @@ export function AdminDashboard() {
   const [tab, setTab] = useState<Tab>(() => tabFromHash())
   const [toast, setToast] = useState<string | null>(null)
   const [dirty, setDirty] = useState(false)
-  const [feedAddSignal, setFeedAddSignal] = useState(0)
   const [kolSource, setKolSource] = useState<KolSource | 'loading'>('loading')
+  const [kolUpdatedAt, setKolUpdatedAt] = useState<string | null>(null)
   const [savingServer, setSavingServer] = useState(false)
   const [tokenInput, setTokenInput] = useState(() => getAdminToken())
   const [uploadingSurf, setUploadingSurf] = useState(false)
   const dirtyRef = useRef(dirty)
+  const tabRef = useRef(tab)
 
   useEffect(() => {
     dirtyRef.current = dirty
   }, [dirty])
 
   useEffect(() => {
-    const onHash = () => setTab(tabFromHash())
+    tabRef.current = tab
+  }, [tab])
+
+  const applyHash = (t: Tab) => {
+    const path = TAB_HASH[t]
+    if (window.location.hash !== path) {
+      window.location.hash = path
+    }
+  }
+
+  const goTab = (t: Tab, opts?: { fromHash?: boolean }) => {
+    const current = tabRef.current
+    if (t === current) {
+      if (!opts?.fromHash) applyHash(t)
+      return
+    }
+    const fromDs = datasetForAdminTab(current)
+    const toDs = datasetForAdminTab(t)
+    if (fromDs && fromDs !== toDs) {
+      const leavingDirty =
+        isDatasetDirty(fromDs) || (fromDs === 'kols' && dirtyRef.current)
+      if (leavingDirty && !confirmDiscardUnsaved(true)) {
+        if (opts?.fromHash) applyHash(current)
+        return
+      }
+    }
+    setTab(t)
+    tabRef.current = t
+    if (!opts?.fromHash) applyHash(t)
+  }
+
+  useEffect(() => {
+    const onHash = () => goTab(tabFromHash(), { fromHash: true })
     window.addEventListener('hashchange', onHash)
     return () => window.removeEventListener('hashchange', onHash)
+    // goTab is stable enough via refs
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  useEffect(() => {
+    const onBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (isAnyAdminDirty() || dirtyRef.current) {
+        e.preventDefault()
+        e.returnValue = ''
+      }
+    }
+    window.addEventListener('beforeunload', onBeforeUnload)
+    return () => window.removeEventListener('beforeunload', onBeforeUnload)
   }, [])
 
   // Load shared R2 copy first so admin sees same data as everyone
   useEffect(() => {
     let cancelled = false
     void (async () => {
-      const { kols: list, source } = await loadKolsWithSource()
+      const { kols: list, source, updatedAt } = await loadKolsWithSource()
       if (cancelled) return
       // Don't wipe in-progress local edits if user already changed something
       if (dirtyRef.current) {
         setKolSource(source)
+        if (updatedAt) setKolUpdatedAt(updatedAt)
         return
       }
       setKols(list)
       setKolSource(source)
+      setKolUpdatedAt(updatedAt ?? null)
     })()
     return () => {
       cancelled = true
     }
   }, [])
-
-  const goTab = (t: Tab) => {
-    setTab(t)
-    const path =
-      t === 'feed'
-        ? '#/admin/feed'
-        : t === 'follows'
-          ? '#/admin/follows'
-          : t === 'data'
-            ? '#/admin/data'
-            : t === 'scex'
-              ? '#/admin/scex'
-              : t === 'banner'
-                ? '#/admin/banner'
-                : t === 'reports'
-                  ? '#/admin/reports'
-                  : t === 'events'
-                    ? '#/admin/events'
-                    : t === 'legend'
-                      ? '#/admin/legend'
-                      : t === 'edit'
-                        ? '#/admin/edit'
-                        : '#/admin'
-    if (window.location.hash !== path) {
-      window.location.hash = path
-    }
-  }
 
   const meta = getStoreMeta()
 
@@ -220,7 +246,7 @@ export function AdminDashboard() {
         const token = tokenInput.trim() || getAdminToken()
         if (!token) {
           flash(
-            'Chưa có token — dán FEED_ADMIN_TOKEN → Apply token → Save (R2). Website chỉ đọc R2.',
+            'Chưa có token — dán FEED_ADMIN_TOKEN ở thanh ops rồi Save (R2).',
           )
           return false
         }
@@ -234,6 +260,7 @@ export function AdminDashboard() {
         setKols(result.kols)
         setDirty(false)
         setKolSource('server')
+        setKolUpdatedAt(result.updatedAt)
         const withPdf = result.kols.filter((k) => (k.surfReportPdfUrl || '').trim())
           .length
         flash(
@@ -268,6 +295,12 @@ export function AdminDashboard() {
     setDraft(fixed)
     setSelectedId(fixed.id)
     void persistServer(next, `admin edit @${fixed.handle} tier=${fixed.tier}`)
+  }
+
+  const patchKolInList = (id: string, nextKol: Kol) => {
+    setKols((prev) => prev.map((k) => (k.id === id ? nextKol : k)))
+    setDirty(true)
+    setDraft((prev) => (prev && prev.id === id ? nextKol : prev))
   }
 
   const toggleDraftNiche = (n: Niche) => {
@@ -316,12 +349,30 @@ export function AdminDashboard() {
     setKols(seed)
     setSelectedId(null)
     setDraft(null)
-    setDirty(false)
+    setDirty(true)
     setKolSource('seed')
-    flash('Đã load seed — bấm Save all (R2) nếu muốn publish')
+    flash('Đã load seed — bấm Save (R2) nếu muốn publish')
   }
 
-  const onPushAllToServer = () => {
+  const reloadKols = async () => {
+    if (!confirmDiscardUnsaved(dirty)) return
+    const { kols: list, source, updatedAt } = await loadKolsWithSource()
+    setKols(list)
+    setKolSource(source)
+    setKolUpdatedAt(updatedAt ?? null)
+    setDirty(false)
+    if (selectedId) {
+      const sel = list.find((k) => k.id === selectedId)
+      if (sel) setDraft(JSON.parse(JSON.stringify(sel)) as Kol)
+    }
+    flash(`Reloaded from ${source}`)
+  }
+
+  const saveKolsOps = () => {
+    if (tab === 'edit' && draft) {
+      onSaveDraft()
+      return
+    }
     void persistServer(kols, 'admin push all')
   }
 
@@ -363,7 +414,7 @@ export function AdminDashboard() {
     }
     const token = tokenInput.trim() || getAdminToken()
     if (!token) {
-      flash('Cần token — dán FEED_ADMIN_TOKEN → Apply token rồi upload')
+      flash('Cần token — dán FEED_ADMIN_TOKEN ở thanh ops rồi upload')
       return
     }
     setAdminToken(token)
@@ -415,198 +466,154 @@ export function AdminDashboard() {
     }
   }, [kols])
 
+  useRegisterAdminOps('kols', {
+    dirty,
+    saving: savingServer,
+    source: kolSource,
+    updatedAt: kolUpdatedAt ?? meta.updatedAt,
+    save: saveKolsOps,
+    reload: () => void reloadKols(),
+  })
+
+  const activeDataset = datasetForAdminTab(tab)
+  const ops = useAdminOps(activeDataset)
+  const opsUpdatedAt = ops?.updatedAt ?? (activeDataset === 'kols' ? kolUpdatedAt ?? meta.updatedAt : null)
+
   return (
     <div className="admin">
-      <header className="admin-top glass">
-        <div className="admin-brand">
-          <div>
-            <h1>Admin Dashboard</h1>
-            <p>
-              Điều chỉnh KOL & bio · đồng bộ server (R2) cho mọi người · source:{' '}
-              <strong>{kolSource}</strong>
-            </p>
-          </div>
-        </div>
-        <div className="admin-top-actions">
-          <a className="btn" href="/">
-            ← Map
-          </a>
-          {tab === 'feed' ? (
-            <button
-              type="button"
-              className="btn btn--primary"
-              onClick={() => setFeedAddSignal((n) => n + 1)}
-            >
-              + Add post
-            </button>
-          ) : (
-            <button type="button" className="btn" onClick={onAdd}>
-              + Add KOL
-            </button>
-          )}
-          <button type="button" className="btn btn--primary" onClick={() => goTab('feed')}>
-            X Feed
-          </button>
-          <button type="button" className="btn" onClick={() => goTab('follows')}>
-            Smart Followers
-          </button>
-          {tab !== 'feed' && (
-            <button
-              type="button"
-              className="btn btn--primary"
-              disabled={savingServer}
-              onClick={onPushAllToServer}
-              title="Đẩy toàn bộ list KOL lên R2 (mọi visitor thấy)"
-            >
-              {savingServer ? 'Saving…' : 'Save all (R2)'}
-            </button>
-          )}
-          <button type="button" className="btn" onClick={onExport}>
-            Export KOLs
-          </button>
-          <label className="btn btn--file">
-            Import
-            <input
-              type="file"
-              accept="application/json,.json"
-              hidden
-              onChange={(e) => {
-                const f = e.target.files?.[0]
-                if (f) void onImport(f)
-                e.target.value = ''
-              }}
-            />
-          </label>
-          <button type="button" className="btn btn--danger" onClick={onResetSeed}>
-            Reset seed
-          </button>
-        </div>
-      </header>
-
-      <div className="admin-ai-banner glass">
-        <strong>Đồng bộ server (R2)</strong>
-        <span>
-          Map public <em>chỉ</em> đọc <code>/api/kols</code> (R2). Đổi tier/bio
-          xong phải <strong>Save</strong> (cần token). Source:{' '}
-          <strong>{kolSource}</strong>
-          {meta.updatedAt ? ` · ${meta.updatedAt.slice(0, 19)}` : ''}.
-          {dirty ? ' · ⚠️ có thay đổi chưa publish' : ''}
+      <div className="admin-chrome">
+      <div className="admin-ops">
+        <a className="admin-ops__map" href="/">
+          ← Map
+        </a>
+        <span className="admin-ops__file">
+          {activeDataset ? DATASET_FILE[activeDataset] : '—'}
         </span>
-        <label className="admin-token-row">
+        <span className="admin-ops__meta">
+          {ops?.source || (activeDataset === 'kols' ? kolSource : '—')}
+        </span>
+        {opsUpdatedAt ? (
+          <span className="admin-ops__meta">{formatTime(opsUpdatedAt)}</span>
+        ) : null}
+        {(ops?.dirty || (activeDataset === 'kols' && dirty)) && (
+          <span className="admin-ops__dirty">unsaved</span>
+        )}
+        <label className="admin-ops__token">
           Token
           <input
             type="password"
             value={tokenInput}
-            onChange={(e) => setTokenInput(e.target.value)}
-            placeholder="FEED_ADMIN_TOKEN (bắt buộc để website thấy)"
+            onChange={(e) => {
+              const v = e.target.value
+              setTokenInput(v)
+              setAdminToken(v)
+            }}
+            placeholder="FEED_ADMIN_TOKEN"
             autoComplete="off"
           />
         </label>
         <button
           type="button"
-          className="btn"
-          onClick={() => {
-            setAdminToken(tokenInput)
-            flash(
-              tokenInput.trim()
-                ? 'Đã apply token — giờ sửa KOL rồi bấm Save (R2)'
-                : 'Đã xóa token',
-            )
-          }}
+          className="btn btn--primary"
+          disabled={
+            !ops ||
+            ops.saving ||
+            !(ops.dirty || (activeDataset === 'kols' && dirty))
+          }
+          onClick={() => void ops?.save()}
         >
-          Apply token
+          {ops?.saving ? 'Saving…' : 'Save (R2)'}
         </button>
-        <button type="button" className="btn" onClick={() => goTab('legend')}>
-          Field legend
+        <button
+          type="button"
+          className="btn"
+          disabled={!ops}
+          onClick={() => void ops?.reload()}
+        >
+          Reload
         </button>
       </div>
 
-      <div className="admin-stats">
-        <div className="admin-stat glass">
-          <em>{stats.total}</em>
-          <span>Total</span>
-        </div>
-        <div className="admin-stat glass">
-          <em>{stats.visible}</em>
-          <span>On map</span>
-        </div>
-        <div className="admin-stat glass">
-          <em>{stats.hidden}</em>
-          <span>Hidden</span>
-        </div>
-        <div className="admin-stat glass">
-          <em>{stats.hot}</em>
-          <span>Hot</span>
-        </div>
-        <div className="admin-stat glass">
-          <em>
-            {kolSource === 'loading'
-              ? '…'
-              : kolSource === 'server'
-                ? 'R2'
-                : kolSource === 'local'
-                  ? 'Local'
-                  : 'Seed'}
-          </em>
-          <span>
-            {kolSource === 'server'
-              ? 'Shared'
-              : meta.updatedAt
-                ? formatTime(meta.updatedAt)
-                : 'sheetKols.ts'}
-          </span>
-        </div>
-      </div>
-
-      <div className="admin-tabs">
-        {(
-          [
-            'list',
-            'edit',
-            'feed',
-            'follows',
-            'data',
-            'scex',
-            'banner',
-            'reports',
-            'events',
-            'legend',
-          ] as Tab[]
-        ).map((t) => (
+      <nav className="admin-nav" aria-label="Admin datasets">
+        <div className="admin-nav__group">
+          <span className="admin-nav__label">KOL</span>
           <button
-            key={t}
             type="button"
-            className={`admin-tab ${tab === t ? 'is-active' : ''} ${t === 'feed' || t === 'follows' || t === 'data' || t === 'scex' || t === 'banner' || t === 'reports' || t === 'events' ? 'admin-tab--feed' : ''}`}
-            onClick={() => goTab(t)}
+            className={`admin-tab ${tab === 'list' || tab === 'edit' ? 'is-active' : ''}`}
+            onClick={() => goTab('list')}
           >
-            {t === 'list'
-              ? 'KOL list'
-              : t === 'edit'
-                ? 'Editor'
-                : t === 'feed'
-                  ? '★ X Feed'
-                  : t === 'follows'
-                    ? 'Smart Followers'
-                    : t === 'data'
-                      ? '★ Data / TwitterScore'
-                      : t === 'scex'
-                        ? '★ SCEX Tracking'
-                        : t === 'banner'
-                          ? '★ Event Banner'
-                          : t === 'reports'
-                            ? '★ KOL Reports'
-                            : t === 'events'
-                              ? '★ Events Map'
-                              : 'AI field legend'}
+            List
           </button>
-        ))}
+        </div>
+        <div className="admin-nav__group">
+          <span className="admin-nav__label">Nội dung</span>
+          {(
+            [
+              ['feed', 'Feed'],
+              ['follows', 'Followers'],
+              ['reports', 'Reports'],
+            ] as const
+          ).map(([id, label]) => (
+            <button
+              key={id}
+              type="button"
+              className={`admin-tab ${tab === id ? 'is-active' : ''}`}
+              onClick={() => goTab(id)}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+        <div className="admin-nav__group">
+          <span className="admin-nav__label">Chiến dịch</span>
+          {(
+            [
+              ['banner', 'Banner'],
+              ['scex', 'SCEX'],
+              ['events', 'Events'],
+            ] as const
+          ).map(([id, label]) => (
+            <button
+              key={id}
+              type="button"
+              className={`admin-tab ${tab === id ? 'is-active' : ''}`}
+              onClick={() => goTab(id)}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+        <div className="admin-nav__group">
+          <span className="admin-nav__label">Tham chiếu</span>
+          <button
+            type="button"
+            className={`admin-tab ${tab === 'data' ? 'is-active' : ''}`}
+            onClick={() => goTab('data')}
+          >
+            TwitterScore
+          </button>
+          <button
+            type="button"
+            className={`admin-tab ${tab === 'legend' ? 'is-active' : ''}`}
+            onClick={() => goTab('legend')}
+          >
+            Legend
+          </button>
+        </div>
+      </nav>
       </div>
+
+      {(tab === 'list' || tab === 'edit') && (
+        <p className="admin-stats-line">
+          {stats.visible} visible · {stats.hidden} hidden · {stats.hot} hot
+          {stats.total !== stats.visible ? ` · ${stats.total} total` : ''}
+        </p>
+      )}
 
       {tab === 'feed' && (
         <AdminFeedEditor
           kols={kols}
           onToast={flash}
-          addSignal={feedAddSignal}
         />
       )}
 
@@ -629,7 +636,7 @@ export function AdminDashboard() {
       {tab === 'legend' && <FieldLegend />}
 
       {tab === 'list' && (
-        <div className="admin-list-wrap glass">
+        <div className="admin-list-wrap">
           <div className="admin-toolbar">
             <label className="admin-search-wrap">
               <span className="admin-search-wrap__icon" aria-hidden>
@@ -703,6 +710,28 @@ export function AdminDashboard() {
                 : ''}{' '}
               rows
             </span>
+            <button type="button" className="btn" onClick={onAdd}>
+              + Add KOL
+            </button>
+            <button type="button" className="btn" onClick={onExport}>
+              Export
+            </button>
+            <label className="btn btn--file">
+              Import
+              <input
+                type="file"
+                accept="application/json,.json"
+                hidden
+                onChange={(e) => {
+                  const f = e.target.files?.[0]
+                  if (f) void onImport(f)
+                  e.target.value = ''
+                }}
+              />
+            </label>
+            <button type="button" className="btn btn--danger" onClick={onResetSeed}>
+              Reset seed
+            </button>
           </div>
 
           <div className="admin-table-scroll">
@@ -733,72 +762,92 @@ export function AdminDashboard() {
               <table className="admin-table">
                 <thead>
                   <tr>
-                    <th></th>
-                    <th>KOL</th>
+                    <th>#</th>
+                    <th>Handle</th>
+                    <th>Name</th>
                     <th>Rank</th>
-                    <th>
-                      Status <SrcBadge source="ai" />
-                    </th>
+                    <th>Status</th>
+                    <th>Hidden</th>
                     <th>
                       Followers <SrcBadge source="x" />
                     </th>
                     <th>
                       Score <SrcBadge source="ai" />
                     </th>
-                    <th>7d posts</th>
-                    <th>Hidden</th>
+                    <th></th>
                   </tr>
                 </thead>
                 <tbody>
-                  {filtered.map((k) => (
+                  {filtered.map((k, i) => (
                     <tr
                       key={k.id}
                       className={selectedId === k.id ? 'is-selected' : ''}
-                      onClick={() => openKol(k.id)}
                     >
+                      <td>{i + 1}</td>
                       <td>
-                        <AvatarImg
-                          handle={k.handle}
-                          name={k.displayName}
-                          size={32}
-                          color={NICHE_COLORS[primaryNiche(k)]}
-                          avatarUrl={k.avatarUrl}
+                        <strong>@{k.handle}</strong>
+                      </td>
+                      <td>{k.displayName}</td>
+                      <td onClick={(e) => e.stopPropagation()}>
+                        <select
+                          className="admin-table-inline"
+                          value={getKolRank(k)}
+                          onChange={(e) =>
+                            patchKolInList(
+                              k.id,
+                              applyKolRank(k, e.target.value as KolRank),
+                            )
+                          }
+                        >
+                          {RANK_ORDER.map((r) => (
+                            <option key={r} value={r}>
+                              {RANK_LABELS[r]}
+                            </option>
+                          ))}
+                        </select>
+                      </td>
+                      <td onClick={(e) => e.stopPropagation()}>
+                        <select
+                          className="admin-table-inline"
+                          value={k.statusLabel ?? 'stable'}
+                          onChange={(e) =>
+                            patchKolInList(k.id, {
+                              ...k,
+                              statusLabel: e.target.value as StatusLabel,
+                            })
+                          }
+                        >
+                          {ADMIN_STATUSES.map((s) => (
+                            <option key={s} value={s}>
+                              {STATUS_EMOJI[s]} {STATUS_LABELS[s]}
+                            </option>
+                          ))}
+                        </select>
+                      </td>
+                      <td onClick={(e) => e.stopPropagation()}>
+                        <input
+                          type="checkbox"
+                          checked={!!k.hidden}
+                          onChange={(e) =>
+                            patchKolInList(k.id, {
+                              ...k,
+                              hidden: e.target.checked,
+                            })
+                          }
+                          aria-label={`Hidden @${k.handle}`}
                         />
-                      </td>
-                      <td>
-                        <strong>{k.displayName}</strong>
-                        <div className="muted">
-                          @{k.handle}
-                          {getKolNiches(k).length > 1
-                            ? ` · ${getKolNiches(k).join(', ')}`
-                            : ` · ${primaryNiche(k)}`}
-                        </div>
-                      </td>
-                      <td>
-                        <RankBadge
-                          tier={k.tier}
-                          score={k.score}
-                          isTop30={k.isTop30}
-                          rank={k.rank}
-                          size="sm"
-                        />
-                        <span className="muted" style={{ marginLeft: 6 }}>
-                          {formatRank(k)}
-                        </span>
-                      </td>
-                      <td>
-                        <span className="status-emoji-label">
-                          {formatStatus(k.statusLabel)}
-                        </span>
                       </td>
                       <td>{fmt(k.followers)}</td>
                       <td>{k.score.toFixed(1)}</td>
                       <td>
-                        {k.activity7dPosts != null
-                          ? `${k.activity7dPosts}${k.activity7dSource === 'sampled' ? '*' : '≈'}`
-                          : '—'}
+                        <button
+                          type="button"
+                          className="btn btn--sm"
+                          onClick={() => openKol(k.id)}
+                        >
+                          Form
+                        </button>
                       </td>
-                      <td>{k.hidden ? 'yes' : ''}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -810,7 +859,7 @@ export function AdminDashboard() {
 
       {tab === 'edit' && (
         <div className="admin-edit-layout">
-          <div className="admin-edit-side glass">
+          <div className="admin-edit-side">
             <div className="admin-toolbar">
               <label className="admin-search-wrap">
                 <span className="admin-search-wrap__icon" aria-hidden>
@@ -869,7 +918,7 @@ export function AdminDashboard() {
             </div>
           </div>
 
-          <div className="admin-editor glass">
+          <div className="admin-editor">
             {!draft ? (
               <div className="admin-empty">Chọn KOL từ list hoặc Add KOL</div>
             ) : (
@@ -894,8 +943,15 @@ export function AdminDashboard() {
                   <div className="admin-editor-actions">
                     <button
                       type="button"
+                      className="btn"
+                      onClick={() => goTab('list')}
+                    >
+                      ← List
+                    </button>
+                    <button
+                      type="button"
                       className="btn btn--primary"
-                      disabled={savingServer}
+                      disabled={savingServer || !dirty}
                       onClick={() => onSaveDraft()}
                       title="Lưu KOL này + đẩy list lên server (R2)"
                     >
@@ -1022,11 +1078,8 @@ export function AdminDashboard() {
                         onChange={(e) => {
                           const rank = e.target.value as KolRank
                           if (!draft) return
-                          const nextDraft = applyKolRank(draft, rank)
-                          setDraft(nextDraft)
+                          setDraft(applyKolRank(draft, rank))
                           setDirty(true)
-                          // Publish immediately so map/R2 stay in sync
-                          onSaveDraft(nextDraft)
                         }}
                       >
                         {RANK_ORDER.map((r) => (
@@ -1060,8 +1113,8 @@ export function AdminDashboard() {
                         />
                         <span>{formatRank(draft)}</span>
                         <span style={{ opacity: 0.85 }}>
-                          · band T{draft.tier ?? tierForRank(getKolRank(draft))} ·
-                          auto Save R2
+                          · band T{draft.tier ?? tierForRank(getKolRank(draft))} · Save
+                          (R2) khi xong
                         </span>
                       </div>
                     </Field>
@@ -1116,13 +1169,29 @@ export function AdminDashboard() {
                         Hidden
                       </label>
                     </Field>
+                    <Field label="Status" source="ai">
+                      <select
+                        value={draft.statusLabel ?? 'stable'}
+                        onChange={(e) =>
+                          patchDraft('statusLabel', e.target.value as StatusLabel)
+                        }
+                      >
+                        {ADMIN_STATUSES.map((s) => (
+                          <option key={s} value={s}>
+                            {STATUS_EMOJI[s]} {STATUS_LABELS[s]}
+                          </option>
+                        ))}
+                      </select>
+                    </Field>
                   </div>
                 </section>
 
-                <section className="admin-section">
-                  <h3>
-                    Assessment <SrcBadge source="ai" />
-                  </h3>
+                <details className="admin-section admin-section--fold">
+                  <summary>
+                    <h3>
+                      Assessment <SrcBadge source="ai" />
+                    </h3>
+                  </summary>
                   <Field
                     label="Bio / assessment chi tiết (AI: metrics + 7d + X bio + feed)"
                     source="ai"
@@ -1139,12 +1208,14 @@ export function AdminDashboard() {
                       ), xuống dòng / bullet <code>•</code>.
                     </p>
                   </Field>
-                </section>
+                </details>
 
-                <section className="admin-section">
-                  <h3>
-                    Surf AI → KOL Report <SrcBadge source="ai" />
-                  </h3>
+                <details className="admin-section admin-section--fold">
+                  <summary>
+                    <h3>
+                      Surf AI → KOL Report <SrcBadge source="ai" />
+                    </h3>
+                  </summary>
                   <p className="admin-hint" style={{ marginTop: 0 }}>
                     Map / tab “Phân tích sâu” mở <strong>KOL Report</strong>{' '}
                     (Markdown) trên web — không còn mở PDF. Soạn tại{' '}
@@ -1208,12 +1279,14 @@ export function AdminDashboard() {
                       ) : null}
                     </div>
                   </details>
-                </section>
+                </details>
 
-                <section className="admin-section">
-                  <h3>
-                    X metrics <SrcBadge source="x" /> / scores <SrcBadge source="ai" />
-                  </h3>
+                <details className="admin-section admin-section--fold">
+                  <summary>
+                    <h3>
+                      X metrics <SrcBadge source="x" /> / scores <SrcBadge source="ai" />
+                    </h3>
+                  </summary>
                   <div className="admin-fields">
                     <Field label="Followers" source="x">
                       <input
@@ -1271,20 +1344,6 @@ export function AdminDashboard() {
                         Verified
                       </label>
                     </Field>
-                    <Field label="Status" source="ai">
-                      <select
-                        value={draft.statusLabel ?? 'stable'}
-                        onChange={(e) =>
-                          patchDraft('statusLabel', e.target.value as StatusLabel)
-                        }
-                      >
-                        {ADMIN_STATUSES.map((s) => (
-                          <option key={s} value={s}>
-                            {STATUS_EMOJI[s]} {STATUS_LABELS[s]}
-                          </option>
-                        ))}
-                      </select>
-                    </Field>
                     <Field label="Activity level" source="ai">
                       <input
                         type="number"
@@ -1325,12 +1384,14 @@ export function AdminDashboard() {
                       />
                     </Field>
                   </div>
-                </section>
+                </details>
 
-                <section className="admin-section">
-                  <h3>
-                    7d activity <SrcBadge source="sample" /> / <SrcBadge source="ai" />
-                  </h3>
+                <details className="admin-section admin-section--fold">
+                  <summary>
+                    <h3>
+                      7d activity <SrcBadge source="sample" /> / <SrcBadge source="ai" />
+                    </h3>
+                  </summary>
                   <div className="admin-fields">
                     <Field label="7d posts" source="sample">
                       <input
@@ -1418,14 +1479,13 @@ export function AdminDashboard() {
                       </label>
                     </Field>
                   </div>
-                </section>
+                </details>
 
                 <p className="admin-hint">
                   <strong>Save (R2)</strong> = publish toàn list kèm KOL này lên{' '}
-                  <code>kols/v1.json</code>. <strong>Save all (R2)</strong> =
-                  publish list hiện tại (header). Website chỉ đọc R2 — không có
-                  chế độ lưu local-only. Cần token. Rank đổi sẽ auto-save nếu đã
-                  có token.
+                  <code>kols/v1.json</code>. Website chỉ đọc R2 — cần token ở
+                  thanh ops. Rank/status/hidden sửa trên bảng hoặc form đều
+                  chung một lần Save.
                 </p>
               </>
             )}
@@ -1469,7 +1529,7 @@ function SrcBadge({ source }: { source: FieldSource }) {
 function FieldLegend() {
   const groups = ['identity', 'metrics', 'scores', 'activity7d', 'flags'] as const
   return (
-    <div className="admin-legend glass">
+    <div className="admin-legend">
       <h2>Bảng nguồn field (AI vs X vs Human)</h2>
       <p className="admin-legend-intro">
         Dùng khi giải thích với client / team: phần nào do AI, phần nào ground truth.

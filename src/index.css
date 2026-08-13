@@ -306,94 +306,6 @@ input {
   }
 }
 
-/* Map overlay capsule — does not consume layout height */
-.scex-event-banner--overlay {
-  position: absolute;
-  top: 68px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: min(520px, calc(100vw - 340px));
-  height: 42px;
-  z-index: 30;
-  border-radius: var(--radius-pill);
-  border-bottom: none;
-  background: transparent;
-  flex-shrink: 0;
-  overflow: hidden;
-}
-
-.scex-event-banner--overlay .scex-event-banner__base {
-  display: none;
-}
-
-.scex-event-banner--overlay .scex-event-banner__art {
-  width: 38%;
-  mask-image: linear-gradient(90deg, transparent 0%, #000 40%, #000 100%);
-  -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 40%, #000 100%);
-}
-
-.scex-event-banner--overlay .scex-event-banner__art img {
-  opacity: 0.42;
-  filter: saturate(1) brightness(1);
-}
-
-.scex-event-banner--overlay .scex-event-banner__art::after {
-  background: linear-gradient(
-    90deg,
-    rgba(10, 14, 26, 0.55) 0%,
-    transparent 70%
-  );
-}
-
-.scex-event-banner--overlay .scex-event-banner__inner {
-  padding: 0 8px 0 14px;
-  gap: 10px;
-}
-
-.scex-event-banner--overlay .scex-event-banner__logo {
-  height: 22px;
-  max-width: 88px;
-}
-
-.scex-event-banner--overlay .scex-event-banner__eyebrow,
-.scex-event-banner--overlay .scex-event-banner__sub,
-.scex-event-banner--overlay .scex-event-banner__pills {
-  display: none;
-}
-
-.scex-event-banner--overlay .scex-event-banner__title {
-  font-size: 0.78rem;
-  white-space: nowrap;
-}
-
-.scex-event-banner--overlay .scex-event-banner__cta {
-  padding: 6px 12px;
-  font-size: 0.7rem;
-  border-radius: 999px;
-}
-
-@media (max-width: 1100px) {
-  .scex-event-banner--overlay {
-    width: min(440px, calc(100vw - 32px));
-  }
-}
-
-@media (max-width: 720px) {
-  .scex-event-banner--overlay {
-    top: auto;
-    bottom: 64px;
-    left: 12px;
-    right: 12px;
-    transform: none;
-    width: auto;
-    height: 40px;
-  }
-
-  .scex-event-banner--overlay .scex-event-banner__art {
-    display: none;
-  }
-}
-
 .app-shell {
   display: flex;
   flex-direction: column;
@@ -645,13 +557,10 @@ input {
 .boot-splash__mark {
   width: 36px;
   height: 36px;
-  border-radius: 11px;
-  background:
-    radial-gradient(circle at 28% 28%, rgba(125, 211, 252, 0.95), transparent 52%),
-    radial-gradient(circle at 78% 72%, rgba(192, 132, 252, 0.85), transparent 48%),
-    linear-gradient(145deg, rgba(255, 255, 255, 0.12), rgba(15, 23, 42, 0.5));
-  border: 1px solid rgba(255, 255, 255, 0.22);
-  box-shadow: 0 0 22px rgba(125, 211, 252, 0.35);
+  border-radius: 10px;
+  object-fit: cover;
+  display: block;
+  box-shadow: 0 0 22px rgba(56, 189, 248, 0.32);
 }
 
 .boot-splash__title {
@@ -719,8 +628,4 @@ input {
 
 .admin-gate__hint a {
   color: var(--accent);
-}
-
-.scex-event-banner--overlay.glass-regular {
-  border-radius: var(--radius-pill);
 }

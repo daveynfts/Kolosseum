@@ -21,6 +21,7 @@ import { SiteBannerRibbon } from '../components/ScexEventBanner'
 import {
   confirmDiscardUnsaved,
   useDirtyRef,
+  useRegisterAdminOps,
   useRemoteDatasetLoad,
 } from '../lib/adminLoadGuard'
 
@@ -35,7 +36,6 @@ export function AdminBannerEditor({ onToast }: Props) {
   const dirtyRef = useDirtyRef(dirty)
   const [saving, setSaving] = useState(false)
   const [uploading, setUploading] = useState<'logo' | 'art' | null>(null)
-  const [tokenInput, setTokenInput] = useState(() => getAdminToken())
   const logoInputRef = useRef<HTMLInputElement>(null)
   const artInputRef = useRef<HTMLInputElement>(null)
 
@@ -50,9 +50,9 @@ export function AdminBannerEditor({ onToast }: Props) {
   }
 
   const onSave = async () => {
-    const token = tokenInput.trim() || getAdminToken()
+    const token = getAdminToken()
     if (!token) {
-      onToast('Nhập FEED_ADMIN_TOKEN rồi Save (R2)')
+      onToast('Dán FEED_ADMIN_TOKEN ở thanh ops rồi Save (R2)')
       return
     }
     setAdminToken(token)
@@ -117,9 +117,9 @@ export function AdminBannerEditor({ onToast }: Props) {
   }
 
   const onUpload = async (file: File, slot: 'logo' | 'art') => {
-    const token = tokenInput.trim() || getAdminToken()
+    const token = getAdminToken()
     if (!token) {
-      onToast('Nhập FEED_ADMIN_TOKEN trước khi upload')
+      onToast('Dán FEED_ADMIN_TOKEN ở thanh ops trước khi upload')
       return
     }
     setAdminToken(token)
@@ -138,36 +138,30 @@ export function AdminBannerEditor({ onToast }: Props) {
     onToast(`Đã upload ${slot} → R2`)
   }
 
+  useRegisterAdminOps('banner', {
+    dirty,
+    saving,
+    source,
+    updatedAt: config.updatedAt ?? null,
+    save: () => void onSave(),
+    reload: onReload,
+  })
+
   return (
     <div className="admin-feed admin-banner-page">
-      <div className="admin-ai-banner glass" style={{ marginBottom: 12 }}>
+      <div className="admin-ai-banner" style={{ marginBottom: 12 }}>
         <strong>Event Banner · SCEX ribbon</strong>
         <span>
-          Chỉnh text + ảnh cho ribbon trên map/SCEX. Source:{' '}
-          <strong>{source}</strong>
-          {dirty ? ' · unsaved' : ''}. JSON R2{' '}
-          <code>site/banner/v1.json</code> · ảnh{' '}
-          <code>scex-banner/scex-logo.*</code>,{' '}
-          <code>scex-banner/x-banner.*</code>. Nếu chưa upload ảnh, fallback
-          file trong <code>public/scex-banner/</code>.
+          Text + ảnh ribbon. JSON R2 <code>site/banner/v1.json</code>. Fallback{' '}
+          <code>public/scex-banner/</code> nếu chưa upload.
         </span>
-        <label className="admin-token-row">
-          Token
-          <input
-            type="password"
-            value={tokenInput}
-            onChange={(e) => setTokenInput(e.target.value)}
-            placeholder="FEED_ADMIN_TOKEN"
-            autoComplete="off"
-          />
-        </label>
       </div>
 
       <div className="admin-banner-toolbar">
         <button
           type="button"
           className="btn btn--primary"
-          disabled={saving}
+          disabled={saving || !dirty}
           onClick={() => void onSave()}
         >
           {saving ? 'Saving…' : 'Save → R2'}

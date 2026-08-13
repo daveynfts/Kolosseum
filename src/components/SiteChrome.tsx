@@ -33,7 +33,14 @@ export function SiteChrome({ active, search, trailing, overlay }: Props) {
       className={`site-chrome${overlay ? ' site-chrome--overlay glass-regular' : ''}`}
     >
       <a className="site-chrome__brand" href="/" title="Davey's Radar">
-        <span className="site-chrome__mark" aria-hidden />
+        <img
+          className="site-chrome__mark"
+          src="/brand-mark.png"
+          alt=""
+          width={64}
+          height={64}
+          decoding="async"
+        />
         <span className="site-chrome__name">Davey's Radar</span>
       </a>
 

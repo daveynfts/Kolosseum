@@ -24,13 +24,31 @@ import {
 import { AvatarImg } from '../components/AvatarImg'
 import { NICHE_COLORS } from '../types'
 import { adminQueryTokens, matchesAdminTokens } from '../lib/adminSearch'
-import { confirmDiscardUnsaved } from '../lib/adminLoadGuard'
+import {
+  confirmDiscardUnsaved,
+  useDirtyRef,
+  useRegisterAdminOps,
+  useRemoteDatasetLoad,
+} from '../lib/adminLoadGuard'
 
 interface Props {
   kols: Kol[]
   onToast: (msg: string) => void
   /** Increment from parent header to force-create a post */
   addSignal?: number
+}
+
+function emptyFeed(): Tier1Feed {
+  return {
+    generatedAt: new Date().toISOString(),
+    source: 'admin',
+    mode: 'admin',
+    tier: 1,
+    kolCount: 0,
+    handles: [],
+    postCount: 0,
+    posts: [],
+  }
 }
 
 export function AdminFeedEditor({ kols, onToast, addSignal = 0 }: Props) {
@@ -40,9 +58,9 @@ export function AdminFeedEditor({ kols, onToast, addSignal = 0 }: Props) {
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [draft, setDraft] = useState<FeedPost | null>(null)
   const [dirty, setDirty] = useState(false)
+  const dirtyRef = useDirtyRef(dirty)
   const [query, setQuery] = useState('')
   const [feedSource, setFeedSource] = useState<FeedSource | 'unknown'>('unknown')
-  const [tokenInput, setTokenInput] = useState(() => getAdminToken())
   const [, setIsOverride] = useState(() => hasFeedOverride())
   const [xUrl, setXUrl] = useState('')
   const [fetchingX, setFetchingX] = useState(false)
@@ -52,30 +70,36 @@ export function AdminFeedEditor({ kols, onToast, addSignal = 0 }: Props) {
     setLoading(true)
     try {
       const { feed: data, source } = await loadFeedWithSource()
+      if (dirtyRef.current) {
+        setLoading(false)
+        return
+      }
       setFeed(data)
       setFeedSource(source)
       setIsOverride(hasFeedOverride())
     } catch (e) {
       onToast(e instanceof Error ? e.message : 'Load feed failed')
-      setFeed({
-        generatedAt: new Date().toISOString(),
-        source: 'admin',
-        mode: 'admin',
-        tier: 1,
-        kolCount: 0,
-        handles: [],
-        postCount: 0,
-        posts: [],
-      })
+      setFeed(emptyFeed())
       setFeedSource('local')
     } finally {
       setLoading(false)
     }
-  }, [onToast])
+  }, [onToast, dirtyRef])
 
-  useEffect(() => {
-    void refresh()
-  }, [refresh])
+  useRemoteDatasetLoad(
+    () =>
+      loadFeedWithSource().catch(() => ({
+        feed: emptyFeed(),
+        source: 'local' as const,
+      })),
+    dirtyRef,
+    (r) => {
+      setFeed(r.feed)
+      setFeedSource(r.source)
+      setIsOverride(hasFeedOverride())
+      setLoading(false)
+    },
+  )
 
   const selected = useMemo(
     () => feed?.posts.find((p) => p.id === selectedId) ?? null,
@@ -126,7 +150,6 @@ export function AdminFeedEditor({ kols, onToast, addSignal = 0 }: Props) {
     () => (feed ? countArchivablePosts(feed) : 0),
     [feed],
   )
-  const archivedCount = feed?.archivedCount ?? feed?.archivedPosts?.length ?? 0
 
   const buildFeedWithDraft = (): Tier1Feed | null => {
     if (!feed || !draft) return null
@@ -150,9 +173,9 @@ export function AdminFeedEditor({ kols, onToast, addSignal = 0 }: Props) {
       onToast('Chưa có feed để lưu')
       return
     }
-    const token = tokenInput.trim()
+    const token = getAdminToken()
     if (!token) {
-      onToast('Nhập Server token (= FEED_ADMIN_TOKEN) rồi Save')
+      onToast('Dán FEED_ADMIN_TOKEN ở thanh ops rồi Save')
       return
     }
     setAdminToken(token)
@@ -181,22 +204,13 @@ export function AdminFeedEditor({ kols, onToast, addSignal = 0 }: Props) {
     }
   }
 
-  const onSaveToken = () => {
-    setAdminToken(tokenInput)
-    onToast(
-      tokenInput.trim()
-        ? 'Đã apply token — giờ bấm Save để publish R2'
-        : 'Đã xóa token',
-    )
-  }
-
   const onFetchXUrl = async () => {
     const url = xUrl.trim()
     if (!url) {
       onToast('Dán URL bài X (x.com/.../status/...)')
       return
     }
-    const token = tokenInput.trim()
+    const token = getAdminToken()
     if (token) setAdminToken(token)
     setFetchingX(true)
     setLastFetchNote(null)
@@ -257,17 +271,6 @@ export function AdminFeedEditor({ kols, onToast, addSignal = 0 }: Props) {
     setLastFetchNote(note)
     onToast(note)
   }
-
-  const emptyFeed = (): Tier1Feed => ({
-    generatedAt: new Date().toISOString(),
-    source: 'admin',
-    mode: 'admin',
-    tier: 1,
-    kolCount: 0,
-    handles: [],
-    postCount: 0,
-    posts: [],
-  })
 
   const onAdd = useCallback(() => {
     setFeed((prev) => {
@@ -380,15 +383,6 @@ export function AdminFeedEditor({ kols, onToast, addSignal = 0 }: Props) {
     }
   }
 
-  const sourceLabel =
-    feedSource === 'server'
-      ? 'Server (R2)'
-      : feedSource === 'local'
-        ? 'Local browser'
-        : feedSource === 'seed'
-          ? 'Seed JSON'
-          : '…'
-
   const patchDraft = <K extends keyof FeedPost>(key: K, value: FeedPost[K]) => {
     if (!draft) return
     setDraft({ ...draft, [key]: value })
@@ -440,29 +434,42 @@ export function AdminFeedEditor({ kols, onToast, addSignal = 0 }: Props) {
 
   const mediaText = draft?.media?.join('\n') ?? ''
 
+  useRegisterAdminOps('feed', {
+    dirty,
+    saving: savingServer,
+    source: feedSource,
+    updatedAt: feed?.generatedAt ?? null,
+    save: () => void onSaveServer(),
+    reload: () => {
+      if (!confirmDiscardUnsaved(dirty)) return
+      void refresh()
+    },
+  })
+
   return (
     <div className="admin-feed">
-      <div className="admin-ai-banner glass" style={{ marginBottom: 12 }}>
-        <strong>X Feed (Tier 1 + Tier 2)</strong>
-        <span>
-          Nguồn load:{' '}
-          <strong>{sourceLabel}</strong>
-          {feed
-            ? ` · ${feed.postCount} live · ${archivedCount} archived · ${feed.kolCount} voices`
-            : ''}
-          . Ưu tiên R2. Post &gt; 14 ngày → <strong>Archive &gt;14d</strong> rồi{' '}
-          <strong>Save (R2)</strong> để user thấy.
-        </span>
-      </div>
-
-      <div className="admin-feed-toolbar glass admin-feed-fetch-row">
-        <label className="admin-feed-token admin-feed-xurl">
-          <span>Dán URL bài X → Fetch (snapshot + cache ảnh)</span>
+      <div className="admin-feed-toolbar">
+        <label className="admin-search-wrap" style={{ flex: '1 1 160px' }}>
+          <span className="admin-search-wrap__icon" aria-hidden>
+            ⌕
+          </span>
+          <input
+            type="text"
+            className="admin-search"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Tìm @handle, nội dung…"
+            aria-label="Filter posts"
+            autoComplete="off"
+          />
+        </label>
+        <label className="admin-feed-token admin-feed-xurl" style={{ flex: '2 1 240px' }}>
+          <span>URL bài X</span>
           <input
             type="url"
             value={xUrl}
             onChange={(e) => setXUrl(e.target.value)}
-            placeholder="https://x.com/user/status/1234567890"
+            placeholder="https://x.com/user/status/…"
             onKeyDown={(e) => {
               if (e.key === 'Enter') {
                 e.preventDefault()
@@ -473,35 +480,14 @@ export function AdminFeedEditor({ kols, onToast, addSignal = 0 }: Props) {
         </label>
         <button
           type="button"
-          className="btn btn--primary"
+          className="btn"
           onClick={() => void onFetchXUrl()}
           disabled={fetchingX}
         >
-          {fetchingX ? 'Fetching…' : 'Fetch từ X'}
+          {fetchingX ? 'Fetching…' : 'Fetch'}
         </button>
-        {lastFetchNote && (
-          <span className="admin-count" style={{ alignSelf: 'center' }}>
-            {lastFetchNote}
-          </span>
-        )}
-      </div>
-
-      <div className="admin-feed-toolbar glass">
-        <label className="admin-feed-token">
-          <span>Server token (= FEED_ADMIN_TOKEN, không phải Redis)</span>
-          <input
-            type="password"
-            value={tokenInput}
-            onChange={(e) => setTokenInput(e.target.value)}
-            placeholder="dán FEED_ADMIN_TOKEN từ Vercel"
-            autoComplete="off"
-          />
-        </label>
-        <button type="button" className="btn" onClick={onSaveToken}>
-          Apply token
-        </button>
-        <button type="button" className="btn btn--primary" onClick={onAdd}>
-          + Add post
+        <button type="button" className="btn" onClick={onAdd}>
+          + Add
         </button>
         <button
           type="button"
@@ -516,12 +502,12 @@ export function AdminFeedEditor({ kols, onToast, addSignal = 0 }: Props) {
           type="button"
           className="btn btn--primary"
           onClick={() => void onSaveServer()}
-          disabled={savingServer || !feed}
+          disabled={savingServer || !feed || !dirty}
         >
           {savingServer ? 'Saving…' : 'Save (R2)'}
         </button>
         <button type="button" className="btn" onClick={onExport} disabled={!feed}>
-          Export JSON
+          Export
         </button>
         <label className="btn btn--file">
           Import
@@ -536,8 +522,12 @@ export function AdminFeedEditor({ kols, onToast, addSignal = 0 }: Props) {
             }}
           />
         </label>
-        <button type="button" className="btn btn--danger" onClick={() => void onResetSeed()}>
-          Load seed
+        <button
+          type="button"
+          className="btn btn--danger"
+          onClick={() => void onResetSeed()}
+        >
+          Seed
         </button>
         <button
           type="button"
@@ -549,9 +539,11 @@ export function AdminFeedEditor({ kols, onToast, addSignal = 0 }: Props) {
         >
           Reload
         </button>
-        <span className="admin-count" style={{ alignSelf: 'center' }}>
-          {sourceLabel}
-        </span>
+        {lastFetchNote && (
+          <span className="admin-count" style={{ alignSelf: 'center' }}>
+            {lastFetchNote}
+          </span>
+        )}
       </div>
 
       {loading && !feed ? (
@@ -563,38 +555,12 @@ export function AdminFeedEditor({ kols, onToast, addSignal = 0 }: Props) {
         </div>
       ) : (
         <div className="admin-edit-layout">
-          <div className="admin-edit-side glass">
+          <div className="admin-edit-side">
             <div className="admin-side-list-head">
               <strong>Posts ({filtered.length})</strong>
               <button type="button" className="btn btn--primary" onClick={onAdd}>
                 + Add
               </button>
-            </div>
-            <div className="admin-toolbar">
-              <label className="admin-search-wrap">
-                <span className="admin-search-wrap__icon" aria-hidden>
-                  ⌕
-                </span>
-                <input
-                  type="text"
-                  className="admin-search"
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                  placeholder="Tìm @handle, nội dung…"
-                  aria-label="Filter posts"
-                  autoComplete="off"
-                />
-                {query && (
-                  <button
-                    type="button"
-                    className="admin-search-wrap__clear"
-                    title="Xóa tìm kiếm"
-                    onClick={() => setQuery('')}
-                  >
-                    ×
-                  </button>
-                )}
-              </label>
             </div>
             <div className="admin-side-list">
               {filtered.map((p) => (

@@ -56,13 +56,11 @@
 .site-chrome__mark {
   width: 22px;
   height: 22px;
-  border-radius: 7px;
-  background:
-    radial-gradient(circle at 28% 28%, rgba(125, 211, 252, 0.95), transparent 52%),
-    radial-gradient(circle at 78% 72%, rgba(192, 132, 252, 0.85), transparent 48%),
-    linear-gradient(145deg, rgba(255, 255, 255, 0.12), rgba(15, 23, 42, 0.5));
-  border: 1px solid rgba(255, 255, 255, 0.22);
-  box-shadow: 0 0 14px rgba(125, 211, 252, 0.28);
+  border-radius: 6px;
+  object-fit: cover;
+  display: block;
+  flex-shrink: 0;
+  box-shadow: 0 0 12px rgba(56, 189, 248, 0.28);
 }
 
 .site-chrome__name {

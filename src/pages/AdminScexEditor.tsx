@@ -37,6 +37,7 @@ import { getKolRank } from '../types'
 import {
   confirmDiscardUnsaved,
   useDirtyRef,
+  useRegisterAdminOps,
   useRemoteDatasetLoad,
 } from '../lib/adminLoadGuard'
 import { safeHref } from '../lib/safeUrl'
@@ -66,11 +67,10 @@ const RADAR_PIPELINES: ScexRadarPipeline[] = [
 export function AdminScexEditor({ onToast }: Props) {
   const [dataset, setDataset] = useState<ScexDataset>(() => seedScexDataset())
   const [source, setSource] = useState<'server' | 'cache' | 'seed'>('seed')
-  const [sub, setSub] = useState<SubTab>('settings')
+  const [sub, setSub] = useState<SubTab>('pipeline')
   const [dirty, setDirty] = useState(false)
   const dirtyRef = useDirtyRef(dirty)
   const [saving, setSaving] = useState(false)
-  const [tokenInput, setTokenInput] = useState(() => getAdminToken())
   const [selectedActorId, setSelectedActorId] = useState<string | null>(null)
   const [selectedPostId, setSelectedPostId] = useState<string | null>(null)
   const [actorQuery, setActorQuery] = useState('')
@@ -354,9 +354,14 @@ export function AdminScexEditor({ onToast }: Props) {
   }
 
   const onSave = async () => {
-    setAdminToken(tokenInput)
+    const token = getAdminToken()
+    if (!token) {
+      onToast('Dán FEED_ADMIN_TOKEN ở thanh ops rồi Save (R2)')
+      return
+    }
+    setAdminToken(token)
     setSaving(true)
-    const r = await saveScexToServer(dataset, dataset.note, tokenInput)
+    const r = await saveScexToServer(dataset, dataset.note, token)
     setSaving(false)
     if (r.ok) {
       setDataset(r.dataset)
@@ -458,36 +463,32 @@ export function AdminScexEditor({ onToast }: Props) {
 
   const keywordsText = config.keywords.join(', ')
 
+  useRegisterAdminOps('scex', {
+    dirty,
+    saving,
+    source,
+    updatedAt: dataset.updatedAt ?? null,
+    save: () => void onSave(),
+    reload: () => void onReload(),
+  })
+
   return (
     <div className="admin-feed admin-scex-page">
-      <div className="admin-ai-banner glass" style={{ marginBottom: 12 }}>
-        <strong>SCEX Tracking · partner campaign monitor</strong>
+      <div className="admin-ai-banner" style={{ marginBottom: 12 }}>
+        <strong>SCEX Tracking</strong>
         <span>
-          Matrix 4 ô (volume × quality) + livefeed. Source:{' '}
-          <strong>{source}</strong>
-          {dirty ? ' · unsaved' : ''} · {dataset.actors.length} actors ·{' '}
-          {dataset.posts.length} posts · window {config.timeWindowDays}d.
-          R2 <code>scex/tracking/v1.json</code> · public preview{' '}
-          <a href="/scex">/scex</a>.
+          {dataset.actors.length} actors · {dataset.posts.length} posts · window{' '}
+          {config.timeWindowDays}d · R2 <code>scex/tracking/v1.json</code> ·{' '}
+          <a href="/scex">/scex</a>
         </span>
-        <label className="admin-token-row">
-          Token
-          <input
-            type="password"
-            value={tokenInput}
-            onChange={(e) => setTokenInput(e.target.value)}
-            placeholder="FEED_ADMIN_TOKEN"
-            autoComplete="off"
-          />
-        </label>
       </div>
 
-      <div className="admin-feed-toolbar glass">
+      <div className="admin-feed-toolbar">
         <button
           type="button"
           className="btn btn--primary"
           onClick={() => void onSave()}
-          disabled={saving}
+          disabled={saving || !dirty}
         >
           {saving ? 'Saving…' : 'Save (R2)'}
         </button>
@@ -522,11 +523,11 @@ export function AdminScexEditor({ onToast }: Props) {
       <div className="admin-tabs admin-scex-subtabs">
         {(
           [
-            ['settings', '⚙ Settings'],
-            ['actors', '◎ Actors'],
-            ['pipeline', '↗ Radar pipeline'],
-            ['posts', '★ Livefeed posts'],
-            ['preview', '▣ Preview matrix'],
+            ['settings', 'Settings'],
+            ['actors', 'Actors'],
+            ['pipeline', 'Pipeline'],
+            ['posts', 'Livefeed'],
+            ['preview', 'Preview'],
           ] as [SubTab, string][]
         ).map(([k, label]) => (
           <button
@@ -541,7 +542,10 @@ export function AdminScexEditor({ onToast }: Props) {
       </div>
 
       {sub === 'settings' && (
-        <div className="admin-scex-settings glass">
+        <details className="admin-scex-settings admin-section--fold" open>
+          <summary>
+            <h3>Settings</h3>
+          </summary>
           <section className="admin-ts-section">
             <h3>Brand & keywords</h3>
             <div className="admin-ts-fields">
@@ -1059,7 +1063,7 @@ export function AdminScexEditor({ onToast }: Props) {
               placeholder="Ops notes for this partner dataset…"
             />
           </section>
-        </div>
+        </details>
       )}
 
       {sub === 'actors' && (

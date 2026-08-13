@@ -26,6 +26,7 @@ import { getAdminToken, setAdminToken } from '../lib/feedStore'
 import {
   confirmDiscardUnsaved,
   useDirtyRef,
+  useRegisterAdminOps,
   useRemoteDatasetLoad,
 } from '../lib/adminLoadGuard'
 
@@ -67,7 +68,6 @@ export function AdminConvictionEventsEditor({ onToast }: Props) {
   const dirtyRef = useDirtyRef(dirty)
   const [saving, setSaving] = useState(false)
   const [geocoding, setGeocoding] = useState(false)
-  const [tokenInput, setTokenInput] = useState(() => getAdminToken())
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [listQuery, setListQuery] = useState('')
 
@@ -163,9 +163,9 @@ export function AdminConvictionEventsEditor({ onToast }: Props) {
   }
 
   const onSave = async () => {
-    const token = tokenInput.trim() || getAdminToken()
+    const token = getAdminToken()
     if (!token) {
-      onToast('Nhập FEED_ADMIN_TOKEN rồi Save (R2)')
+      onToast('Dán FEED_ADMIN_TOKEN ở thanh ops rồi Save (R2)')
       return
     }
     for (const e of dataset.events) {
@@ -181,7 +181,6 @@ export function AdminConvictionEventsEditor({ onToast }: Props) {
       }
     }
     setAdminToken(token)
-    setTokenInput(token)
     setSaving(true)
     const result = await saveEventsToServer(dataset, token)
     setSaving(false)
@@ -264,36 +263,33 @@ export function AdminConvictionEventsEditor({ onToast }: Props) {
     }
   }
 
+  useRegisterAdminOps('events', {
+    dirty,
+    saving,
+    source,
+    updatedAt: dataset.updatedAt ?? null,
+    save: () => void onSave(),
+    reload: onReload,
+  })
+
   return (
     <div className="admin-feed admin-events-page">
-      <div className="admin-ai-banner glass" style={{ marginBottom: 12 }}>
+      <div className="admin-ai-banner" style={{ marginBottom: 12 }}>
         <strong>Conviction 2026 · Side Events</strong>
         <span>
-          Public map:{' '}
+          Public:{' '}
           <a href="/event/conviction-2026" target="_blank" rel="noreferrer">
             /event/conviction-2026
           </a>{' '}
-          · Source: <strong>{source}</strong>
-          {dirty ? ' · unsaved' : ''} · R2{' '}
-          <code>events/conviction-2026/v1.json</code>
+          · R2 <code>events/conviction-2026/v1.json</code>
         </span>
       </div>
 
-      <div className="admin-feed-toolbar glass">
-        <label className="admin-gate__row" style={{ margin: 0, flex: '1 1 200px' }}>
-          FEED_ADMIN_TOKEN
-          <input
-            type="password"
-            value={tokenInput}
-            onChange={(e) => setTokenInput(e.target.value)}
-            placeholder="token"
-            autoComplete="off"
-          />
-        </label>
+      <div className="admin-feed-toolbar">
         <button
           type="button"
           className="btn btn--primary"
-          disabled={saving}
+          disabled={saving || !dirty}
           onClick={() => void onSave()}
         >
           {saving ? 'Saving…' : 'Save (R2)'}
@@ -387,6 +383,14 @@ export function AdminConvictionEventsEditor({ onToast }: Props) {
               }
             />
           </label>
+          <a
+            className="btn"
+            href={directionsUrl(dataset.venue.lat, dataset.venue.lng)}
+            target="_blank"
+            rel="noreferrer"
+          >
+            Venue trên Google Maps ↗
+          </a>
           <label>
             Date range start
             <input

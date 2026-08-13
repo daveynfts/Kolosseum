@@ -3890,13 +3890,6 @@ button.hud-action:active {
   bottom: 72px;
 }
 
-.app-shell--map:has(.scex-event-banner--overlay) .hud-left,
-.app-shell--map:has(.scex-event-banner--overlay) .feed-panel,
-.app-shell--map:has(.scex-event-banner--overlay) .compare-panel,
-.app-shell--map:has(.scex-event-banner--overlay) .hud-detail {
-  top: 118px;
-}
-
 .app-shell--map .feed-panel,
 .app-shell--map .compare-panel {
   top: 72px;
@@ -3991,10 +3984,5 @@ button.hud-action:active {
     height: 1px;
     overflow: hidden;
     clip: rect(0 0 0 0);
-  }
-
-  .app:has(.feed-panel) .scex-event-banner--overlay,
-  .app:has(.compare-panel) .scex-event-banner--overlay {
-    display: none;
   }
 }

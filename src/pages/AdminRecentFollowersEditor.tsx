@@ -33,6 +33,12 @@ import { AvatarImg } from '../components/AvatarImg'
 import { XProfileAvatar } from '../components/XProfileAvatar'
 import { NICHE_COLORS, primaryNiche } from '../types'
 import { handleNameMatches } from '../lib/adminSearch'
+import {
+  confirmDiscardUnsaved,
+  useDirtyRef,
+  useRegisterAdminOps,
+  useRemoteDatasetLoad,
+} from '../lib/adminLoadGuard'
 
 interface Props {
   kols: Kol[]
@@ -69,11 +75,11 @@ export function AdminRecentFollowersEditor({ kols, onToast }: Props) {
   const [recentDraft, setRecentDraft] = useState<RecentFollower[]>([])
   const [smartDraft, setSmartDraft] = useState<SmartFollower[]>([])
   const [dirty, setDirty] = useState(false)
+  const dirtyRef = useDirtyRef(dirty)
   const [source, setSource] = useState<'server' | 'cache' | 'seed'>('seed')
   const [serverUpdatedAt, setServerUpdatedAt] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
   const [query, setQuery] = useState('')
-  const [tokenInput, setTokenInput] = useState(() => getAdminToken())
   const [tsAccounts, setTsAccounts] = useState<TwitterScoreAccount[]>(() =>
     getTwitterScoreAccounts(),
   )
@@ -88,12 +94,9 @@ export function AdminRecentFollowersEditor({ kols, onToast }: Props) {
     [],
   )
 
+  useRemoteDatasetLoad(loadRecentFollowersWithSource, dirtyRef, applyLoad)
   useEffect(() => {
     let cancelled = false
-    void loadRecentFollowersWithSource().then((r) => {
-      if (cancelled) return
-      applyLoad(r)
-    })
     void loadTwitterScoreWithSource().then((r) => {
       if (cancelled) return
       setTsAccounts(r.dataset.accounts)
@@ -101,7 +104,7 @@ export function AdminRecentFollowersEditor({ kols, onToast }: Props) {
     return () => {
       cancelled = true
     }
-  }, [applyLoad])
+  }, [])
 
   const kolHandles = useMemo(() => {
     const fromKols = kols
@@ -199,9 +202,9 @@ export function AdminRecentFollowersEditor({ kols, onToast }: Props) {
 
   const onSaveKol = async () => {
     if (!selectedKol) return
-    const token = tokenInput.trim() || getAdminToken()
+    const token = getAdminToken()
     if (!token) {
-      onToast('Nhập FEED_ADMIN_TOKEN rồi Save (publish R2)')
+      onToast('Dán FEED_ADMIN_TOKEN ở thanh ops rồi Save (publish R2)')
       return
     }
     setAdminToken(token)
@@ -264,6 +267,7 @@ export function AdminRecentFollowersEditor({ kols, onToast }: Props) {
   }
 
   const onReload = () => {
+    if (!confirmDiscardUnsaved(dirty)) return
     void loadRecentFollowersWithSource().then((r) => {
       applyLoad(r)
       if (selectedKol) {
@@ -355,33 +359,32 @@ export function AdminRecentFollowersEditor({ kols, onToast }: Props) {
 
   const activeDraft = editTab === 'smart' ? smartDraft : recentDraft
 
+  useRegisterAdminOps('follows', {
+    dirty,
+    saving,
+    source,
+    updatedAt: serverUpdatedAt,
+    save: () => void onSaveKol(),
+    reload: onReload,
+  })
+
   return (
     <div className="admin-feed">
-      <div className="admin-ai-banner glass" style={{ marginBottom: 12 }}>
+      <div className="admin-ai-banner" style={{ marginBottom: 12 }}>
         <strong>Followers (Recent + Smart)</strong>
         <span>
-          Snapshot ai follow KOL / tài khoản chất lượng cao.{' '}
-          <strong>Save = publish R2</strong>. Source: <strong>{source}</strong>.
+          Save = publish R2. {Object.keys(map).length} recent KOLs ·{' '}
+          {Object.keys(smartMap).length} smart KOLs
+          {serverUpdatedAt ? ` · ${serverUpdatedAt.slice(0, 19)}` : ''}.
         </span>
-        <label className="admin-token-row">
-          Token
-          <input
-            type="password"
-            value={tokenInput}
-            onChange={(e) => setTokenInput(e.target.value)}
-            onBlur={() => setAdminToken(tokenInput)}
-            placeholder="FEED_ADMIN_TOKEN"
-            autoComplete="off"
-          />
-        </label>
       </div>
 
-      <div className="admin-feed-toolbar glass">
+      <div className="admin-feed-toolbar">
         <button
           type="button"
           className="btn btn--primary"
           onClick={() => void onSaveKol()}
-          disabled={!selectedKol || saving}
+          disabled={!selectedKol || saving || !dirty}
         >
           {saving ? 'Saving…' : 'Save (R2)'}
         </button>

@@ -22,6 +22,7 @@ import { XProfileAvatar } from '../components/XProfileAvatar'
 import {
   confirmDiscardUnsaved,
   useDirtyRef,
+  useRegisterAdminOps,
   useRemoteDatasetLoad,
 } from '../lib/adminLoadGuard'
 
@@ -53,7 +54,6 @@ export function AdminTwitterScoreEditor({ onToast }: Props) {
   const [dirty, setDirty] = useState(false)
   const dirtyRef = useDirtyRef(dirty)
   const [saving, setSaving] = useState(false)
-  const [tokenInput, setTokenInput] = useState(() => getAdminToken())
 
   useRemoteDatasetLoad(loadTwitterScoreWithSource, dirtyRef, (r) => {
     setDataset(r.dataset)
@@ -144,9 +144,9 @@ export function AdminTwitterScoreEditor({ onToast }: Props) {
   }
 
   const onSave = async () => {
-    const token = tokenInput.trim() || getAdminToken()
+    const token = getAdminToken()
     if (!token) {
-      onToast('Nhập FEED_ADMIN_TOKEN rồi Save (R2)')
+      onToast('Dán FEED_ADMIN_TOKEN ở thanh ops rồi Save (R2)')
       return
     }
     setAdminToken(token)
@@ -217,40 +217,35 @@ export function AdminTwitterScoreEditor({ onToast }: Props) {
     }
   }
 
+  useRegisterAdminOps('twitterscore', {
+    dirty,
+    saving,
+    source,
+    updatedAt: dataset.updatedAt ?? dataset.asOf ?? null,
+    save: () => void onSave(),
+    reload: onReload,
+  })
+
   return (
     <div className="admin-feed admin-ts-page">
-      <div className="admin-ai-banner glass" style={{ marginBottom: 12 }}>
+      <div className="admin-ai-banner" style={{ marginBottom: 12 }}>
         <strong>TwitterScore · data nội bộ</strong>
         <span>
-          Benchmark Web3 network influence (0–1000). Source:{' '}
-          <strong>{source}</strong>
-          {dirty ? ' · unsaved' : ''} · {dataset.accounts.length} accounts ·
-          asOf {dataset.asOf.slice(0, 10)} · #100≥{dataset.top100Threshold}
+          {dataset.accounts.length} accounts · asOf {dataset.asOf.slice(0, 10)} ·
+          #100≥{dataset.top100Threshold}
           {dataset.top200Threshold != null
             ? ` · floor ${dataset.top200Threshold}`
             : ''}
-          . Seed <code>data/internal/twitterscore-top100.json</code> · R2{' '}
-          <code>internal/twitterscore-top100/v1.json</code>. Có thể bổ sung
-          role / notes / tags chi tiết từng account.
+          . R2 <code>internal/twitterscore-top100/v1.json</code>.
         </span>
-        <label className="admin-token-row">
-          Token
-          <input
-            type="password"
-            value={tokenInput}
-            onChange={(e) => setTokenInput(e.target.value)}
-            placeholder="FEED_ADMIN_TOKEN"
-            autoComplete="off"
-          />
-        </label>
       </div>
 
-      <div className="admin-feed-toolbar glass">
+      <div className="admin-feed-toolbar">
         <button
           type="button"
           className="btn btn--primary"
           onClick={() => void onSave()}
-          disabled={saving}
+          disabled={saving || !dirty}
         >
           {saving ? 'Saving…' : 'Save (R2)'}
         </button>

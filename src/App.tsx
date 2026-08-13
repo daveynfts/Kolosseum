@@ -4,7 +4,6 @@ import { Hud, MapNavControls } from './components/Hud'
 import { FeedPanel } from './components/FeedPanel'
 import { ComparePanel } from './components/ComparePanel'
 import { SiteChrome } from './components/SiteChrome'
-import { ScexEventBanner } from './components/ScexEventBanner'
 import {
   KOLS_EVENT,
   loadKols,
@@ -199,7 +198,6 @@ function App() {
             />
           }
         />
-        <ScexEventBanner variant="overlay" />
         <Hud
           kols={q ? searchHits : visibleKols}
           allKols={publicKols}

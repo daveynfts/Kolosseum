@@ -2554,16 +2554,6 @@ button.hud-action:active {
   animation: slideIn 0.24s ease;
 }
 
-.feed-panel--compact {
-  bottom: auto;
-  height: auto;
-}
-
-.feed-panel--compact .feed-list,
-.feed-panel--compact .feed-foot {
-  display: none;
-}
-
 .feed-head {
   flex: 0 0 auto;
   display: flex;
@@ -2594,6 +2584,62 @@ button.hud-action:active {
   font-size: 1.05rem;
   font-weight: 650;
   letter-spacing: -0.03em;
+}
+
+.feed-live {
+  position: relative;
+  width: 8px;
+  height: 8px;
+  flex-shrink: 0;
+}
+
+.feed-live__core {
+  display: block;
+  width: 7px;
+  height: 7px;
+  margin: 0.5px;
+  border-radius: 50%;
+  background: #fb7185;
+  box-shadow: 0 0 8px rgba(251, 113, 133, 0.75);
+}
+
+.feed-live::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  border: 1px solid rgba(251, 113, 133, 0.4);
+  animation: feedLiveRing 2s ease-out infinite;
+}
+
+@keyframes feedLiveRing {
+  0% {
+    transform: scale(0.65);
+    opacity: 0.65;
+  }
+  100% {
+    transform: scale(1.85);
+    opacity: 0;
+  }
+}
+
+.feed-live-word {
+  font-size: 0.58rem;
+  font-weight: 650;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(167, 243, 208, 0.92);
+  text-shadow: 0 0 14px rgba(52, 211, 153, 0.35);
+}
+
+.feed-live-word::before {
+  content: '';
+  display: inline-block;
+  width: 1px;
+  height: 0.72em;
+  margin-right: 8px;
+  background: rgba(255, 255, 255, 0.16);
+  vertical-align: 0.05em;
 }
 
 .feed-badge {
@@ -2943,6 +2989,11 @@ button.hud-action:active {
   .feed-card {
     animation: none;
   }
+
+  .feed-live::after {
+    animation: none;
+    display: none;
+  }
 }
 
 .feed-card:hover {
@@ -3132,7 +3183,49 @@ button.hud-action:active {
 
 /* X Feed timeline — quieter cards inside the liquid shell */
 .feed-panel .feed-head {
-  padding: 13px 14px 10px;
+  padding: 16px 16px 12px;
+  align-items: center;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.045),
+    transparent 100%
+  );
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.feed-panel .feed-title-row {
+  gap: 9px;
+}
+
+.feed-panel .feed-title-row h2 {
+  font-size: 1.12rem;
+  font-weight: 600;
+  letter-spacing: -0.045em;
+}
+
+.feed-panel .feed-sub {
+  margin-top: 6px;
+  font-size: 0.68rem;
+  letter-spacing: 0.01em;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.feed-panel .feed-actions {
+  gap: 4px;
+}
+
+.feed-panel .feed-actions .icon-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 10px;
+  border-color: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
+  box-shadow: none;
+}
+
+.feed-panel .feed-actions .icon-btn:hover:not(:disabled) {
+  border-color: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.1);
 }
 
 .feed-panel .feed-toolbar {

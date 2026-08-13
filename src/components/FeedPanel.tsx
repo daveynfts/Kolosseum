@@ -25,7 +25,6 @@ export function FeedPanel({ open, onClose, kols, onSelectKol }: Props) {
   const [filterHandle, setFilterHandle] = useState<string>('All')
   const [sort, setSort] = useState<SortMode>('latest')
   const [query, setQuery] = useState('')
-  const [compact, setCompact] = useState(false)
   const [highlightId, setHighlightId] = useState<string | null>(null)
   const [expanded, setExpanded] = useState<Record<string, boolean>>({})
   const listRef = useRef<HTMLDivElement>(null)
@@ -166,14 +165,15 @@ export function FeedPanel({ open, onClose, kols, onSelectKol }: Props) {
   if (!open) return null
 
   return (
-    <aside className={`feed-panel glass-regular glass--liquid ${compact ? 'feed-panel--compact' : ''}`}>
-      {/* Header */}
+    <aside className="feed-panel glass-regular glass--liquid">
       <header className="feed-head">
         <div className="feed-head-main">
           <div className="feed-title-row">
-            <span className="live-dot" aria-hidden />
+            <span className="feed-live" aria-hidden>
+              <span className="feed-live__core" />
+            </span>
             <h2>X Feed</h2>
-            <span className="feed-badge feed-badge--live">LIVE</span>
+            <span className="feed-live-word">Live</span>
           </div>
           <p className="feed-sub">
             {feed
@@ -182,18 +182,6 @@ export function FeedPanel({ open, onClose, kols, onSelectKol }: Props) {
           </p>
         </div>
         <div className="feed-actions">
-          <button
-            type="button"
-            className="icon-btn"
-            title={compact ? 'Mở rộng' : 'Thu gọn'}
-            onClick={() => setCompact((v) => !v)}
-          >
-            {compact ? (
-              <ChevronDownIcon />
-            ) : (
-              <ChevronUpIcon />
-            )}
-          </button>
           <button
             type="button"
             className={`icon-btn ${loading ? 'icon-btn--spin' : ''}`}
@@ -209,86 +197,82 @@ export function FeedPanel({ open, onClose, kols, onSelectKol }: Props) {
         </div>
       </header>
 
-      {!compact && (
-        <>
-          <div className="feed-toolbar">
-            <label className="feed-search">
-              <span className="feed-search-icon" aria-hidden>
-                <SearchIcon />
-              </span>
-              <input
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="Tìm bài, @handle…"
-                aria-label="Search feed"
-              />
-              {query && (
-                <button
-                  type="button"
-                  className="feed-search-clear"
-                  onClick={() => setQuery('')}
-                  aria-label="Xóa tìm kiếm"
-                >
-                  ×
-                </button>
-              )}
-            </label>
-            <div className="feed-sort" role="group" aria-label="Sort">
-              <button
-                type="button"
-                className={sort === 'latest' ? 'is-active' : ''}
-                onClick={() => setSort('latest')}
-              >
-                Mới
-              </button>
-              <button
-                type="button"
-                className={sort === 'hot' ? 'is-active' : ''}
-                onClick={() => setSort('hot')}
-              >
-                Hot
-              </button>
-            </div>
-          </div>
-
-          <div className="feed-filters" role="tablist" aria-label="Filter by KOL">
+      <div className="feed-toolbar">
+        <label className="feed-search">
+          <span className="feed-search-icon" aria-hidden>
+            <SearchIcon />
+          </span>
+          <input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Tìm bài, @handle…"
+            aria-label="Search feed"
+          />
+          {query && (
             <button
               type="button"
-              role="tab"
-              aria-selected={filterHandle === 'All'}
-              className={`voice-chip ${filterHandle === 'All' ? 'is-active' : ''}`}
-              onClick={() => setFilter('All')}
+              className="feed-search-clear"
+              onClick={() => setQuery('')}
+              aria-label="Xóa tìm kiếm"
             >
-              <span className="voice-chip__all">All</span>
-              <span className="voice-chip__count">{feed?.postCount ?? 0}</span>
+              ×
             </button>
-            {voiceStats.map((v) => (
-              <button
-                key={v.handle}
-                type="button"
-                role="tab"
-                aria-selected={filterHandle === v.handle}
-                className={`voice-chip ${filterHandle === v.handle ? 'is-active' : ''}`}
-                style={{ ['--voice' as string]: v.color }}
-                onClick={() => setFilter(v.handle)}
-                title={`@${v.handle}`}
-              >
-                <AvatarImg
-                  handle={v.handle}
-                  name={v.name}
-                  size={20}
-                  color={v.color}
-                  className="voice-chip__av"
-                />
-                <span className="voice-chip__name">
-                  {shortName(v.name, v.handle)}
-                </span>
-                <span className="voice-chip__count">{v.count}</span>
-              </button>
-            ))}
-          </div>
-        </>
-      )}
+          )}
+        </label>
+        <div className="feed-sort" role="group" aria-label="Sort">
+          <button
+            type="button"
+            className={sort === 'latest' ? 'is-active' : ''}
+            onClick={() => setSort('latest')}
+          >
+            Mới
+          </button>
+          <button
+            type="button"
+            className={sort === 'hot' ? 'is-active' : ''}
+            onClick={() => setSort('hot')}
+          >
+            Hot
+          </button>
+        </div>
+      </div>
+
+      <div className="feed-filters" role="tablist" aria-label="Filter by KOL">
+        <button
+          type="button"
+          role="tab"
+          aria-selected={filterHandle === 'All'}
+          className={`voice-chip ${filterHandle === 'All' ? 'is-active' : ''}`}
+          onClick={() => setFilter('All')}
+        >
+          <span className="voice-chip__all">All</span>
+          <span className="voice-chip__count">{feed?.postCount ?? 0}</span>
+        </button>
+        {voiceStats.map((v) => (
+          <button
+            key={v.handle}
+            type="button"
+            role="tab"
+            aria-selected={filterHandle === v.handle}
+            className={`voice-chip ${filterHandle === v.handle ? 'is-active' : ''}`}
+            style={{ ['--voice' as string]: v.color }}
+            onClick={() => setFilter(v.handle)}
+            title={`@${v.handle}`}
+          >
+            <AvatarImg
+              handle={v.handle}
+              name={v.name}
+              size={20}
+              color={v.color}
+              className="voice-chip__av"
+            />
+            <span className="voice-chip__name">
+              {shortName(v.name, v.handle)}
+            </span>
+            <span className="voice-chip__count">{v.count}</span>
+          </button>
+        ))}
+      </div>
 
       {error && (
         <div className="feed-error">
@@ -357,15 +341,13 @@ export function FeedPanel({ open, onClose, kols, onSelectKol }: Props) {
         )}
       </div>
 
-      {!compact && (
-        <footer className="feed-foot">
-          <span className="feed-foot__left">
-            Hiển thị <strong>{posts.length}</strong>
-            {feed ? ` / ${feed.postCount}` : ''}
-          </span>
-          <span className="feed-foot__right">Tự làm mới 60s</span>
-        </footer>
-      )}
+      <footer className="feed-foot">
+        <span className="feed-foot__left">
+          Hiển thị <strong>{posts.length}</strong>
+          {feed ? ` / ${feed.postCount}` : ''}
+        </span>
+        <span className="feed-foot__right">Tự làm mới 60s</span>
+      </footer>
     </aside>
   )
 }
@@ -646,22 +628,6 @@ function CloseIcon() {
   return (
     <svg {...iconProps()}>
       <path d="M6 6l12 12M18 6 6 18" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-    </svg>
-  )
-}
-
-function ChevronUpIcon() {
-  return (
-    <svg {...iconProps()}>
-      <path d="M6 14l6-6 6 6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  )
-}
-
-function ChevronDownIcon() {
-  return (
-    <svg {...iconProps()}>
-      <path d="M6 10l6 6 6-6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   )
 }

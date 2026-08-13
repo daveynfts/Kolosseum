@@ -26,13 +26,21 @@ function emit() {
   }
 }
 
-function writeCache(dataset: ScexDataset) {
+function writeCache(dataset: ScexDataset, emitEvent = true) {
+  let prev: string | null = null
   try {
-    localStorage.setItem(CACHE_KEY, JSON.stringify(dataset))
+    prev = localStorage.getItem(CACHE_KEY)
+  } catch {
+    prev = null
+  }
+  const next = JSON.stringify(dataset)
+  try {
+    localStorage.setItem(CACHE_KEY, next)
   } catch {
     /* ignore */
   }
-  emit()
+  // Same-tab load must not emit: ScexTrackingPage listens and would refetch forever.
+  if (emitEvent && prev !== next) emit()
 }
 
 function readCache(): ScexDataset | null {
@@ -75,7 +83,7 @@ export async function loadScexWithSource(): Promise<LoadScexResult> {
   try {
     const server = await fetchServerScex()
     if (server) {
-      writeCache(server)
+      writeCache(server, false)
       return { dataset: server, source: 'server' }
     }
   } catch {

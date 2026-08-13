@@ -11,7 +11,11 @@ import {
   type ScexDataset,
   type ScexPost,
 } from '../data/scexTracking'
-import { loadScexWithSource, SCEX_TRACKING_EVENT } from '../lib/scexStore'
+import {
+  getScexDataset,
+  loadScexWithSource,
+  SCEX_TRACKING_EVENT,
+} from '../lib/scexStore'
 import { KOLS_EVENT, loadKolsWithSource } from '../lib/kolStore'
 import type { Kol } from '../types'
 import { XProfileAvatar } from '../components/XProfileAvatar'
@@ -304,16 +308,34 @@ export function ScexTrackingPage() {
   useEffect(() => {
     let cancelled = false
     let seq = 0
+    let inflight = false
+    let pending = false
     const load = () => {
+      if (inflight) {
+        pending = true
+        return
+      }
+      inflight = true
       const n = ++seq
-      void Promise.all([loadScexWithSource(), loadKolsWithSource()]).then(
-        ([scex, kols]) => {
+      void Promise.all([loadScexWithSource(), loadKolsWithSource()])
+        .then(([scex, kols]) => {
           if (cancelled || n !== seq) return
           const list = kols.kols || []
           setMapKols(list)
           setDataset(recomputeScexScores(scex.dataset, list))
-        },
-      )
+        })
+        .catch(() => {
+          if (cancelled || n !== seq) return
+          setDataset(getScexDataset())
+        })
+        .finally(() => {
+          if (n !== seq) return
+          inflight = false
+          if (pending && !cancelled) {
+            pending = false
+            load()
+          }
+        })
     }
     load()
     const onVis = () => {

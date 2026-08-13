@@ -30,12 +30,31 @@ function Bubbles({
     return map
   }, [kols])
 
+  const zRange = useMemo(() => {
+    let min = Infinity
+    let max = -Infinity
+    positions.forEach((p) => {
+      if (p[2] < min) min = p[2]
+      if (p[2] > max) max = p[2]
+    })
+    return { min, span: Math.max(0.001, max - min) }
+  }, [positions])
+
+  const ordered = useMemo(() => {
+    return [...kols].sort((a, b) => {
+      const za = positions.get(a.id)?.[2] ?? 0
+      const zb = positions.get(b.id)?.[2] ?? 0
+      return za - zb
+    })
+  }, [kols, positions])
+
   return (
     <>
-      {kols.map((kol) => {
+      {ordered.map((kol) => {
         const dimmed = !kolMatchesNiche(kol, filterNiche)
         const pos = positions.get(kol.id)
         if (!pos) return null
+        const depth = (pos[2] - zRange.min) / zRange.span
         return (
           <KolBubble
             key={kol.id}
@@ -44,6 +63,7 @@ function Bubbles({
             selected={selectedId === kol.id}
             dimmed={dimmed}
             recessed={!!selectedId && selectedId !== kol.id}
+            depth={depth}
             onSelect={onSelect}
           />
         )

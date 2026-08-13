@@ -186,13 +186,13 @@ export const RANK_RING_COLORS: Record<KolRank, string> = {
   gold: '#d97706', // antique gold
 }
 
-/** Outer ring thickness multiplier by rank (higher = thicker border) */
+/** Outer ring thickness multiplier by rank (watch-bezel, not neon halo) */
 export const RANK_RING_WIDTH: Record<KolRank, number> = {
-  challenger: 1.38,
-  master: 1.3,
-  diamond: 1.24,
-  platinum: 1.18,
-  gold: 1.12,
+  challenger: 1.22,
+  master: 1.15,
+  diamond: 1.12,
+  platinum: 1.08,
+  gold: 1.055,
 }
 
 /** Map filter tier → ranks that belong to that tier bucket */

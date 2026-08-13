@@ -26,6 +26,8 @@ interface Props {
   dimmed: boolean
   /** Another KOL is selected — recede this one */
   recessed?: boolean
+  /** 0 = back of cloud, 1 = toward camera */
+  depth?: number
   onSelect: (kol: Kol) => void
 }
 
@@ -70,6 +72,7 @@ function AvatarNode({
   selected,
   dimmed,
   recessed = false,
+  depth = 0.65,
   onSelect,
   map,
   loadState = 'ready',
@@ -89,46 +92,56 @@ function AvatarNode({
   const hasFace = !!map
   const placeholderColor = loadState === 'loading' ? '#1e293b' : '#0f172a'
   const faceColor = hasFace ? color : placeholderColor
+  const quiet = rank === 'gold' || rank === 'platinum'
   const rankRingOpacity = dimmed
-    ? 0.16
+    ? 0.14
     : isFocus
       ? 1
-      : rank === 'challenger'
-        ? 0.98
-        : rank === 'master'
-          ? 0.94
-          : rank === 'diamond'
-            ? 0.9
-            : 0.86
+      : quiet
+        ? 0.72
+        : rank === 'challenger'
+          ? 0.96
+          : 0.88
 
   const haloOpacity = dimmed
-    ? 0.05
+    ? 0.03
     : !hasFace
-      ? loadState === 'loading'
-        ? 0.3
-        : 0.18
+      ? 0.12
       : isFocus
         ? rank === 'challenger'
-          ? 0.5
-          : 0.4
-        : isHot
-          ? 0.36
+          ? 0.22
+          : 0.14
+        : quiet
+          ? 0.05
           : rank === 'challenger'
-            ? 0.34
-            : rank === 'master'
-              ? 0.3
-              : rank === 'diamond'
-                ? 0.26
-                : 0.2
+            ? 0.12
+            : isHot
+              ? 0.1
+              : 0.07
+
+  const idleScale = 0.92 + depth * 0.08
+  const faceOpacity = dimmed
+    ? 0.22
+    : isFocus
+      ? 1
+      : recessed
+        ? 0.68 + depth * 0.18
+        : 0.8 + depth * 0.2
+  const layer = isFocus ? 20 : Math.round(depth * 12)
+  const translucent = faceOpacity < 0.98
 
   useFrame(() => {
     const g = groupRef.current
     if (!g) return
-    const target = dimmed ? 0.88 : recessed && !isFocus ? 0.94 : isFocus ? 1.2 : 1
+    const target = dimmed
+      ? 0.86
+      : recessed && !isFocus
+        ? idleScale * 0.92
+        : isFocus
+          ? 1.15
+          : idleScale
     g.scale.setScalar(THREE.MathUtils.lerp(g.scale.x, target, 0.14))
   })
-
-  const faceOpacity = dimmed ? 0.22 : recessed && !isFocus ? 0.72 : 1
 
   const pickHandlers = {
     onClick: (e: { stopPropagation: () => void }) => {
@@ -150,23 +163,33 @@ function AvatarNode({
     rank === 'challenger'
       ? '#fff6d4'
       : rank === 'master'
-        ? '#ddd6fe'
+        ? '#eef2ff'
         : rank === 'diamond'
-          ? '#e0f2fe'
+          ? '#f0f9ff'
           : rank === 'platinum'
-            ? '#ccfbf1'
-            : '#fde68a'
+            ? '#f0fdfa'
+            : '#fffbeb'
 
   return (
     <group position={position} ref={groupRef}>
       <Billboard follow lockZ={false}>
-        {/* Rank-tinted bloom — thicker / hotter for higher tiers */}
-        <mesh
-          position={[0, 0, -0.04]}
-          renderOrder={isFocus ? 8 : 0}
-        >
+        {/* Contact shadow — front discs sit on the cluster */}
+        <mesh position={[0.05, -0.1, -0.07]} renderOrder={layer}>
+          <circleGeometry args={[baseR * 1.06, segs]} />
+          <meshBasicMaterial
+            color="#020617"
+            transparent
+            opacity={dimmed ? 0.04 : 0.1 + depth * 0.16}
+            depthWrite={false}
+            depthTest
+            toneMapped={false}
+          />
+        </mesh>
+
+        {/* Barely-there rank wash — not a neon bloom */}
+        <mesh position={[0, 0, -0.035]} renderOrder={layer}>
           <circleGeometry
-            args={[baseR * (ringOuter + (isFocus ? 0.22 : 0.14)), segs]}
+            args={[baseR * (ringOuter + (isFocus ? 0.08 : 0.04)), segs]}
           />
           <meshBasicMaterial
             color={hasFace ? rankRing : placeholderColor}
@@ -178,37 +201,18 @@ function AvatarNode({
           />
         </mesh>
 
-        {rank === 'challenger' && !dimmed && (
-          <mesh position={[0, 0, -0.05]} renderOrder={isFocus ? 7 : 0}>
-            <ringGeometry
-              args={[
-                baseR * ringOuter,
-                baseR * (ringOuter + 0.18),
-                segs,
-              ]}
-            />
-            <meshBasicMaterial
-              color="#f5e6b8"
-              transparent
-              opacity={isFocus ? 0.42 : 0.22}
-              depthWrite={false}
-              toneMapped={false}
-            />
-          </mesh>
-        )}
-
         <mesh
           position={[0, 0, 0]}
-          renderOrder={isFocus ? 9 : 1}
+          renderOrder={layer + 1}
           {...pickHandlers}
         >
           <circleGeometry args={[baseR, segs]} />
           {map ? (
             <meshBasicMaterial
               map={map}
-              transparent={dimmed || (recessed && !isFocus)}
+              transparent={translucent}
               opacity={faceOpacity}
-              depthWrite={!dimmed}
+              depthWrite={!translucent}
               depthTest
               side={THREE.FrontSide}
               toneMapped={false}
@@ -238,14 +242,18 @@ function AvatarNode({
           z={0.012}
           frontSide
           animate={!dimmed}
+          renderOrder={layer + 2}
         />
 
-        <mesh position={[0, 0, 0.016]} renderOrder={isFocus ? 12 : 5}>
-          <ringGeometry args={[baseR * 0.965, baseR * 1.008, segs]} />
+        {/* Crystal inner rim — flush with the portrait */}
+        <mesh position={[0, 0, 0.016]} renderOrder={layer + 4}>
+          <ringGeometry args={[baseR * 0.978, baseR * 1.01, segs]} />
           <meshBasicMaterial
             color={innerRim}
             transparent
-            opacity={dimmed ? 0.08 : isFocus ? 0.7 : 0.38}
+            opacity={
+              dimmed ? 0.06 : isFocus ? 0.82 : quiet ? 0.28 : 0.48
+            }
             depthWrite={false}
             depthTest
             side={THREE.FrontSide}

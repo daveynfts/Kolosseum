@@ -5,6 +5,7 @@
  *   node scripts/hide_miangst01_kol.mjs --unhide
  */
 import fs from 'fs'
+import { adminPutJson } from './lib/adminPut.mjs'
 import path from 'path'
 import { fileURLToPath } from 'url'
 
@@ -79,14 +80,7 @@ async function main() {
     JSON.stringify(payload, null, 2) + '\n',
   )
 
-  const putRes = await fetch(`${apiBase}/api/kols`, {
-    method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify(payload),
-  })
+  const putRes = await adminPutJson(`${apiBase}/api/kols`, token, payload)
   const body = await putRes.json().catch(() => ({}))
   console.log('PUT', putRes.status, body)
   if (!putRes.ok) process.exit(1)

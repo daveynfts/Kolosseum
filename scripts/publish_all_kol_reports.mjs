@@ -3,6 +3,7 @@
  *   node scripts/publish_all_kol_reports.mjs
  */
 import fs from 'fs'
+import { adminPutJson } from './lib/adminPut.mjs'
 import path from 'path'
 import { fileURLToPath } from 'url'
 
@@ -85,14 +86,7 @@ ds.updatedAt = now
 ds.asOf = now
 ds.note = `KOL reports · ${ds.reports.length} public · bulk published ${now}`
 
-const putRes = await fetch(`${base}/api/kol-reports`, {
-  method: 'PUT',
-  headers: {
-    'Content-Type': 'application/json',
-    Authorization: `Bearer ${token}`,
-  },
-  body: JSON.stringify(ds),
-})
+const putRes = await adminPutJson(`${base}/api/kol-reports`, token, ds)
 const putText = await putRes.text()
 console.log('PUT', putRes.status, putText.slice(0, 300))
 if (!putRes.ok) process.exit(1)

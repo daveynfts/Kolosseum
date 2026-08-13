@@ -4,6 +4,7 @@
  *   node scripts/push_martinho99999_recent_followers.mjs
  */
 import fs from 'fs'
+import { adminPutJson } from './lib/adminPut.mjs'
 import path from 'path'
 import { fileURLToPath } from 'url'
 
@@ -113,14 +114,7 @@ async function main() {
     smartMap: Object.keys(smartMap).length ? smartMap : undefined,
   }
 
-  const putRes = await fetch(`${apiBase}/api/recent-followers`, {
-    method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify(payload),
-  })
+  const putRes = await adminPutJson(`${apiBase}/api/recent-followers`, token, payload)
   const putBody = await putRes.json().catch(() => ({}))
   if (!putRes.ok) {
     console.error('PUT failed', putRes.status, putBody)

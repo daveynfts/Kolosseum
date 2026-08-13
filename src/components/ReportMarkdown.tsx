@@ -1,5 +1,8 @@
 import { Fragment, type ReactNode } from 'react'
 import { isGenericImageAlt } from '../lib/imageAlt'
+import { isSafeHttpUrl, isSafeImageUrl as isSafeUrl } from '../lib/safeUrl'
+
+export { isSafeUrl }
 
 interface Props {
   text: string
@@ -310,19 +313,6 @@ function parseTable(lines: string[]): Block | null {
   return { type: 'table', header, rows }
 }
 
-export function isSafeUrl(url: string): boolean {
-  const u = (url || '').trim()
-  if (!u) return false
-  if (u.startsWith('/')) return true
-  if (u.startsWith('data:image/')) return true
-  try {
-    const parsed = new URL(u)
-    return parsed.protocol === 'https:' || parsed.protocol === 'http:'
-  } catch {
-    return false
-  }
-}
-
 /** Inline: **bold**, *italic*, `code`, [links](url), ![images](url) */
 function renderInline(text: string): ReactNode {
   if (!text) return null
@@ -358,7 +348,7 @@ function renderInline(text: string): ReactNode {
     } else if (m[0].startsWith('[')) {
       const label = m[4] || ''
       const href = m[5] || ''
-      if (isSafeUrl(href)) {
+      if (isSafeHttpUrl(href)) {
         nodes.push(
           <a
             key={key++}

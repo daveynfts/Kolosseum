@@ -56,18 +56,14 @@ export function getTwitterScoreAccounts(): TwitterScoreAccount[] {
 }
 
 export async function fetchServerTwitterScore(): Promise<TwitterScoreDataset | null> {
-  try {
-    const res = await fetch(`${apiUrl()}?t=${Date.now()}`, {
-      method: 'GET',
-      cache: 'no-store',
-      headers: { Accept: 'application/json', 'Cache-Control': 'no-cache' },
-    })
-    if (res.status === 404 || res.status === 503) return null
-    if (!res.ok) return null
-    return normalizeTwitterScoreDataset(await res.json())
-  } catch {
-    return null
-  }
+  const res = await fetch(`${apiUrl()}?t=${Date.now()}`, {
+    method: 'GET',
+    cache: 'no-store',
+    headers: { Accept: 'application/json', 'Cache-Control': 'no-cache' },
+  })
+  if (res.status === 404 || res.status === 503) return null
+  if (!res.ok) throw new Error(`HTTP ${res.status}`)
+  return normalizeTwitterScoreDataset(await res.json())
 }
 
 export type LoadTwitterScoreResult = {
@@ -76,10 +72,14 @@ export type LoadTwitterScoreResult = {
 }
 
 export async function loadTwitterScoreWithSource(): Promise<LoadTwitterScoreResult> {
-  const server = await fetchServerTwitterScore()
-  if (server) {
-    writeCache(server)
-    return { dataset: server, source: 'server' }
+  try {
+    const server = await fetchServerTwitterScore()
+    if (server) {
+      writeCache(server)
+      return { dataset: server, source: 'server' }
+    }
+  } catch {
+    /* cache/seed */
   }
   const cache = readCache()
   if (cache) return { dataset: cache, source: 'cache' }
@@ -112,7 +112,10 @@ export async function saveTwitterScoreToServer(
     const server = await fetchServerTwitterScore()
     baseUpdatedAt = server?.updatedAt
   } catch {
-    /* ignore */
+    return {
+      ok: false,
+      error: 'Không đọc được bản server — thử lại trước khi Save.',
+    }
   }
   try {
     const res = await fetch(apiUrl(), {

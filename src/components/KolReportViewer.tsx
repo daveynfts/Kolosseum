@@ -4,6 +4,7 @@ import type { KolReport } from '../data/kolReports'
 import { ReportMarkdown } from './ReportMarkdown'
 import { XProfileAvatar } from './XProfileAvatar'
 import { resolveAvatarHandle } from '../lib/avatar'
+import { cssSafeUrl } from '../lib/safeUrl'
 /** Required on /scex (does not load App.css). Shared with main Radar. */
 import '../styles/surfAnalysis.css'
 
@@ -78,10 +79,12 @@ export function KolReportViewer({ report, avatarHandle, onClose }: Props) {
           </button>
         </header>
 
-        {report.coverImage ? (
+        {cssSafeUrl(report.coverImage) ? (
           <div
             className="kol-report-viewer__cover"
-            style={{ backgroundImage: `url(${report.coverImage})` }}
+            style={{
+              backgroundImage: `url(${cssSafeUrl(report.coverImage)})`,
+            }}
           >
             <div className="kol-report-viewer__cover-fade" />
           </div>

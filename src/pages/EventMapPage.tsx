@@ -50,6 +50,7 @@ import {
 } from '../lib/eventMapI18n'
 import { applyEventMapSeo } from '../lib/eventMapSeo'
 import { withBase } from '../lib/base'
+import { isSafeImageUrl, safeHref } from '../lib/safeUrl'
 import './EventMapPage.css'
 
 const CONVICTION_LOGO = withBase('/conviction/logo-full.svg')
@@ -147,6 +148,14 @@ function writeEventMapParams(opts: {
   if (opts.date && opts.date !== 'all') params.set('date', opts.date)
   if (opts.id) params.set('id', opts.id)
   const q = params.toString()
+  const path = window.location.pathname
+  const onPath = path.toLowerCase().startsWith('/event')
+  if (onPath) {
+    const next = `${path}${q ? `?${q}` : ''}`
+    const cur = `${path}${window.location.search}`
+    if (cur !== next) history.replaceState(null, '', next)
+    return
+  }
   const next = q ? `#/event?${q}` : '#/event'
   if (window.location.hash !== next) {
     history.replaceState(null, '', next)
@@ -229,18 +238,22 @@ function popupHtml(
     ev.free
       ? `<span class="emp__badge emp__badge--free">${escapeHtml(L.badgeFree)}</span>`
       : '',
-    `<span class="emp__badge">${typeLabel}</span>`,
+    `<span class="emp__badge">${escapeHtml(typeLabel)}</span>`,
   ]
     .filter(Boolean)
     .join(' ')
-  const reg = ev.link
-    ? `<a class="emp-popup__act emp-popup__act--reg" href="${ev.link}" target="_blank" rel="noopener noreferrer">${escapeHtml(L.register)}</a>`
+  const href = safeHref(ev.link)
+  const reg = href
+    ? `<a class="emp-popup__act emp-popup__act--reg" href="${escapeHtml(href)}" target="_blank" rel="noopener noreferrer">${escapeHtml(L.register)}</a>`
     : `<span class="emp-popup__act emp-popup__act--disabled">${escapeHtml(L.register)}</span>`
   const directions = ev.locationTbd
     ? `<a class="emp-popup__act emp-popup__act--map" href="${directionsUrl(SALA_VENUE.lat, SALA_VENUE.lng)}" target="_blank" rel="noopener noreferrer">${escapeHtml(L.directions)}</a>`
     : `<a class="emp-popup__act emp-popup__act--map" href="${directionsUrl(ev.lat, ev.lng)}" target="_blank" rel="noopener noreferrer">${escapeHtml(L.directions)}</a>`
-  const img = ev.imageUrl
-    ? `<img class="emp-popup__img" src="${escapeHtml(toSquareImageUrl(ev.imageUrl, 640))}" alt="" loading="lazy" referrerpolicy="no-referrer" />`
+  const imgSrc = ev.imageUrl
+    ? toSquareImageUrl(ev.imageUrl, 640)
+    : ''
+  const img = isSafeImageUrl(imgSrc)
+    ? `<img class="emp-popup__img" src="${escapeHtml(imgSrc)}" alt="" loading="lazy" referrerpolicy="no-referrer" />`
     : ''
   const dist = opts.distanceLabel
     ? `<p class="emp-popup__row emp-popup__dist">${escapeHtml(opts.distanceLabel)}</p>`
@@ -623,7 +636,7 @@ export function EventMapPage() {
       })
     }
     if (sortMode === 'upcoming') {
-      return sortEventsUpcoming(list, today, nowHm)
+      return sortEventsUpcoming(list, today, nowHm, nowDate)
     }
     return sortEvents(list)
   }, [
@@ -637,6 +650,7 @@ export function EventMapPage() {
     distanceFrom,
     today,
     nowHm,
+    nowDate,
   ])
 
   const distanceLabelFor = (ev: SideEvent): string | null => {
@@ -2268,10 +2282,10 @@ export function EventMapPage() {
                           </div>
                         ) : null}
                         <div className="emp__card-actions">
-                          {ev.link ? (
+                          {safeHref(ev.link) ? (
                             <a
                               className="emp__card-action emp__card-action--primary"
-                              href={ev.link}
+                              href={safeHref(ev.link)}
                               target="_blank"
                               rel="noopener noreferrer"
                             >

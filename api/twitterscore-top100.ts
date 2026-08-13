@@ -8,17 +8,18 @@
  */
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 import {
-  env,
   envPresence,
   TWITTERSCORE_TOP100_OBJECT_KEY,
   r2Client,
   r2GetJson,
-  r2PutJson,
 } from '../lib/server/r2.js'
 import {
-  assertNotStale,
+  commitJsonReplace,
+  enforcePublicRateLimit,
   isGetOrHead,
-  readBaseUpdatedAt,
+  jsonError,
+  parseJsonBody,
+  requireAdmin,
   sendJson,
 } from '../lib/server/apiHelpers.js'
 
@@ -50,12 +51,6 @@ function cors(res: VercelResponse) {
   res.setHeader('Cache-Control', 'no-store')
 }
 
-function bearer(req: VercelRequest): string {
-  const h = req.headers.authorization || ''
-  if (h.startsWith('Bearer ') || h.startsWith('bearer ')) return h.slice(7).trim()
-  return ''
-}
-
 function isValidBody(body: Body): boolean {
   return Array.isArray(body.accounts) && body.accounts.length > 0
 }
@@ -75,6 +70,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   try {
     if (isGetOrHead(req.method)) {
+      if (!enforcePublicRateLimit(req, res, 'twitterscore-top100', 90)) return
       const data = await r2GetJson<Body>(
         client,
         TWITTERSCORE_TOP100_OBJECT_KEY,
@@ -89,39 +85,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     if (req.method === 'PUT') {
-      const secret = env('FEED_ADMIN_TOKEN')
-      if (!secret) {
-        return res.status(503).json({
-          error: 'token_not_configured',
-          message: 'Set FEED_ADMIN_TOKEN + Redeploy.',
-        })
-      }
-      const got = bearer(req)
-      if (!got || got !== secret) {
-        return res.status(401).json({ error: 'unauthorized' })
-      }
-      const body = (
-        typeof req.body === 'string' ? JSON.parse(req.body) : req.body
-      ) as Body
-      if (!isValidBody(body)) {
-        return res.status(400).json({
-          error: 'invalid_body',
+      if (!requireAdmin(req, res)) return
+      const parsed = parseJsonBody<Body>(req)
+      if (!parsed.ok) {
+        return jsonError(res, 400, parsed.error, {
           message: 'Need accounts[] with at least 1 row',
         })
       }
-      const current = await r2GetJson<Body>(
-        client,
-        TWITTERSCORE_TOP100_OBJECT_KEY,
-      )
-      const stale = assertNotStale(
-        current?.updatedAt,
-        readBaseUpdatedAt(body as Record<string, unknown>),
-      )
-      if (stale.ok === false) {
-        return res.status(409).json({
-          error: 'conflict',
-          message: 'Server có TwitterScore mới hơn. Reload rồi Save lại.',
-          serverUpdatedAt: stale.serverUpdatedAt,
+      const body = parsed.body
+      if (!isValidBody(body)) {
+        return jsonError(res, 400, 'invalid_body', {
+          message: 'Need accounts[] with at least 1 row',
         })
       }
       const payload: Body = {
@@ -132,7 +106,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         source: body.source || 'admin server',
       }
       delete (payload as { baseUpdatedAt?: string }).baseUpdatedAt
-      await r2PutJson(client, TWITTERSCORE_TOP100_OBJECT_KEY, payload)
+      if (
+        !(await commitJsonReplace(
+          res,
+          client,
+          TWITTERSCORE_TOP100_OBJECT_KEY,
+          body as Record<string, unknown>,
+          (current) => current?.updatedAt,
+          'Server có TwitterScore mới hơn. Reload rồi Save lại.',
+          payload,
+        ))
+      ) {
+        return
+      }
       return res.status(200).json({
         ok: true,
         count: Array.isArray(payload.accounts) ? payload.accounts.length : 0,

@@ -6,6 +6,7 @@
  *   node scripts/update_scex_from_export.mjs --put
  */
 import fs from 'fs'
+import { adminPutJson } from './lib/adminPut.mjs'
 import path from 'path'
 import { fileURLToPath } from 'url'
 
@@ -360,9 +361,9 @@ for (const p of prev.posts || []) {
   if (m) prevPostById.set(m[1], p)
 }
 
-const volumeSplit = 3
+const volumeSplit = 42
 const qualitySplit = 50
-const volumeAxisMax = 20
+const volumeAxisMax = 100
 
 const actors = []
 const posts = []
@@ -578,14 +579,7 @@ if (doPut) {
     console.error('FEED_ADMIN_TOKEN missing')
     process.exit(1)
   }
-  const putRes = await fetch(`${base}/api/scex-tracking`, {
-    method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify(dataset),
-  })
+  const putRes = await adminPutJson(`${base}/api/scex-tracking`, token, dataset)
   console.log('PUT', putRes.status, (await putRes.text()).slice(0, 280))
   if (!putRes.ok) process.exit(1)
   const getRes = await fetch(`${base}/api/scex-tracking?t=${Date.now()}`)

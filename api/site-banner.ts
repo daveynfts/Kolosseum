@@ -11,24 +11,21 @@ import type { VercelRequest, VercelResponse } from '@vercel/node'
 import {
   bannerImageObjectKey,
   BANNER_IMAGES_PREFIX,
-  env,
   envPresence,
   SITE_BANNER_OBJECT_KEY,
   r2Client,
   r2GetJson,
   r2PublicBase,
   r2PutBytes,
-  r2PutJson,
 } from '../lib/server/r2.js'
 import {
-  assertNotStale,
-  bearer,
-  conflictResponse,
+  commitJsonReplace,
   cors,
   enforcePublicRateLimit,
   isGetOrHead,
   jsonError,
-  readBaseUpdatedAt,
+  parseJsonBody,
+  requireAdmin,
   sendJson,
 } from '../lib/server/apiHelpers.js'
 
@@ -146,13 +143,18 @@ async function readRawBody(req: VercelRequest): Promise<Buffer> {
 }
 
 function isImagePut(req: VercelRequest): boolean {
+  const ct = String(req.headers['content-type'] || '')
+    .toLowerCase()
+    .split(';')[0]
+    .trim()
+  if (ct === 'application/json' || ct.startsWith('text/')) return false
   const slot = String(req.query.slot || '').toLowerCase()
-  if (slot === 'logo' || slot === 'art') return true
-  const ct = String(req.headers['content-type'] || '').toLowerCase()
+  if (slot !== 'logo' && slot !== 'art') return false
   return (
     ct.startsWith('image/') ||
-    ct === 'application/octet-stream'
-  ) && slot !== ''
+    ct === 'application/octet-stream' ||
+    ct === ''
+  )
 }
 
 async function handleImagePut(
@@ -242,41 +244,24 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     if (req.method === 'PUT') {
-      const secret = env('FEED_ADMIN_TOKEN')
-      if (!secret) {
-        return jsonError(res, 503, 'token_not_configured', {
-          message: 'Set FEED_ADMIN_TOKEN + Redeploy.',
-        })
-      }
-      const got = bearer(req)
-      if (!got || got !== secret) {
-        return jsonError(res, 401, 'unauthorized')
-      }
+      if (!requireAdmin(req, res)) return
 
       // Image upload branch (was /api/banner-image)
       if (isImagePut(req)) {
         return handleImagePut(req, res, client)
       }
 
-      const body = (
-        typeof req.body === 'string' ? JSON.parse(req.body) : req.body
-      ) as Body
+      const parsed = parseJsonBody<Body>(req)
+      if (!parsed.ok) {
+        return jsonError(res, 400, parsed.error, {
+          message: 'Need href and title at minimum (or ?slot=logo|art for images)',
+        })
+      }
+      const body = parsed.body
       if (!isValidBody(body)) {
         return jsonError(res, 400, 'invalid_body', {
           message: 'Need href and title at minimum (or ?slot=logo|art for images)',
         })
-      }
-      const current = await r2GetJson<Body>(client, SITE_BANNER_OBJECT_KEY)
-      const stale = assertNotStale(
-        current?.updatedAt,
-        readBaseUpdatedAt(body as Record<string, unknown>),
-      )
-      if (stale.ok === false) {
-        return conflictResponse(
-          res,
-          'Server có banner mới hơn. Reload rồi Save lại.',
-          stale.serverUpdatedAt,
-        )
       }
       const payload: Body = {
         ...body,
@@ -286,7 +271,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         updatedAt: new Date().toISOString(),
       }
       delete (payload as { baseUpdatedAt?: string }).baseUpdatedAt
-      await r2PutJson(client, SITE_BANNER_OBJECT_KEY, payload)
+      if (
+        !(await commitJsonReplace(
+          res,
+          client,
+          SITE_BANNER_OBJECT_KEY,
+          body as Record<string, unknown>,
+          (current) => current?.updatedAt,
+          'Server có banner mới hơn. Reload rồi Save lại.',
+          payload,
+        ))
+      ) {
+        return
+      }
       return res.status(200).json({
         ok: true,
         enabled: payload.enabled,

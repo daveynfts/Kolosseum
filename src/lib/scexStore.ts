@@ -9,6 +9,7 @@ import {
 } from '../data/scexTracking'
 import { withBase } from './base'
 import { getAdminToken } from './feedStore'
+import { loadKolsWithSource } from './kolStore'
 
 const CACHE_KEY = 'vn-kol-map-scex-tracking-v1'
 export const SCEX_TRACKING_EVENT = 'vn-kol-scex-tracking-updated'
@@ -55,18 +56,14 @@ export function seedScexDataset(): ScexDataset {
 }
 
 export async function fetchServerScex(): Promise<ScexDataset | null> {
-  try {
-    const res = await fetch(`${apiUrl()}?t=${Date.now()}`, {
-      method: 'GET',
-      cache: 'no-store',
-      headers: { Accept: 'application/json', 'Cache-Control': 'no-cache' },
-    })
-    if (res.status === 404 || res.status === 503) return null
-    if (!res.ok) return null
-    return normalizeScexDataset(await res.json())
-  } catch {
-    return null
-  }
+  const res = await fetch(`${apiUrl()}?t=${Date.now()}`, {
+    method: 'GET',
+    cache: 'no-store',
+    headers: { Accept: 'application/json', 'Cache-Control': 'no-cache' },
+  })
+  if (res.status === 404 || res.status === 503) return null
+  if (!res.ok) throw new Error(`HTTP ${res.status}`)
+  return normalizeScexDataset(await res.json())
 }
 
 export type LoadScexResult = {
@@ -75,10 +72,14 @@ export type LoadScexResult = {
 }
 
 export async function loadScexWithSource(): Promise<LoadScexResult> {
-  const server = await fetchServerScex()
-  if (server) {
-    writeCache(server)
-    return { dataset: server, source: 'server' }
+  try {
+    const server = await fetchServerScex()
+    if (server) {
+      writeCache(server)
+      return { dataset: server, source: 'server' }
+    }
+  } catch {
+    /* cache/seed */
   }
   const cache = readCache()
   if (cache) return { dataset: cache, source: 'cache' }
@@ -104,16 +105,31 @@ export async function saveScexToServer(
     const server = await fetchServerScex()
     baseUpdatedAt = server?.updatedAt
   } catch {
-    /* ignore */
+    return {
+      ok: false,
+      error: 'Không đọc được bản server — thử lại trước khi Save.',
+    }
   }
 
-  const payload = recomputeScexScores({
-    ...dataset,
-    note: note ?? dataset.note,
-    updatedAt: new Date().toISOString(),
-    asOf: new Date().toISOString(),
-    baseUpdatedAt,
-  } as ScexDataset & { baseUpdatedAt?: string })
+  let mapKols: { handle: string; rank?: string; tier?: number; score?: number }[] =
+    []
+  try {
+    const k = await loadKolsWithSource()
+    mapKols = k.kols || []
+  } catch {
+    /* score without map join */
+  }
+
+  const payload = recomputeScexScores(
+    {
+      ...dataset,
+      note: note ?? dataset.note,
+      updatedAt: new Date().toISOString(),
+      asOf: new Date().toISOString(),
+      baseUpdatedAt,
+    } as ScexDataset & { baseUpdatedAt?: string },
+    mapKols,
+  )
   const { baseUpdatedAt: _drop, ...toCache } = payload as ScexDataset & {
     baseUpdatedAt?: string
   }

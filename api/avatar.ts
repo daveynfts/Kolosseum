@@ -16,6 +16,7 @@ import {
   r2PutBytes,
   r2PublicBase,
 } from '../lib/server/r2.js'
+import { enforcePublicRateLimit } from '../lib/server/apiHelpers.js'
 
 function cors(res: VercelResponse) {
   res.setHeader('Access-Control-Allow-Origin', '*')
@@ -155,6 +156,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const key = avatarKey(handle)
 
   if (req.method === 'GET' || req.method === 'HEAD') {
+    if (!enforcePublicRateLimit(req, res, 'avatar', 90)) return
     try {
       const obj = await r2GetObject(client, key)
       if (!obj) return res.status(404).json({ error: 'not_found' })

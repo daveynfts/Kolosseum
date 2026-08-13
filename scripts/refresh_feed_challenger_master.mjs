@@ -11,6 +11,7 @@
  *   node scripts/refresh_feed_challenger_master.mjs --fresh
  */
 import fs from 'fs'
+import { adminPutJson } from './lib/adminPut.mjs'
 import path from 'path'
 import { fileURLToPath } from 'url'
 
@@ -956,14 +957,7 @@ async function main() {
     )
     return
   }
-  const put = await fetch(`${apiBase}/api/feed`, {
-    method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify(feed),
-  })
+  const put = await adminPutJson(`${apiBase}/api/feed`, token, feed)
   const body = await put.json().catch(() => ({}))
   console.log('PUT /api/feed', put.status, body)
   if (!put.ok) process.exit(1)

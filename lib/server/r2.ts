@@ -77,6 +77,45 @@ export const EVENT_SIDE_EVENTS_OBJECT_KEY = 'events/conviction-2026/v1.json'
 /** Prefix for banner image uploads (logo, art background) */
 export const BANNER_IMAGES_PREFIX = 'scex-banner'
 
+/**
+ * Prefixes the site may proxy via `/r2/*`. JSON admin keys must never be
+ * listed here — they are served only through `/api/*`.
+ */
+export const R2_PUBLIC_MEDIA_PREFIXES = [
+  'radar/',
+  'media/',
+  'scex-banner/',
+  'kol-reports/',
+  'RadarKOLsReport/',
+] as const
+
+export function isPublicMediaKey(key: string): boolean {
+  const k = String(key || '').replace(/^\/+/, '')
+  if (!k || k.includes('..')) return false
+  if (/\.json$/i.test(k)) return false
+  if (k.startsWith('internal/')) return false
+  return R2_PUBLIC_MEDIA_PREFIXES.some((p) => k.startsWith(p))
+}
+
+export class R2PreconditionError extends Error {
+  override name = 'R2PreconditionError'
+}
+
+export function isR2NotFound(e: unknown): boolean {
+  const name = (e as { name?: string })?.name
+  if (name === 'NoSuchKey' || name === 'NotFound') return true
+  const status = (e as { $metadata?: { httpStatusCode?: number } })?.$metadata
+    ?.httpStatusCode
+  return status === 404
+}
+
+export function isR2PreconditionFailed(e: unknown): boolean {
+  if (e instanceof R2PreconditionError) return true
+  const status = (e as { $metadata?: { httpStatusCode?: number } })?.$metadata
+    ?.httpStatusCode
+  return status === 412 || status === 409
+}
+
 export function bannerImageObjectKey(
   slot: 'logo' | 'art',
   ext: string,
@@ -90,7 +129,7 @@ export function mediaObjectKey(id: string) {
   return `media/${id}`
 }
 
-export function mediaPublicUrl(id: string, contentType?: string): string {
+export function mediaPublicUrl(id: string, _contentType?: string): string {
   const base = r2PublicBase()
   if (base) {
     // Prefer extension-less key; browser uses content-type from R2
@@ -100,27 +139,12 @@ export function mediaPublicUrl(id: string, contentType?: string): string {
   return `/api/media?id=${encodeURIComponent(id)}`
 }
 
-export async function r2PutJson(
-  client: S3Client,
-  key: string,
-  data: unknown,
-): Promise<void> {
-  const body = JSON.stringify(data)
-  await client.send(
-    new PutObjectCommand({
-      Bucket: r2Bucket(),
-      Key: key,
-      Body: body,
-      ContentType: 'application/json; charset=utf-8',
-      CacheControl: 'no-store',
-    }),
-  )
-}
+export type R2JsonMeta<T> = { data: T; etag?: string }
 
-export async function r2GetJson<T>(
+export async function r2GetJsonMeta<T>(
   client: S3Client,
   key: string,
-): Promise<T | null> {
+): Promise<R2JsonMeta<T> | null> {
   try {
     const out = await client.send(
       new GetObjectCommand({
@@ -130,16 +154,54 @@ export async function r2GetJson<T>(
     )
     const text = await out.Body?.transformToString()
     if (!text) return null
-    return JSON.parse(text) as T
+    return { data: JSON.parse(text) as T, etag: out.ETag }
   } catch (e: unknown) {
-    const name = (e as { name?: string })?.name
-    if (name === 'NoSuchKey' || name === 'NotFound') return null
-    // AWS SDK v3 NotFound
-    const status = (e as { $metadata?: { httpStatusCode?: number } })?.$metadata
-      ?.httpStatusCode
-    if (status === 404) return null
+    if (isR2NotFound(e)) return null
     throw e
   }
+}
+
+export async function r2PutJson(
+  client: S3Client,
+  key: string,
+  data: unknown,
+  opts?: { ifMatch?: string },
+): Promise<void> {
+  const body = JSON.stringify(data)
+  const command = new PutObjectCommand({
+    Bucket: r2Bucket(),
+    Key: key,
+    Body: body,
+    ContentType: 'application/json; charset=utf-8',
+    CacheControl: 'no-store',
+  })
+  if (opts?.ifMatch) {
+    const etag = opts.ifMatch
+    command.middlewareStack.add(
+      (next) => async (args) => {
+        const req = args.request as { headers?: Record<string, string> }
+        if (req.headers) req.headers['if-match'] = etag
+        return next(args)
+      },
+      { step: 'build', name: 'r2IfMatch' },
+    )
+  }
+  try {
+    await client.send(command)
+  } catch (e: unknown) {
+    if (isR2PreconditionFailed(e)) {
+      throw new R2PreconditionError('R2 If-Match failed')
+    }
+    throw e
+  }
+}
+
+export async function r2GetJson<T>(
+  client: S3Client,
+  key: string,
+): Promise<T | null> {
+  const meta = await r2GetJsonMeta<T>(client, key)
+  return meta ? meta.data : null
 }
 
 export async function r2PutBytes(
@@ -180,11 +242,7 @@ export async function r2GetObject(
       contentType: out.ContentType || 'application/octet-stream',
     }
   } catch (e: unknown) {
-    const name = (e as { name?: string })?.name
-    if (name === 'NoSuchKey' || name === 'NotFound') return null
-    const status = (e as { $metadata?: { httpStatusCode?: number } })?.$metadata
-      ?.httpStatusCode
-    if (status === 404) return null
+    if (isR2NotFound(e)) return null
     throw e
   }
 }
@@ -198,8 +256,9 @@ export async function r2Exists(client: S3Client, key: string): Promise<boolean> 
       }),
     )
     return true
-  } catch {
-    return false
+  } catch (e: unknown) {
+    if (isR2NotFound(e)) return false
+    throw e
   }
 }
 

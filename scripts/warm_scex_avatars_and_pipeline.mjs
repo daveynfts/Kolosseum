@@ -12,6 +12,7 @@
 import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
+import { adminPutJson } from './lib/adminPut.mjs'
 
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..')
 const SEED = path.join(ROOT, 'src/data/internal/scex-tracking.json')
@@ -326,14 +327,11 @@ async function main() {
     return
   }
 
-  const putRes = await fetch(`${base}/api/scex-tracking`, {
-    method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify(dataset),
-  })
+  const putRes = await adminPutJson(
+    `${base}/api/scex-tracking`,
+    token,
+    dataset,
+  )
   console.log('PUT', putRes.status, (await putRes.text()).slice(0, 350))
   if (!putRes.ok) process.exit(1)
   if (stats.fail > 0) process.exitCode = 1

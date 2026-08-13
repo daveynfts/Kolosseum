@@ -13,14 +13,15 @@ import {
   KOL_REPORTS_OBJECT_KEY,
   r2Client,
   r2GetJson,
-  r2PutJson,
 } from '../lib/server/r2.js'
 import {
-  assertNotStale,
+  commitJsonReplace,
   enforcePublicRateLimit,
   isAdmin,
   isGetOrHead,
-  readBaseUpdatedAt,
+  jsonError,
+  parseJsonBody,
+  requireAdmin,
   sendJson,
 } from '../lib/server/apiHelpers.js'
 
@@ -104,31 +105,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     if (req.method === 'PUT') {
-      if (!isAdmin(req)) {
-        return res.status(401).json({ error: 'unauthorized' })
+      if (!requireAdmin(req, res)) return
+      const parsed = parseJsonBody<Body>(req)
+      if (!parsed.ok) {
+        return jsonError(res, 400, parsed.error)
       }
-      const body = (
-        typeof req.body === 'string' ? JSON.parse(req.body) : req.body
-      ) as Body
+      const body = parsed.body
       if (!body || typeof body !== 'object') {
-        return res.status(400).json({ error: 'invalid_body' })
+        return jsonError(res, 400, 'invalid_body')
       }
       if (!Array.isArray(body.reports)) {
-        return res.status(400).json({
-          error: 'invalid_body',
+        return jsonError(res, 400, 'invalid_body', {
           message: 'Need reports array',
-        })
-      }
-      const current = await r2GetJson<Body>(client, KOL_REPORTS_OBJECT_KEY)
-      const stale = assertNotStale(
-        current?.updatedAt,
-        readBaseUpdatedAt(body as Record<string, unknown>),
-      )
-      if (stale.ok === false) {
-        return res.status(409).json({
-          error: 'conflict',
-          message: 'Server có reports mới hơn. Reload rồi Save lại.',
-          serverUpdatedAt: stale.serverUpdatedAt,
         })
       }
       const payload: Body = {
@@ -139,7 +127,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         updatedAt: new Date().toISOString(),
       }
       delete (payload as { baseUpdatedAt?: string }).baseUpdatedAt
-      await r2PutJson(client, KOL_REPORTS_OBJECT_KEY, payload)
+      if (
+        !(await commitJsonReplace(
+          res,
+          client,
+          KOL_REPORTS_OBJECT_KEY,
+          body as Record<string, unknown>,
+          (current) => current?.updatedAt,
+          'Server có reports mới hơn. Reload rồi Save lại.',
+          payload,
+        ))
+      ) {
+        return
+      }
       return res.status(200).json({
         ok: true,
         reports: (payload.reports as unknown[]).length,

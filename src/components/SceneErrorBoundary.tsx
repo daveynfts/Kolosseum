@@ -3,6 +3,7 @@ import { Component, type ReactNode } from 'react'
 interface Props {
   children: ReactNode
   onReset?: () => void
+  title?: string
 }
 
 interface State {
@@ -40,7 +41,9 @@ export class SceneErrorBoundary extends Component<Props, State> {
           }}
         >
           <div>
-            <h2 style={{ margin: '0 0 8px', fontSize: 18 }}>Map failed to render</h2>
+            <h2 style={{ margin: '0 0 8px', fontSize: 18 }}>
+              {this.props.title || 'Map failed to render'}
+            </h2>
             <p style={{ margin: '0 0 16px', color: '#94a3b8', fontSize: 13, maxWidth: 420 }}>
               {this.state.error}
             </p>

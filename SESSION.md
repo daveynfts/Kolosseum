@@ -1,6 +1,6 @@
 # Session handoff — VN KOL Radar + SCEX
 
-**Cập nhật:** 2026-07-27  
+**Cập nhật:** 2026-08-13  
 **Workspace:** `C:\VibeCode\KOL Radar`  
 **Prod:** https://radar.daveynfts.com  
 
@@ -69,6 +69,15 @@
 | `FEED_ADMIN_TOKEN` | PUT API admin |
 | `R2_*` | Server Vercel / script R2 (prod) |
 | `RADAR_API_BASE` | optional override API (default `https://radar.daveynfts.com`) |
+
+### Quy ước mở rộng (để API/editor mới không lặp lỗ hổng)
+
+- **JSON admin API mới:** `parseJsonBody` → `requireAdmin` → build payload → `commitJsonReplace(...)` trong `lib/server/apiHelpers.ts`. Không `JSON.parse` trần (trả 500). Không default mảng thiếu thành `[]` trên full replace.
+- **Script PUT JSON:** `import { adminPutJson } from './lib/adminPut.mjs'` (GET live + `baseUpdatedAt`). Events: helper tự GET `?all=1` để không mất `hidden`.
+- **Editor admin mới:** `useDirtyRef` + `useRemoteDatasetLoad` + Reload qua `confirmDiscardUnsaved` (`src/lib/adminLoadGuard.ts`).
+- **URL ra ngoài:** `safeHref` / `cssSafeUrl` / `isSafeImageUrl` từ `src/lib/safeUrl.ts`.
+- **Media public `/r2/`:** thêm prefix vào `R2_PUBLIC_MEDIA_PREFIXES` **và** rewrite `vercel.json`. Không proxy `*.json` hay `internal/`.
+- Bucket R2 public `*.r2.dev` vẫn đọc được JSON nếu bucket để public — khóa bucket hoặc WAF nếu cần tuyệt đối.
 
 ---
 

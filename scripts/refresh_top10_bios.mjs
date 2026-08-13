@@ -7,6 +7,7 @@
  * and TEMP/kols-server.json or fetches live API.
  */
 import fs from 'fs'
+import { adminPutJson } from './lib/adminPut.mjs'
 import path from 'path'
 import { fileURLToPath } from 'url'
 
@@ -286,14 +287,7 @@ async function main() {
   }
 
   if (token) {
-    const res = await fetch('https://radar.daveynfts.com/api/kols', {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify(payload),
-    })
+    const res = await adminPutJson('https://radar.daveynfts.com/api/kols', token, payload)
     const body = await res.json().catch(() => ({}))
     console.log('PUT api', res.status, JSON.stringify(body))
     if (!res.ok) process.exit(1)

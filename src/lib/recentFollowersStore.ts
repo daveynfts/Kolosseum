@@ -181,7 +181,7 @@ export async function fetchServerRecentFollowers(): Promise<RecentFollowersPaylo
       headers: { Accept: 'application/json', 'Cache-Control': 'no-cache' },
     })
     if (res.status === 404 || res.status === 503) return null
-    if (!res.ok) return null
+    if (!res.ok) throw new Error(`HTTP ${res.status}`)
     const data = (await res.json()) as RecentFollowersPayload
     if (!data?.map || typeof data.map !== 'object') return null
     const map = normalizeMap(data.map)

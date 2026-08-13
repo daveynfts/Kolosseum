@@ -12,6 +12,7 @@ import {
   loadSiteBannerWithSource,
   SITE_BANNER_EVENT,
 } from '../lib/siteBannerStore'
+import { safeHref } from '../lib/safeUrl'
 
 export function SiteBannerRibbon({ config }: { config: SiteBannerConfig }) {
   if (!config.enabled) return null
@@ -19,10 +20,13 @@ export function SiteBannerRibbon({ config }: { config: SiteBannerConfig }) {
   const logoUrl = resolveBannerLogo(config)
   const artUrl = resolveBannerArt(config)
 
+  const href = safeHref(config.href)
+  if (!href) return null
+
   return (
     <a
       className="scex-event-banner"
-      href={config.href}
+      href={href}
       target="_blank"
       rel="noopener noreferrer"
       aria-label={

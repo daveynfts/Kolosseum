@@ -902,6 +902,13 @@ function normalizeConfig(raw: unknown): ScexConfig {
       ...((scoringRaw.sentimentScores as object) || {}),
     },
   }
+  const useVol = scoring.useVolumeScore !== false
+  let volumeSplit = Number(o.volumeSplit) || d.volumeSplit
+  let volumeAxisMax = Number(vol.max) || 100
+  // Export scripts historically wrote post-count splits (e.g. 3 / 20).
+  // volumeScore is 0–100 — clamp stale config onto that scale.
+  if (useVol && volumeSplit > 0 && volumeSplit <= 20) volumeSplit = d.volumeSplit
+  if (useVol && volumeAxisMax > 0 && volumeAxisMax <= 20) volumeAxisMax = 100
   return {
     brandName: String(o.brandName || d.brandName),
     brandHandle: String(o.brandHandle || d.brandHandle)
@@ -915,7 +922,7 @@ function normalizeConfig(raw: unknown): ScexConfig {
     userMinQuality: Number(o.userMinQuality) || d.userMinQuality,
     volumeAxis: {
       min: Number(vol.min) || 0,
-      max: Number(vol.max) || 100,
+      max: volumeAxisMax,
       label: String(vol.label || d.volumeAxis.label),
     },
     qualityAxis: {
@@ -924,7 +931,7 @@ function normalizeConfig(raw: unknown): ScexConfig {
       label: String(qual.label || d.qualityAxis.label),
     },
     sizeMetric: o.sizeMetric === 'reach7d' ? 'reach7d' : 'followers',
-    volumeSplit: Number(o.volumeSplit) || d.volumeSplit,
+    volumeSplit,
     qualitySplit: Number(o.qualitySplit) || d.qualitySplit,
     quadrantLabels: qLabels,
     sentimentLabels: sLabels,

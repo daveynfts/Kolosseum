@@ -7,6 +7,7 @@
  * Keep inferScexSentiment heuristics in sync with src/data/scexTracking.ts
  */
 import fs from 'fs'
+import { adminPutJson } from './lib/adminPut.mjs'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import { createRequire } from 'module'
@@ -269,14 +270,7 @@ if (doPut) {
     process.exit(1)
   }
   const putBody = { ...dataset, baseUpdatedAt }
-  const putRes = await fetch(`${base}/api/scex-tracking`, {
-    method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify(putBody),
-  })
+  const putRes = await adminPutJson(`${base}/api/scex-tracking`, token, putBody)
   console.log('PUT', putRes.status, (await putRes.text()).slice(0, 280))
   if (!putRes.ok) process.exit(1)
 }

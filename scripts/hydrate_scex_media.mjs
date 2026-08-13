@@ -11,6 +11,7 @@
  *   node scripts/hydrate_scex_media.mjs --limit 10
  */
 import fs from 'fs'
+import { adminPutJson } from './lib/adminPut.mjs'
 import path from 'path'
 import crypto from 'crypto'
 import { fileURLToPath } from 'url'
@@ -451,14 +452,7 @@ async function main() {
       process.exitCode = 1
       return
     }
-    const putRes = await fetch(`${base}/api/scex-tracking`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify(dataset),
-    })
+    const putRes = await adminPutJson(`${base}/api/scex-tracking`, token, dataset)
     const body = await putRes.text()
     console.log('PUT /api/scex-tracking', putRes.status, body.slice(0, 280))
     if (!putRes.ok) process.exitCode = 1

@@ -6,6 +6,7 @@
 import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
+import { adminPutJson } from './lib/adminPut.mjs'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const ROOT = path.join(__dirname, '..')
@@ -136,14 +137,11 @@ async function main() {
     process.exit(1)
   }
 
-  const putRes = await fetch(`${apiBase.replace(/\/$/, '')}/api/kols`, {
-    method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify(payload),
-  })
+  const putRes = await adminPutJson(
+    `${apiBase.replace(/\/$/, '')}/api/kols`,
+    token,
+    payload,
+  )
   const body = await putRes.json().catch(() => ({}))
   console.log('PUT', putRes.status, body)
   if (!putRes.ok) process.exit(1)

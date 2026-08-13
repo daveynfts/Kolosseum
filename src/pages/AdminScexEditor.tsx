@@ -2,7 +2,7 @@
  * Admin: SCEX tracking config, actors, livefeed posts, matrix preview.
  * All fields editable → Save R2 for partner-facing view.
  */
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import {
   actorMatrixPos,
   actorPassesThresholds,
@@ -34,6 +34,12 @@ import { loadKolsWithSource } from '../lib/kolStore'
 import { getAdminToken, setAdminToken } from '../lib/feedStore'
 import { XProfileAvatar } from '../components/XProfileAvatar'
 import { getKolRank } from '../types'
+import {
+  confirmDiscardUnsaved,
+  useDirtyRef,
+  useRemoteDatasetLoad,
+} from '../lib/adminLoadGuard'
+import { safeHref } from '../lib/safeUrl'
 
 interface Props {
   onToast: (msg: string) => void
@@ -62,6 +68,7 @@ export function AdminScexEditor({ onToast }: Props) {
   const [source, setSource] = useState<'server' | 'cache' | 'seed'>('seed')
   const [sub, setSub] = useState<SubTab>('settings')
   const [dirty, setDirty] = useState(false)
+  const dirtyRef = useDirtyRef(dirty)
   const [saving, setSaving] = useState(false)
   const [tokenInput, setTokenInput] = useState(() => getAdminToken())
   const [selectedActorId, setSelectedActorId] = useState<string | null>(null)
@@ -71,24 +78,16 @@ export function AdminScexEditor({ onToast }: Props) {
     'all' | ScexRadarPipeline | 'needs_avatar'
   >('candidate')
 
-  useEffect(() => {
-    let cancelled = false
-    void loadScexWithSource().then((r) => {
-      if (cancelled) return
-      setDataset(r.dataset)
-      setSource(r.source)
-      if (!selectedActorId && r.dataset.actors[0]) {
-        setSelectedActorId(r.dataset.actors[0].id)
-      }
-      if (!selectedPostId && r.dataset.posts[0]) {
-        setSelectedPostId(r.dataset.posts[0].id)
-      }
-    })
-    return () => {
-      cancelled = true
+  useRemoteDatasetLoad(loadScexWithSource, dirtyRef, (r) => {
+    setDataset(r.dataset)
+    setSource(r.source)
+    if (!selectedActorId && r.dataset.actors[0]) {
+      setSelectedActorId(r.dataset.actors[0].id)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+    if (!selectedPostId && r.dataset.posts[0]) {
+      setSelectedPostId(r.dataset.posts[0].id)
+    }
+  })
 
   const config = dataset.config
 
@@ -372,6 +371,7 @@ export function AdminScexEditor({ onToast }: Props) {
   }
 
   const onReload = async () => {
+    if (!confirmDiscardUnsaved(dirty)) return
     clearScexCache()
     const r = await loadScexWithSource()
     setDataset(r.dataset)
@@ -1874,8 +1874,8 @@ function ScexPreviewPanel({
                     <time>{p.postedAt.slice(0, 16)}</time>
                   </div>
                   <p>{p.text || '—'}</p>
-                  {p.url && (
-                    <a href={p.url} target="_blank" rel="noreferrer">
+                  {safeHref(p.url) && (
+                    <a href={safeHref(p.url)} target="_blank" rel="noreferrer">
                       Open on X ↗
                     </a>
                   )}

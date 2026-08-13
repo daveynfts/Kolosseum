@@ -28,6 +28,7 @@ import { SurfAnalysisMock } from './SurfAnalysisMock'
 import { XProfileAvatar } from './XProfileAvatar'
 import { DaveysRadarLink } from './DaveysRadarLink'
 import { resolveMediaUrl } from '../lib/avatar'
+import { isSafeImageUrl, safeHref } from '../lib/safeUrl'
 
 /** Minimal Kol for Surf AI when actor is off Radar map but has a public report. */
 function stubKolFromActor(actor: ScexActor): Kol {
@@ -378,20 +379,25 @@ export function ScexKolDetail({
                       )}
                       {media.length > 0 && (
                         <div className="scex-detail__post-media">
-                          {media.slice(0, 3).map((m, i) => (
-                            <a
-                              key={i}
-                              href={resolveMediaUrl(m)}
-                              target="_blank"
-                              rel="noreferrer"
-                            >
-                              <img
-                                src={resolveMediaUrl(m)}
-                                alt=""
-                                loading="lazy"
-                              />
-                            </a>
-                          ))}
+                          {media.slice(0, 3).map((m, i) => {
+                            const src = resolveMediaUrl(m)
+                            if (!isSafeImageUrl(src)) return null
+                            const href = safeHref(src)
+                            return (
+                              <a
+                                key={i}
+                                href={href}
+                                target="_blank"
+                                rel="noreferrer"
+                              >
+                                <img
+                                  src={src}
+                                  alt=""
+                                  loading="lazy"
+                                />
+                              </a>
+                            )
+                          })}
                         </div>
                       )}
                       <div className="scex-detail__post-foot">
@@ -401,9 +407,9 @@ export function ScexKolDetail({
                             ? ` · ${fmt(p.views)} views`
                             : ''}
                         </span>
-                        {p.url && (
+                        {safeHref(p.url) && (
                           <a
-                            href={p.url}
+                            href={safeHref(p.url)}
                             target="_blank"
                             rel="noreferrer"
                           >

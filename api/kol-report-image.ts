@@ -214,23 +214,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
     const kind = String(req.query.kind || '').toLowerCase()
     const body = await readRawBody(req)
-    const looksPdf =
-      body.length >= 4 &&
-      body[0] === 0x25 &&
-      body[1] === 0x50 &&
-      body[2] === 0x44 &&
-      body[3] === 0x46
-
-    // ── Surf PDF branch (formerly /api/surf-report) ─────────────
-    if (
+    const qName = String(req.query.filename || req.query.name || '')
+    const hName = String(req.headers['x-filename'] || '')
+    const rawName = (qName || hName || '').toLowerCase()
+    const wantPdf =
       kind === 'surf' ||
       kind === 'surf-report' ||
       kind === 'pdf' ||
-      looksPdf
-    ) {
-      const qName = String(req.query.filename || req.query.name || '')
-      const hName = String(req.headers['x-filename'] || '')
-      const rawName = (qName || hName || '').toLowerCase()
+      rawName.endsWith('.pdf')
+
+    // ── Surf PDF branch (formerly /api/surf-report) ─────────────
+    if (wantPdf) {
       if (rawName.endsWith('.docx') || rawName.includes('.docx')) {
         return res.status(415).json({
           error: 'docx_not_allowed',
@@ -309,10 +303,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       })
     }
 
-    const qName = String(req.query.filename || req.query.name || '')
-    const hName = String(req.headers['x-filename'] || '')
     // Prefer header for paths with "/" — some proxies mangle %2F in query strings
-    const rawName = hName || qName
+    const imageName = hName || qName
     const overwrite =
       String(req.query.overwrite || '') === '1' ||
       String(req.query.overwrite || '').toLowerCase() === 'true' ||
@@ -333,7 +325,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
               contentType,
             )
           : null
-      const stable = fromParts || stableFilename(rawName, contentType)
+      const stable = fromParts || stableFilename(imageName, contentType)
       if (!stable) {
         return res.status(400).json({
           error: 'invalid_stable_path',
@@ -344,7 +336,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       rel = stable
       wasOverwrite = true
     } else {
-      rel = uniqueFilename(rawName, contentType)
+      rel = uniqueFilename(imageName, contentType)
     }
 
     const key = `${PREFIX}/${rel}`

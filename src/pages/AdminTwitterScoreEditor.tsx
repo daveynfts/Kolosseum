@@ -2,7 +2,7 @@
  * Admin tab: internal TwitterScore Top N dataset.
  * Full-width editor for benchmark accounts — expandable detail fields.
  */
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import {
   recomputeTwitterScoreStats,
   searchTwitterScoreTop100,
@@ -19,6 +19,11 @@ import {
 } from '../lib/twitterScoreStore'
 import { getAdminToken, setAdminToken } from '../lib/feedStore'
 import { XProfileAvatar } from '../components/XProfileAvatar'
+import {
+  confirmDiscardUnsaved,
+  useDirtyRef,
+  useRemoteDatasetLoad,
+} from '../lib/adminLoadGuard'
 
 interface Props {
   onToast: (msg: string) => void
@@ -46,24 +51,17 @@ export function AdminTwitterScoreEditor({ onToast }: Props) {
   const [query, setQuery] = useState('')
   const [selectedHandle, setSelectedHandle] = useState<string | null>(null)
   const [dirty, setDirty] = useState(false)
+  const dirtyRef = useDirtyRef(dirty)
   const [saving, setSaving] = useState(false)
   const [tokenInput, setTokenInput] = useState(() => getAdminToken())
 
-  useEffect(() => {
-    let cancelled = false
-    void loadTwitterScoreWithSource().then((r) => {
-      if (cancelled) return
-      setDataset(r.dataset)
-      setSource(r.source)
-      if (!selectedHandle && r.dataset.accounts[0]) {
-        setSelectedHandle(r.dataset.accounts[0].handle)
-      }
-    })
-    return () => {
-      cancelled = true
+  useRemoteDatasetLoad(loadTwitterScoreWithSource, dirtyRef, (r) => {
+    setDataset(r.dataset)
+    setSource(r.source)
+    if (!selectedHandle && r.dataset.accounts[0]) {
+      setSelectedHandle(r.dataset.accounts[0].handle)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  })
 
   const list = useMemo(
     () => searchTwitterScoreTop100(query, dataset.accounts),
@@ -176,6 +174,7 @@ export function AdminTwitterScoreEditor({ onToast }: Props) {
   }
 
   const onReload = () => {
+    if (!confirmDiscardUnsaved(dirty)) return
     void loadTwitterScoreWithSource().then((r) => {
       setDataset(r.dataset)
       setSource(r.source)

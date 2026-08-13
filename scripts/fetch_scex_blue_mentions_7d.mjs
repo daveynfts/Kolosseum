@@ -9,6 +9,7 @@
  * Falls back to seeded status list if search fails.
  */
 import fs from 'fs'
+import { adminPutJson } from './lib/adminPut.mjs'
 import path from 'path'
 import { fileURLToPath } from 'url'
 
@@ -785,14 +786,7 @@ async function main() {
     process.exit(1)
   }
 
-  const putRes = await fetch(`${base}/api/scex-tracking`, {
-    method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify(dataset),
-  })
+  const putRes = await adminPutJson(`${base}/api/scex-tracking`, token, dataset)
   const putText = await putRes.text()
   console.log('PUT', putRes.status, putText.slice(0, 400))
   if (!putRes.ok) process.exit(1)

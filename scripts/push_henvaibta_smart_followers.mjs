@@ -6,6 +6,7 @@
  * Needs FEED_ADMIN_TOKEN in .env.local (or env).
  */
 import fs from 'fs'
+import { adminPutJson } from './lib/adminPut.mjs'
 import path from 'path'
 import { fileURLToPath, pathToFileURL } from 'url'
 
@@ -164,14 +165,7 @@ async function main() {
   }
 
   console.log('PUT', `${apiBase}/api/recent-followers`)
-  const putRes = await fetch(`${apiBase}/api/recent-followers`, {
-    method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify(payload),
-  })
+  const putRes = await adminPutJson(`${apiBase}/api/recent-followers`, token, payload)
   const putBody = await putRes.json().catch(() => ({}))
   if (!putRes.ok) {
     console.error('PUT failed', putRes.status, putBody)

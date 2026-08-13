@@ -37,6 +37,7 @@ import {
   normalizeAdminToken,
   setAdminToken,
 } from '../lib/feedStore'
+import { cssSafeUrl } from '../lib/safeUrl'
 import {
   fileFromClipboardItem,
   isImageFile,
@@ -1480,10 +1481,12 @@ export function AdminKolReportsEditor({ onToast, kols = [] }: Props) {
                   setSelectedId(r.id)
                 }}
               >
-                {r.coverImage ? (
+                {cssSafeUrl(r.coverImage) ? (
                   <span
                     className="akr-card__cover"
-                    style={{ backgroundImage: `url(${r.coverImage})` }}
+                    style={{
+                      backgroundImage: `url(${cssSafeUrl(r.coverImage)})`,
+                    }}
                   />
                 ) : (
                   <span className="akr-card__avatar">
@@ -1556,10 +1559,12 @@ export function AdminKolReportsEditor({ onToast, kols = [] }: Props) {
             </div>
           ) : (
             <>
-              {draft.coverImage ? (
+              {cssSafeUrl(draft.coverImage) ? (
                 <div
                   className="akr-hero"
-                  style={{ backgroundImage: `url(${draft.coverImage})` }}
+                  style={{
+                    backgroundImage: `url(${cssSafeUrl(draft.coverImage)})`,
+                  }}
                 >
                   <div className="akr-hero__fade" />
                 </div>
@@ -2421,9 +2426,9 @@ export function AdminKolReportsEditor({ onToast, kols = [] }: Props) {
                           </>
                         )}
                       </div>
-                      {draft.coverImage ? (
+                      {cssSafeUrl(draft.coverImage) ? (
                         <img
-                          src={draft.coverImage}
+                          src={cssSafeUrl(draft.coverImage)}
                           alt="cover preview"
                           className="akr-cover-thumb"
                         />

@@ -29,8 +29,24 @@
       "destination": "/api/kol-report-image"
     },
     {
-      "source": "/r2/:path*",
-      "destination": "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/:path*"
+      "source": "/r2/radar/:path*",
+      "destination": "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/radar/:path*"
+    },
+    {
+      "source": "/r2/media/:path*",
+      "destination": "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/:path*"
+    },
+    {
+      "source": "/r2/scex-banner/:path*",
+      "destination": "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/scex-banner/:path*"
+    },
+    {
+      "source": "/r2/kol-reports/:path*",
+      "destination": "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/kol-reports/:path*"
+    },
+    {
+      "source": "/r2/RadarKOLsReport/:path*",
+      "destination": "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/RadarKOLsReport/:path*"
     },
     {
       "source": "/event/:path*",
@@ -43,15 +59,59 @@
     {
       "source": "/scex/:path*",
       "destination": "/"
+    },
+    {
+      "source": "/admin",
+      "destination": "/"
+    },
+    {
+      "source": "/admin/:path*",
+      "destination": "/"
     }
   ],
   "headers": [
     {
-      "source": "/r2/(.*)",
+      "source": "/r2/radar/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=604800, stale-while-revalidate=86400"
+        }
+      ]
+    },
+    {
+      "source": "/r2/media/(.*)",
       "headers": [
         {
           "key": "Cache-Control",
           "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
+    {
+      "source": "/r2/scex-banner/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=120, must-revalidate"
+        }
+      ]
+    },
+    {
+      "source": "/r2/kol-reports/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=120, must-revalidate"
+        }
+      ]
+    },
+    {
+      "source": "/r2/RadarKOLsReport/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=86400, stale-while-revalidate=604800"
         }
       ]
     },

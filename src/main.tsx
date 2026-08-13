@@ -2,6 +2,7 @@ import { Suspense, lazy, useEffect, useState, type ReactNode } from 'react'
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
+import { SceneErrorBoundary } from './components/SceneErrorBoundary'
 import { getAdminToken, setAdminToken } from './lib/feedStore'
 
 const App = lazy(() => import('./App.tsx'))
@@ -42,14 +43,20 @@ function normalizePathname(): string {
 }
 
 function getRoute(): 'map' | 'admin' | 'scex' | 'event' {
+  const h = window.location.hash.replace(/^#\/?/, '').toLowerCase()
   const path = normalizePathname()
-  // Path-based routes (preferred — no #)
+  // Admin hash/path always wins so /scex#/admin and /admin work.
+  if (
+    path === '/admin' ||
+    path.startsWith('/admin/') ||
+    h === 'admin' ||
+    h.startsWith('admin/') ||
+    h.startsWith('admin?')
+  ) {
+    return 'admin'
+  }
   if (path.startsWith('/event')) return 'event'
   if (path === '/scex' || path.startsWith('/scex/')) return 'scex'
-  // Legacy hash routes (#/admin, #/scex, #/event)
-  const h = window.location.hash.replace(/^#\/?/, '').toLowerCase()
-  if (h === 'admin' || h.startsWith('admin/') || h.startsWith('admin?'))
-    return 'admin'
   if (h === 'scex' || h.startsWith('scex/') || h.startsWith('scex?'))
     return 'scex'
   if (h === 'event' || h.startsWith('event/') || h.startsWith('event?'))
@@ -112,7 +119,7 @@ function AdminGate({ children }: { children: ReactNode }) {
         Continue
       </button>
       <p className="admin-gate__hint">
-        <a href="#/">← Back to map</a>
+        <a href="/">← Back to map</a>
       </p>
     </div>
   )
@@ -143,9 +150,11 @@ function Root() {
   if (route === 'admin') {
     return (
       <Suspense fallback={<RouteFallback />}>
-        <AdminGate>
-          <AdminDashboard />
-        </AdminGate>
+        <SceneErrorBoundary title="Admin failed to render">
+          <AdminGate>
+            <AdminDashboard />
+          </AdminGate>
+        </SceneErrorBoundary>
       </Suspense>
     )
   }
@@ -153,7 +162,9 @@ function Root() {
   if (route === 'event') {
     return (
       <Suspense fallback={<RouteFallback />}>
-        <EventMapPage />
+        <SceneErrorBoundary title="Event map failed to render">
+          <EventMapPage />
+        </SceneErrorBoundary>
       </Suspense>
     )
   }
@@ -161,10 +172,12 @@ function Root() {
   if (route === 'scex') {
     return (
       <Suspense fallback={<RouteFallback />}>
-        <div className="app-shell">
-          <ScexEventBanner />
-          <ScexTrackingPage />
-        </div>
+        <SceneErrorBoundary title="SCEX page failed to render">
+          <div className="app-shell">
+            <ScexEventBanner />
+            <ScexTrackingPage />
+          </div>
+        </SceneErrorBoundary>
       </Suspense>
     )
   }

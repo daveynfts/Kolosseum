@@ -7,6 +7,7 @@
  *   node scripts/sync_surf_pdfs.mjs --apply --fix-existing
  */
 import fs from 'fs'
+import { adminPutJson } from './lib/adminPut.mjs'
 import path from 'path'
 import { fileURLToPath } from 'url'
 
@@ -317,14 +318,7 @@ async function main() {
   payload.source = 'admin server · sync_surf_pdfs'
   payload.count = kols.length
 
-  const put = await fetch(`${api}/api/kols`, {
-    method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify(payload),
-  })
+  const put = await adminPutJson(`${api}/api/kols`, token, payload)
   const body = await put.json().catch(() => ({}))
   console.log('PUT', put.status, body)
   if (!put.ok) process.exit(1)

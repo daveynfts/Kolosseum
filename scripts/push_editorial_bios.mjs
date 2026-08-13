@@ -5,6 +5,7 @@
  *   or: npx vercel env run --environment production -- node scripts/push_editorial_bios.mjs
  */
 import fs from 'fs'
+import { adminPutJson } from './lib/adminPut.mjs'
 import path from 'path'
 import { fileURLToPath, pathToFileURL } from 'url'
 
@@ -119,14 +120,7 @@ async function main() {
     process.exit(2)
   }
 
-  const putRes = await fetch(`${apiBase}/api/kols`, {
-    method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify(live),
-  })
+  const putRes = await adminPutJson(`${apiBase}/api/kols`, token, live)
   const body = await putRes.json().catch(() => ({}))
   console.log('PUT', putRes.status, body)
   if (!putRes.ok) process.exit(1)

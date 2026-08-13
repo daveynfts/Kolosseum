@@ -14,6 +14,7 @@ import path from 'path'
 import crypto from 'crypto'
 import { fileURLToPath } from 'url'
 import { S3Client, HeadObjectCommand, PutObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3'
+import { adminPutJson } from './lib/adminPut.mjs'
 
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..')
 
@@ -235,9 +236,15 @@ async function loadDataset(r2cfg) {
   }
   // Fallback API
   try {
-    const res = await fetch(`${apiBase}/api/event-side-events?t=${Date.now()}`, {
-      headers: { Accept: 'application/json' },
-    })
+    const res = await fetch(
+      `${apiBase}/api/event-side-events?all=1&t=${Date.now()}`,
+      {
+        headers: {
+          Accept: 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+      },
+    )
     if (res.ok) {
       const data = await res.json()
       if (Array.isArray(data.events)) {
@@ -257,17 +264,11 @@ async function putDataset(data) {
     console.error('Need FEED_ADMIN_TOKEN for --put')
     process.exit(1)
   }
-  const res = await fetch(`${apiBase}/api/event-side-events`, {
-    method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify({
-      ...data,
-      baseUpdatedAt: data.updatedAt,
-    }),
-  })
+  const res = await adminPutJson(
+    `${apiBase}/api/event-side-events`,
+    token,
+    data,
+  )
   const text = await res.text()
   if (!res.ok) {
     console.error('PUT failed', res.status, text.slice(0, 400))

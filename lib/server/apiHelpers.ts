@@ -1,5 +1,11 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
-import { env } from './r2.js'
+import type { S3Client } from '@aws-sdk/client-s3'
+import {
+  env,
+  r2GetJsonMeta,
+  r2PutJson,
+  R2PreconditionError,
+} from './r2.js'
 import { checkRateLimit, pruneRateLimitBuckets } from './rateLimit.js'
 
 export function bearer(req: VercelRequest): string {
@@ -27,12 +33,90 @@ export function assertNotStale(
   serverUpdatedAt: string | undefined | null,
   clientBaseUpdatedAt: string | undefined | null,
 ): StaleCheck {
-  if (!serverUpdatedAt || !clientBaseUpdatedAt) return { ok: true }
-  const serverT = Date.parse(serverUpdatedAt)
-  const clientT = Date.parse(clientBaseUpdatedAt)
-  if (!Number.isFinite(serverT) || !Number.isFinite(clientT)) return { ok: true }
-  if (serverT > clientT) return { ok: false, serverUpdatedAt }
+  const serverT = serverUpdatedAt ? Date.parse(serverUpdatedAt) : NaN
+  if (!Number.isFinite(serverT)) return { ok: true }
+  const clientT = clientBaseUpdatedAt ? Date.parse(clientBaseUpdatedAt) : NaN
+  if (!Number.isFinite(clientT)) {
+    return { ok: false, serverUpdatedAt: serverUpdatedAt as string }
+  }
+  if (serverT > clientT) return { ok: false, serverUpdatedAt: serverUpdatedAt as string }
   return { ok: true }
+}
+
+export function parseJsonBody<T = Record<string, unknown>>(
+  req: VercelRequest,
+): { ok: true; body: T } | { ok: false; error: 'empty_body' | 'invalid_json' } {
+  try {
+    const raw = req.body
+    if (raw == null || raw === '') return { ok: false, error: 'empty_body' }
+    if (typeof raw === 'string') {
+      const t = raw.trim()
+      if (!t) return { ok: false, error: 'empty_body' }
+      return { ok: true, body: JSON.parse(t) as T }
+    }
+    if (typeof raw === 'object') return { ok: true, body: raw as T }
+    return { ok: false, error: 'invalid_json' }
+  } catch {
+    return { ok: false, error: 'invalid_json' }
+  }
+}
+
+export function requireAdmin(
+  req: VercelRequest,
+  res: VercelResponse,
+): boolean {
+  const secret = env('FEED_ADMIN_TOKEN')
+  if (!secret) {
+    jsonError(res, 503, 'token_not_configured', {
+      message: 'Set FEED_ADMIN_TOKEN in Vercel env + Redeploy.',
+    })
+    return false
+  }
+  if (bearer(req) !== secret) {
+    jsonError(res, 401, 'unauthorized', {
+      message: 'Token mismatch. Use FEED_ADMIN_TOKEN.',
+    })
+    return false
+  }
+  return true
+}
+
+/**
+ * Stale-check + If-Match PUT. New JSON admin endpoints should use this.
+ * Returns false after writing a 409 response.
+ */
+export async function commitJsonReplace<T>(
+  res: VercelResponse,
+  client: S3Client,
+  key: string,
+  body: Record<string, unknown>,
+  serverUpdatedAt: (current: T | null) => string | undefined,
+  conflictMessage: string,
+  payload: T,
+): Promise<boolean> {
+  const meta = await r2GetJsonMeta<T>(client, key)
+  const stale = assertNotStale(
+    serverUpdatedAt(meta?.data ?? null),
+    readBaseUpdatedAt(body),
+  )
+  if (stale.ok === false) {
+    conflictResponse(res, conflictMessage, stale.serverUpdatedAt)
+    return false
+  }
+  try {
+    await r2PutJson(client, key, payload, { ifMatch: meta?.etag })
+    return true
+  } catch (e) {
+    if (e instanceof R2PreconditionError) {
+      conflictResponse(
+        res,
+        conflictMessage,
+        serverUpdatedAt(meta?.data ?? null) || new Date().toISOString(),
+      )
+      return false
+    }
+    throw e
+  }
 }
 
 export function readBaseUpdatedAt(body: Record<string, unknown>): string | undefined {

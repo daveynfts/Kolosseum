@@ -25,6 +25,18 @@ import {
 } from '../data/convictionEvents'
 
 describe('convictionEvents helpers', () => {
+  it('admin normalize keeps hidden events; public strips them', () => {
+    const hidden = CONVICTION_EVENTS_SEED.events.filter((e) => e.hidden)
+    expect(hidden.length).toBeGreaterThan(0)
+    const admin = normalizeDataset(CONVICTION_EVENTS_SEED, {
+      includeHidden: true,
+    })
+    expect(admin!.events.some((e) => e.hidden)).toBe(true)
+    const pub = normalizeDataset(CONVICTION_EVENTS_SEED)
+    expect(pub!.events.every((e) => !e.hidden)).toBe(true)
+    expect(admin!.events.length).toBeGreaterThan(pub!.events.length)
+  })
+
   it('seed dataset normalizes cleanly', () => {
     const n = normalizeDataset(CONVICTION_EVENTS_SEED)
     expect(n).not.toBeNull()

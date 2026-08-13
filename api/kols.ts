@@ -7,22 +7,21 @@
  */
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 import {
-  env,
   envPresence,
   KOLS_OBJECT_KEY,
   r2Client,
   r2Configured,
   r2Delete,
   r2GetJson,
-  r2PutJson,
 } from '../lib/server/r2.js'
 import {
-  assertNotStale,
-  bearer,
+  commitJsonReplace,
   debugAllowed,
   enforcePublicRateLimit,
   isGetOrHead,
-  readBaseUpdatedAt,
+  jsonError,
+  parseJsonBody,
+  requireAdmin,
   sendJson,
 } from '../lib/server/apiHelpers.js'
 
@@ -92,43 +91,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     if (req.method === 'PUT') {
-      const secret = env('FEED_ADMIN_TOKEN')
-      if (!secret) {
-        return res.status(503).json({
-          error: 'token_not_configured',
-          message: 'Set FEED_ADMIN_TOKEN in Vercel env + Redeploy.',
-          env: envPresence(),
-        })
-      }
-      const got = bearer(req)
-      if (!got || got !== secret) {
-        return res.status(401).json({
-          error: 'unauthorized',
-          message: 'Token mismatch. Use FEED_ADMIN_TOKEN.',
-        })
-      }
-
-      const body = (
-        typeof req.body === 'string' ? JSON.parse(req.body) : req.body
-      ) as KolsBody
-
-      if (!body || !Array.isArray(body.kols) || body.kols.length === 0) {
-        return res.status(400).json({
-          error: 'invalid_body',
+      if (!requireAdmin(req, res)) return
+      const parsed = parseJsonBody<KolsBody>(req)
+      if (!parsed.ok) {
+        return jsonError(res, 400, parsed.error, {
           message: 'Body must be JSON with non-empty kols[]',
         })
       }
-
-      const current = await r2GetJson<KolsBody>(client, KOLS_OBJECT_KEY)
-      const stale = assertNotStale(
-        current?.updatedAt,
-        readBaseUpdatedAt(body as Record<string, unknown>),
-      )
-      if (stale.ok === false) {
-        return res.status(409).json({
-          error: 'conflict',
-          message: 'Server có KOL list mới hơn. Reload rồi Save lại.',
-          serverUpdatedAt: stale.serverUpdatedAt,
+      const body = parsed.body
+      if (!body || !Array.isArray(body.kols) || body.kols.length === 0) {
+        return jsonError(res, 400, 'invalid_body', {
+          message: 'Body must be JSON with non-empty kols[]',
         })
       }
 
@@ -146,7 +119,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }
       delete (payload as { baseUpdatedAt?: string }).baseUpdatedAt
 
-      await r2PutJson(client, KOLS_OBJECT_KEY, payload)
+      if (
+        !(await commitJsonReplace(
+          res,
+          client,
+          KOLS_OBJECT_KEY,
+          body as Record<string, unknown>,
+          (current) => current?.updatedAt,
+          'Server có KOL list mới hơn. Reload rồi Save lại.',
+          payload,
+        ))
+      ) {
+        return
+      }
       return res.status(200).json({
         ok: true,
         count: body.kols.length,
@@ -156,10 +141,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     if (req.method === 'DELETE') {
-      const secret = env('FEED_ADMIN_TOKEN')
-      if (!secret || bearer(req) !== secret) {
-        return res.status(401).json({ error: 'unauthorized' })
-      }
+      if (!requireAdmin(req, res)) return
       await r2Delete(client, KOLS_OBJECT_KEY)
       return res.status(200).json({ ok: true, cleared: true })
     }

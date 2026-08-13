@@ -5,6 +5,7 @@ import { NICHE_COLORS } from '../types'
 import type { Kol } from '../types'
 import { FEED_EVENT, loadFeed } from '../lib/feedStore'
 import { resolveMediaUrl } from '../lib/avatar'
+import { isSafeImageUrl, safeHref } from '../lib/safeUrl'
 
 type SortMode = 'latest' | 'hot'
 
@@ -411,6 +412,9 @@ function FeedCard({
   const hot = engagementScore(post) >= 80
   const displayText =
     !expanded && long ? post.text.slice(0, 210).trimEnd() + '…' : post.text
+  const postHref = safeHref(post.url)
+  const mediaSrc = post.media[0] ? resolveMediaUrl(post.media[0]) : ''
+  const mediaOk = isSafeImageUrl(mediaSrc)
 
   return (
     <article
@@ -465,15 +469,17 @@ function FeedCard({
           >
             ◎
           </button>
-          <a
-            className="icon-btn icon-btn--sm"
-            href={post.url}
-            target="_blank"
-            rel="noreferrer"
-            title="Mở trên X"
-          >
-            ↗
-          </a>
+          {postHref ? (
+            <a
+              className="icon-btn icon-btn--sm"
+              href={postHref}
+              target="_blank"
+              rel="noreferrer"
+              title="Mở trên X"
+            >
+              ↗
+            </a>
+          ) : null}
         </div>
       </div>
 
@@ -484,21 +490,31 @@ function FeedCard({
         </button>
       )}
 
-      {post.media[0] && (
-        <a
-          href={post.url}
-          target="_blank"
-          rel="noreferrer"
-          className="feed-media"
-        >
-          <img
-            src={resolveMediaUrl(post.media[0])}
-            alt=""
-            loading="lazy"
-            referrerPolicy="no-referrer"
-          />
-        </a>
-      )}
+      {mediaOk &&
+        (postHref ? (
+          <a
+            href={postHref}
+            target="_blank"
+            rel="noreferrer"
+            className="feed-media"
+          >
+            <img
+              src={mediaSrc}
+              alt=""
+              loading="lazy"
+              referrerPolicy="no-referrer"
+            />
+          </a>
+        ) : (
+          <div className="feed-media">
+            <img
+              src={mediaSrc}
+              alt=""
+              loading="lazy"
+              referrerPolicy="no-referrer"
+            />
+          </div>
+        ))}
 
       <div className="feed-metrics">
         <span title="Likes">

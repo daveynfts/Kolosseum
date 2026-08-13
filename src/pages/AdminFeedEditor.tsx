@@ -24,6 +24,7 @@ import {
 import { AvatarImg } from '../components/AvatarImg'
 import { NICHE_COLORS } from '../types'
 import { adminQueryTokens, matchesAdminTokens } from '../lib/adminSearch'
+import { confirmDiscardUnsaved } from '../lib/adminLoadGuard'
 
 interface Props {
   kols: Kol[]
@@ -538,7 +539,14 @@ export function AdminFeedEditor({ kols, onToast, addSignal = 0 }: Props) {
         <button type="button" className="btn btn--danger" onClick={() => void onResetSeed()}>
           Load seed
         </button>
-        <button type="button" className="btn" onClick={() => void refresh()}>
+        <button
+          type="button"
+          className="btn"
+          onClick={() => {
+            if (!confirmDiscardUnsaved(dirty)) return
+            void refresh()
+          }}
+        >
           Reload
         </button>
         <span className="admin-count" style={{ alignSelf: 'center' }}>
@@ -594,7 +602,17 @@ export function AdminFeedEditor({ kols, onToast, addSignal = 0 }: Props) {
                   key={p.id}
                   type="button"
                   className={`admin-side-item ${selectedId === p.id ? 'is-active' : ''}`}
-                  onClick={() => setSelectedId(p.id)}
+                  onClick={() => {
+                    if (
+                      dirty &&
+                      selectedId &&
+                      selectedId !== p.id &&
+                      !confirmDiscardUnsaved(true)
+                    ) {
+                      return
+                    }
+                    setSelectedId(p.id)
+                  }}
                 >
                   <AvatarImg
                     handle={p.handle}

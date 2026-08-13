@@ -1,7 +1,7 @@
 /**
  * Admin: Conviction 2026 side events — CRUD → Save R2 for public map.
  */
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import {
   EVENT_TYPES,
   EVENT_TYPE_LABELS,
@@ -23,6 +23,11 @@ import {
   seedConvictionEvents,
 } from '../lib/convictionEventsStore'
 import { getAdminToken, setAdminToken } from '../lib/feedStore'
+import {
+  confirmDiscardUnsaved,
+  useDirtyRef,
+  useRemoteDatasetLoad,
+} from '../lib/adminLoadGuard'
 
 interface Props {
   onToast: (msg: string) => void
@@ -55,31 +60,28 @@ async function geocodeAddress(
 
 export function AdminConvictionEventsEditor({ onToast }: Props) {
   const [dataset, setDataset] = useState<SideEventDataset>(() =>
-    seedConvictionEvents(),
+    seedConvictionEvents(true),
   )
   const [source, setSource] = useState<'server' | 'cache' | 'seed'>('seed')
   const [dirty, setDirty] = useState(false)
+  const dirtyRef = useDirtyRef(dirty)
   const [saving, setSaving] = useState(false)
   const [geocoding, setGeocoding] = useState(false)
   const [tokenInput, setTokenInput] = useState(() => getAdminToken())
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [listQuery, setListQuery] = useState('')
 
-  useEffect(() => {
-    let cancelled = false
-    void loadEventsWithSource().then((r) => {
-      if (cancelled) return
+  useRemoteDatasetLoad(
+    () => loadEventsWithSource({ includeHidden: true }),
+    dirtyRef,
+    (r) => {
       setDataset(r.dataset)
       setSource(r.source)
       if (!selectedId && r.dataset.events[0]) {
         setSelectedId(r.dataset.events[0].id)
       }
-    })
-    return () => {
-      cancelled = true
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+    },
+  )
 
   const sorted = useMemo(
     () => sortEvents(dataset.events),
@@ -194,7 +196,8 @@ export function AdminConvictionEventsEditor({ onToast }: Props) {
   }
 
   const onReload = () => {
-    void loadEventsWithSource().then((r) => {
+    if (!confirmDiscardUnsaved(dirty)) return
+    void loadEventsWithSource({ includeHidden: true }).then((r) => {
       setDataset(r.dataset)
       setSource(r.source)
       setDirty(false)
@@ -205,7 +208,7 @@ export function AdminConvictionEventsEditor({ onToast }: Props) {
   const onResetSeed = () => {
     if (!confirm('Reset về seed mẫu trong repo?')) return
     clearEventsCache()
-    const seed = seedConvictionEvents()
+    const seed = seedConvictionEvents(true)
     setDataset(seed)
     setSource('seed')
     setSelectedId(seed.events[0]?.id ?? null)
@@ -717,6 +720,16 @@ export function AdminConvictionEventsEditor({ onToast }: Props) {
                     }
                   />
                   Địa điểm TBD
+                </label>
+                <label className="admin-events-check">
+                  <input
+                    type="checkbox"
+                    checked={!!selected.hidden}
+                    onChange={(e) =>
+                      patchEvent(selected.id, { hidden: e.target.checked })
+                    }
+                  />
+                  Ẩn khỏi map công khai
                 </label>
                 <label className="admin-events-span2">
                   ID (slug)

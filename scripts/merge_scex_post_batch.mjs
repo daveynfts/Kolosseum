@@ -3,6 +3,7 @@
  * Then: node scripts/hydrate_scex_media.mjs --via-api --put
  */
 import fs from 'fs'
+import { adminPutJson } from './lib/adminPut.mjs'
 import path from 'path'
 import { fileURLToPath } from 'url'
 
@@ -228,14 +229,7 @@ if (doPut) {
     console.error('FEED_ADMIN_TOKEN missing')
     process.exit(1)
   }
-  const putRes = await fetch(`${base}/api/scex-tracking`, {
-    method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify(dataset),
-  })
+  const putRes = await adminPutJson(`${base}/api/scex-tracking`, token, dataset)
   console.log('PUT', putRes.status, (await putRes.text()).slice(0, 200))
   if (!putRes.ok) process.exit(1)
 }

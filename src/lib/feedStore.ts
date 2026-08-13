@@ -81,21 +81,17 @@ export async function fetchSeedFeed(): Promise<Tier1Feed> {
   return normalizeFeed((await res.json()) as Tier1Feed)
 }
 
-/** GET /api/feed — returns null on 404/503/network. */
+/** GET /api/feed — null on 404/503. Throws on unexpected HTTP errors. */
 export async function fetchServerFeed(): Promise<Tier1Feed | null> {
-  try {
-    const res = await fetch(`${feedApiUrl()}?t=${Date.now()}`, {
-      method: 'GET',
-      headers: { Accept: 'application/json' },
-    })
-    if (res.status === 404 || res.status === 503) return null
-    if (!res.ok) return null
-    const data = (await res.json()) as Tier1Feed
-    if (!data?.posts || !Array.isArray(data.posts)) return null
-    return normalizeFeed(data)
-  } catch {
-    return null
-  }
+  const res = await fetch(`${feedApiUrl()}?t=${Date.now()}`, {
+    method: 'GET',
+    headers: { Accept: 'application/json' },
+  })
+  if (res.status === 404 || res.status === 503) return null
+  if (!res.ok) throw new Error(`HTTP ${res.status}`)
+  const data = (await res.json()) as Tier1Feed
+  if (!data?.posts || !Array.isArray(data.posts)) return null
+  return normalizeFeed(data)
 }
 
 /**
@@ -110,9 +106,13 @@ export async function loadFeed(): Promise<Tier1Feed> {
 }
 
 export async function loadFeedWithSource(): Promise<LoadFeedResult> {
-  const server = await fetchServerFeed()
-  if (server) {
-    return { feed: server, source: 'server' }
+  try {
+    const server = await fetchServerFeed()
+    if (server) {
+      return { feed: server, source: 'server' }
+    }
+  } catch {
+    /* local/seed */
   }
 
   const local = loadFeedFromStorage()
@@ -174,7 +174,10 @@ export async function saveFeedToServer(
     const serverFeed = await fetchServerFeed()
     baseUpdatedAt = serverFeed?.generatedAt
   } catch {
-    /* ignore */
+    return {
+      ok: false,
+      error: 'Không đọc được bản server — thử lại trước khi Save.',
+    }
   }
 
   try {

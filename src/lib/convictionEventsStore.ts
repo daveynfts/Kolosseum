@@ -26,7 +26,8 @@ function emit() {
 
 function writeCache(dataset: SideEventDataset) {
   try {
-    localStorage.setItem(CACHE_KEY, JSON.stringify(dataset))
+    const publicView = normalizeDataset(dataset)
+    localStorage.setItem(CACHE_KEY, JSON.stringify(publicView || dataset))
   } catch {
     /* ignore */
   }
@@ -44,28 +45,36 @@ function readCache(): SideEventDataset | null {
 }
 
 export function getConvictionEvents(): SideEventDataset {
-  return readCache() || CONVICTION_EVENTS_SEED
+  return readCache() || (normalizeDataset(CONVICTION_EVENTS_SEED) as SideEventDataset)
 }
 
-export function seedConvictionEvents(): SideEventDataset {
+export function seedConvictionEvents(includeHidden = false): SideEventDataset {
   return normalizeDataset(
     JSON.parse(JSON.stringify(CONVICTION_EVENTS_SEED)),
+    { includeHidden },
   ) as SideEventDataset
 }
 
-export async function fetchServerEvents(): Promise<SideEventDataset | null> {
-  try {
-    const res = await fetch(`${apiUrl()}?t=${Date.now()}`, {
-      method: 'GET',
-      cache: 'no-store',
-      headers: { Accept: 'application/json', 'Cache-Control': 'no-cache' },
-    })
-    if (res.status === 404 || res.status === 503) return null
-    if (!res.ok) return null
-    return normalizeDataset(await res.json())
-  } catch {
-    return null
+export async function fetchServerEvents(
+  opts: { includeHidden?: boolean } = {},
+): Promise<SideEventDataset | null> {
+  const includeHidden = opts.includeHidden === true
+  const token = includeHidden ? getAdminToken().trim() : ''
+  const qs = new URLSearchParams({ t: String(Date.now()) })
+  if (includeHidden) qs.set('all', '1')
+  const headers: Record<string, string> = {
+    Accept: 'application/json',
+    'Cache-Control': 'no-cache',
   }
+  if (token) headers.Authorization = `Bearer ${token}`
+  const res = await fetch(`${apiUrl()}?${qs}`, {
+    method: 'GET',
+    cache: 'no-store',
+    headers,
+  })
+  if (res.status === 404 || res.status === 503) return null
+  if (!res.ok) throw new Error(`HTTP ${res.status}`)
+  return normalizeDataset(await res.json(), { includeHidden })
 }
 
 export type LoadEventsResult = {
@@ -73,15 +82,26 @@ export type LoadEventsResult = {
   source: 'server' | 'cache' | 'seed'
 }
 
-export async function loadEventsWithSource(): Promise<LoadEventsResult> {
-  const server = await fetchServerEvents()
-  if (server) {
-    writeCache(server)
-    return { dataset: server, source: 'server' }
+export async function loadEventsWithSource(
+  opts: { includeHidden?: boolean } = {},
+): Promise<LoadEventsResult> {
+  try {
+    const server = await fetchServerEvents(opts)
+    if (server) {
+      writeCache(server)
+      return { dataset: server, source: 'server' }
+    }
+  } catch {
+    /* fall through */
   }
-  const cache = readCache()
-  if (cache) return { dataset: cache, source: 'cache' }
-  return { dataset: seedConvictionEvents(), source: 'seed' }
+  if (!opts.includeHidden) {
+    const cache = readCache()
+    if (cache) return { dataset: cache, source: 'cache' }
+  }
+  return {
+    dataset: seedConvictionEvents(opts.includeHidden === true),
+    source: 'seed',
+  }
 }
 
 export type EventsSaveResult =
@@ -99,19 +119,25 @@ export async function saveEventsToServer(
 
   let baseUpdatedAt: string | undefined
   try {
-    const server = await fetchServerEvents()
+    const server = await fetchServerEvents({ includeHidden: true })
     baseUpdatedAt = server?.updatedAt
   } catch {
-    /* ignore */
+    return {
+      ok: false,
+      error: 'Không đọc được bản server — thử lại trước khi Save.',
+    }
   }
 
-  const normalized = normalizeDataset({
-    ...dataset,
-    version: 1,
-    kind: 'conviction-side-events',
-    event: 'conviction-2026',
-    updatedAt: new Date().toISOString(),
-  })
+  const normalized = normalizeDataset(
+    {
+      ...dataset,
+      version: 1,
+      kind: 'conviction-side-events',
+      event: 'conviction-2026',
+      updatedAt: new Date().toISOString(),
+    },
+    { includeHidden: true },
+  )
   if (!normalized) {
     return { ok: false, error: 'Invalid dataset' }
   }
@@ -177,11 +203,15 @@ export function clearEventsCache() {
 }
 
 export function exportEventsJson(dataset: SideEventDataset): string {
-  return JSON.stringify(normalizeDataset(dataset), null, 2)
+  return JSON.stringify(
+    normalizeDataset(dataset, { includeHidden: true }),
+    null,
+    2,
+  )
 }
 
 export function importEventsJson(text: string): SideEventDataset {
-  const n = normalizeDataset(JSON.parse(text))
+  const n = normalizeDataset(JSON.parse(text), { includeHidden: true })
   if (!n) throw new Error('Invalid Events JSON')
   return n
 }

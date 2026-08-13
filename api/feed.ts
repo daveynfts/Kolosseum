@@ -9,22 +9,21 @@
  */
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 import {
-  env,
   envPresence,
   FEED_OBJECT_KEY,
   r2Client,
   r2Configured,
   r2Delete,
   r2GetJson,
-  r2PutJson,
 } from '../lib/server/r2.js'
 import {
-  assertNotStale,
-  bearer,
+  commitJsonReplace,
   debugAllowed,
   enforcePublicRateLimit,
   isGetOrHead,
-  readBaseUpdatedAt,
+  jsonError,
+  parseJsonBody,
+  requireAdmin,
   sendJson,
 } from '../lib/server/apiHelpers.js'
 
@@ -90,43 +89,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     if (req.method === 'PUT') {
-      const secret = env('FEED_ADMIN_TOKEN')
-      if (!secret) {
-        return res.status(503).json({
-          error: 'token_not_configured',
-          message: 'Set FEED_ADMIN_TOKEN in Vercel env + Redeploy.',
-          env: envPresence(),
-        })
-      }
-      const got = bearer(req)
-      if (!got || got !== secret) {
-        return res.status(401).json({
-          error: 'unauthorized',
-          message: 'Token mismatch. Use FEED_ADMIN_TOKEN.',
-        })
-      }
-
-      const body = (
-        typeof req.body === 'string' ? JSON.parse(req.body) : req.body
-      ) as FeedBody & { baseUpdatedAt?: string }
-
-      if (!body || !Array.isArray(body.posts)) {
-        return res.status(400).json({
-          error: 'invalid_body',
+      if (!requireAdmin(req, res)) return
+      const parsed = parseJsonBody<FeedBody & { baseUpdatedAt?: string }>(req)
+      if (!parsed.ok) {
+        return jsonError(res, 400, parsed.error, {
           message: 'Body must be feed JSON with posts[]',
         })
       }
-
-      const current = await r2GetJson<FeedBody>(client, FEED_OBJECT_KEY)
-      const stale = assertNotStale(
-        current?.generatedAt,
-        readBaseUpdatedAt(body as Record<string, unknown>),
-      )
-      if (stale.ok === false) {
-        return res.status(409).json({
-          error: 'conflict',
-          message: 'Server có feed mới hơn. Reload rồi Save lại.',
-          serverUpdatedAt: stale.serverUpdatedAt,
+      const body = parsed.body
+      if (!body || !Array.isArray(body.posts)) {
+        return jsonError(res, 400, 'invalid_body', {
+          message: 'Body must be feed JSON with posts[]',
         })
       }
 
@@ -139,7 +112,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }
       delete (payload as { baseUpdatedAt?: string }).baseUpdatedAt
 
-      await r2PutJson(client, FEED_OBJECT_KEY, payload)
+      if (
+        !(await commitJsonReplace(
+          res,
+          client,
+          FEED_OBJECT_KEY,
+          body as Record<string, unknown>,
+          (current) => current?.generatedAt,
+          'Server có feed mới hơn. Reload rồi Save lại.',
+          payload,
+        ))
+      ) {
+        return
+      }
       return res.status(200).json({
         ok: true,
         postCount: body.posts.length,
@@ -149,10 +134,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     if (req.method === 'DELETE') {
-      const secret = env('FEED_ADMIN_TOKEN')
-      if (!secret || bearer(req) !== secret) {
-        return res.status(401).json({ error: 'unauthorized' })
-      }
+      if (!requireAdmin(req, res)) return
       await r2Delete(client, FEED_OBJECT_KEY)
       return res.status(200).json({ ok: true, cleared: true })
     }

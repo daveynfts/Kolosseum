@@ -1,7 +1,7 @@
 /**
  * Admin: partner event ribbon — text fields + logo/art upload to R2.
  */
-import { useEffect, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 import {
   resolveBannerArt,
   resolveBannerLogo,
@@ -18,6 +18,11 @@ import {
   seedSiteBanner,
 } from '../lib/siteBannerStore'
 import { SiteBannerRibbon } from '../components/ScexEventBanner'
+import {
+  confirmDiscardUnsaved,
+  useDirtyRef,
+  useRemoteDatasetLoad,
+} from '../lib/adminLoadGuard'
 
 interface Props {
   onToast: (msg: string) => void
@@ -27,23 +32,17 @@ export function AdminBannerEditor({ onToast }: Props) {
   const [config, setConfig] = useState<SiteBannerConfig>(() => seedSiteBanner())
   const [source, setSource] = useState<'server' | 'cache' | 'seed'>('seed')
   const [dirty, setDirty] = useState(false)
+  const dirtyRef = useDirtyRef(dirty)
   const [saving, setSaving] = useState(false)
   const [uploading, setUploading] = useState<'logo' | 'art' | null>(null)
   const [tokenInput, setTokenInput] = useState(() => getAdminToken())
   const logoInputRef = useRef<HTMLInputElement>(null)
   const artInputRef = useRef<HTMLInputElement>(null)
 
-  useEffect(() => {
-    let cancelled = false
-    void loadSiteBannerWithSource().then((r) => {
-      if (cancelled) return
-      setConfig(r.config)
-      setSource(r.source)
-    })
-    return () => {
-      cancelled = true
-    }
-  }, [])
+  useRemoteDatasetLoad(loadSiteBannerWithSource, dirtyRef, (r) => {
+    setConfig(r.config)
+    setSource(r.source)
+  })
 
   const patch = (patch: Partial<SiteBannerConfig>) => {
     setConfig((prev) => ({ ...prev, ...patch }))
@@ -75,6 +74,7 @@ export function AdminBannerEditor({ onToast }: Props) {
   }
 
   const onReload = () => {
+    if (!confirmDiscardUnsaved(dirty)) return
     void loadSiteBannerWithSource().then((r) => {
       setConfig(r.config)
       setSource(r.source)

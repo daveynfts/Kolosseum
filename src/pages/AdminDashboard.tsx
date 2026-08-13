@@ -428,7 +428,7 @@ export function AdminDashboard() {
           </div>
         </div>
         <div className="admin-top-actions">
-          <a className="btn" href="#/">
+          <a className="btn" href="/">
             ← Map
           </a>
           {tab === 'feed' ? (

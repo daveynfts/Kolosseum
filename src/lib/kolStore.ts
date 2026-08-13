@@ -158,27 +158,23 @@ export function getStoreMeta(): { updatedAt: string | null; count: number } {
   }
 }
 
-/** GET /api/kols — null if empty / error. */
+/** GET /api/kols — null if empty. Throws on unexpected HTTP errors. */
 export async function fetchServerKols(): Promise<KolStorePayload | null> {
-  try {
-    const res = await fetch(`${kolsApiUrl()}?t=${Date.now()}`, {
-      method: 'GET',
-      cache: 'no-store',
-      headers: {
-        Accept: 'application/json',
-        'Cache-Control': 'no-cache',
-      },
-    })
-    if (res.status === 404 || res.status === 503) return null
-    if (!res.ok) return null
-    const data = (await res.json()) as KolStorePayload
-    if (!data?.kols || !Array.isArray(data.kols) || data.kols.length === 0) {
-      return null
-    }
-    return data
-  } catch {
+  const res = await fetch(`${kolsApiUrl()}?t=${Date.now()}`, {
+    method: 'GET',
+    cache: 'no-store',
+    headers: {
+      Accept: 'application/json',
+      'Cache-Control': 'no-cache',
+    },
+  })
+  if (res.status === 404 || res.status === 503) return null
+  if (!res.ok) throw new Error(`HTTP ${res.status}`)
+  const data = (await res.json()) as KolStorePayload
+  if (!data?.kols || !Array.isArray(data.kols) || data.kols.length === 0) {
     return null
   }
+  return data
 }
 
 /**
@@ -188,7 +184,12 @@ export async function fetchServerKols(): Promise<KolStorePayload | null> {
  * 3) seed sheetKols.ts (fallback only)
  */
 export async function loadKolsWithSource(): Promise<LoadKolsResult> {
-  const server = await fetchServerKols()
+  let server: KolStorePayload | null = null
+  try {
+    server = await fetchServerKols()
+  } catch {
+    server = null
+  }
   if (server) {
     const kols = server.kols
     try {
@@ -301,7 +302,10 @@ export async function saveKolsToServer(
     merged = mergeKolsPreserveServerExtras(kols, server?.kols)
     baseUpdatedAt = server?.updatedAt
   } catch {
-    /* proceed with local list */
+    return {
+      ok: false,
+      error: 'Không đọc được bản server — thử lại trước khi Save.',
+    }
   }
 
   const payload: KolStorePayload & { baseUpdatedAt?: string } = {

@@ -70,9 +70,14 @@ function App() {
 
   // Reload when returning from admin / multi-tab / after admin save
   useEffect(() => {
+    let seq = 0
     const reloadLocal = () => setKols(loadKols())
     const reloadServer = () => {
-      void loadKolsWithSource().then(({ kols: list }) => setKols(list))
+      const n = ++seq
+      void loadKolsWithSource().then(({ kols: list }) => {
+        if (n !== seq) return
+        setKols(list)
+      })
     }
     // Prefer server refresh so Surf PDF / bios from R2 win over stale local drafts
     const reloadAfterAdmin = () => {

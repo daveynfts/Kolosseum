@@ -5,6 +5,7 @@
  */
 
 import { isGenericImageAlt } from './imageAlt'
+import { isSafeImageUrl as isSafeUrl } from './safeUrl'
 
 function escapeHtml(s: string): string {
   return s
@@ -12,19 +13,6 @@ function escapeHtml(s: string): string {
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
-}
-
-function isSafeUrl(url: string): boolean {
-  const u = (url || '').trim()
-  if (!u) return false
-  if (u.startsWith('/')) return true
-  if (u.startsWith('data:image/')) return true
-  try {
-    const parsed = new URL(u)
-    return parsed.protocol === 'https:' || parsed.protocol === 'http:'
-  } catch {
-    return false
-  }
 }
 
 function inlineToHtml(text: string): string {

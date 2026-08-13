@@ -47,10 +47,17 @@ async function main() {
     process.exit(1)
   }
 
-  const getRes = await fetch(`${apiBase}/api/event-side-events?t=${Date.now()}`, {
-    cache: 'no-store',
-    headers: { Accept: 'application/json', 'Cache-Control': 'no-cache' },
-  })
+  const getRes = await fetch(
+    `${apiBase}/api/event-side-events?all=1&t=${Date.now()}`,
+    {
+      cache: 'no-store',
+      headers: {
+        Accept: 'application/json',
+        Authorization: `Bearer ${token}`,
+        'Cache-Control': 'no-cache',
+      },
+    },
+  )
   if (!getRes.ok) {
     console.log('GET', getRes.status, '— no R2 dataset; seed deploy is enough')
     return
@@ -61,28 +68,24 @@ async function main() {
     return
   }
   const before = body.events.length
-  const removed = body.events.filter((e) => HIDE_IDS.has(String(e.id || '')))
-  body.events = body.events.filter((e) => !HIDE_IDS.has(String(e.id || '')))
+  let hiddenN = 0
+  body.events = body.events.map((e) => {
+    if (!HIDE_IDS.has(String(e.id || ''))) return e
+    hiddenN += 1
+    return { ...e, hidden: true }
+  })
   body.updatedAt = new Date().toISOString()
   body.note =
     'Hide ECV Wellness + Building AI-Powered Marketing Systems (soft-hide)'
-  console.log(
-    'R2',
-    before,
-    '→',
-    body.events.length,
-    'removed',
-    removed.map((e) => e.id).join(', ') || '(none present)',
-  )
+  console.log('R2', before, 'events,', hiddenN, 'marked hidden')
 
-  const putRes = await fetch(`${apiBase}/api/event-side-events`, {
-    method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify(body),
-  })
+  const { adminPutJson } = await import('./lib/adminPut.mjs')
+  const putRes = await adminPutJson(
+    `${apiBase}/api/event-side-events`,
+    token,
+    body,
+    { getUrl: `${apiBase}/api/event-side-events?all=1&t=${Date.now()}` },
+  )
   const putBody = await putRes.json().catch(() => ({}))
   console.log('PUT', putRes.status, putBody)
   if (!putRes.ok) process.exit(1)

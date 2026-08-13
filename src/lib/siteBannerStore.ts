@@ -52,18 +52,14 @@ export function seedSiteBanner(): SiteBannerConfig {
 }
 
 export async function fetchServerSiteBanner(): Promise<SiteBannerConfig | null> {
-  try {
-    const res = await fetch(`${apiUrl()}?t=${Date.now()}`, {
-      method: 'GET',
-      cache: 'no-store',
-      headers: { Accept: 'application/json', 'Cache-Control': 'no-cache' },
-    })
-    if (res.status === 404 || res.status === 503) return null
-    if (!res.ok) return null
-    return normalizeSiteBanner(await res.json())
-  } catch {
-    return null
-  }
+  const res = await fetch(`${apiUrl()}?t=${Date.now()}`, {
+    method: 'GET',
+    cache: 'no-store',
+    headers: { Accept: 'application/json', 'Cache-Control': 'no-cache' },
+  })
+  if (res.status === 404 || res.status === 503) return null
+  if (!res.ok) throw new Error(`HTTP ${res.status}`)
+  return normalizeSiteBanner(await res.json())
 }
 
 export type LoadSiteBannerResult = {
@@ -72,10 +68,14 @@ export type LoadSiteBannerResult = {
 }
 
 export async function loadSiteBannerWithSource(): Promise<LoadSiteBannerResult> {
-  const server = await fetchServerSiteBanner()
-  if (server) {
-    writeCache(server)
-    return { config: server, source: 'server' }
+  try {
+    const server = await fetchServerSiteBanner()
+    if (server) {
+      writeCache(server)
+      return { config: server, source: 'server' }
+    }
+  } catch {
+    /* cache/seed */
   }
   const cache = readCache()
   if (cache) return { config: cache, source: 'cache' }
@@ -101,7 +101,10 @@ export async function saveSiteBannerToServer(
     const server = await fetchServerSiteBanner()
     baseUpdatedAt = server?.updatedAt
   } catch {
-    /* ignore */
+    return {
+      ok: false,
+      error: 'Không đọc được bản server — thử lại trước khi Save.',
+    }
   }
 
   const payload = {

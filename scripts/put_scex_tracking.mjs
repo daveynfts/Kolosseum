@@ -3,6 +3,7 @@
  *   node scripts/put_scex_tracking.mjs
  */
 import fs from 'fs'
+import { adminPutJson } from './lib/adminPut.mjs'
 import path from 'path'
 import { fileURLToPath } from 'url'
 
@@ -42,14 +43,7 @@ if (!token) {
   process.exit(1)
 }
 
-const putRes = await fetch(`${base}/api/scex-tracking`, {
-  method: 'PUT',
-  headers: {
-    'Content-Type': 'application/json',
-    Authorization: `Bearer ${token}`,
-  },
-  body: JSON.stringify(dataset),
-})
+const putRes = await adminPutJson(`${base}/api/scex-tracking`, token, dataset)
 console.log('PUT', putRes.status, (await putRes.text()).slice(0, 300))
 if (!putRes.ok) process.exit(1)
 

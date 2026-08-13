@@ -8,8 +8,27 @@ import {
 import { checkRateLimit } from './rateLimit.js'
 
 describe('assertNotStale', () => {
-  it('allows when client base is missing', () => {
-    expect(assertNotStale('2026-07-27T10:00:00.000Z', null)).toEqual({ ok: true })
+  it('allows first write when server has no timestamp', () => {
+    expect(assertNotStale(null, null)).toEqual({ ok: true })
+    expect(assertNotStale(undefined, '2026-07-27T10:00:00.000Z')).toEqual({
+      ok: true,
+    })
+  })
+
+  it('rejects when client base is missing but server exists', () => {
+    expect(assertNotStale('2026-07-27T10:00:00.000Z', null)).toEqual({
+      ok: false,
+      serverUpdatedAt: '2026-07-27T10:00:00.000Z',
+    })
+  })
+
+  it('rejects invalid client timestamp when server exists', () => {
+    expect(
+      assertNotStale('2026-07-27T10:00:00.000Z', 'not-a-date'),
+    ).toEqual({
+      ok: false,
+      serverUpdatedAt: '2026-07-27T10:00:00.000Z',
+    })
   })
 
   it('allows when server is not newer', () => {

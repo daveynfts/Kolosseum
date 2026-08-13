@@ -6,6 +6,7 @@
  *   node scripts/recompute_scex_scores.mjs --put
  */
 import fs from 'fs'
+import { adminPutJson } from './lib/adminPut.mjs'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import { createRequire } from 'module'
@@ -325,8 +326,7 @@ dataset.config = {
     label: 'Uy tín',
   },
   volumeSplit: dataset.config.volumeSplit > 20 ? dataset.config.volumeSplit : 42,
-  // Keep partner mid-line at 50 so audience-lifted mid KOLs clear “Uy tín thấp”
-  qualitySplit: 50,
+  qualitySplit: dataset.config.qualitySplit || 50,
 }
 
 const beforeBig = dataset.actors
@@ -429,14 +429,7 @@ if (doPut) {
     process.exit(1)
   }
   const putBody = { ...dataset, baseUpdatedAt }
-  const putRes = await fetch(`${base}/api/scex-tracking`, {
-    method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify(putBody),
-  })
+  const putRes = await adminPutJson(`${base}/api/scex-tracking`, token, putBody)
   console.log('PUT', putRes.status, (await putRes.text()).slice(0, 280))
   if (!putRes.ok) process.exit(1)
 }

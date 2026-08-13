@@ -8,19 +8,19 @@
  */
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 import {
-  env,
   envPresence,
   EVENT_SIDE_EVENTS_OBJECT_KEY,
   r2Client,
   r2GetJson,
-  r2PutJson,
 } from '../lib/server/r2.js'
 import {
-  assertNotStale,
-  bearer,
+  commitJsonReplace,
   enforcePublicRateLimit,
+  isAdmin,
   isGetOrHead,
-  readBaseUpdatedAt,
+  jsonError,
+  parseJsonBody,
+  requireAdmin,
   sendJson,
 } from '../lib/server/apiHelpers.js'
 import { cacheEventImageUrls } from '../lib/server/mediaCache.js'
@@ -102,47 +102,36 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             'No side-event data yet. Admin → Events → Save to publish.',
         })
       }
-      return sendJson(req, res, 200, data)
+      const wantAll =
+        String(req.query.all || '') === '1' ||
+        String(req.query.scope || '') === 'admin'
+      if (wantAll && !isAdmin(req)) {
+        return sendJson(req, res, 401, {
+          error: 'unauthorized',
+          message: 'Admin token required for full events dataset',
+        })
+      }
+      if (wantAll) return sendJson(req, res, 200, data)
+      const events = data.events.filter((e) => e && e.hidden !== true)
+      return sendJson(req, res, 200, { ...data, events })
     }
 
     if (req.method === 'PUT') {
-      const secret = env('FEED_ADMIN_TOKEN')
-      if (!secret) {
-        return res.status(503).json({
-          error: 'token_not_configured',
-          message: 'Set FEED_ADMIN_TOKEN + Redeploy.',
-        })
-      }
-      const got = bearer(req)
-      if (!got || got !== secret) {
-        return res.status(401).json({ error: 'unauthorized' })
-      }
-      const body = (
-        typeof req.body === 'string' ? JSON.parse(req.body) : req.body
-      ) as Body
-      if (!isValidBody(body)) {
-        return res.status(400).json({
-          error: 'invalid_body',
+      if (!requireAdmin(req, res)) return
+      const parsed = parseJsonBody<Body>(req)
+      if (!parsed.ok) {
+        return jsonError(res, 400, parsed.error, {
           message:
             'Need events[] with id, title, date (YYYY-MM-DD), lat, lng per item',
         })
       }
-      const current = await r2GetJson<Body>(
-        client,
-        EVENT_SIDE_EVENTS_OBJECT_KEY,
-      )
-      const stale = assertNotStale(
-        current?.updatedAt,
-        readBaseUpdatedAt(body as Record<string, unknown>),
-      )
-      if (stale.ok === false) {
-        return res.status(409).json({
-          error: 'conflict',
-          message: 'Server có dữ liệu Events mới hơn. Reload rồi Save lại.',
-          serverUpdatedAt: stale.serverUpdatedAt,
+      const body = parsed.body
+      if (!isValidBody(body)) {
+        return jsonError(res, 400, 'invalid_body', {
+          message:
+            'Need events[] with id, title, date (YYYY-MM-DD), lat, lng per item',
         })
       }
-      // Best-effort: pull Luma covers onto R2 so map pins load from CDN
       const imagePass = await cacheEventImageUrls(
         client,
         (body.events || []) as Array<SideEventBody & { imageUrl?: string }>,
@@ -157,7 +146,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         updatedAt: new Date().toISOString(),
       }
       delete (payload as { baseUpdatedAt?: string }).baseUpdatedAt
-      await r2PutJson(client, EVENT_SIDE_EVENTS_OBJECT_KEY, payload)
+      if (
+        !(await commitJsonReplace(
+          res,
+          client,
+          EVENT_SIDE_EVENTS_OBJECT_KEY,
+          body as Record<string, unknown>,
+          (current) => current?.updatedAt,
+          'Server có dữ liệu Events mới hơn. Reload rồi Save lại.',
+          payload,
+        ))
+      ) {
+        return
+      }
       return res.status(200).json({
         ok: true,
         events: Array.isArray(payload.events) ? payload.events.length : 0,

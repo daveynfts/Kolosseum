@@ -6,20 +6,19 @@
  */
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 import {
-  env,
   envPresence,
   RECENT_FOLLOWERS_OBJECT_KEY,
   r2Client,
   r2GetJson,
-  r2PutJson,
 } from '../lib/server/r2.js'
 import {
-  assertNotStale,
-  bearer,
+  commitJsonReplace,
   debugAllowed,
   enforcePublicRateLimit,
   isGetOrHead,
-  readBaseUpdatedAt,
+  jsonError,
+  parseJsonBody,
+  requireAdmin,
   sendJson,
 } from '../lib/server/apiHelpers.js'
 
@@ -87,38 +86,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     if (req.method === 'PUT') {
-      const secret = env('FEED_ADMIN_TOKEN')
-      if (!secret) {
-        return res.status(503).json({
-          error: 'token_not_configured',
-          message: 'Set FEED_ADMIN_TOKEN + Redeploy.',
-        })
+      if (!requireAdmin(req, res)) return
+      const parsed = parseJsonBody<Body>(req)
+      if (!parsed.ok) {
+        return jsonError(res, 400, parsed.error, { message: 'Need map{}' })
       }
-      const got = bearer(req)
-      if (!got || got !== secret) {
-        return res.status(401).json({ error: 'unauthorized' })
-      }
-      const body = (typeof req.body === 'string'
-        ? JSON.parse(req.body)
-        : req.body) as Body
+      const body = parsed.body
       if (!body?.map || typeof body.map !== 'object') {
-        return res.status(400).json({ error: 'invalid_body', message: 'Need map{}' })
+        return jsonError(res, 400, 'invalid_body', { message: 'Need map{}' })
       }
 
       const current = await r2GetJson<Body>(client, RECENT_FOLLOWERS_OBJECT_KEY)
-      const stale = assertNotStale(
-        current?.updatedAt,
-        readBaseUpdatedAt(body as Record<string, unknown>),
-      )
-      if (stale.ok === false) {
-        return res.status(409).json({
-          error: 'conflict',
-          message:
-            'Server có bản followers mới hơn. Reload admin rồi Save lại.',
-          serverUpdatedAt: stale.serverUpdatedAt,
-        })
-      }
-
       const payload: Body = {
         version: body.version ?? 1,
         updatedAt: new Date().toISOString(),
@@ -131,7 +109,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             ? body.smartMap
             : current?.smartMap,
       }
-      await r2PutJson(client, RECENT_FOLLOWERS_OBJECT_KEY, payload)
+      delete (payload as { baseUpdatedAt?: string }).baseUpdatedAt
+      if (
+        !(await commitJsonReplace(
+          res,
+          client,
+          RECENT_FOLLOWERS_OBJECT_KEY,
+          body as Record<string, unknown>,
+          (cur) => cur?.updatedAt,
+          'Server có bản followers mới hơn. Reload admin rồi Save lại.',
+          payload,
+        ))
+      ) {
+        return
+      }
       return res.status(200).json({
         ok: true,
         count: payload.count,

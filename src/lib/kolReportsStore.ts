@@ -184,7 +184,11 @@ export async function saveKolReportsToServer(
     const server = await fetchKolReportsAdmin(t)
     baseUpdatedAt = server?.updatedAt
   } catch {
-    /* ignore */
+    return {
+      ok: false,
+      status: 0,
+      message: 'Không đọc được bản server — thử lại trước khi Save.',
+    }
   }
   const payload: KolReportsDataset & { baseUpdatedAt?: string } = {
     ...dataset,

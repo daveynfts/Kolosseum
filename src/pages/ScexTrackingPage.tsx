@@ -6,6 +6,7 @@ import {
   actorPassesThresholds,
   actorVolumeMetric,
   isMixedSentiment,
+  recomputeScexScores,
   type ScexActor,
   type ScexDataset,
   type ScexPost,
@@ -19,6 +20,7 @@ import { ScexMatrix2D } from '../components/ScexMatrix2D'
 import { ScexKolDetail } from '../components/ScexKolDetail'
 import { resolveMediaUrl } from '../lib/avatar'
 import { applyScexSeo } from '../lib/scexSeo'
+import { safeHref } from '../lib/safeUrl'
 import './ScexTrackingPage.css'
 
 const FILTER_KEY = 'scex-matrix-filters-v1'
@@ -296,14 +298,14 @@ export function ScexTrackingPage() {
 
   useEffect(() => {
     let cancelled = false
-    void loadScexWithSource().then((r) => {
-      if (cancelled) return
-      setDataset(r.dataset)
-    })
-    void loadKolsWithSource().then((r) => {
-      if (cancelled) return
-      setMapKols(r.kols || [])
-    })
+    void Promise.all([loadScexWithSource(), loadKolsWithSource()]).then(
+      ([scex, kols]) => {
+        if (cancelled) return
+        const mapKols = kols.kols || []
+        setMapKols(mapKols)
+        setDataset(recomputeScexScores(scex.dataset, mapKols))
+      },
+    )
     return () => {
       cancelled = true
     }
@@ -1396,10 +1398,10 @@ function ScexFeedCard({
             </span>
           </div>
         </button>
-        {post.url && (
+        {safeHref(post.url) && (
           <a
             className="scex-feed-card__open"
-            href={post.url}
+            href={safeHref(post.url)}
             target="_blank"
             rel="noreferrer"
             title="Mở trên X"
@@ -1425,7 +1427,7 @@ function ScexFeedCard({
           {mediaItems.map((src, mi) => (
             <a
               key={`${post.id}-m${mi}`}
-              href={post.url || src}
+              href={safeHref(post.url) || safeHref(src) || undefined}
               target="_blank"
               rel="noreferrer"
               className={`scex-feed-media ${fullMedia ? 'is-full' : ''}`}

@@ -108,7 +108,12 @@ export async function cacheRemoteImage(
       return { cachedUrl: mediaPublicUrl(id), id, cached: true }
     }
   } catch {
-    /* continue download */
+    return {
+      cachedUrl: sourceUrl,
+      id: null,
+      cached: false,
+      error: 'r2_head_failed',
+    }
   }
 
   try {

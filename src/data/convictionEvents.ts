@@ -1323,13 +1323,22 @@ export function normalizeSideEvent(raw: unknown): SideEvent | null {
   }
 }
 
-export function normalizeDataset(raw: unknown): SideEventDataset | null {
+export type NormalizeDatasetOpts = {
+  /** Admin load/save must keep hidden events. Public map strips them. */
+  includeHidden?: boolean
+}
+
+export function normalizeDataset(
+  raw: unknown,
+  opts: NormalizeDatasetOpts = {},
+): SideEventDataset | null {
   if (!raw || typeof raw !== 'object') return null
   const o = raw as Record<string, unknown>
   const eventsRaw = Array.isArray(o.events) ? o.events : []
+  const includeHidden = opts.includeHidden === true
   const events = eventsRaw
     .map(normalizeSideEvent)
-    .filter((e): e is SideEvent => !!e && !e.hidden)
+    .filter((e): e is SideEvent => !!e && (includeHidden || !e.hidden))
 
   const venueRaw =
     o.venue && typeof o.venue === 'object'
@@ -1704,21 +1713,21 @@ export function sortEventsUpcoming(
   list: SideEvent[],
   today: string,
   nowHm: string,
+  now: Date = new Date(),
 ): SideEvent[] {
-  const nowMin = hmToMinutes(nowHm)
+  void nowHm
   const score = (ev: SideEvent) => {
     if (ev.dateTbd) return 900_000
-    const onToday = eventOccursOnDate(ev, today)
+    const phase = getSideEventStatus(ev, now).phase
     const startMin = hmToMinutes(ev.startTime || '00:00')
-    const endMin = hmToMinutes(ev.endTime || '23:59')
-    if (onToday && nowMin >= startMin && nowMin <= endMin) return startMin // live, earliest first
-    if (onToday && startMin >= nowMin) return 1_000 + startMin // upcoming today
-    if (onToday && endMin < nowMin) return 50_000 + startMin // past today
-    if (ev.date > today) {
-      // later days: date ordinal + time
+    if (phase === 'live') return startMin
+    const onToday = eventOccursOnDate(ev, today)
+    if (phase === 'upcoming' && onToday) return 1_000 + startMin
+    if (phase === 'upcoming') {
       return 10_000 + ev.date.localeCompare(today) * 1_440 + startMin
     }
-    return 80_000 + startMin // past days
+    if (onToday) return 50_000 + startMin
+    return 80_000 + startMin
   }
   return [...list].sort((a, b) => {
     const d = score(a) - score(b)

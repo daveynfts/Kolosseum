@@ -26,14 +26,22 @@ function emit() {
   }
 }
 
-function writeCache(dataset: SideEventDataset) {
+function writeCache(dataset: SideEventDataset, emitEvent = true) {
+  let prev: string | null = null
   try {
-    const publicView = normalizeDataset(dataset)
-    localStorage.setItem(CACHE_KEY, JSON.stringify(publicView || dataset))
+    prev = localStorage.getItem(CACHE_KEY)
+  } catch {
+    prev = null
+  }
+  const publicView = normalizeDataset(dataset)
+  const next = JSON.stringify(publicView || dataset)
+  try {
+    localStorage.setItem(CACHE_KEY, next)
   } catch {
     /* ignore */
   }
-  emit()
+  // Same-tab load must not emit: EventMapPage listens and would refetch forever.
+  if (emitEvent && prev !== next) emit()
 }
 
 function readCache(): SideEventDataset | null {
@@ -90,7 +98,7 @@ export async function loadEventsWithSource(
   try {
     const server = await fetchServerEvents(opts)
     if (server) {
-      writeCache(server)
+      writeCache(server, false)
       return { dataset: server, source: 'server' }
     }
   } catch {

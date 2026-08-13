@@ -40,7 +40,11 @@ import {
   type UiLocale,
   eventToIcs,
 } from '../data/convictionEvents'
-import { CONVICTION_EVENTS_EVENT, loadEventsWithSource } from '../lib/convictionEventsStore'
+import {
+  CONVICTION_EVENTS_EVENT,
+  getConvictionEvents,
+  loadEventsWithSource,
+} from '../lib/convictionEventsStore'
 import {
   formatLumaDayLocale,
   formatMonthYear,
@@ -525,14 +529,35 @@ export function EventMapPage() {
   useEffect(() => {
     let cancelled = false
     let seq = 0
+    let inflight = false
+    let pending = false
     const load = () => {
+      if (inflight) {
+        pending = true
+        return
+      }
+      inflight = true
       const n = ++seq
-      void loadEventsWithSource().then((r) => {
-        if (cancelled || n !== seq) return
-        setDataset(r.dataset)
-        setSource(r.source)
-        setLoading(false)
-      })
+      void loadEventsWithSource()
+        .then((r) => {
+          if (cancelled || n !== seq) return
+          setDataset(r.dataset)
+          setSource(r.source)
+          setLoading(false)
+        })
+        .catch(() => {
+          if (cancelled || n !== seq) return
+          setDataset(getConvictionEvents())
+          setLoading(false)
+        })
+        .finally(() => {
+          if (n !== seq) return
+          inflight = false
+          if (pending && !cancelled) {
+            pending = false
+            load()
+          }
+        })
     }
     load()
     const onVis = () => {

@@ -1,6 +1,6 @@
 import { Suspense, lazy, useCallback, useEffect, useMemo, useState } from 'react'
 import { SceneErrorBoundary } from './components/SceneErrorBoundary'
-import { Hud } from './components/Hud'
+import { Hud, MapNavControls } from './components/Hud'
 import { FeedPanel } from './components/FeedPanel'
 import { ComparePanel } from './components/ComparePanel'
 import { SiteChrome } from './components/SiteChrome'
@@ -154,17 +154,7 @@ function App() {
   }, [searchHits])
 
   return (
-    <div className="app-shell">
-      <SiteChrome
-        active="map"
-        search={{
-          value: searchQuery,
-          onChange: setSearchQuery,
-          onSubmit: commitSearch,
-          placeholder: 'Tìm KOL, @handle, niche…',
-        }}
-      />
-      <ScexEventBanner />
+    <div className="app-shell app-shell--map">
       <div className="app app--2d">
         <div className="canvas-wrap">
           <SceneErrorBoundary>
@@ -179,30 +169,47 @@ function App() {
             </Suspense>
           </SceneErrorBoundary>
         </div>
+        <SiteChrome
+          overlay
+          active="map"
+          search={{
+            value: searchQuery,
+            onChange: setSearchQuery,
+            onSubmit: commitSearch,
+            placeholder: 'Tìm KOL, @handle, niche…',
+          }}
+          trailing={
+            <MapNavControls
+              filterNiche={filterNiche}
+              filterRank={filterRank}
+              filterStatus={filterStatus}
+              feedOpen={feedOpen}
+              onFilter={(n) =>
+                setFilterNiche((prev) => (n !== 'All' && prev === n ? 'All' : n))
+              }
+              onFilterRank={(r) =>
+                setFilterRank((prev) => (r !== 'All' && prev === r ? 'All' : r))
+              }
+              onFilterStatus={(s) =>
+                setFilterStatus((prev) =>
+                  s !== 'All' && prev === s ? 'All' : s,
+                )
+              }
+              onToggleFeed={() => setFeedOpen((v) => !v)}
+            />
+          }
+        />
+        <ScexEventBanner variant="overlay" />
         <Hud
           kols={q ? searchHits : visibleKols}
           allKols={publicKols}
           selected={selected}
-          filterNiche={filterNiche}
-          filterRank={filterRank}
-          filterStatus={filterStatus}
           searchQuery={searchQuery}
           shortlistIds={shortlistIds}
           autoRotate={autoRotate}
-          feedOpen={feedOpen}
           compareOpen={compareOpen}
-          onFilter={(n) =>
-            setFilterNiche((prev) => (n !== 'All' && prev === n ? 'All' : n))
-          }
-          onFilterRank={(r) =>
-            setFilterRank((prev) => (r !== 'All' && prev === r ? 'All' : r))
-          }
-          onFilterStatus={(s) =>
-            setFilterStatus((prev) => (s !== 'All' && prev === s ? 'All' : s))
-          }
           onSelect={(k) => setSelectedId(k?.id ?? null)}
           onToggleRotate={() => setAutoRotate((v) => !v)}
-          onToggleFeed={() => setFeedOpen((v) => !v)}
           onToggleCompare={() => setCompareOpen((v) => !v)}
           onToggleShortlist={onToggleShortlist}
         />

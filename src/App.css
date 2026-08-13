@@ -222,7 +222,8 @@
   overflow: visible;
 }
 
-.hud-more__panel.glass {
+.hud-more__panel.glass,
+.hud-more__panel.glass-regular {
   overflow: visible;
 }
 
@@ -866,14 +867,9 @@ button.hud-action:active {
 }
 
 @media (min-width: 1100px) {
-  .app:has(.compare-panel):not(:has(.feed-panel)) .hud-detail {
-    right: min(436px, calc(100vw - 360px + 16px));
-  }
-
+  .app:has(.compare-panel):not(:has(.feed-panel)) .hud-detail,
   .app:has(.compare-panel):has(.feed-panel) .hud-detail {
-    /* both side panels open â€” hide detail crush on desktop */
-    right: min(852px, calc(100vw - 200px));
-    max-width: min(320px, 28vw);
+    display: none;
   }
 }
 
@@ -1255,10 +1251,10 @@ button.hud-action:active {
 
 .panel--rank .panel-head {
   flex: 0 0 auto;
-  margin: 0 4px 10px;
-  padding-bottom: 10px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.04);
+  margin: 0 4px 4px;
+  padding-bottom: 8px;
+  border-bottom: none;
+  box-shadow: none;
 }
 
 .panel--rank .panel-title {
@@ -1426,6 +1422,20 @@ button.hud-action:active {
   -webkit-overflow-scrolling: touch;
   scrollbar-width: thin;
   scrollbar-color: rgba(255, 255, 255, 0.22) transparent;
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent 0,
+    #000 14px,
+    #000 calc(100% - 10px),
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    to bottom,
+    transparent 0,
+    #000 14px,
+    #000 calc(100% - 10px),
+    transparent 100%
+  );
 }
 
 .rank-list::-webkit-scrollbar {
@@ -1874,7 +1884,6 @@ button.hud-action:active {
   font-size: 1.15rem;
   cursor: pointer;
   line-height: 1;
-  backdrop-filter: blur(12px);
 }
 
 .detail-accent {
@@ -2560,13 +2569,13 @@ button.hud-action:active {
   display: flex;
   justify-content: space-between;
   gap: 10px;
-  padding: 14px 14px 12px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.04);
+  padding: 14px 14px 10px;
+  border-bottom: none;
+  box-shadow: none;
   background: linear-gradient(
     180deg,
-    rgba(255, 255, 255, 0.08),
-    transparent 80%
+    rgba(255, 255, 255, 0.06),
+    transparent 88%
   );
 }
 
@@ -2889,6 +2898,8 @@ button.hud-action:active {
   scrollbar-color: rgba(255, 255, 255, 0.22) transparent;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 12px, #000 100%);
+  mask-image: linear-gradient(to bottom, transparent 0, #000 12px, #000 100%);
 }
 
 .feed-card {
@@ -3400,11 +3411,10 @@ button.hud-action:active {
   }
 }
 
-/* Detail panel shifts left when feed open on wide screens */
-@media (min-width: 1100px) {
-  .app:has(.feed-panel) .hud-detail {
-    right: min(456px, calc(100vw - 360px + 16px));
-  }
+/* One right inspector — hide detail while Feed or Shortlist is open */
+.app:has(.feed-panel) .hud-detail,
+.app:has(.compare-panel) .hud-detail {
+  display: none;
 }
 
 /* Mid widths: keep Top Score + Feed side-by-side without overlap */
@@ -3419,7 +3429,7 @@ button.hud-action:active {
   }
 
   .app:has(.feed-panel) .hud-detail {
-    display: none; /* avoid triple-column crush; open detail after closing feed */
+    display: none;
   }
 }
 
@@ -3871,4 +3881,120 @@ button.hud-action:active {
   font-size: 0.68rem;
   color: #64748b;
   text-align: center;
+}
+
+/* ── Map overlay Liquid Glass layout ──────────────────── */
+.app-shell--map .hud-left {
+  top: 72px;
+  left: 14px;
+  bottom: 72px;
+}
+
+.app-shell--map:has(.scex-event-banner--overlay) .hud-left,
+.app-shell--map:has(.scex-event-banner--overlay) .feed-panel,
+.app-shell--map:has(.scex-event-banner--overlay) .compare-panel,
+.app-shell--map:has(.scex-event-banner--overlay) .hud-detail {
+  top: 118px;
+}
+
+.app-shell--map .feed-panel,
+.app-shell--map .compare-panel {
+  top: 72px;
+  right: 14px;
+  bottom: 72px;
+}
+
+.app-shell--map .hud-detail {
+  top: 72px;
+  right: 14px;
+  max-height: calc(100vh - 160px);
+  border-radius: var(--glass-panel-radius, 26px);
+}
+
+.app-shell--map .hud-bottom--cluster {
+  left: 14px;
+  right: auto;
+  bottom: 16px;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 2px;
+  padding: 4px;
+  border-radius: var(--radius-pill);
+}
+
+.app-shell--map .hud-bottom--cluster .btn {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  border-radius: var(--radius-pill);
+  padding: 8px 14px;
+  min-height: 32px;
+}
+
+.app-shell--map .hud-bottom--cluster .btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: transparent;
+}
+
+.site-chrome--overlay .hud-bar__filters {
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow-x: auto;
+}
+
+.site-chrome--overlay .filter-seg--ranks {
+  flex-wrap: nowrap;
+  max-width: none;
+}
+
+.site-chrome--overlay .hud-actions {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.1);
+  box-shadow: none;
+  padding: 2px;
+}
+
+.site-chrome--overlay .hud-more__btn {
+  height: 28px;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.site-chrome--overlay .filter-seg--inline {
+  border-radius: var(--glass-seg-radius, 14px);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.rank-search {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+@media (max-width: 1280px) {
+  .site-chrome--overlay .seg-btn__rank-label {
+    display: none;
+  }
+}
+
+@media (max-width: 720px) {
+  .app-shell--map .hud-bottom--cluster {
+    left: 8px;
+    bottom: 12px;
+  }
+
+  .site-chrome--overlay .hud-action__label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+  }
+
+  .app:has(.feed-panel) .scex-event-banner--overlay,
+  .app:has(.compare-panel) .scex-event-banner--overlay {
+    display: none;
+  }
 }

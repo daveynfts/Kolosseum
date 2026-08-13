@@ -19,16 +19,19 @@ type Props = {
   active: SiteChromePage
   search?: SearchProps
   trailing?: ReactNode
+  overlay?: boolean
 }
 
-export function SiteChrome({ active, search, trailing }: Props) {
+export function SiteChrome({ active, search, trailing, overlay }: Props) {
   const onSearchSubmit = (e: FormEvent) => {
     e.preventDefault()
     search?.onSubmit?.()
   }
 
   return (
-    <header className="site-chrome">
+    <header
+      className={`site-chrome${overlay ? ' site-chrome--overlay glass-regular' : ''}`}
+    >
       <a className="site-chrome__brand" href="/" title="Davey's Radar">
         <span className="site-chrome__mark" aria-hidden />
         <span className="site-chrome__name">Davey's Radar</span>
@@ -48,7 +51,10 @@ export function SiteChrome({ active, search, trailing }: Props) {
       </nav>
 
       {search ? (
-        <form className="site-chrome__search" onSubmit={onSearchSubmit}>
+        <form
+          className={`site-chrome__search${overlay ? ' glass-fill' : ''}`}
+          onSubmit={onSearchSubmit}
+        >
           <span className="site-chrome__search-icon" aria-hidden>
             ⌕
           </span>
@@ -76,7 +82,9 @@ export function SiteChrome({ active, search, trailing }: Props) {
         <div className="site-chrome__spacer" />
       )}
 
-      {trailing}
+      {trailing ? (
+        <div className="site-chrome__trailing">{trailing}</div>
+      ) : null}
     </header>
   )
 }

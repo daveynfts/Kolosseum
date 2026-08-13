@@ -44,49 +44,27 @@ const STATUSES: Array<StatusLabel | 'All'> = [
   'dormant',
 ]
 
-interface Props {
-  kols: Kol[]
-  allKols: Kol[]
-  selected: Kol | null
+interface MapNavProps {
   filterNiche: Niche | 'All'
   filterRank: KolRank | 'All'
   filterStatus: StatusLabel | 'All'
-  searchQuery: string
-  shortlistIds: string[]
-  autoRotate: boolean
   feedOpen: boolean
-  compareOpen: boolean
   onFilter: (n: Niche | 'All') => void
   onFilterRank: (r: KolRank | 'All') => void
   onFilterStatus: (s: StatusLabel | 'All') => void
-  onSelect: (kol: Kol | null) => void
-  onToggleRotate: () => void
   onToggleFeed: () => void
-  onToggleCompare: () => void
-  onToggleShortlist: (kol: Kol) => void
 }
 
-export function Hud({
-  kols,
-  allKols: _allKols,
-  selected,
+export function MapNavControls({
   filterNiche,
   filterRank,
   filterStatus,
-  searchQuery,
-  shortlistIds,
-  autoRotate,
   feedOpen,
-  compareOpen,
   onFilter,
   onFilterRank,
   onFilterStatus,
-  onSelect,
-  onToggleRotate,
   onToggleFeed,
-  onToggleCompare,
-  onToggleShortlist,
-}: Props) {
+}: MapNavProps) {
   const [moreOpen, setMoreOpen] = useState(false)
   const [morePos, setMorePos] = useState<{ top: number; left: number } | null>(
     null,
@@ -95,33 +73,6 @@ export function Hud({
   const morePanelRef = useRef<HTMLDivElement>(null)
   const extraFilters =
     (filterStatus !== 'All' ? 1 : 0) + (filterNiche !== 'All' ? 1 : 0)
-  const top = useMemo(() => {
-    const q = searchQuery.trim().toLowerCase()
-    const sorted = [...kols].sort(
-      (a, b) =>
-        b.score - a.score ||
-        b.followers - a.followers ||
-        a.handle.localeCompare(b.handle),
-    )
-    if (!q) return sorted.slice(0, 10)
-    return sorted
-      .filter(
-        (k) =>
-          k.displayName.toLowerCase().includes(q) ||
-          k.handle.toLowerCase().includes(q) ||
-          getKolNiches(k).some((n) => n.toLowerCase().includes(q)) ||
-          formatRank(k).toLowerCase().includes(q),
-      )
-      .slice(0, 30)
-  }, [kols, searchQuery])
-  const inShortlist = selected ? shortlistIds.includes(selected.id) : false
-  const [detailTab, setDetailTab] = useState<
-    'overview' | 'analysis' | 'follows'
-  >('overview')
-
-  useEffect(() => {
-    setDetailTab('overview')
-  }, [selected?.id])
 
   useEffect(() => {
     if (!moreOpen) return
@@ -160,120 +111,119 @@ export function Hud({
 
   return (
     <>
-      <header className="hud-bar glass">
-        <div className="hud-bar__filters">
-          <div className="filter-seg filter-seg--inline filter-seg--ranks" title="Rank">
+      <div className="hud-bar__filters">
+        <div className="filter-seg filter-seg--inline filter-seg--ranks" title="Rank">
+          <button
+            type="button"
+            className={`seg-btn ${filterRank === 'All' ? 'is-active' : ''}`}
+            onClick={() => onFilterRank('All')}
+            title="Show all ranks"
+          >
+            All
+          </button>
+          {RANK_ORDER.map((r) => (
             <button
+              key={r}
               type="button"
-              className={`seg-btn ${filterRank === 'All' ? 'is-active' : ''}`}
-              onClick={() => onFilterRank('All')}
-              title="Show all ranks"
+              className={`seg-btn seg-btn--rank ${filterRank === r ? 'is-active' : ''}`}
+              style={
+                {
+                  ['--rank' as string]: RANK_COLORS[r],
+                } as CSSProperties
+              }
+              onClick={() => onFilterRank(r)}
+              title={
+                filterRank === r
+                  ? 'Click again to clear'
+                  : `Filter ${RANK_LABELS[r]}`
+              }
             >
-              All
+              <RankBadge rank={r} size="pip" className="rank-pip--filter" />
+              <span className="seg-btn__rank-label">{RANK_LABELS[r]}</span>
             </button>
-            {RANK_ORDER.map((r) => (
-              <button
-                key={r}
-                type="button"
-                className={`seg-btn seg-btn--rank ${filterRank === r ? 'is-active' : ''}`}
-                style={
-                  {
-                    ['--rank' as string]: RANK_COLORS[r],
-                  } as CSSProperties
-                }
-                onClick={() => onFilterRank(r)}
-                title={
-                  filterRank === r
-                    ? 'Click again to clear'
-                    : `Filter ${RANK_LABELS[r]}`
-                }
-              >
-                <RankBadge rank={r} size="pip" className="rank-pip--filter" />
-                <span className="seg-btn__rank-label">{RANK_LABELS[r]}</span>
-              </button>
-            ))}
-          </div>
+          ))}
+        </div>
 
-          <div className="hud-more">
-            <button
-              ref={moreBtnRef}
-              type="button"
-              className={`hud-more__btn ${moreOpen || extraFilters ? 'is-on' : ''}`}
-              onClick={() => {
-                if (moreOpen) {
-                  setMoreOpen(false)
-                  return
-                }
-                const r = moreBtnRef.current?.getBoundingClientRect()
-                if (r) {
-                  const width = Math.min(460, window.innerWidth * 0.86)
-                  setMorePos({
-                    top: r.bottom + 8,
-                    left: Math.min(
-                      Math.max(12, r.left),
-                      window.innerWidth - width - 12,
-                    ),
-                  })
-                }
-                setMoreOpen(true)
-              }}
-              aria-expanded={moreOpen}
-              aria-haspopup="dialog"
-              title="Lọc status và niche"
+        <div className="hud-more">
+          <button
+            ref={moreBtnRef}
+            type="button"
+            className={`hud-more__btn ${moreOpen || extraFilters ? 'is-on' : ''}`}
+            onClick={() => {
+              if (moreOpen) {
+                setMoreOpen(false)
+                return
+              }
+              const r = moreBtnRef.current?.getBoundingClientRect()
+              if (r) {
+                const width = Math.min(460, window.innerWidth * 0.86)
+                setMorePos({
+                  top: r.bottom + 8,
+                  left: Math.min(
+                    Math.max(12, r.left),
+                    window.innerWidth - width - 12,
+                  ),
+                })
+              }
+              setMoreOpen(true)
+            }}
+            aria-expanded={moreOpen}
+            aria-haspopup="dialog"
+            title="Lọc status và niche"
+          >
+            <svg
+              className="hud-more__icon"
+              width="12"
+              height="12"
+              viewBox="0 0 24 24"
+              fill="none"
+              aria-hidden
             >
-              <svg
-                className="hud-more__icon"
-                width="12"
-                height="12"
-                viewBox="0 0 24 24"
-                fill="none"
-                aria-hidden
-              >
+              <path
+                d="M4 6h16M7 12h10M10 18h4"
+                stroke="currentColor"
+                strokeWidth="2.2"
+                strokeLinecap="round"
+              />
+            </svg>
+            Lọc
+            {extraFilters > 0 && (
+              <span className="hud-more__badge">{extraFilters}</span>
+            )}
+          </button>
+        </div>
+      </div>
+
+      <div className="hud-bar__actions" role="toolbar" aria-label="Live tools">
+        <div className="hud-actions">
+          <button
+            type="button"
+            className={`hud-action hud-action--feed ${feedOpen ? 'is-on' : ''}`}
+            onClick={onToggleFeed}
+            title="X Feed — bài đăng gần đây"
+            aria-pressed={feedOpen}
+          >
+            <span className="hud-action__icon" aria-hidden>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
                 <path
-                  d="M4 6h16M7 12h10M10 18h4"
+                  d="M4 6h16M4 12h12M4 18h8"
                   stroke="currentColor"
                   strokeWidth="2.2"
                   strokeLinecap="round"
                 />
               </svg>
-              Lọc
-              {extraFilters > 0 && (
-                <span className="hud-more__badge">{extraFilters}</span>
-              )}
-            </button>
-          </div>
+            </span>
+            <span className="hud-action__label">Feed</span>
+            {feedOpen && <span className="hud-action__live" aria-hidden />}
+          </button>
         </div>
+      </div>
 
-        <div className="hud-bar__actions" role="toolbar" aria-label="Live tools">
-          <div className="hud-actions">
-            <button
-              type="button"
-              className={`hud-action hud-action--feed ${feedOpen ? 'is-on' : ''}`}
-              onClick={onToggleFeed}
-              title="X Feed — bài đăng gần đây"
-              aria-pressed={feedOpen}
-            >
-              <span className="hud-action__icon" aria-hidden>
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
-                  <path
-                    d="M4 6h16M4 12h12M4 18h8"
-                    stroke="currentColor"
-                    strokeWidth="2.2"
-                    strokeLinecap="round"
-                  />
-                </svg>
-              </span>
-              <span className="hud-action__label">Feed</span>
-              {feedOpen && <span className="hud-action__live" aria-hidden />}
-            </button>
-          </div>
-        </div>
-      </header>
       {moreOpen && morePos
         ? createPortal(
             <div
               ref={morePanelRef}
-              className="hud-more__panel glass"
+              className="hud-more__panel glass-regular"
               role="dialog"
               aria-label="Bộ lọc"
               style={{ top: morePos.top, left: morePos.left }}
@@ -343,9 +293,69 @@ export function Hud({
             document.body,
           )
         : null}
+    </>
+  )
+}
 
+interface Props {
+  kols: Kol[]
+  allKols: Kol[]
+  selected: Kol | null
+  searchQuery: string
+  shortlistIds: string[]
+  autoRotate: boolean
+  compareOpen: boolean
+  onSelect: (kol: Kol | null) => void
+  onToggleRotate: () => void
+  onToggleCompare: () => void
+  onToggleShortlist: (kol: Kol) => void
+}
+
+export function Hud({
+  kols,
+  allKols: _allKols,
+  selected,
+  searchQuery,
+  shortlistIds,
+  autoRotate,
+  compareOpen,
+  onSelect,
+  onToggleRotate,
+  onToggleCompare,
+  onToggleShortlist,
+}: Props) {
+  const top = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase()
+    const sorted = [...kols].sort(
+      (a, b) =>
+        b.score - a.score ||
+        b.followers - a.followers ||
+        a.handle.localeCompare(b.handle),
+    )
+    if (!q) return sorted.slice(0, 10)
+    return sorted
+      .filter(
+        (k) =>
+          k.displayName.toLowerCase().includes(q) ||
+          k.handle.toLowerCase().includes(q) ||
+          getKolNiches(k).some((n) => n.toLowerCase().includes(q)) ||
+          formatRank(k).toLowerCase().includes(q),
+      )
+      .slice(0, 30)
+  }, [kols, searchQuery])
+  const inShortlist = selected ? shortlistIds.includes(selected.id) : false
+  const [detailTab, setDetailTab] = useState<
+    'overview' | 'analysis' | 'follows'
+  >('overview')
+
+  useEffect(() => {
+    setDetailTab('overview')
+  }, [selected?.id])
+
+  return (
+    <>
       <aside className="hud-left">
-        <div className="panel glass glass--liquid panel--rank">
+        <div className="panel glass-regular glass--liquid panel--rank">
           <div className="panel-head">
             <div>
               <div className="panel-title">Top Score</div>
@@ -466,7 +476,7 @@ export function Hud({
         </div>
       </aside>
 
-      <div className="hud-bottom">
+      <div className="hud-bottom hud-bottom--cluster glass-clear">
         <button type="button" className="btn" onClick={onToggleRotate}>
           {autoRotate ? 'Dừng xoay' : 'Xoay map'}
         </button>
@@ -476,7 +486,7 @@ export function Hud({
       </div>
 
       {selected && (
-        <aside className="hud-detail glass">
+        <aside className="hud-detail glass-regular glass--liquid">
           <button
             type="button"
             className="detail-close"

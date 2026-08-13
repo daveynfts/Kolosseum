@@ -166,7 +166,7 @@ export function FeedPanel({ open, onClose, kols, onSelectKol }: Props) {
   if (!open) return null
 
   return (
-    <aside className={`feed-panel glass glass--liquid ${compact ? 'feed-panel--compact' : ''}`}>
+    <aside className={`feed-panel glass-regular glass--liquid ${compact ? 'feed-panel--compact' : ''}`}>
       {/* Header */}
       <header className="feed-head">
         <div className="feed-head-main">

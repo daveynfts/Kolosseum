@@ -86,7 +86,7 @@ export function ComparePanel({
 
   return (
     <aside
-      className={`compare-panel glass ${compact ? 'compare-panel--compact' : ''}`}
+      className={`compare-panel glass-regular glass--liquid ${compact ? 'compare-panel--compact' : ''}`}
     >
       <header className="feed-head compare-head">
         <div className="feed-head-main">

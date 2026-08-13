@@ -7,7 +7,7 @@
  * and TEMP/kols-server.json or fetches live API.
  */
 import fs from 'fs'
-import { adminPutJson } from './lib/adminPut.mjs'
+import { adminGetJson, adminPutJson } from './lib/adminPut.mjs'
 import path from 'path'
 import { fileURLToPath } from 'url'
 
@@ -244,9 +244,13 @@ async function main() {
   if (fs.existsSync(tmp)) {
     d = JSON.parse(fs.readFileSync(tmp, 'utf8'))
   } else {
-    const res = await fetch('https://radar.daveynfts.com/api/kols')
-    if (!res.ok) throw new Error(`GET /api/kols ${res.status}`)
-    d = await res.json()
+    d = token
+      ? await adminGetJson('https://radar.daveynfts.com/api/kols', token)
+      : await (async () => {
+          const res = await fetch('https://radar.daveynfts.com/api/kols')
+          if (!res.ok) throw new Error(`GET /api/kols ${res.status}`)
+          return res.json()
+        })()
   }
 
   const byHandle = new Map(d.kols.map((k) => [k.handle, k]))

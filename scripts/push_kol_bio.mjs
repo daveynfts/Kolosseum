@@ -14,7 +14,7 @@
  *   Loads .env.local / .env.production.local if present (non-empty values only)
  */
 import fs from 'fs'
-import { adminPutJson } from './lib/adminPut.mjs'
+import { adminGetJson, adminPutJson } from './lib/adminPut.mjs'
 import path from 'path'
 import { fileURLToPath } from 'url'
 
@@ -139,13 +139,7 @@ async function main() {
     process.exit(1)
   }
 
-  // Bust CDN/browser caches so we never PUT a stale full list over a prior patch
-  const getRes = await fetch(`${apiBase}/api/kols?t=${Date.now()}`, {
-    cache: 'no-store',
-    headers: { Accept: 'application/json', 'Cache-Control': 'no-cache' },
-  })
-  if (!getRes.ok) throw new Error(`GET /api/kols ${getRes.status}`)
-  const payload = await getRes.json()
+  const payload = await adminGetJson(`${apiBase}/api/kols`, token)
   if (!payload?.kols?.length) throw new Error('No kols on server')
 
   let n = 0

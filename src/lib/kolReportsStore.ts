@@ -14,7 +14,11 @@ const STORAGE_KEY = 'vn-kol-reports-v1'
 const PUBLIC_CACHE_KEY = 'vn-kol-reports-public-v1'
 export const KOL_REPORTS_EVENT = 'vn-kol-reports-updated'
 
-export type KolReportsSource = 'server' | 'cache' | 'seed'
+export type KolReportsSource = 'server' | 'cache' | 'seed' | 'unauthorized'
+
+export type FetchAdminReportsResult =
+  | { ok: true; dataset: KolReportsDataset }
+  | { ok: false; status: number }
 
 function apiUrl() {
   return withBase('/api/kol-reports')
@@ -55,7 +59,7 @@ export function clearKolReportsCache(): void {
 
 export async function fetchKolReportsAdmin(
   token?: string,
-): Promise<KolReportsDataset | null> {
+): Promise<FetchAdminReportsResult> {
   const t = (token ?? getAdminToken()).trim()
   try {
     const res = await fetch(`${apiUrl()}?all=1&t=${Date.now()}`, {
@@ -64,11 +68,16 @@ export async function fetchKolReportsAdmin(
         ...(t ? { Authorization: `Bearer ${t}` } : {}),
       },
     })
-    if (res.status === 404 || res.status === 503) return null
-    if (!res.ok) return null
-    return normalizeKolReportsDataset(await res.json())
+    if (res.status === 401) return { ok: false, status: 401 }
+    if (res.status === 404 || res.status === 503) {
+      return { ok: false, status: res.status }
+    }
+    if (!res.ok) return { ok: false, status: res.status }
+    const dataset = normalizeKolReportsDataset(await res.json())
+    if (!dataset) return { ok: false, status: 500 }
+    return { ok: true, dataset }
   } catch {
-    return null
+    return { ok: false, status: 0 }
   }
 }
 
@@ -158,14 +167,20 @@ export function invalidatePublicKolReportsCache(): void {
 export async function loadKolReportsWithSource(
   token?: string,
 ): Promise<{ dataset: KolReportsDataset; source: KolReportsSource }> {
-  const server = await fetchKolReportsAdmin(token)
-  if (server) {
-    saveKolReportsLocal(server)
-    return { dataset: server, source: 'server' }
+  const t = (token ?? getAdminToken()).trim()
+  const server = await fetchKolReportsAdmin(t)
+  if (server.ok) {
+    saveKolReportsLocal(server.dataset)
+    return { dataset: server.dataset, source: 'server' }
+  }
+  if (server.status === 401 && t) {
+    return {
+      dataset: loadKolReportsLocal() || defaultKolReportsDataset(),
+      source: 'unauthorized',
+    }
   }
   const local = loadKolReportsLocal()
   if (local) return { dataset: local, source: 'cache' }
-  const t = (token ?? getAdminToken()).trim()
   if (t) {
     const { adminSeedKolReportsDataset } = await import('../data/kolReportsAdminSeed')
     return { dataset: adminSeedKolReportsDataset(), source: 'seed' }
@@ -182,7 +197,14 @@ export async function saveKolReportsToServer(
   let baseUpdatedAt: string | undefined
   try {
     const server = await fetchKolReportsAdmin(t)
-    baseUpdatedAt = server?.updatedAt
+    if (!server.ok && server.status === 401) {
+      return {
+        ok: false,
+        status: 401,
+        message: 'Token sai — Apply token rồi Reload trước khi Save.',
+      }
+    }
+    baseUpdatedAt = server.ok ? server.dataset.updatedAt : undefined
   } catch {
     return {
       ok: false,

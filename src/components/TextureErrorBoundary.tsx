@@ -3,6 +3,8 @@ import { Component, type ReactNode } from 'react'
 interface Props {
   fallback: ReactNode
   children: ReactNode
+  /** Change this when the texture URL/handle changes so a past error can retry. */
+  resetKey?: string
 }
 
 interface State {
@@ -15,6 +17,12 @@ export class TextureErrorBoundary extends Component<Props, State> {
 
   static getDerivedStateFromError() {
     return { error: true }
+  }
+
+  componentDidUpdate(prevProps: Props) {
+    if (this.state.error && prevProps.resetKey !== this.props.resetKey) {
+      this.setState({ error: false })
+    }
   }
 
   render() {

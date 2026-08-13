@@ -40,7 +40,7 @@ import {
   type UiLocale,
   eventToIcs,
 } from '../data/convictionEvents'
-import { loadEventsWithSource } from '../lib/convictionEventsStore'
+import { CONVICTION_EVENTS_EVENT, loadEventsWithSource } from '../lib/convictionEventsStore'
 import {
   formatLumaDayLocale,
   formatMonthYear,
@@ -434,6 +434,8 @@ export function EventMapPage() {
   const initialParams = useMemo(() => parseEventMapParams(), [])
 
   const [dataset, setDataset] = useState<SideEventDataset | null>(null)
+  const datasetRef = useRef<SideEventDataset | null>(null)
+  datasetRef.current = dataset
   const [source, setSource] = useState<'server' | 'cache' | 'seed'>('seed')
   const [loading, setLoading] = useState(true)
   const [dateFilter, setDateFilter] = useState<string>(
@@ -515,14 +517,30 @@ export function EventMapPage() {
 
   useEffect(() => {
     let cancelled = false
-    void loadEventsWithSource().then((r) => {
-      if (cancelled) return
-      setDataset(r.dataset)
-      setSource(r.source)
-      setLoading(false)
-    })
+    let seq = 0
+    const load = () => {
+      const n = ++seq
+      void loadEventsWithSource().then((r) => {
+        if (cancelled || n !== seq) return
+        setDataset(r.dataset)
+        setSource(r.source)
+        setLoading(false)
+      })
+    }
+    load()
+    const onVis = () => {
+      if (document.visibilityState === 'visible') load()
+    }
+    window.addEventListener('focus', load)
+    window.addEventListener('storage', load)
+    window.addEventListener(CONVICTION_EVENTS_EVENT, load)
+    document.addEventListener('visibilitychange', onVis)
     return () => {
       cancelled = true
+      window.removeEventListener('focus', load)
+      window.removeEventListener('storage', load)
+      window.removeEventListener(CONVICTION_EVENTS_EVENT, load)
+      document.removeEventListener('visibilitychange', onVis)
     }
   }, [])
 
@@ -1166,7 +1184,12 @@ export function EventMapPage() {
     })
   }
 
-  const selectEvent = (ev: SideEvent, fly = true) => {
+  const selectEvent = (evOrId: SideEvent | string, fly = true) => {
+    const id = typeof evOrId === 'string' ? evOrId : evOrId.id
+    const ev =
+      datasetRef.current?.events.find((e) => e.id === id) ||
+      (typeof evOrId === 'object' ? evOrId : null)
+    if (!ev) return
     setSelectedId(ev.id)
     // On mobile: peek sheet + collapse filters so map/popup stay usable
     if (isMobileViewport()) {
@@ -1297,7 +1320,7 @@ export function EventMapPage() {
     for (const ev of mapEvents) {
       const pos = pinPositions.get(ev.id) ?? { lat: ev.lat, lng: ev.lng }
       const existing = markersRef.current.get(ev.id)
-      const pinKey = `${ev.imageUrl || ''}|${ev.title}|${ev.type}|${ev.featured ? 1 : 0}|${pos.lat.toFixed(6)},${pos.lng.toFixed(6)}`
+      const pinKey = `${ev.imageUrl || ''}|${ev.title}|${ev.type}|${ev.featured ? 1 : 0}|${ev.startTime || ''}|${ev.host || ''}|${pos.lat.toFixed(6)},${pos.lng.toFixed(6)}`
       if (!existing || existing.getElement().dataset.pinKey !== pinKey) {
         existing?.remove()
         const el = buildLumaPinEl(ev, now, localeRef.current, {
@@ -1309,7 +1332,7 @@ export function EventMapPage() {
         el.addEventListener('click', (e: MouseEvent) => {
           e.stopPropagation()
           // Always use latest selectEvent (pin positions / filters)
-          selectEventRef.current(ev, true)
+          selectEventRef.current(ev.id, true)
         })
         const marker = new maplibregl.Marker({ element: el, anchor: 'bottom' })
           .setLngLat([pos.lng, pos.lat])

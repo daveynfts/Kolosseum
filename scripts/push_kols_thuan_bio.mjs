@@ -6,7 +6,7 @@
 import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
-import { adminPutJson } from './lib/adminPut.mjs'
+import { adminGetJson, adminPutJson } from './lib/adminPut.mjs'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const ROOT = path.join(__dirname, '..')
@@ -97,11 +97,10 @@ async function main() {
 
   // Prefer live server list so we don't clobber other admin edits
   let payload
-  const getRes = await fetch(`${apiBase.replace(/\/$/, '')}/api/kols?t=${Date.now()}`)
-  if (getRes.ok) {
-    payload = await getRes.json()
+  try {
+    payload = await adminGetJson(`${apiBase.replace(/\/$/, '')}/api/kols`, token)
     console.log('loaded live kols', payload.count || payload.kols?.length)
-  } else {
+  } catch {
     payload = JSON.parse(
       fs.readFileSync(path.join(ROOT, 'data/kols-server-snapshot.json'), 'utf8'),
     )

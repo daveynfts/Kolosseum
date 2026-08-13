@@ -5,7 +5,7 @@
  *   node scripts/hide_miangst01_kol.mjs --unhide
  */
 import fs from 'fs'
-import { adminPutJson } from './lib/adminPut.mjs'
+import { adminGetJson, adminPutJson } from './lib/adminPut.mjs'
 import path from 'path'
 import { fileURLToPath } from 'url'
 
@@ -48,12 +48,7 @@ async function main() {
     process.exit(1)
   }
 
-  const getRes = await fetch(`${apiBase}/api/kols?t=${Date.now()}`, {
-    cache: 'no-store',
-    headers: { Accept: 'application/json', 'Cache-Control': 'no-cache' },
-  })
-  if (!getRes.ok) throw new Error(`GET /api/kols ${getRes.status}`)
-  const payload = await getRes.json()
+  const payload = await adminGetJson(`${apiBase}/api/kols`, token)
   if (!payload?.kols?.length) throw new Error('No kols on server')
 
   const k = payload.kols.find(

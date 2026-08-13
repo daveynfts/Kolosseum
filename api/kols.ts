@@ -1,9 +1,10 @@
 /**
  * Shared KOL list JSON on Cloudflare R2 (same token as feed).
  *
- * GET  /api/kols — public read
- * PUT  /api/kols — Bearer FEED_ADMIN_TOKEN
- * DELETE /api/kols — clear server copy
+ * GET  /api/kols          — public: hidden KOLs stripped
+ * GET  /api/kols?all=1    — full list (Bearer FEED_ADMIN_TOKEN)
+ * PUT  /api/kols          — Bearer FEED_ADMIN_TOKEN
+ * DELETE /api/kols        — clear server copy
  */
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 import {
@@ -22,8 +23,10 @@ import {
   jsonError,
   parseJsonBody,
   requireAdmin,
+  isAdmin,
   sendJson,
 } from '../lib/server/apiHelpers.js'
+import { publicKolsOnly } from '../lib/server/kolsPublic.js'
 
 type KolsBody = {
   version?: number
@@ -80,6 +83,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
     if (isGetOrHead(req.method)) {
       if (!enforcePublicRateLimit(req, res, 'kols', 90)) return
+      const wantAll =
+        String(req.query.all || '') === '1' ||
+        String(req.query.scope || '') === 'admin'
+      if (wantAll && !isAdmin(req)) {
+        return sendJson(req, res, 401, {
+          error: 'unauthorized',
+          message: 'Admin token required for full KOL list',
+        })
+      }
       const data = await r2GetJson<KolsBody>(client, KOLS_OBJECT_KEY)
       if (!data || !Array.isArray(data.kols) || data.kols.length === 0) {
         return sendJson(req, res, 404, {
@@ -87,7 +99,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           message: 'No KOL list on server yet. Save from Admin → Save to server.',
         })
       }
-      return sendJson(req, res, 200, data)
+      if (wantAll) return sendJson(req, res, 200, data)
+      const pub = publicKolsOnly(data.kols)
+      return sendJson(req, res, 200, {
+        ...data,
+        kols: pub,
+        count: pub.length,
+      })
     }
 
     if (req.method === 'PUT') {

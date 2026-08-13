@@ -31,6 +31,7 @@ import {
   importKolReportsJson,
   loadKolReportsWithSource,
   saveKolReportsToServer,
+  type KolReportsSource,
 } from '../lib/kolReportsStore'
 import {
   getAdminToken,
@@ -109,7 +110,7 @@ function excerpt(text: string, n = 90): string {
 
 export function AdminKolReportsEditor({ onToast, kols = [] }: Props) {
   const [dataset, setDataset] = useState<KolReportsDataset | null>(null)
-  const [source, setSource] = useState<'server' | 'cache' | 'seed'>('seed')
+  const [source, setSource] = useState<KolReportsSource>('seed')
   const [dirty, setDirty] = useState(false)
   const dirtyRef = useDirtyRef(dirty)
   const [saving, setSaving] = useState(false)
@@ -664,6 +665,10 @@ export function AdminKolReportsEditor({ onToast, kols = [] }: Props) {
 
   const save = async () => {
     if (!dataset) return
+    if (source === 'unauthorized') {
+      onToast('Token sai — Apply token rồi Reload trước khi Save.')
+      return
+    }
     setAdminToken(getAdminToken())
     let ds = dataset
     if (draft) {
@@ -1308,6 +1313,9 @@ export function AdminKolReportsEditor({ onToast, kols = [] }: Props) {
           <p className="admin-muted">
             Markdown · ảnh · changelog · private/public
             <span className="akr-pill">{source}</span>
+            {source === 'unauthorized' ? (
+              <span className="akr-pill akr-pill--warn">token sai</span>
+            ) : null}
             {dirty ? <span className="akr-pill akr-pill--warn">unsaved</span> : null}
             <span className="akr-pill">
               {dataset.reports.length} reports
@@ -1331,7 +1339,7 @@ export function AdminKolReportsEditor({ onToast, kols = [] }: Props) {
           <button
             type="button"
             className="admin-btn admin-btn--primary admin-btn--sm"
-            disabled={saving || !dirty}
+            disabled={saving || !dirty || source === 'unauthorized'}
             onClick={() => void save()}
           >
             {saving ? 'Saving…' : 'Save R2'}
@@ -1742,7 +1750,7 @@ export function AdminKolReportsEditor({ onToast, kols = [] }: Props) {
                       <button
                         type="button"
                         className="admin-btn admin-btn--sm admin-btn--primary"
-                        disabled={saving || !dirty}
+                        disabled={saving || !dirty || source === 'unauthorized'}
                         onClick={() => void save()}
                         title="Ctrl+S"
                       >

@@ -49,6 +49,10 @@
       "destination": "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/RadarKOLsReport/:path*"
     },
     {
+      "source": "/r2/:path*",
+      "destination": "/api/r2-public?key=:path*"
+    },
+    {
       "source": "/event/:path*",
       "destination": "/"
     },

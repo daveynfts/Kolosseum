@@ -1,4 +1,4 @@
-import { Suspense, useMemo, useRef, useState, type RefObject } from 'react'
+import { Suspense, useEffect, useMemo, useRef, useState, type RefObject } from 'react'
 import { useFrame, useLoader } from '@react-three/fiber'
 import { Billboard, Html } from '@react-three/drei'
 import * as THREE from 'three'
@@ -27,6 +27,20 @@ const mapHtmlPortal = {
   },
 } as RefObject<HTMLElement>
 
+let pointerHoverCount = 0
+
+function acquirePointerCursor() {
+  pointerHoverCount += 1
+  if (typeof document !== 'undefined') document.body.style.cursor = 'pointer'
+}
+
+function releasePointerCursor() {
+  pointerHoverCount = Math.max(0, pointerHoverCount - 1)
+  if (typeof document !== 'undefined' && pointerHoverCount === 0) {
+    document.body.style.cursor = 'default'
+  }
+}
+
 interface Props {
   kol: Kol
   position: [number, number, number]
@@ -43,6 +57,8 @@ export function KolBubble(props: Props) {
   const texKey = `${props.kol.handle}|${props.kol.avatarUrl || ''}`
   return (
     <TextureErrorBoundary
+      key={texKey}
+      resetKey={texKey}
       fallback={<AvatarNode {...props} map={null} loadState="error" />}
     >
       <Suspense
@@ -92,6 +108,16 @@ function AvatarNode({
   const basePos = useMemo(() => new THREE.Vector3(), [])
   const [hovered, setHovered] = useState(false)
   const [chipBelow, setChipBelow] = useState(true)
+  const holdingPointer = useRef(false)
+
+  useEffect(() => {
+    return () => {
+      if (holdingPointer.current) {
+        holdingPointer.current = false
+        releasePointerCursor()
+      }
+    }
+  }, [])
 
   const color = NICHE_COLORS[primaryNiche(kol)]
   const rank = getKolRank(kol)
@@ -139,7 +165,7 @@ function AvatarNode({
   const translucent = !selected && faceOpacity < 0.98
   const glassOp = dimmed
     ? 0
-    : selected || isHoverOnly
+    : isHoverOnly
       ? 1
       : 0.55 + depth * 0.4
 
@@ -193,11 +219,17 @@ function AvatarNode({
     onPointerOver: (e: { stopPropagation: () => void }) => {
       e.stopPropagation()
       setHovered(true)
-      document.body.style.cursor = 'pointer'
+      if (!holdingPointer.current) {
+        holdingPointer.current = true
+        acquirePointerCursor()
+      }
     },
     onPointerOut: () => {
       setHovered(false)
-      document.body.style.cursor = 'default'
+      if (holdingPointer.current) {
+        holdingPointer.current = false
+        releasePointerCursor()
+      }
     },
   }
 
@@ -263,8 +295,8 @@ function AvatarNode({
             {map ? (
               <meshBasicMaterial
                 map={map}
-                transparent={translucent}
-                opacity={faceOpacity}
+                transparent={!selected && translucent}
+                opacity={selected ? 1 : faceOpacity}
                 depthWrite={selected || !translucent}
                 depthTest={!skipDepth}
                 side={THREE.FrontSide}
@@ -277,7 +309,7 @@ function AvatarNode({
             ) : (
               <meshBasicMaterial
                 color={faceColor}
-                transparent
+                transparent={!selected}
                 opacity={
                   dimmed ? 0.25 : loadState === 'loading' ? 0.85 : selected ? 1 : 0.7
                 }
@@ -305,10 +337,10 @@ function AvatarNode({
             depthTest={!skipDepth}
           />
 
-          {/* Glass volume — bottom shade + catchlight (reads as a sphere) */}
-          {hasFace && !dimmed && (
+          {/* Glass volume — idle / hover only; selected face stays a solid photo */}
+          {hasFace && !dimmed && !selected && (
             <>
-              <mesh position={[0, 0, selected ? 0.1 : 0.018]} renderOrder={layer + 3}>
+              <mesh position={[0, 0, 0.018]} renderOrder={layer + 3}>
                 <ringGeometry
                   args={[
                     baseR * 0.52,
@@ -327,10 +359,10 @@ function AvatarNode({
                   depthTest={!skipDepth}
                   side={THREE.FrontSide}
                   toneMapped={false}
-                  fog={!selected}
+                  fog
                 />
               </mesh>
-              <mesh position={[0, 0, selected ? 0.102 : 0.02]} renderOrder={layer + 3}>
+              <mesh position={[0, 0, 0.02]} renderOrder={layer + 3}>
                 <ringGeometry
                   args={[
                     baseR * 0.38,
@@ -344,12 +376,12 @@ function AvatarNode({
                 <meshBasicMaterial
                   color="#ffffff"
                   transparent
-                  opacity={(selected ? 0.2 : 0.13) * glassOp}
+                  opacity={0.13 * glassOp}
                   depthWrite={false}
                   depthTest={!skipDepth}
                   side={THREE.FrontSide}
                   toneMapped={false}
-                  fog={!selected}
+                  fog
                 />
               </mesh>
             </>
@@ -381,13 +413,17 @@ function AvatarNode({
 
         {selected && !dimmed && (
           <Html
-            center
-            position={[0, (chipBelow ? -1.85 : 1.85) * baseR, 0.25]}
-            style={{ pointerEvents: 'none' }}
+            position={[0, (chipBelow ? -1.34 : 1.34) * baseR, 0.25]}
+            style={{
+              pointerEvents: 'none',
+              transform: chipBelow
+                ? 'translate(-50%, 14px)'
+                : 'translate(-50%, calc(-100% - 14px))',
+            }}
             zIndexRange={[100, 80]}
             occlude={false}
             pointerEvents="none"
-            wrapperClass="bubble-html bubble-html--selected"
+            wrapperClass={`bubble-html bubble-html--selected ${chipBelow ? 'is-below' : 'is-above'}`}
             portal={mapHtmlPortal}
           >
             <SelectedChip kol={kol} status={status} />

@@ -2462,14 +2462,24 @@ button.hud-action:active {
   color: #cbd5e1;
 }
 
-/* drei Html portals to body so the chip sits above the map vignette */
+/* drei Html portals to #map-html-layer so the chip sits above the map vignette */
 .bubble-html {
   font-size: 16px;
   pointer-events: none !important;
+  width: max-content;
+  height: max-content;
 }
 
 .bubble-html--selected {
   z-index: 6;
+  pointer-events: none !important;
+  filter: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+.bubble-html--selected .bubble-chip {
+  pointer-events: none;
 }
 
 .bubble-chip {

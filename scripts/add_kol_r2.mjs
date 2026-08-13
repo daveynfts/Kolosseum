@@ -5,7 +5,7 @@
  *   node scripts/add_kol_r2.mjs --json -   (stdin)
  */
 import fs from 'fs'
-import { adminPutJson } from './lib/adminPut.mjs'
+import { adminGetJson, adminPutJson } from './lib/adminPut.mjs'
 import path from 'path'
 import { fileURLToPath } from 'url'
 
@@ -71,9 +71,7 @@ async function main() {
     process.exit(1)
   }
 
-  const getRes = await fetch(`${apiBase}/api/kols?t=${Date.now()}`)
-  if (!getRes.ok) throw new Error(`GET ${getRes.status}`)
-  const payload = await getRes.json()
+  const payload = await adminGetJson(`${apiBase}/api/kols`, token)
   const key = String(kol.handle).replace(/^@/, '').toLowerCase()
   const idx = (payload.kols || []).findIndex(
     (k) => String(k.handle).toLowerCase() === key,

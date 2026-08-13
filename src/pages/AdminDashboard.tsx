@@ -174,7 +174,9 @@ export function AdminDashboard() {
   useEffect(() => {
     let cancelled = false
     void (async () => {
-      const { kols: list, source, updatedAt } = await loadKolsWithSource()
+      const { kols: list, source, updatedAt } = await loadKolsWithSource({
+        includeHidden: true,
+      })
       if (cancelled) return
       // Don't wipe in-progress local edits if user already changed something
       if (dirtyRef.current) {
@@ -356,7 +358,9 @@ export function AdminDashboard() {
 
   const reloadKols = async () => {
     if (!confirmDiscardUnsaved(dirty)) return
-    const { kols: list, source, updatedAt } = await loadKolsWithSource()
+    const { kols: list, source, updatedAt } = await loadKolsWithSource({
+      includeHidden: true,
+    })
     setKols(list)
     setKolSource(source)
     setKolUpdatedAt(updatedAt ?? null)

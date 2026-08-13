@@ -117,6 +117,13 @@ function App() {
   }, [visibleKols, q])
   const sceneKols = q ? searchHits : visibleKols
 
+  useEffect(() => {
+    if (!selectedId) return
+    if (!sceneKols.some((k) => k.id === selectedId)) {
+      setSelectedId(null)
+    }
+  }, [sceneKols, selectedId])
+
   const selected = useMemo(
     () => publicKols.find((k) => k.id === selectedId) ?? null,
     [publicKols, selectedId],
@@ -217,7 +224,12 @@ function App() {
           onClose={() => setFeedOpen(false)}
           kols={publicKols}
           onSelectKol={(k) => {
-            if (k) setSelectedId(k.id)
+            if (!k) return
+            setFilterNiche('All')
+            setFilterRank('All')
+            setFilterStatus('All')
+            setSearchQuery('')
+            setSelectedId(k.id)
           }}
         />
         <ComparePanel

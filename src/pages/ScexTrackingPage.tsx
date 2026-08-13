@@ -11,8 +11,8 @@ import {
   type ScexDataset,
   type ScexPost,
 } from '../data/scexTracking'
-import { loadScexWithSource } from '../lib/scexStore'
-import { loadKolsWithSource } from '../lib/kolStore'
+import { loadScexWithSource, SCEX_TRACKING_EVENT } from '../lib/scexStore'
+import { KOLS_EVENT, loadKolsWithSource } from '../lib/kolStore'
 import type { Kol } from '../types'
 import { XProfileAvatar } from '../components/XProfileAvatar'
 import { DaveysRadarLink } from '../components/DaveysRadarLink'
@@ -303,16 +303,34 @@ export function ScexTrackingPage() {
 
   useEffect(() => {
     let cancelled = false
-    void Promise.all([loadScexWithSource(), loadKolsWithSource()]).then(
-      ([scex, kols]) => {
-        if (cancelled) return
-        const mapKols = kols.kols || []
-        setMapKols(mapKols)
-        setDataset(recomputeScexScores(scex.dataset, mapKols))
-      },
-    )
+    let seq = 0
+    const load = () => {
+      const n = ++seq
+      void Promise.all([loadScexWithSource(), loadKolsWithSource()]).then(
+        ([scex, kols]) => {
+          if (cancelled || n !== seq) return
+          const list = kols.kols || []
+          setMapKols(list)
+          setDataset(recomputeScexScores(scex.dataset, list))
+        },
+      )
+    }
+    load()
+    const onVis = () => {
+      if (document.visibilityState === 'visible') load()
+    }
+    window.addEventListener('focus', load)
+    window.addEventListener('storage', load)
+    window.addEventListener(SCEX_TRACKING_EVENT, load)
+    window.addEventListener(KOLS_EVENT, load)
+    document.addEventListener('visibilitychange', onVis)
     return () => {
       cancelled = true
+      window.removeEventListener('focus', load)
+      window.removeEventListener('storage', load)
+      window.removeEventListener(SCEX_TRACKING_EVENT, load)
+      window.removeEventListener(KOLS_EVENT, load)
+      document.removeEventListener('visibilitychange', onVis)
     }
   }, [])
 

@@ -7,7 +7,7 @@
  *   node scripts/sync_surf_pdfs.mjs --apply --fix-existing
  */
 import fs from 'fs'
-import { adminPutJson } from './lib/adminPut.mjs'
+import { adminGetJson, adminPutJson } from './lib/adminPut.mjs'
 import path from 'path'
 import { fileURLToPath } from 'url'
 
@@ -189,11 +189,15 @@ async function mapPool(items, concurrency, fn) {
 }
 
 async function main() {
-  const get = await fetch(`${api}/api/kols?t=${Date.now()}`, {
-    cache: 'no-store',
-  })
-  if (!get.ok) throw new Error(`GET /api/kols ${get.status}`)
-  const payload = await get.json()
+  const payload = token
+    ? await adminGetJson(`${api}/api/kols`, token)
+    : await (async () => {
+        const get = await fetch(`${api}/api/kols?t=${Date.now()}`, {
+          cache: 'no-store',
+        })
+        if (!get.ok) throw new Error(`GET /api/kols ${get.status}`)
+        return get.json()
+      })()
   const kols = payload.kols || []
   const byH = new Map(kols.map((k) => [String(k.handle).toLowerCase(), k]))
   console.log('KOLs', kols.length, 'pubBase', pubBase)

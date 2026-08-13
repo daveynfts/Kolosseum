@@ -5,7 +5,7 @@
  *   or: npx vercel env run --environment production -- node scripts/push_editorial_bios.mjs
  */
 import fs from 'fs'
-import { adminPutJson } from './lib/adminPut.mjs'
+import { adminGetJson, adminPutJson } from './lib/adminPut.mjs'
 import path from 'path'
 import { fileURLToPath, pathToFileURL } from 'url'
 
@@ -86,10 +86,7 @@ async function main() {
     console.log('seed from sheetKols', handle)
   }
 
-  let live
-  const getRes = await fetch(`${apiBase}/api/kols?t=${Date.now()}`)
-  if (!getRes.ok) throw new Error(`GET kols ${getRes.status}`)
-  live = await getRes.json()
+  const live = await adminGetJson(`${apiBase}/api/kols`, token)
   console.log('live kols', live.kols?.length)
 
   let n = 0

@@ -159,14 +159,22 @@ export function getStoreMeta(): { updatedAt: string | null; count: number } {
 }
 
 /** GET /api/kols — null if empty. Throws on unexpected HTTP errors. */
-export async function fetchServerKols(): Promise<KolStorePayload | null> {
-  const res = await fetch(`${kolsApiUrl()}?t=${Date.now()}`, {
+export async function fetchServerKols(opts?: {
+  includeHidden?: boolean
+}): Promise<KolStorePayload | null> {
+  const includeHidden = opts?.includeHidden === true
+  const token = includeHidden ? getAdminToken().trim() : ''
+  const qs = new URLSearchParams({ t: String(Date.now()) })
+  if (includeHidden) qs.set('all', '1')
+  const headers: Record<string, string> = {
+    Accept: 'application/json',
+    'Cache-Control': 'no-cache',
+  }
+  if (token) headers.Authorization = `Bearer ${token}`
+  const res = await fetch(`${kolsApiUrl()}?${qs}`, {
     method: 'GET',
     cache: 'no-store',
-    headers: {
-      Accept: 'application/json',
-      'Cache-Control': 'no-cache',
-    },
+    headers,
   })
   if (res.status === 404 || res.status === 503) return null
   if (!res.ok) throw new Error(`HTTP ${res.status}`)
@@ -182,11 +190,15 @@ export async function fetchServerKols(): Promise<KolStorePayload | null> {
  * 1) Server R2 (shared for everyone)  ← source of truth for bios
  * 2) localStorage cache
  * 3) seed sheetKols.ts (fallback only)
+ *
+ * Pass includeHidden for Admin so hidden KOLs are not dropped on Save.
  */
-export async function loadKolsWithSource(): Promise<LoadKolsResult> {
+export async function loadKolsWithSource(opts?: {
+  includeHidden?: boolean
+}): Promise<LoadKolsResult> {
   let server: KolStorePayload | null = null
   try {
-    server = await fetchServerKols()
+    server = await fetchServerKols(opts)
   } catch {
     server = null
   }
@@ -298,7 +310,7 @@ export async function saveKolsToServer(
   let merged = kols
   let baseUpdatedAt: string | undefined
   try {
-    const server = await fetchServerKols()
+    const server = await fetchServerKols({ includeHidden: true })
     merged = mergeKolsPreserveServerExtras(kols, server?.kols)
     baseUpdatedAt = server?.updatedAt
   } catch {

@@ -345,7 +345,7 @@ export function Hud({
         : null}
 
       <aside className="hud-left">
-        <div className="panel glass panel--rank">
+        <div className="panel glass glass--liquid panel--rank">
           <div className="panel-head">
             <div>
               <div className="panel-title">Top Score</div>

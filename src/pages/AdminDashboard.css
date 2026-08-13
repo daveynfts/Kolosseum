@@ -3293,121 +3293,232 @@ body.akr-split-resizing .report-md--editable {
 
 /* ── Admin Event Banner tab ───────────────────────────── */
 .admin-banner-page {
-  padding-bottom: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-bottom: 32px;
+  min-width: 0;
 }
 
 .admin-banner-toolbar {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  margin-bottom: 16px;
+  align-items: center;
 }
 
-.admin-banner-grid {
-  display: grid;
-  grid-template-columns: minmax(280px, 1fr) minmax(320px, 1.1fr);
-  gap: 16px;
-  align-items: start;
+.admin-banner-enable {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+  font-size: 13px;
+  color: #c4c4c4;
+  white-space: nowrap;
 }
 
-@media (max-width: 960px) {
-  .admin-banner-grid {
-    grid-template-columns: 1fr;
-  }
+.admin-banner-preview,
+.admin-banner-form,
+.admin-banner-asset {
+  border: 1px solid #2a2a2a;
+  background: #161616;
+  padding: 12px;
+  min-width: 0;
 }
 
+.admin-banner-preview__bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px 14px;
+  margin-bottom: 10px;
+}
+
+.admin-banner-preview__bar h3,
 .admin-banner-form h3,
-.admin-banner-preview h3 {
-  margin: 0 0 12px;
-  font-size: 1rem;
-  font-weight: 600;
+.admin-banner-asset h3 {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 650;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: #9ca3af;
 }
 
-.admin-banner-form h3:not(:first-child) {
-  margin-top: 20px;
+.admin-banner-preview__bar span,
+.admin-banner-lead,
+.admin-banner-preview__narrow > span {
+  font-size: 12px;
+  color: #6b7280;
+  line-height: 1.4;
+}
+
+.admin-banner-lead {
+  margin: 6px 0 12px;
+}
+
+.admin-banner-preview__live {
+  width: 100%;
+  min-width: 0;
+  border: 1px solid #2a2a2a;
+  background: #070d18;
+}
+
+.admin-banner-preview__live .scex-event-banner,
+.admin-banner-preview__narrow-frame .scex-event-banner {
+  position: relative;
+}
+
+.admin-banner-preview__off {
+  margin: 0;
+  padding: 22px 14px;
+  font-size: 13px;
+  color: #9ca3af;
+}
+
+.admin-banner-preview__narrow {
+  margin-top: 12px;
+}
+
+.admin-banner-preview__narrow > span {
+  display: block;
+  margin-bottom: 6px;
+}
+
+.admin-banner-preview__narrow-frame {
+  width: min(100%, 720px);
+  border: 1px solid #2a2a2a;
+  background: #070d18;
+  overflow: hidden;
+}
+
+.admin-banner-fields {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 10px 14px;
+}
+
+@media (max-width: 720px) {
+  .admin-banner-fields {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 
 .admin-banner-field {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  margin-bottom: 12px;
-  font-size: 0.82rem;
-  color: rgba(255, 255, 255, 0.62);
+  gap: 5px;
+  min-width: 0;
+  font-size: 13px;
+  color: #9ca3af;
+}
+
+.admin-banner-field--span2 {
+  grid-column: 1 / -1;
+}
+
+.admin-banner-field__lab {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  align-items: baseline;
+}
+
+.admin-banner-field__lab em {
+  font-style: normal;
+  font-variant-numeric: tabular-nums;
+  font-size: 11px;
+  color: #6b7280;
+}
+
+.admin-banner-field.is-over .admin-banner-field__lab em {
+  color: #fbbf24;
 }
 
 .admin-banner-field input[type='text'],
 .admin-banner-field input[type='url'] {
-  padding: 9px 11px;
-  border-radius: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  background: rgba(0, 0, 0, 0.28);
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  padding: 8px 10px;
+  border-radius: 4px;
+  border: 1px solid #2a2a2a;
+  background: #0a0a0a;
   color: #fff;
-  font-size: 0.92rem;
+  font-size: 13px;
 }
 
-.admin-banner-field--check {
-  flex-direction: row;
-  align-items: center;
-  gap: 10px;
+.admin-banner-field.is-over input {
+  border-color: rgba(251, 191, 36, 0.45);
 }
 
-.admin-banner-upload {
-  display: flex;
+.admin-banner-assets {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 12px;
-  margin-bottom: 16px;
-  align-items: flex-start;
 }
 
-.admin-banner-upload__thumb {
-  flex-shrink: 0;
-  width: 120px;
-  height: 48px;
-  border-radius: 10px;
+@media (max-width: 860px) {
+  .admin-banner-assets {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.admin-banner-asset__frame {
+  margin: 10px 0 8px;
+  border: 1px solid #2a2a2a;
+  background:
+    linear-gradient(105deg, #060b14 0%, #0a1628 42%, #0b1f1a 78%, #0a1420 100%);
   overflow: hidden;
-  background: rgba(0, 0, 0, 0.35);
-  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.admin-banner-upload__thumb--wide {
-  width: 160px;
-  height: 54px;
+.admin-banner-asset__frame--logo {
+  aspect-ratio: 4 / 1;
+  max-width: 320px;
 }
 
-.admin-banner-upload__thumb img {
+.admin-banner-asset__frame--logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
+  display: block;
+  padding: 8px 12px;
+  box-sizing: border-box;
+}
+
+.admin-banner-asset__frame--art {
+  aspect-ratio: 4 / 1;
+}
+
+.admin-banner-asset__frame--art img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: center;
+  object-position: 70% 35%;
   display: block;
 }
 
-.admin-banner-upload__actions {
-  flex: 1;
-  min-width: 0;
+.admin-banner-asset__spec {
+  margin: 0 0 6px;
+  font-size: 12px;
+  line-height: 1.45;
+  color: #9ca3af;
 }
 
-.admin-banner-upload__actions p {
-  margin: 0 0 8px;
-  font-size: 0.8rem;
-  color: rgba(255, 255, 255, 0.55);
-  word-break: break-all;
+.admin-banner-asset__url {
+  margin: 0 0 10px;
+  font-size: 11px;
+  line-height: 1.4;
+  color: #6b7280;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
-.admin-banner-upload__actions .btn {
-  margin-right: 8px;
-  margin-bottom: 6px;
-}
-
-.admin-banner-preview__frame {
-  border-radius: 14px;
-  overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: #050814;
-}
-
-.admin-banner-preview__frame .scex-event-banner {
-  position: relative;
+.admin-banner-asset__btns {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
 /* SCEX Radar pipeline tab */

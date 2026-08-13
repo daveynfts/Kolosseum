@@ -1,10 +1,13 @@
 /**
  * Admin: partner event ribbon — text fields + logo/art upload to R2.
  */
-import { useRef, useState } from 'react'
+import { useRef, useState, type ReactNode } from 'react'
 import {
   resolveBannerArt,
   resolveBannerLogo,
+  BANNER_ART_SPEC,
+  BANNER_COPY_LIMITS,
+  BANNER_LOGO_SPEC,
   type SiteBannerConfig,
 } from '../data/siteBanner'
 import { uploadBannerImage } from '../lib/bannerImageUpload'
@@ -149,14 +152,6 @@ export function AdminBannerEditor({ onToast }: Props) {
 
   return (
     <div className="admin-feed admin-banner-page">
-      <div className="admin-ai-banner" style={{ marginBottom: 12 }}>
-        <strong>Event Banner · SCEX ribbon</strong>
-        <span>
-          Text + ảnh ribbon. JSON R2 <code>site/banner/v1.json</code>. Fallback{' '}
-          <code>public/scex-banner/</code> nếu chưa upload.
-        </span>
-      </div>
-
       <div className="admin-banner-toolbar">
         <button
           type="button"
@@ -188,174 +183,254 @@ export function AdminBannerEditor({ onToast }: Props) {
             }}
           />
         </label>
+        <label className="admin-banner-enable">
+          <input
+            type="checkbox"
+            checked={config.enabled}
+            onChange={(e) => patch({ enabled: e.target.checked })}
+          />
+          Hiển thị trên /scex
+        </label>
       </div>
 
-      <div className="admin-banner-grid">
-        <div className="admin-banner-form glass">
-          <h3>Nội dung</h3>
-          <label className="admin-banner-field admin-banner-field--check">
-            <input
-              type="checkbox"
-              checked={config.enabled}
-              onChange={(e) => patch({ enabled: e.target.checked })}
-            />
-            Hiển thị banner
-          </label>
-          <label className="admin-banner-field">
-            Link đích (href)
+      <section className="admin-banner-preview">
+        <div className="admin-banner-preview__bar">
+          <h3>Preview</h3>
+          <span>Đúng chiều rộng cột admin · trên /scex banner full viewport</span>
+        </div>
+        <div className="admin-banner-preview__live">
+          {config.enabled ? (
+            <SiteBannerRibbon config={config} />
+          ) : (
+            <p className="admin-banner-preview__off">
+              Banner đang tắt — bật “Hiển thị trên /scex” để xem ribbon.
+            </p>
+          )}
+        </div>
+        <div className="admin-banner-preview__narrow">
+          <span>Mobile (~720px) — subtitle ẩn, CTA rút</span>
+          <div className="admin-banner-preview__narrow-frame">
+            {config.enabled ? <SiteBannerRibbon config={config} /> : null}
+          </div>
+        </div>
+      </section>
+
+      <section className="admin-banner-form">
+        <h3>Nội dung ribbon</h3>
+        <p className="admin-banner-lead">
+          Ribbon cao 76px, chữ 1 dòng. Vượt gợi ý ký tự thì preview/live sẽ cắt
+          bằng ellipsis.
+        </p>
+        <div className="admin-banner-fields">
+          <CopyField
+            className="admin-banner-field--span2"
+            label="Link đích"
+            value={config.href}
+          >
             <input
               type="url"
               value={config.href}
               onChange={(e) => patch({ href: e.target.value })}
               placeholder="https://…"
             />
-          </label>
-          <label className="admin-banner-field">
-            Eyebrow
+          </CopyField>
+          <CopyField
+            label="Eyebrow"
+            value={config.eyebrow}
+            max={BANNER_COPY_LIMITS.eyebrow}
+          >
             <input
               type="text"
               value={config.eyebrow}
               onChange={(e) => patch({ eyebrow: e.target.value })}
             />
-          </label>
-          <label className="admin-banner-field">
-            Title
+          </CopyField>
+          <CopyField
+            label="Title"
+            value={config.title}
+            max={BANNER_COPY_LIMITS.title}
+          >
             <input
               type="text"
               value={config.title}
               onChange={(e) => patch({ title: e.target.value })}
             />
-          </label>
-          <label className="admin-banner-field">
-            Subtitle
+          </CopyField>
+          <CopyField
+            className="admin-banner-field--span2"
+            label="Subtitle"
+            value={config.subtitle}
+            max={BANNER_COPY_LIMITS.subtitle}
+          >
             <input
               type="text"
               value={config.subtitle}
               onChange={(e) => patch({ subtitle: e.target.value })}
             />
-          </label>
-          <label className="admin-banner-field">
-            Pill (badge phải)
+          </CopyField>
+          <CopyField
+            label="Pill (badge phải, ≥900px)"
+            value={config.pill}
+            max={BANNER_COPY_LIMITS.pill}
+          >
             <input
               type="text"
               value={config.pill}
               onChange={(e) => patch({ pill: e.target.value })}
             />
-          </label>
-          <label className="admin-banner-field">
-            CTA
+          </CopyField>
+          <CopyField
+            label="CTA"
+            value={config.cta}
+            max={BANNER_COPY_LIMITS.cta}
+          >
             <input
               type="text"
               value={config.cta}
               onChange={(e) => patch({ cta: e.target.value })}
             />
-          </label>
-          <label className="admin-banner-field">
-            aria-label (accessibility)
+          </CopyField>
+          <CopyField
+            className="admin-banner-field--span2"
+            label="aria-label"
+            value={config.ariaLabel || ''}
+          >
             <input
               type="text"
               value={config.ariaLabel || ''}
               onChange={(e) => patch({ ariaLabel: e.target.value })}
+              placeholder="Đọc cho screen reader khi không có title"
             />
-          </label>
+          </CopyField>
+        </div>
+      </section>
 
-          <h3>Ảnh (R2)</h3>
-          <div className="admin-banner-upload">
-            <div className="admin-banner-upload__thumb">
-              <img src={resolveBannerLogo(config)} alt="Logo preview" />
-            </div>
-            <div className="admin-banner-upload__actions">
-              <p>
-                Logo ·{' '}
-                {config.logoUrl ? (
-                  <code>{config.logoUrl.slice(0, 48)}…</code>
-                ) : (
-                  'local fallback'
-                )}
-              </p>
-              <input
-                ref={logoInputRef}
-                type="file"
-                accept="image/png,image/jpeg,image/webp,image/gif"
-                hidden
-                onChange={(e) => {
-                  const f = e.target.files?.[0]
-                  if (f) void onUpload(f, 'logo')
-                  e.target.value = ''
-                }}
-              />
+      <section className="admin-banner-assets">
+        <article className="admin-banner-asset">
+          <h3>Logo</h3>
+          <div className="admin-banner-asset__frame admin-banner-asset__frame--logo">
+            <img src={resolveBannerLogo(config)} alt="" />
+          </div>
+          <p className="admin-banner-asset__spec">
+            Tỷ lệ <strong>{BANNER_LOGO_SPEC.ratio}</strong> ·{' '}
+            {BANNER_LOGO_SPEC.width}×{BANNER_LOGO_SPEC.height}px ·{' '}
+            {BANNER_LOGO_SPEC.format}
+            <br />
+            {BANNER_LOGO_SPEC.hint}
+          </p>
+          <p className="admin-banner-asset__url">
+            {config.logoUrl ? config.logoUrl : 'Fallback public/scex-banner/scex-logo.png'}
+          </p>
+          <input
+            ref={logoInputRef}
+            type="file"
+            accept="image/png,image/jpeg,image/webp,image/gif"
+            hidden
+            onChange={(e) => {
+              const f = e.target.files?.[0]
+              if (f) void onUpload(f, 'logo')
+              e.target.value = ''
+            }}
+          />
+          <div className="admin-banner-asset__btns">
+            <button
+              type="button"
+              className="btn"
+              disabled={uploading === 'logo'}
+              onClick={() => logoInputRef.current?.click()}
+            >
+              {uploading === 'logo' ? 'Uploading…' : 'Upload logo'}
+            </button>
+            {config.logoUrl ? (
               <button
                 type="button"
                 className="btn"
-                disabled={uploading === 'logo'}
-                onClick={() => logoInputRef.current?.click()}
+                onClick={() => patch({ logoUrl: '' })}
               >
-                {uploading === 'logo' ? 'Uploading…' : 'Upload logo'}
+                Dùng fallback
               </button>
-              {config.logoUrl ? (
-                <button
-                  type="button"
-                  className="btn btn--ghost"
-                  onClick={() => patch({ logoUrl: '' })}
-                >
-                  Dùng local fallback
-                </button>
-              ) : null}
-            </div>
+            ) : null}
           </div>
+        </article>
 
-          <div className="admin-banner-upload">
-            <div className="admin-banner-upload__thumb admin-banner-upload__thumb--wide">
-              <img src={resolveBannerArt(config)} alt="Art preview" />
-            </div>
-            <div className="admin-banner-upload__actions">
-              <p>
-                Art / background ·{' '}
-                {config.artUrl ? (
-                  <code>{config.artUrl.slice(0, 48)}…</code>
-                ) : (
-                  'local fallback'
-                )}
-              </p>
-              <input
-                ref={artInputRef}
-                type="file"
-                accept="image/png,image/jpeg,image/webp,image/gif"
-                hidden
-                onChange={(e) => {
-                  const f = e.target.files?.[0]
-                  if (f) void onUpload(f, 'art')
-                  e.target.value = ''
-                }}
-              />
+        <article className="admin-banner-asset">
+          <h3>Art / background</h3>
+          <div className="admin-banner-asset__frame admin-banner-asset__frame--art">
+            <img src={resolveBannerArt(config)} alt="" />
+          </div>
+          <p className="admin-banner-asset__spec">
+            Tỷ lệ <strong>{BANNER_ART_SPEC.ratio}</strong> ·{' '}
+            {BANNER_ART_SPEC.width}×{BANNER_ART_SPEC.height}px ·{' '}
+            {BANNER_ART_SPEC.format}
+            <br />
+            {BANNER_ART_SPEC.hint} Crop: {BANNER_ART_SPEC.objectPosition}.
+          </p>
+          <p className="admin-banner-asset__url">
+            {config.artUrl ? config.artUrl : 'Fallback public/scex-banner/x-banner.jpg'}
+          </p>
+          <input
+            ref={artInputRef}
+            type="file"
+            accept="image/png,image/jpeg,image/webp,image/gif"
+            hidden
+            onChange={(e) => {
+              const f = e.target.files?.[0]
+              if (f) void onUpload(f, 'art')
+              e.target.value = ''
+            }}
+          />
+          <div className="admin-banner-asset__btns">
+            <button
+              type="button"
+              className="btn"
+              disabled={uploading === 'art'}
+              onClick={() => artInputRef.current?.click()}
+            >
+              {uploading === 'art' ? 'Uploading…' : 'Upload art'}
+            </button>
+            {config.artUrl ? (
               <button
                 type="button"
                 className="btn"
-                disabled={uploading === 'art'}
-                onClick={() => artInputRef.current?.click()}
+                onClick={() => patch({ artUrl: '' })}
               >
-                {uploading === 'art' ? 'Uploading…' : 'Upload art'}
+                Dùng fallback
               </button>
-              {config.artUrl ? (
-                <button
-                  type="button"
-                  className="btn btn--ghost"
-                  onClick={() => patch({ artUrl: '' })}
-                >
-                  Dùng local fallback
-                </button>
-              ) : null}
-            </div>
+            ) : null}
           </div>
-        </div>
-
-        <div className="admin-banner-preview glass">
-          <h3>Preview</h3>
-          <div className="admin-banner-preview__frame">
-            <SiteBannerRibbon config={config} />
-          </div>
-        </div>
-      </div>
+        </article>
+      </section>
     </div>
+  )
+}
+
+function CopyField({
+  label,
+  value,
+  max,
+  className,
+  children,
+}: {
+  label: string
+  value: string
+  max?: number
+  className?: string
+  children: ReactNode
+}) {
+  const over = max != null && value.length > max
+  return (
+    <label
+      className={`admin-banner-field${className ? ` ${className}` : ''}${over ? ' is-over' : ''}`}
+    >
+      <span className="admin-banner-field__lab">
+        {label}
+        {max != null ? (
+          <em>
+            {value.length}/{max}
+          </em>
+        ) : null}
+      </span>
+      {children}
+    </label>
   )
 }

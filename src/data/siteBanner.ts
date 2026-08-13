@@ -21,6 +21,37 @@ export interface SiteBannerConfig {
 export const LOCAL_BANNER_LOGO = '/scex-banner/scex-logo.png'
 export const LOCAL_BANNER_ART = '/scex-banner/x-banner.jpg'
 
+/** Logo lockup on the 76px ribbon (contain, ~36×128). Upload @2x. */
+export const BANNER_LOGO_SPEC = {
+  ratio: '4:1',
+  width: 320,
+  height: 80,
+  format: 'PNG / WebP, nền trong suốt',
+  hint: 'Lockup ngang. Trên ribbon cao 36px, rộng tối đa 128px — đừng nhồi chữ dọc.',
+} as const
+
+/**
+ * Campaign art fills the right ~half of a 76px-tall ribbon (cover crop).
+ * Keep the subject in the right two-thirds; the left edge fades into the wash.
+ */
+export const BANNER_ART_SPEC = {
+  ratio: '4:1',
+  width: 1600,
+  height: 400,
+  format: 'JPEG / WebP',
+  hint: 'Chủ thể nằm nửa phải. Nửa trái sẽ mờ vào nền chữ. Tránh text trên ảnh.',
+  objectPosition: '70% 35%',
+} as const
+
+/** Soft limits so copy fits the fixed-height ribbon without ellipsis. */
+export const BANNER_COPY_LIMITS = {
+  eyebrow: 42,
+  title: 40,
+  subtitle: 56,
+  pill: 28,
+  cta: 24,
+} as const
+
 export const SITE_BANNER_SEED: SiteBannerConfig = {
   version: 1,
   kind: 'site-banner',

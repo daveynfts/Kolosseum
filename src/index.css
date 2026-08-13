@@ -186,6 +186,9 @@ input {
   text-transform: uppercase;
   color: rgba(125, 211, 252, 0.85);
   line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .scex-event-banner__title {

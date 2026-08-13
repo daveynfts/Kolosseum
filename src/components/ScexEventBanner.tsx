@@ -5,6 +5,8 @@ import { useEffect, useState } from 'react'
 import {
   resolveBannerArt,
   resolveBannerLogo,
+  BANNER_ART_SPEC,
+  BANNER_LOGO_SPEC,
   type SiteBannerConfig,
 } from '../data/siteBanner'
 import {
@@ -40,8 +42,8 @@ export function SiteBannerRibbon({ config }: { config: SiteBannerConfig }) {
         <img
           src={artUrl}
           alt=""
-          width={1500}
-          height={500}
+          width={BANNER_ART_SPEC.width}
+          height={BANNER_ART_SPEC.height}
           decoding="async"
           fetchPriority="high"
         />
@@ -53,8 +55,8 @@ export function SiteBannerRibbon({ config }: { config: SiteBannerConfig }) {
             className="scex-event-banner__logo"
             src={logoUrl}
             alt="Partner logo"
-            width={140}
-            height={40}
+            width={BANNER_LOGO_SPEC.width}
+            height={BANNER_LOGO_SPEC.height}
             decoding="async"
           />
           <span className="scex-event-banner__meta">

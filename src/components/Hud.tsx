@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
+import { createPortal } from 'react-dom'
 import type { Kol, KolRank, Niche, StatusLabel } from '../types'
 import {
   formatRank,
@@ -87,9 +88,12 @@ export function Hud({
   onToggleCompare,
   onToggleShortlist,
 }: Props) {
-  const hotCount = kols.filter((k) => k.statusLabel === 'hot').length
   const [moreOpen, setMoreOpen] = useState(false)
-  const moreRef = useRef<HTMLDivElement>(null)
+  const [morePos, setMorePos] = useState<{ top: number; left: number } | null>(
+    null,
+  )
+  const moreBtnRef = useRef<HTMLButtonElement>(null)
+  const morePanelRef = useRef<HTMLDivElement>(null)
   const extraFilters =
     (filterStatus !== 'All' ? 1 : 0) + (filterNiche !== 'All' ? 1 : 0)
   const top = useMemo(() => {
@@ -122,13 +126,37 @@ export function Hud({
 
   useEffect(() => {
     if (!moreOpen) return
+    const place = () => {
+      const r = moreBtnRef.current?.getBoundingClientRect()
+      if (!r) return
+      const width = Math.min(460, window.innerWidth * 0.86)
+      const left = Math.min(
+        Math.max(12, r.left),
+        window.innerWidth - width - 12,
+      )
+      setMorePos({ top: r.bottom + 8, left })
+    }
+    place()
     const onDoc = (e: MouseEvent) => {
-      if (moreRef.current && !moreRef.current.contains(e.target as Node)) {
-        setMoreOpen(false)
+      const t = e.target as Node
+      if (moreBtnRef.current?.contains(t) || morePanelRef.current?.contains(t)) {
+        return
       }
+      setMoreOpen(false)
+    }
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setMoreOpen(false)
     }
     document.addEventListener('mousedown', onDoc)
-    return () => document.removeEventListener('mousedown', onDoc)
+    window.addEventListener('keydown', onKey)
+    window.addEventListener('resize', place)
+    window.addEventListener('scroll', place, true)
+    return () => {
+      document.removeEventListener('mousedown', onDoc)
+      window.removeEventListener('keydown', onKey)
+      window.removeEventListener('resize', place)
+      window.removeEventListener('scroll', place, true)
+    }
   }, [moreOpen])
 
   return (
@@ -167,91 +195,58 @@ export function Hud({
             ))}
           </div>
 
-          <div className="hud-more" ref={moreRef}>
+          <div className="hud-more">
             <button
+              ref={moreBtnRef}
               type="button"
               className={`hud-more__btn ${moreOpen || extraFilters ? 'is-on' : ''}`}
-              onClick={() => setMoreOpen((v) => !v)}
+              onClick={() => {
+                if (moreOpen) {
+                  setMoreOpen(false)
+                  return
+                }
+                const r = moreBtnRef.current?.getBoundingClientRect()
+                if (r) {
+                  const width = Math.min(460, window.innerWidth * 0.86)
+                  setMorePos({
+                    top: r.bottom + 8,
+                    left: Math.min(
+                      Math.max(12, r.left),
+                      window.innerWidth - width - 12,
+                    ),
+                  })
+                }
+                setMoreOpen(true)
+              }}
               aria-expanded={moreOpen}
+              aria-haspopup="dialog"
               title="Lọc status và niche"
             >
+              <svg
+                className="hud-more__icon"
+                width="12"
+                height="12"
+                viewBox="0 0 24 24"
+                fill="none"
+                aria-hidden
+              >
+                <path
+                  d="M4 6h16M7 12h10M10 18h4"
+                  stroke="currentColor"
+                  strokeWidth="2.2"
+                  strokeLinecap="round"
+                />
+              </svg>
               Lọc
               {extraFilters > 0 && (
                 <span className="hud-more__badge">{extraFilters}</span>
               )}
             </button>
-            {moreOpen && (
-              <div className="hud-more__panel glass" role="dialog" aria-label="Bộ lọc">
-                <div className="hud-more__label">Trạng thái</div>
-                <div className="filter-chips filter-chips--inline" title="Status">
-                  {STATUSES.map((s) => (
-                    <button
-                      key={s}
-                      type="button"
-                      className={`chip chip--status chip--emoji chip--sm ${filterStatus === s ? 'chip--active' : ''}`}
-                      onClick={() => onFilterStatus(s)}
-                    >
-                      {s === 'All' ? (
-                        'All'
-                      ) : (
-                        <span className="chip-emoji" aria-hidden>
-                          {STATUS_EMOJI[s]}
-                        </span>
-                      )}
-                    </button>
-                  ))}
-                </div>
-                <div className="hud-more__label">Niche</div>
-                <div className="filter-chips filter-chips--wrap" title="Niche">
-                  {NICHES.map((n) => (
-                    <button
-                      key={n}
-                      type="button"
-                      className={`chip chip--sm chip--niche ${filterNiche === n ? 'chip--active' : ''}`}
-                      style={
-                        n !== 'All'
-                          ? ({
-                              ['--chip-color' as string]: NICHE_COLORS[n],
-                            } as CSSProperties)
-                          : undefined
-                      }
-                      onClick={() => onFilter(n)}
-                    >
-                      {n !== 'All' && <i className="chip-dot" />}
-                      {n === 'All' ? 'All' : n}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
           </div>
         </div>
 
         <div className="hud-bar__actions" role="toolbar" aria-label="Live tools">
           <div className="hud-actions">
-            {hotCount > 0 && (
-              <span
-                className="hud-action hud-action--hot"
-                title={`${hotCount} KOL đang Hot (pace / 7d)`}
-              >
-                <span className="hud-action__icon" aria-hidden>
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
-                    <path
-                      d="M12 2s4 4.2 4 8a4 4 0 1 1-8 0c0-2.4 1.6-4.6 4-8z"
-                      fill="currentColor"
-                      opacity="0.95"
-                    />
-                    <path
-                      d="M12 14c1.6 0 2.8 1.1 2.8 2.6S13.6 19.2 12 19.2 9.2 18 9.2 16.6 10.4 14 12 14z"
-                      fill="currentColor"
-                      opacity="0.55"
-                    />
-                  </svg>
-                </span>
-                <span className="hud-action__label">Hot</span>
-                <span className="hud-action__badge">{hotCount}</span>
-              </span>
-            )}
             <button
               type="button"
               className={`hud-action hud-action--feed ${feedOpen ? 'is-on' : ''}`}
@@ -272,29 +267,62 @@ export function Hud({
               <span className="hud-action__label">Feed</span>
               {feedOpen && <span className="hud-action__live" aria-hidden />}
             </button>
-            <button
-              type="button"
-              className={`hud-action hud-action--list ${compareOpen ? 'is-on' : ''} ${shortlistIds.length > 0 ? 'has-items' : ''}`}
-              onClick={onToggleCompare}
-              title="Shortlist / so sánh KOL"
-              aria-pressed={compareOpen}
-            >
-              <span className="hud-action__icon" aria-hidden>
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
-                  <path
-                    d="M12 3.5l2.4 4.9 5.4.8-3.9 3.8.9 5.4L12 15.8 7.2 18.4l.9-5.4L4.2 9.2l5.4-.8L12 3.5z"
-                    fill="currentColor"
-                  />
-                </svg>
-              </span>
-              <span className="hud-action__label">Shortlist</span>
-              {shortlistIds.length > 0 && (
-                <span className="hud-action__badge">{shortlistIds.length}</span>
-              )}
-            </button>
           </div>
         </div>
       </header>
+      {moreOpen && morePos
+        ? createPortal(
+            <div
+              ref={morePanelRef}
+              className="hud-more__panel glass"
+              role="dialog"
+              aria-label="Bộ lọc"
+              style={{ top: morePos.top, left: morePos.left }}
+            >
+              <div className="hud-more__label">Trạng thái</div>
+              <div className="filter-chips filter-chips--inline" title="Status">
+                {STATUSES.map((s) => (
+                  <button
+                    key={s}
+                    type="button"
+                    className={`chip chip--status chip--emoji chip--sm ${filterStatus === s ? 'chip--active' : ''}`}
+                    onClick={() => onFilterStatus(s)}
+                  >
+                    {s === 'All' ? (
+                      'All'
+                    ) : (
+                      <span className="chip-emoji" aria-hidden>
+                        {STATUS_EMOJI[s]}
+                      </span>
+                    )}
+                  </button>
+                ))}
+              </div>
+              <div className="hud-more__label">Niche</div>
+              <div className="filter-chips filter-chips--wrap" title="Niche">
+                {NICHES.map((n) => (
+                  <button
+                    key={n}
+                    type="button"
+                    className={`chip chip--sm chip--niche ${filterNiche === n ? 'chip--active' : ''}`}
+                    style={
+                      n !== 'All'
+                        ? ({
+                            ['--chip-color' as string]: NICHE_COLORS[n],
+                          } as CSSProperties)
+                        : undefined
+                    }
+                    onClick={() => onFilter(n)}
+                  >
+                    {n !== 'All' && <i className="chip-dot" />}
+                    {n === 'All' ? 'All' : n}
+                  </button>
+                ))}
+              </div>
+            </div>,
+            document.body,
+          )
+        : null}
 
       <aside className="hud-left">
         <div className="panel glass panel--rank">

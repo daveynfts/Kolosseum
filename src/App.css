@@ -185,6 +185,11 @@
   cursor: pointer;
 }
 
+.hud-more__icon {
+  display: block;
+  opacity: 0.85;
+}
+
 .hud-more__btn.is-on {
   border-color: rgba(125, 211, 252, 0.45);
   color: #e0f2fe;
@@ -205,16 +210,33 @@
 }
 
 .hud-more__panel {
-  position: absolute;
-  top: calc(100% + 8px);
-  left: 0;
-  z-index: 60;
-  width: min(420px, 78vw);
+  position: fixed;
+  z-index: 80;
+  width: min(460px, 86vw);
   padding: 10px 12px 12px;
   border-radius: 14px;
   display: flex;
   flex-direction: column;
   gap: 8px;
+  pointer-events: auto;
+  overflow: visible;
+}
+
+.hud-more__panel.glass {
+  overflow: visible;
+}
+
+.hud-more__panel .chip--niche.chip--sm {
+  max-width: none;
+  overflow: visible;
+  text-overflow: clip;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.hud-more__panel .filter-chips--wrap {
+  flex-wrap: wrap;
+  overflow: visible;
 }
 
 .hud-more__label {
@@ -405,7 +427,7 @@ button.view-toggle-btn.is-active {
   align-items: center;
 }
 
-/* â”€â”€ HUD action group: Hot / Feed / Shortlist â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* HUD action group */
 .hud-actions {
   display: inline-flex;
   align-items: center;
@@ -507,27 +529,7 @@ button.hud-action:active {
   flex-shrink: 0;
 }
 
-/* Hot â€” status chip (not a button) */
-.hud-action--hot {
-  color: #fecdd3;
-  background: linear-gradient(
-    135deg,
-    rgba(244, 63, 94, 0.18),
-    rgba(251, 113, 133, 0.08)
-  );
-  border: 1px solid rgba(251, 113, 133, 0.35);
-  box-shadow: 0 0 14px rgba(244, 63, 94, 0.12);
-}
-.hud-action--hot .hud-action__icon {
-  color: #fb7185;
-}
-.hud-action--hot .hud-action__badge {
-  background: rgba(244, 63, 94, 0.28);
-  border-color: rgba(251, 113, 133, 0.4);
-  color: #ffe4e6;
-}
-
-/* Feed â€” live panel toggle */
+/* Feed — live panel toggle */
 .hud-action--feed.is-on {
   color: #fecaca;
   background: linear-gradient(
@@ -540,34 +542,6 @@ button.hud-action:active {
 }
 .hud-action--feed.is-on .hud-action__icon {
   color: #fca5a5;
-}
-
-/* Shortlist â€” compare tray */
-.hud-action--list .hud-action__icon {
-  color: #fbbf24;
-  opacity: 0.75;
-}
-.hud-action--list.has-items .hud-action__icon {
-  opacity: 1;
-}
-.hud-action--list.is-on {
-  color: #fef3c7;
-  background: linear-gradient(
-    135deg,
-    rgba(251, 191, 36, 0.22),
-    rgba(245, 158, 11, 0.1)
-  );
-  border: 1px solid rgba(251, 191, 36, 0.45);
-  box-shadow: 0 0 16px rgba(251, 191, 36, 0.12);
-}
-.hud-action--list.is-on .hud-action__icon {
-  color: #fbbf24;
-  opacity: 1;
-}
-.hud-action--list .hud-action__badge {
-  background: rgba(251, 191, 36, 0.22);
-  border-color: rgba(251, 191, 36, 0.4);
-  color: #fde68a;
 }
 
 @media (max-width: 720px) {
@@ -960,16 +934,14 @@ button.hud-action:active {
 }
 
 .rank-pip--filter {
-  width: 14px;
-  height: 14px;
+  width: 16px;
+  height: 16px;
   border-width: 1px;
-  box-shadow: none;
-  background: rgba(6, 10, 20, 0.55);
 }
 
 .rank-pip--filter .rank-mark {
-  width: 8px;
-  height: 8px;
+  width: 12px;
+  height: 12px;
 }
 
 .legend-note--rank {

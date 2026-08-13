@@ -299,9 +299,15 @@ input {
 }
 
 .app-shell > .app,
-.app-shell > .scex-page {
+.app-shell > .scex-page,
+.app-shell > .emp {
   flex: 1;
   min-height: 0;
+}
+
+.app-shell > .emp {
+  height: auto;
+  max-height: none;
 }
 
 /* SCEX partner page fills shell height (internal feed scroll, not page stretch) */
@@ -377,14 +383,43 @@ input {
 }
 
 /* ── Route lazy-load + admin gate ─────────────────────── */
+.boot-splash,
 .route-fallback,
 .canvas-loading {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 10px;
   min-height: 100vh;
-  color: var(--text-secondary);
+  background: #050814;
+  color: rgba(255, 255, 255, 0.7);
   font-size: 0.95rem;
+}
+
+.boot-splash__mark {
+  width: 36px;
+  height: 36px;
+  border-radius: 11px;
+  background:
+    radial-gradient(circle at 28% 28%, rgba(125, 211, 252, 0.95), transparent 52%),
+    radial-gradient(circle at 78% 72%, rgba(192, 132, 252, 0.85), transparent 48%),
+    linear-gradient(145deg, rgba(255, 255, 255, 0.12), rgba(15, 23, 42, 0.5));
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  box-shadow: 0 0 22px rgba(125, 211, 252, 0.35);
+}
+
+.boot-splash__title {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 650;
+  letter-spacing: -0.03em;
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.boot-splash small {
+  color: rgba(255, 255, 255, 0.45);
+  font-size: 0.78rem;
 }
 
 .canvas-loading {

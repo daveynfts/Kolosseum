@@ -3,16 +3,18 @@ import { SceneErrorBoundary } from './components/SceneErrorBoundary'
 import { Hud } from './components/Hud'
 import { FeedPanel } from './components/FeedPanel'
 import { ComparePanel } from './components/ComparePanel'
+import { SiteChrome } from './components/SiteChrome'
+import { ScexEventBanner } from './components/ScexEventBanner'
 import {
   KOLS_EVENT,
   loadKols,
   loadKolsWithSource,
   visibleKols as onlyVisible,
 } from './lib/kolStore'
-import type { ViewMode } from './lib/layout'
 import type { Kol, KolRank, Niche, StatusLabel } from './types'
-import { getKolRank, kolMatchesNiche } from './types'
+import { formatRank, getKolNiches, getKolRank, kolMatchesNiche } from './types'
 import './App.css'
+import './components/SiteChrome.css'
 
 const Scene = lazy(() =>
   import('./components/Scene.tsx').then((m) => ({ default: m.Scene })),
@@ -23,16 +25,24 @@ function SceneLoading() {
 }
 
 const SHORTLIST_MAX = 5
-const VIEW_KEY = 'vn-kol-map-view-mode'
 
-function readViewMode(): ViewMode {
-  try {
-    const v = localStorage.getItem(VIEW_KEY)
-    if (v === '2d' || v === '3d') return v
-  } catch {
-    /* ignore */
-  }
-  return '2d' // default 2.5D (lite cloud)
+function kolMatchesQuery(k: Kol, q: string): boolean {
+  if (!q) return true
+  return (
+    k.displayName.toLowerCase().includes(q) ||
+    k.handle.toLowerCase().includes(q) ||
+    getKolNiches(k).some((n) => n.toLowerCase().includes(q)) ||
+    formatRank(k).toLowerCase().includes(q)
+  )
+}
+
+function sortByScore(list: Kol[]): Kol[] {
+  return [...list].sort(
+    (a, b) =>
+      b.score - a.score ||
+      b.followers - a.followers ||
+      a.handle.localeCompare(b.handle),
+  )
 }
 
 function App() {
@@ -41,22 +51,16 @@ function App() {
   const [filterNiche, setFilterNiche] = useState<Niche | 'All'>('All')
   const [filterRank, setFilterRank] = useState<KolRank | 'All'>('All')
   const [filterStatus, setFilterStatus] = useState<StatusLabel | 'All'>('All')
-  const [autoRotate, setAutoRotate] = useState(true)
-  const [viewMode, setViewMode] = useState<ViewMode>(() => readViewMode())
+  const [searchQuery, setSearchQuery] = useState('')
+  const [autoRotate, setAutoRotate] = useState(false)
   const [feedOpen, setFeedOpen] = useState(false)
   const [compareOpen, setCompareOpen] = useState(false)
   const [shortlistIds, setShortlistIds] = useState<string[]>([])
 
-  const onViewMode = useCallback((mode: ViewMode) => {
-    setViewMode(mode)
-    try {
-      localStorage.setItem(VIEW_KEY, mode)
-    } catch {
-      /* ignore */
-    }
+  useEffect(() => {
+    document.title = "Davey's Radar — VN KOL Map"
   }, [])
 
-  // Shared KOL list: server R2 first, then local/seed
   useEffect(() => {
     let cancelled = false
     void (async () => {
@@ -68,7 +72,6 @@ function App() {
     }
   }, [])
 
-  // Reload when returning from admin / multi-tab / after admin save
   useEffect(() => {
     let seq = 0
     const reloadLocal = () => setKols(loadKols())
@@ -79,7 +82,6 @@ function App() {
         setKols(list)
       })
     }
-    // Prefer server refresh so Surf PDF / bios from R2 win over stale local drafts
     const reloadAfterAdmin = () => {
       reloadLocal()
       reloadServer()
@@ -106,6 +108,15 @@ function App() {
       return true
     })
   }, [publicKols, filterRank, filterNiche, filterStatus])
+
+  const q = searchQuery.trim().toLowerCase()
+  const searchHits = useMemo(() => {
+    const list = q
+      ? visibleKols.filter((k) => kolMatchesQuery(k, q))
+      : visibleKols
+    return sortByScore(list)
+  }, [visibleKols, q])
+  const sceneKols = q ? searchHits : visibleKols
 
   const selected = useMemo(
     () => publicKols.find((k) => k.id === selectedId) ?? null,
@@ -137,71 +148,84 @@ function App() {
     })
   }, [])
 
+  const commitSearch = useCallback(() => {
+    const hit = searchHits[0]
+    if (hit) setSelectedId(hit.id)
+  }, [searchHits])
+
   return (
-    <div className={`app app--${viewMode}`}>
-      <div className="canvas-wrap">
-        <SceneErrorBoundary>
-          <Suspense fallback={<SceneLoading />}>
-            <Scene
-              kols={visibleKols}
-              selectedId={selectedId}
-              filterNiche={filterNiche}
-              onSelect={onSelect}
-              autoRotate={autoRotate}
-              viewMode={viewMode}
-            />
-          </Suspense>
-        </SceneErrorBoundary>
-      </div>
-      <Hud
-        kols={visibleKols}
-        allKols={publicKols}
-        selected={selected}
-        filterNiche={filterNiche}
-        filterRank={filterRank}
-        filterStatus={filterStatus}
-        shortlistIds={shortlistIds}
-        autoRotate={autoRotate}
-        viewMode={viewMode}
-        feedOpen={feedOpen}
-        compareOpen={compareOpen}
-        onFilter={(n) =>
-          setFilterNiche((prev) => (n !== 'All' && prev === n ? 'All' : n))
-        }
-        onFilterRank={(r) =>
-          setFilterRank((prev) => (r !== 'All' && prev === r ? 'All' : r))
-        }
-        onFilterStatus={(s) =>
-          setFilterStatus((prev) => (s !== 'All' && prev === s ? 'All' : s))
-        }
-        onSelect={(k) => setSelectedId(k?.id ?? null)}
-        onToggleRotate={() => setAutoRotate((v) => !v)}
-        onViewMode={onViewMode}
-        onToggleFeed={() => setFeedOpen((v) => !v)}
-        onToggleCompare={() => setCompareOpen((v) => !v)}
-        onToggleShortlist={onToggleShortlist}
-      />
-      <FeedPanel
-        open={feedOpen}
-        onClose={() => setFeedOpen(false)}
-        kols={publicKols}
-        onSelectKol={(k) => {
-          if (k) {
-            setSelectedId(k.id)
-          }
+    <div className="app-shell">
+      <SiteChrome
+        active="map"
+        search={{
+          value: searchQuery,
+          onChange: setSearchQuery,
+          onSubmit: commitSearch,
+          placeholder: 'Tìm KOL, @handle, niche…',
         }}
       />
-      <ComparePanel
-        open={compareOpen}
-        shortlist={shortlist}
-        onClose={() => setCompareOpen(false)}
-        onRemove={(id) =>
-          setShortlistIds((prev) => prev.filter((x) => x !== id))
-        }
-        onClear={() => setShortlistIds([])}
-        onSelect={(k) => setSelectedId(k.id)}
-      />
-      <div className="vignette" />
+      <ScexEventBanner />
+      <div className="app app--2d">
+        <div className="canvas-wrap">
+          <SceneErrorBoundary>
+            <Suspense fallback={<SceneLoading />}>
+              <Scene
+                kols={sceneKols}
+                selectedId={selectedId}
+                filterNiche={filterNiche}
+                onSelect={onSelect}
+                autoRotate={autoRotate}
+              />
+            </Suspense>
+          </SceneErrorBoundary>
+        </div>
+        <Hud
+          kols={q ? searchHits : visibleKols}
+          allKols={publicKols}
+          selected={selected}
+          filterNiche={filterNiche}
+          filterRank={filterRank}
+          filterStatus={filterStatus}
+          searchQuery={searchQuery}
+          shortlistIds={shortlistIds}
+          autoRotate={autoRotate}
+          feedOpen={feedOpen}
+          compareOpen={compareOpen}
+          onFilter={(n) =>
+            setFilterNiche((prev) => (n !== 'All' && prev === n ? 'All' : n))
+          }
+          onFilterRank={(r) =>
+            setFilterRank((prev) => (r !== 'All' && prev === r ? 'All' : r))
+          }
+          onFilterStatus={(s) =>
+            setFilterStatus((prev) => (s !== 'All' && prev === s ? 'All' : s))
+          }
+          onSelect={(k) => setSelectedId(k?.id ?? null)}
+          onToggleRotate={() => setAutoRotate((v) => !v)}
+          onToggleFeed={() => setFeedOpen((v) => !v)}
+          onToggleCompare={() => setCompareOpen((v) => !v)}
+          onToggleShortlist={onToggleShortlist}
+        />
+        <FeedPanel
+          open={feedOpen}
+          onClose={() => setFeedOpen(false)}
+          kols={publicKols}
+          onSelectKol={(k) => {
+            if (k) setSelectedId(k.id)
+          }}
+        />
+        <ComparePanel
+          open={compareOpen}
+          shortlist={shortlist}
+          onClose={() => setCompareOpen(false)}
+          onRemove={(id) =>
+            setShortlistIds((prev) => prev.filter((x) => x !== id))
+          }
+          onClear={() => setShortlistIds([])}
+          onSelect={(k) => setSelectedId(k.id)}
+        />
+        <div className="vignette" />
+      </div>
     </div>
   )
 }

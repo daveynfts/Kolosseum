@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type CSSProperties } from 'react'
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
 import type { Kol, KolRank, Niche, StatusLabel } from '../types'
 import {
   formatRank,
@@ -14,7 +14,6 @@ import {
   STATUS_EMOJI,
   STATUS_LABELS,
 } from '../types'
-import type { ViewMode } from '../lib/layout'
 import { AvatarImg } from './AvatarImg'
 import { BioRichText } from './BioRichText'
 import { RankBadge } from './RankBadge'
@@ -52,9 +51,9 @@ interface Props {
   filterNiche: Niche | 'All'
   filterRank: KolRank | 'All'
   filterStatus: StatusLabel | 'All'
+  searchQuery: string
   shortlistIds: string[]
   autoRotate: boolean
-  viewMode: ViewMode
   feedOpen: boolean
   compareOpen: boolean
   onFilter: (n: Niche | 'All') => void
@@ -62,7 +61,6 @@ interface Props {
   onFilterStatus: (s: StatusLabel | 'All') => void
   onSelect: (kol: Kol | null) => void
   onToggleRotate: () => void
-  onViewMode: (mode: ViewMode) => void
   onToggleFeed: () => void
   onToggleCompare: () => void
   onToggleShortlist: (kol: Kol) => void
@@ -75,9 +73,9 @@ export function Hud({
   filterNiche,
   filterRank,
   filterStatus,
+  searchQuery,
   shortlistIds,
   autoRotate,
-  viewMode,
   feedOpen,
   compareOpen,
   onFilter,
@@ -85,15 +83,17 @@ export function Hud({
   onFilterStatus,
   onSelect,
   onToggleRotate,
-  onViewMode,
   onToggleFeed,
   onToggleCompare,
   onToggleShortlist,
 }: Props) {
   const hotCount = kols.filter((k) => k.statusLabel === 'hot').length
-  const [topQuery, setTopQuery] = useState('')
+  const [moreOpen, setMoreOpen] = useState(false)
+  const moreRef = useRef<HTMLDivElement>(null)
+  const extraFilters =
+    (filterStatus !== 'All' ? 1 : 0) + (filterNiche !== 'All' ? 1 : 0)
   const top = useMemo(() => {
-    const q = topQuery.trim().toLowerCase()
+    const q = searchQuery.trim().toLowerCase()
     const sorted = [...kols].sort(
       (a, b) =>
         b.score - a.score ||
@@ -110,7 +110,7 @@ export function Hud({
           formatRank(k).toLowerCase().includes(q),
       )
       .slice(0, 30)
-  }, [kols, topQuery])
+  }, [kols, searchQuery])
   const inShortlist = selected ? shortlistIds.includes(selected.id) : false
   const [detailTab, setDetailTab] = useState<
     'overview' | 'analysis' | 'follows'
@@ -120,42 +120,20 @@ export function Hud({
     setDetailTab('overview')
   }, [selected?.id])
 
+  useEffect(() => {
+    if (!moreOpen) return
+    const onDoc = (e: MouseEvent) => {
+      if (moreRef.current && !moreRef.current.contains(e.target as Node)) {
+        setMoreOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', onDoc)
+    return () => document.removeEventListener('mousedown', onDoc)
+  }, [moreOpen])
+
   return (
     <>
       <header className="hud-bar glass">
-        <div className="hud-bar__brand">
-          <div className="brand-mark brand-mark--sm" />
-          <h1>VN KOL Map</h1>
-        </div>
-
-        {/* Always visible — not after filter chips */}
-        <div
-          className="view-toggle view-toggle--bar"
-          role="group"
-          aria-label="View mode"
-        >
-          <button
-            type="button"
-            className={viewMode === '2d' ? 'is-active' : ''}
-            onClick={() => onViewMode('2d')}
-            title="2.5D — cloud 3D, render nhẹ"
-            aria-pressed={viewMode === '2d'}
-          >
-            2.5D
-          </button>
-          <button
-            type="button"
-            className={viewMode === '3d' ? 'is-active' : ''}
-            onClick={() => onViewMode('3d')}
-            title="3D full — liquid glass"
-            aria-pressed={viewMode === '3d'}
-          >
-            3D
-          </button>
-        </div>
-
-        <div className="hud-bar__divider" aria-hidden />
-
         <div className="hud-bar__filters">
           <div className="filter-seg filter-seg--inline filter-seg--ranks" title="Rank">
             <button
@@ -189,58 +167,63 @@ export function Hud({
             ))}
           </div>
 
-          <div className="filter-chips filter-chips--inline" title="Status">
-            {STATUSES.map((s) => (
-              <button
-                key={s}
-                type="button"
-                className={`chip chip--status chip--emoji chip--sm ${filterStatus === s ? 'chip--active' : ''}`}
-                onClick={() => onFilterStatus(s)}
-                title={
-                  s === 'All'
-                    ? 'Show all status'
-                    : filterStatus === s
-                      ? 'Click again to clear'
-                      : `Filter ${STATUS_LABELS[s]}`
-                }
-              >
-                {s === 'All' ? (
-                  'All'
-                ) : (
-                  <span className="chip-emoji" aria-hidden>
-                    {STATUS_EMOJI[s]}
-                  </span>
-                )}
-              </button>
-            ))}
-          </div>
-
-          <div className="filter-chips filter-chips--inline" title="Niche">
-            {NICHES.map((n) => (
-              <button
-                key={n}
-                type="button"
-                className={`chip chip--sm chip--niche ${filterNiche === n ? 'chip--active' : ''}`}
-                style={
-                  n !== 'All'
-                    ? ({
-                        ['--chip-color' as string]: NICHE_COLORS[n],
-                      } as CSSProperties)
-                    : undefined
-                }
-                onClick={() => onFilter(n)}
-                title={
-                  n === 'All'
-                    ? 'Show all niches'
-                    : filterNiche === n
-                      ? 'Click again to clear'
-                      : `Filter ${n}`
-                }
-              >
-                {n !== 'All' && <i className="chip-dot" />}
-                {n === 'All' ? 'All' : n}
-              </button>
-            ))}
+          <div className="hud-more" ref={moreRef}>
+            <button
+              type="button"
+              className={`hud-more__btn ${moreOpen || extraFilters ? 'is-on' : ''}`}
+              onClick={() => setMoreOpen((v) => !v)}
+              aria-expanded={moreOpen}
+              title="Lọc status và niche"
+            >
+              Lọc
+              {extraFilters > 0 && (
+                <span className="hud-more__badge">{extraFilters}</span>
+              )}
+            </button>
+            {moreOpen && (
+              <div className="hud-more__panel glass" role="dialog" aria-label="Bộ lọc">
+                <div className="hud-more__label">Trạng thái</div>
+                <div className="filter-chips filter-chips--inline" title="Status">
+                  {STATUSES.map((s) => (
+                    <button
+                      key={s}
+                      type="button"
+                      className={`chip chip--status chip--emoji chip--sm ${filterStatus === s ? 'chip--active' : ''}`}
+                      onClick={() => onFilterStatus(s)}
+                    >
+                      {s === 'All' ? (
+                        'All'
+                      ) : (
+                        <span className="chip-emoji" aria-hidden>
+                          {STATUS_EMOJI[s]}
+                        </span>
+                      )}
+                    </button>
+                  ))}
+                </div>
+                <div className="hud-more__label">Niche</div>
+                <div className="filter-chips filter-chips--wrap" title="Niche">
+                  {NICHES.map((n) => (
+                    <button
+                      key={n}
+                      type="button"
+                      className={`chip chip--sm chip--niche ${filterNiche === n ? 'chip--active' : ''}`}
+                      style={
+                        n !== 'All'
+                          ? ({
+                              ['--chip-color' as string]: NICHE_COLORS[n],
+                            } as CSSProperties)
+                          : undefined
+                      }
+                      onClick={() => onFilter(n)}
+                    >
+                      {n !== 'All' && <i className="chip-dot" />}
+                      {n === 'All' ? 'All' : n}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
@@ -319,40 +302,16 @@ export function Hud({
             <div>
               <div className="panel-title">Top Score</div>
               <div className="panel-sub">
-                {topQuery.trim()
+                {searchQuery.trim()
                   ? `${top.length} match · max 30`
                   : `${kols.length} visible · top 10`}
               </div>
             </div>
             <span className="panel-badge">{top.length}</span>
           </div>
-          <label className="rank-search">
-            <span className="rank-search__icon" aria-hidden>
-              ⌕
-            </span>
-            <input
-              type="text"
-              value={topQuery}
-              onChange={(e) => setTopQuery(e.target.value)}
-              placeholder="Tìm tên, @handle, niche…"
-              aria-label="Search Top Score"
-              autoComplete="off"
-              onKeyDown={(e) => e.stopPropagation()}
-            />
-            {topQuery && (
-              <button
-                type="button"
-                className="rank-search__clear"
-                title="Xóa"
-                onClick={() => setTopQuery('')}
-              >
-                ×
-              </button>
-            )}
-          </label>
           {top.length === 0 ? (
             <div className="rank-empty">
-              {topQuery.trim()
+              {searchQuery.trim()
                 ? 'Không có KOL khớp tìm kiếm'
                 : 'No KOLs match filters'}
             </div>
@@ -501,10 +460,10 @@ export function Hud({
 
       <div className="hud-bottom">
         <button type="button" className="btn" onClick={onToggleRotate}>
-          {autoRotate ? '⏸ Pause rotate' : '▶ Auto rotate'}
+          {autoRotate ? 'Dừng xoay' : 'Xoay map'}
         </button>
         <button type="button" className="btn" onClick={onToggleCompare}>
-          {compareOpen ? 'Hide shortlist' : 'Open shortlist'}
+          {compareOpen ? 'Ẩn shortlist' : 'Shortlist'}
         </button>
       </div>
 

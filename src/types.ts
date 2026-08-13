@@ -188,11 +188,11 @@ export const RANK_RING_COLORS: Record<KolRank, string> = {
 
 /** Outer ring thickness multiplier by rank (higher = thicker border) */
 export const RANK_RING_WIDTH: Record<KolRank, number> = {
-  challenger: 1.28,
-  master: 1.24,
-  diamond: 1.22,
+  challenger: 1.38,
+  master: 1.3,
+  diamond: 1.24,
   platinum: 1.18,
-  gold: 1.16,
+  gold: 1.12,
 }
 
 /** Map filter tier → ranks that belong to that tier bucket */

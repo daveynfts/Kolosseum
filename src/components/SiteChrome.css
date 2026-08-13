@@ -1,0 +1,131 @@
+.site-chrome {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 42px;
+  padding: 0 12px;
+  background: rgba(6, 8, 16, 0.92);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  z-index: 50;
+}
+
+.site-chrome__brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  text-decoration: none;
+  color: inherit;
+}
+
+.site-chrome__mark {
+  width: 22px;
+  height: 22px;
+  border-radius: 7px;
+  background:
+    radial-gradient(circle at 28% 28%, rgba(125, 211, 252, 0.95), transparent 52%),
+    radial-gradient(circle at 78% 72%, rgba(192, 132, 252, 0.85), transparent 48%),
+    linear-gradient(145deg, rgba(255, 255, 255, 0.12), rgba(15, 23, 42, 0.5));
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  box-shadow: 0 0 14px rgba(125, 211, 252, 0.28);
+}
+
+.site-chrome__name {
+  font-size: 0.82rem;
+  font-weight: 650;
+  letter-spacing: -0.03em;
+  white-space: nowrap;
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.site-chrome__tabs {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px;
+  border-radius: 9px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  flex-shrink: 0;
+}
+
+.site-chrome__tab {
+  padding: 5px 11px;
+  border-radius: 7px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: rgba(255, 255, 255, 0.55);
+  text-decoration: none;
+}
+
+.site-chrome__tab:hover {
+  color: rgba(255, 255, 255, 0.88);
+}
+
+.site-chrome__tab.is-active {
+  color: #0b1220;
+  background: linear-gradient(180deg, #e2e8f0, #94a3b8);
+}
+
+.site-chrome__search {
+  flex: 1 1 180px;
+  min-width: 0;
+  max-width: 360px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 30px;
+  padding: 0 8px 0 10px;
+  border-radius: 9px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.site-chrome__search-icon {
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 0.85rem;
+  line-height: 1;
+}
+
+.site-chrome__search input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.92);
+  font: inherit;
+  font-size: 0.78rem;
+  outline: none;
+}
+
+.site-chrome__search-clear {
+  border: 0;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+  font-size: 1rem;
+  line-height: 1;
+  padding: 0 2px;
+}
+
+.site-chrome__spacer {
+  flex: 1;
+}
+
+@media (max-width: 720px) {
+  .site-chrome {
+    gap: 8px;
+    padding: 0 8px;
+  }
+  .site-chrome__name {
+    display: none;
+  }
+  .site-chrome__tab {
+    padding: 5px 8px;
+  }
+  .site-chrome__search {
+    max-width: none;
+  }
+}

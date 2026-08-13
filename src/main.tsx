@@ -3,7 +3,9 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import { SceneErrorBoundary } from './components/SceneErrorBoundary'
+import { SiteChrome } from './components/SiteChrome'
 import { getAdminToken, setAdminToken } from './lib/feedStore'
+import './components/SiteChrome.css'
 
 const App = lazy(() => import('./App.tsx'))
 const AdminDashboard = lazy(() =>
@@ -29,8 +31,10 @@ const ScexEventBanner = lazy(() =>
 
 function RouteFallback() {
   return (
-    <div className="route-fallback" aria-busy="true">
-      Loading…
+    <div className="boot-splash" aria-busy="true">
+      <span className="boot-splash__mark" aria-hidden />
+      <p className="boot-splash__title">Davey's Radar</p>
+      <small>Bấm avatar · Lọc rank · Mở Feed</small>
     </div>
   )
 }
@@ -163,7 +167,10 @@ function Root() {
     return (
       <Suspense fallback={<RouteFallback />}>
         <SceneErrorBoundary title="Event map failed to render">
-          <EventMapPage />
+          <div className="app-shell">
+            <SiteChrome active="event" />
+            <EventMapPage />
+          </div>
         </SceneErrorBoundary>
       </Suspense>
     )
@@ -174,6 +181,7 @@ function Root() {
       <Suspense fallback={<RouteFallback />}>
         <SceneErrorBoundary title="SCEX page failed to render">
           <div className="app-shell">
+            <SiteChrome active="scex" />
             <ScexEventBanner />
             <ScexTrackingPage />
           </div>
@@ -184,10 +192,7 @@ function Root() {
 
   return (
     <Suspense fallback={<RouteFallback />}>
-      <div className="app-shell">
-        <ScexEventBanner />
-        <App />
-      </div>
+      <App />
     </Suspense>
   )
 }

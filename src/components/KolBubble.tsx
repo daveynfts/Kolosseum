@@ -9,14 +9,13 @@ import {
   primaryNiche,
   RANK_RING_COLORS,
   RANK_RING_WIDTH,
-  STATUS_EMOJI,
-  STATUS_LABELS,
 } from '../types'
 import { radiusForScore } from '../lib/layout'
 import { resolveKolAvatarTextureUrl } from '../lib/avatar'
 
 import { AvatarImg } from './AvatarImg'
 import { RankBadge } from './RankBadge'
+import { StatusBadge } from './StatusBadge'
 import { RankRingDecor } from './RankRingDecor'
 import { TextureErrorBoundary } from './TextureErrorBoundary'
 
@@ -84,8 +83,6 @@ function AvatarNode({
   const ringOuter = RANK_RING_WIDTH[rank]
   const baseR = radiusForScore(kol.score) * 1.08
   const status = (kol.statusLabel ?? 'stable') as StatusLabel
-  const statusEmoji = STATUS_EMOJI[status] ?? '🟢'
-  const statusTitle = STATUS_LABELS[status] ?? 'Stable'
   const isHot = status === 'hot' || kol.hotScore >= 78
   const isFocus = selected || hovered
   const segs = 48
@@ -287,10 +284,7 @@ function AvatarNode({
                   rank={kol.rank}
                   size="sm"
                 />
-                <span className="bubble-label__status-pill" title={statusTitle}>
-                  <span aria-hidden>{statusEmoji}</span>
-                  {statusTitle}
-                </span>
+                <StatusBadge status={status} size="sm" />
               </div>
             </div>
           </div>

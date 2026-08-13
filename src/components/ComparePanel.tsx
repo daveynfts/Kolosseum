@@ -5,13 +5,12 @@ import {
   getKolNiches,
   NICHE_COLORS,
   primaryNiche,
-  formatStatus,
-  STATUS_LABELS,
 } from '../types'
 import type { StatusLabel } from '../types'
 import { AvatarImg } from './AvatarImg'
 import { BioRichText } from './BioRichText'
 import { RankBadge } from './RankBadge'
+import { StatusBadge } from './StatusBadge'
 
 interface Props {
   open: boolean
@@ -264,9 +263,7 @@ export function ComparePanel({
                     rank={k.rank}
                     size="sm"
                   />
-                  <span className="tag tag--status-emoji" title={STATUS_LABELS[st]}>
-                    {formatStatus(st)}
-                  </span>
+                  <StatusBadge status={st} size="sm" />
                   {niches.length > 1 && (
                     <span
                       className="tag"

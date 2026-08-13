@@ -97,3 +97,19 @@
 .rank-badge--gold {
   color: #fef3c7;
 }
+
+.rank-badge--hot {
+  color: #fecdd3;
+}
+.rank-badge--active {
+  color: #bbf7d0;
+}
+.rank-badge--stable {
+  color: #bae6fd;
+}
+.rank-badge--quiet {
+  color: #fde68a;
+}
+.rank-badge--dormant {
+  color: #cbd5e1;
+}

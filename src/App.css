@@ -239,6 +239,29 @@
   overflow: visible;
 }
 
+.hud-more__status {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.seg-btn--status {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px 3px 5px !important;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.seg-btn--status.is-active {
+  color: var(--rank, #fff) !important;
+  background: color-mix(in srgb, var(--rank, #a5b4fc) 14%, rgba(12, 14, 22, 0.55)) !important;
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, var(--rank, #a5b4fc) 42%, transparent),
+    0 0 10px color-mix(in srgb, var(--rank, #a5b4fc) 14%, transparent);
+}
+
 .hud-more__label {
   font-size: 0.62rem;
   font-weight: 700;

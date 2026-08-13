@@ -3,7 +3,6 @@ import { createPortal } from 'react-dom'
 import type { Kol, KolRank, Niche, StatusLabel } from '../types'
 import {
   formatRank,
-  formatStatus,
   getKolNiches,
   getKolRank,
   NICHE_COLORS,
@@ -11,13 +10,13 @@ import {
   RANK_COLORS,
   RANK_LABELS,
   RANK_ORDER,
-
-  STATUS_EMOJI,
+  STATUS_COLORS,
   STATUS_LABELS,
 } from '../types'
 import { AvatarImg } from './AvatarImg'
 import { BioRichText } from './BioRichText'
 import { RankBadge } from './RankBadge'
+import { StatusBadge } from './StatusBadge'
 import { SurfAnalysisMock } from './SurfAnalysisMock'
 import { RecentFollowersPanel } from './RecentFollowersPanel'
 import { hasFollowerTabData } from '../data/recentFollowers'
@@ -280,20 +279,41 @@ export function Hud({
               style={{ top: morePos.top, left: morePos.left }}
             >
               <div className="hud-more__label">Trạng thái</div>
-              <div className="filter-chips filter-chips--inline" title="Status">
+              <div className="hud-more__status" title="Status">
                 {STATUSES.map((s) => (
                   <button
                     key={s}
                     type="button"
-                    className={`chip chip--status chip--emoji chip--sm ${filterStatus === s ? 'chip--active' : ''}`}
+                    className={`seg-btn seg-btn--status ${filterStatus === s ? 'is-active' : ''}`}
+                    style={
+                      s !== 'All'
+                        ? ({
+                            ['--rank' as string]: STATUS_COLORS[s],
+                          } as CSSProperties)
+                        : undefined
+                    }
                     onClick={() => onFilterStatus(s)}
+                    title={
+                      s === 'All'
+                        ? 'All statuses'
+                        : filterStatus === s
+                          ? 'Click again to clear'
+                          : `Filter ${STATUS_LABELS[s]}`
+                    }
                   >
                     {s === 'All' ? (
                       'All'
                     ) : (
-                      <span className="chip-emoji" aria-hidden>
-                        {STATUS_EMOJI[s]}
-                      </span>
+                      <>
+                        <StatusBadge
+                          status={s}
+                          size="pip"
+                          className="rank-pip--filter"
+                        />
+                        <span className="seg-btn__rank-label">
+                          {STATUS_LABELS[s]}
+                        </span>
+                      </>
                     )}
                   </button>
                 ))}
@@ -398,12 +418,10 @@ export function Hud({
                               : ''}
                           </small>
                           <span className="rank-meta-row">
-                            <span
-                              className="rank-status rank-status--emoji"
-                              title={STATUS_LABELS[(k.statusLabel ?? 'stable') as StatusLabel]}
-                            >
-                              {formatStatus(k.statusLabel)}
-                            </span>
+                            <StatusBadge
+                              status={(k.statusLabel ?? 'stable') as StatusLabel}
+                              size="sm"
+                            />
                             <span>{fmt(k.followers)}</span>
                             {k.activity7dPosts != null && (
                               <span>
@@ -445,44 +463,6 @@ export function Hud({
               })}
             </ul>
           )}
-        </div>
-
-        <div className="panel glass panel--legend">
-          <div className="panel-title">Legend</div>
-          <div className="legend-rank-grid" aria-label="Rank ring patterns">
-            {RANK_ORDER.map((r) => (
-              <div key={r} className="legend-rank-item">
-                <span
-                  className={`legend-rank-ring legend-rank-ring--${r}`}
-                  style={{
-                    borderColor: RANK_COLORS[r],
-                    color: RANK_COLORS[r],
-                    boxShadow: `0 0 8px ${RANK_COLORS[r]}44`,
-                  }}
-                  aria-hidden
-                />
-                <span className="legend-rank-meta">
-                  <span style={{ color: RANK_COLORS[r] }}>{RANK_LABELS[r]}</span>
-                </span>
-              </div>
-            ))}
-          </div>
-          <div className="legend-status-grid" aria-label="Status emoji">
-            {(
-              [
-                'hot',
-                'active',
-                'stable',
-                'quiet',
-                'dormant',
-              ] as StatusLabel[]
-            ).map((s) => (
-              <div key={s} className="legend-status-item">
-                <span className="legend-status-emoji">{STATUS_EMOJI[s]}</span>
-                <span>{STATUS_LABELS[s]}</span>
-              </div>
-            ))}
-          </div>
         </div>
       </aside>
 
@@ -595,12 +575,7 @@ export function Hud({
                   </span>
                 )}
                 {selected.statusLabel && (
-                  <span
-                    className="tag tag--status-emoji"
-                    title={STATUS_LABELS[selected.statusLabel]}
-                  >
-                    {formatStatus(selected.statusLabel)}
-                  </span>
+                  <StatusBadge status={selected.statusLabel} size="sm" />
                 )}
                 {selected.verified && (
                   <span className="tag" style={{ color: '#7dd3fc' }}>

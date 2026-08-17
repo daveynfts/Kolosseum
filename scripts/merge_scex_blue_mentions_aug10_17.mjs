@@ -412,6 +412,11 @@ async function main() {
       await sleep(120)
       continue
     }
+    if (/^@xnxx_en\s+@scexofficial\s+@convictionvn\b/i.test(String(e.text || '').trim())) {
+      console.log('skip (event-task spam)')
+      await sleep(80)
+      continue
+    }
     if (e.thin) thin++
     if (e.followers || e.displayName) {
       enrichByHandle.set(e.handle, {

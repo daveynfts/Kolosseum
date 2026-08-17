@@ -5,6 +5,7 @@ import {
   defaultScexConfig,
   dominantScexSentiment,
   inferScexSentiment,
+  isScexEventTaskSpam,
   recomputeScexSentiments,
   scoreScexActor,
   type ScexActor,
@@ -30,6 +31,28 @@ describe('computeQuadrant', () => {
 
   it('maps low volume + low quality to ignore', () => {
     expect(computeQuadrant(40, 40, vSplit, qSplit)).toBe('ignore')
+  })
+})
+
+describe('isScexEventTaskSpam', () => {
+  it('flags the XNXX_EN + SCEX + Conviction mention cluster', () => {
+    expect(
+      isScexEventTaskSpam(
+        '@XNXX_EN @scexofficial @Convictionvn Vietnam crypto growing',
+      ),
+    ).toBe(true)
+    expect(
+      isScexEventTaskSpam(
+        '@xnxx_en  @SCEXofficial   @convictionvn GM',
+      ),
+    ).toBe(true)
+  })
+
+  it('keeps real SCEX mentions', () => {
+    expect(
+      isScexEventTaskSpam('Chúc mừng @scexofficial hợp tác Conviction'),
+    ).toBe(false)
+    expect(isScexEventTaskSpam('@scexofficial demo hay')).toBe(false)
   })
 })
 

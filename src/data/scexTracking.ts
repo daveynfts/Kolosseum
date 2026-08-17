@@ -615,6 +615,16 @@ function foldVi(s: string): string {
  * Infer SCEX post sentiment from body text.
  * Fixes common export mistakes (e.g. partnership news labeled “Bearish”).
  */
+/**
+ * Event-task spam: reply farms that lead with the same mention cluster
+ * `@XNXX_EN @scexofficial @Convictionvn …`
+ */
+export function isScexEventTaskSpam(text: string): boolean {
+  const t = String(text || '').trim()
+  if (!t) return false
+  return /^@xnxx_en\s+@scexofficial\s+@convictionvn\b/i.test(t)
+}
+
 export function inferScexSentiment(text: string): ScexSentiment {
   const raw = String(text || '').trim()
   if (raw.length < 8) return 'neutral'

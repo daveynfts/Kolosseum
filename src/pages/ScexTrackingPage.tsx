@@ -4,6 +4,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   actorPassesThresholds,
+  isScexEventTaskSpam,
   actorVolumeMetric,
   isMixedSentiment,
   recomputeScexScores,
@@ -503,7 +504,9 @@ export function ScexTrackingPage() {
 
   const allPosts = useMemo(() => {
     if (!dataset) return [] as ScexPost[]
-    return dataset.posts.filter((p) => !p.hidden)
+    return dataset.posts.filter(
+      (p) => !p.hidden && !isScexEventTaskSpam(p.text),
+    )
   }, [dataset])
 
   /** Handles that actually have feed posts (for filter chips) */

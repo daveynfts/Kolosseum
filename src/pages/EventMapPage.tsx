@@ -57,9 +57,7 @@ import { applyEventMapSeo } from '../lib/eventMapSeo'
 import { withBase } from '../lib/base'
 import { isSafeImageUrl, safeHref } from '../lib/safeUrl'
 import {
-  CONVICTION_2026_SLUG,
   DEFAULT_EVENT_SLUG,
-  LIVE_EVENT_SLUG,
   editionMetaForSlug,
   eventPublicPath,
   isConvictionEdition,
@@ -1627,14 +1625,6 @@ export function EventMapPage() {
             <div className="emp__btn-group" role="group" aria-label={tt('distGroup')}>
               <button
                 type="button"
-                className={`emp__btn ${distOrigin === 'sala' ? 'emp__btn--primary' : ''}`}
-                onClick={() => setDistOrigin('sala')}
-                title={tt('fromConvictionTitle')}
-              >
-                {tt('fromConviction')}
-              </button>
-              <button
-                type="button"
                 className={`emp__btn ${distOrigin === 'me' ? 'emp__btn--primary' : ''}`}
                 disabled={geoBusy}
                 onClick={() => {
@@ -1699,15 +1689,6 @@ export function EventMapPage() {
                   ? tt('expandList')
                   : tt('collapseList')}
             </button>
-            {eventSlug === LIVE_EVENT_SLUG ? (
-              <a
-                className="emp__btn"
-                href={eventPublicPath(CONVICTION_2026_SLUG)}
-                title="Conviction 2026 archive"
-              >
-                Archive 2026
-              </a>
-            ) : null}
             {editionMeta?.lumaUrl ? (
               <a
                 className="emp__btn"

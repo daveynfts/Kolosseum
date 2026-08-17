@@ -787,6 +787,9 @@ export function ScexTrackingPage() {
             <div className="scex-page__meta">
               <span className="scex-page__window">
                 {config.timeWindowDays} ngày gần đây
+                {dataset?.asOf
+                  ? ` · chốt ${dataset.asOf.slice(0, 10)}`
+                  : ''}
               </span>
               <span className="scex-page__socials" aria-label="Kênh SCEX">
                 <a

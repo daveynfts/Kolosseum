@@ -703,6 +703,42 @@ async function fetchViaJinaFxtwitter(kol) {
   return posts
 }
 
+async function fetchViaFxLatest(kol) {
+  const handle = kol.handle
+  try {
+    const r = await fetch(`https://api.fxtwitter.com/${handle}`, {
+      headers: {
+        Accept: 'application/json',
+        'User-Agent': 'vn-kol-radar/1.0',
+      },
+      signal: AbortSignal.timeout(12000),
+    })
+    if (!r.ok) return []
+    const j = await r.json()
+    const latest =
+      j.latest_tweet || j.user?.latest_tweet || j.tweet || null
+    if (!latest?.id && !latest?.url) return []
+    const id = String(latest.id || '')
+    if (!id) return []
+    const tw = await fetchTweetById(id)
+    if (!tw) return []
+    if (
+      tw.handle &&
+      tw.handle.toLowerCase() !== handle.toLowerCase()
+    ) {
+      return []
+    }
+    tw.handle = handle
+    tw.displayName = kol.displayName || tw.displayName || handle
+    tw.avatarLocal = `/avatars/${handle}.jpg`
+    const t = Date.parse(tw.createdAt)
+    if (Number.isFinite(t) && t < Date.now() - WEEK_MS) return []
+    return tw.text ? [tw] : []
+  } catch {
+    return []
+  }
+}
+
 async function fetchLivePostsForKol(kol) {
   // Primary: X guest GraphQL timeline
   try {
@@ -711,9 +747,16 @@ async function fetchLivePostsForKol(kol) {
   } catch {
     /* fallback */
   }
-  // Fallback: jina + fxtwitter
+  // Fallback: jina + fxtwitter status IDs
   try {
-    return await fetchViaJinaFxtwitter(kol)
+    const viaJina = await fetchViaJinaFxtwitter(kol)
+    if (viaJina.length) return viaJina
+  } catch {
+    /* next */
+  }
+  // Last resort: fxtwitter profile latest tweet
+  try {
+    return await fetchViaFxLatest(kol)
   } catch {
     return []
   }

@@ -3,7 +3,7 @@ import type { FormEvent, ReactNode } from 'react'
 export type SiteChromePage = 'map' | 'scex' | 'event'
 
 const TABS: Array<{ id: SiteChromePage; href: string; label: string }> = [
-  { id: 'map', href: '/', label: 'Map' },
+  { id: 'map', href: '/', label: 'VN KOLs' },
   { id: 'scex', href: '/scex', label: 'SCEX' },
   {
     id: 'event',

@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-08-13T04:23:11.043Z",
-  "source": "admin · refresh Challenger+Master+Diamond · liveX=68 new=16 syn=0 · archive >14d",
+  "generatedAt": "2026-08-17T04:30:22.781Z",
+  "source": "admin · refresh Challenger+Master+Diamond · liveX=60 new=16 syn=0 · archive >14d",
   "mode": "admin",
   "tier": 1,
   "ranks": [
@@ -10,6 +10,7 @@
   ],
   "kolCount": 15,
   "handles": [
+    "BiCanTho",
     "ThuanCapital",
     "MartinHo99999",
     "TCVNcommunity",
@@ -22,13 +23,30 @@
     "RichardDang",
     "LeDuyCryptoMan",
     "hc_capital",
-    "BiCanTho",
     "LensMoso",
     "mintt_34"
   ],
-  "postCount": 68,
-  "realPostCount": 68,
+  "postCount": 60,
+  "realPostCount": 60,
   "posts": [
+    {
+      "id": "admin-msr913gh-urjdm",
+      "handle": "BiCanTho",
+      "displayName": "Bi Cần Thơ | Cashback.Exchange",
+      "text": "Cái này thì khá cụ thể rồi anh em nhé. Anh em nào đang làm trong lĩnh vực Crypto có thể tham khảo để hiểu đúng và tránh bị nhầm lẫn.\n\nRiêng Nghị định 284/2026/NĐ-CP, có hiệu lực từ ngày 01/09/2026, phạm vi điều chỉnh tập trung vào tài sản mã hóa và thị trường tài sản mã hóa. Trong khi đó, CFD là hợp đồng chênh lệch – một dạng sản phẩm tài chính phái sinh, có bản chất và cơ chế giao dịch khác với Crypto.\n\nVì vậy, không nên đánh đồng CFD với Crypto rồi mặc nhiên áp các quy định dành cho tài sản mã hóa sang CFD. Hai loại này cần được phân biệt rõ khi đọc và áp dụng quy định pháp luật.",
+      "createdAt": "2026-08-13T03:53:38.000Z",
+      "likes": 24,
+      "reposts": 0,
+      "replies": 4,
+      "views": 7984,
+      "media": [
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/5de7fff6a164af838ebee06f"
+      ],
+      "isReply": false,
+      "url": "https://x.com/BiCanTho/status/2087749392543699143",
+      "avatarLocal": "/avatars/BiCanTho.jpg",
+      "isSynthetic": false
+    },
     {
       "id": "2087746147901493488",
       "handle": "ThuanCapital",
@@ -40,6 +58,7 @@
       "replies": 1,
       "views": 2424,
       "media": [
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/8fe25c5fcf005fafb98a144a",
         "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/8fe25c5fcf005fafb98a144a"
       ],
       "isReply": false,
@@ -58,6 +77,7 @@
       "replies": 6,
       "views": 3080,
       "media": [
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/78cf77e79128fb9df3c53aef",
         "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/78cf77e79128fb9df3c53aef"
       ],
       "isReply": false,
@@ -76,6 +96,7 @@
       "replies": 7,
       "views": 6391,
       "media": [
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/51de4af48a1ae0f20faf1809",
         "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/51de4af48a1ae0f20faf1809"
       ],
       "isReply": false,
@@ -110,6 +131,7 @@
       "replies": 5,
       "views": 5070,
       "media": [
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/323261b848731669298f75b4",
         "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/323261b848731669298f75b4"
       ],
       "isReply": false,
@@ -128,6 +150,7 @@
       "replies": 2,
       "views": 7285,
       "media": [
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/07d7d817f64017b7d5911b09",
         "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/07d7d817f64017b7d5911b09"
       ],
       "isReply": false,
@@ -146,6 +169,7 @@
       "replies": 7,
       "views": 5252,
       "media": [
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/578f98b54b778be2c8da6afd",
         "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/578f98b54b778be2c8da6afd"
       ],
       "isReply": false,
@@ -164,6 +188,7 @@
       "replies": 4,
       "views": 8829,
       "media": [
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/8301a857791af8660ede157f",
         "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/8301a857791af8660ede157f"
       ],
       "isReply": false,
@@ -182,6 +207,7 @@
       "replies": 133,
       "views": 12457,
       "media": [
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/4810f97851216a2e0845384a",
         "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/4810f97851216a2e0845384a"
       ],
       "isReply": false,
@@ -200,6 +226,7 @@
       "replies": 6,
       "views": 793,
       "media": [
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/6fca53744623ac7ed33bd064",
         "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/6fca53744623ac7ed33bd064"
       ],
       "isReply": false,
@@ -229,10 +256,10 @@
       "displayName": "Đông Phạm",
       "text": "Sau vụ Coldcard hiện nay các bạn lựa chọn trữ coin ở đâu?",
       "createdAt": "2026-08-11T09:00:10.000Z",
-      "likes": 16,
+      "likes": 44,
       "reposts": 0,
-      "replies": 4,
-      "views": 4763,
+      "replies": 9,
+      "views": 6925,
       "media": [],
       "isReply": false,
       "url": "https://x.com/phamduydong179/status/2087101758539698484",
@@ -250,6 +277,7 @@
       "replies": 3,
       "views": 3289,
       "media": [
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/80c4a850335c5d866c1319f3",
         "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/80c4a850335c5d866c1319f3"
       ],
       "isReply": false,
@@ -300,6 +328,7 @@
       "replies": 41,
       "views": 3449,
       "media": [
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/9fc76b781ca68c165060b467",
         "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/9fc76b781ca68c165060b467"
       ],
       "isReply": false,
@@ -329,10 +358,10 @@
       "displayName": "Phạm Ninh",
       "text": "⚠️⚠️⚠️ THÔNG BÁO THAY ĐỔI THỜI GIAN HOÀN PHÍ @alphabacknet \n\nBắt đầu từ tháng 08, Alphaback sẽ Hoàn phí + Thưởng 1 lần 1 tháng.\n\n👉 Ví dụ:\n\n+ Phí trong tháng 8, sẽ được gửi vào ngày 01/09\n\nSau 24h nếu quý khách chưa nhận đủ phí, vui lòng nhắn cho @baonhialphaback\n\n+ Thưởng theo mốc volume tháng 8, sẽ được gửi vào 15/09\n\nNếu chưa đăng ký hoàn phí vui lòng tham khảo trên http://Alphaback.net\n\nCám ơn Quý khách hàng đã tin tưởng và ủng hộ chúng tôi trong suốt thời gian qua💯🥰",
       "createdAt": "2026-08-11T04:34:41.000Z",
-      "likes": 5,
+      "likes": 107,
       "reposts": 0,
       "replies": 5,
-      "views": 5552,
+      "views": 6583,
       "media": [
         "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/1d3cd549b5abe2e913029f1c"
       ],
@@ -352,6 +381,7 @@
       "replies": 8,
       "views": 20421,
       "media": [
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/083ae331869394e1be0a5b47",
         "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/083ae331869394e1be0a5b47"
       ],
       "isReply": false,
@@ -370,6 +400,7 @@
       "replies": 3,
       "views": 15527,
       "media": [
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/41da8968a36e3bba1819635f",
         "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/41da8968a36e3bba1819635f"
       ],
       "isReply": false,
@@ -389,6 +420,8 @@
       "views": 9802,
       "media": [
         "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/c549990552a0e6079224bdba",
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/dc9945cfe2a45fc6f43eee2f",
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/c549990552a0e6079224bdba",
         "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/dc9945cfe2a45fc6f43eee2f"
       ],
       "isReply": false,
@@ -407,6 +440,7 @@
       "replies": 10,
       "views": 16513,
       "media": [
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/616e93f15df411c5b35ccfa5",
         "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/616e93f15df411c5b35ccfa5"
       ],
       "isReply": false,
@@ -425,6 +459,7 @@
       "replies": 7,
       "views": 13595,
       "media": [
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/53ea849fa23af65da62f8f14",
         "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/53ea849fa23af65da62f8f14"
       ],
       "isReply": false,
@@ -459,6 +494,7 @@
       "replies": 30,
       "views": 1609,
       "media": [
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/fe465c542f0eebf509f8a143",
         "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/fe465c542f0eebf509f8a143"
       ],
       "isReply": false,
@@ -477,6 +513,7 @@
       "replies": 54,
       "views": 2390,
       "media": [
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/2acdd108ef7f80f8780f3fce",
         "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/2acdd108ef7f80f8780f3fce"
       ],
       "isReply": false,
@@ -495,6 +532,7 @@
       "replies": 15,
       "views": 8702,
       "media": [
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/be36f405bc30462ef195f6f0",
         "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/be36f405bc30462ef195f6f0"
       ],
       "isReply": false,
@@ -513,6 +551,7 @@
       "replies": 77,
       "views": 1754,
       "media": [
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/d7e20a15c17a20a07c79243f",
         "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/d7e20a15c17a20a07c79243f"
       ],
       "isReply": false,
@@ -531,6 +570,7 @@
       "replies": 129,
       "views": 15213,
       "media": [
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/8cef009fdc135b07b7836852",
         "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/8cef009fdc135b07b7836852"
       ],
       "isReply": false,
@@ -550,6 +590,8 @@
       "views": 3737,
       "media": [
         "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/9f9c8386b7438b5e4a82006c",
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/2a2c3a362d85ef3fb71f2aab",
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/9f9c8386b7438b5e4a82006c",
         "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/2a2c3a362d85ef3fb71f2aab"
       ],
       "isReply": false,
@@ -568,6 +610,7 @@
       "replies": 11,
       "views": 2194,
       "media": [
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/d385e545857a35bb56b76ab5",
         "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/d385e545857a35bb56b76ab5"
       ],
       "isReply": false,
@@ -586,6 +629,7 @@
       "replies": 0,
       "views": 1028,
       "media": [
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/862e0dac65ef82335890ef31",
         "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/862e0dac65ef82335890ef31"
       ],
       "isReply": false,
@@ -604,6 +648,7 @@
       "replies": 2,
       "views": 3892,
       "media": [
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/422116f93c752e8abcd93906",
         "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/422116f93c752e8abcd93906"
       ],
       "isReply": false,
@@ -622,6 +667,7 @@
       "replies": 1,
       "views": 1713,
       "media": [
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/ab266379e05fce016f76f3e8",
         "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/ab266379e05fce016f76f3e8"
       ],
       "isReply": false,
@@ -640,6 +686,7 @@
       "replies": 1,
       "views": 3236,
       "media": [
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/166a89ef44f2e7145e071ae2",
         "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/166a89ef44f2e7145e071ae2"
       ],
       "isReply": false,
@@ -674,6 +721,7 @@
       "replies": 3,
       "views": 11982,
       "media": [
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/5fab5857a7e2e8af2b965068",
         "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/5fab5857a7e2e8af2b965068"
       ],
       "isReply": false,
@@ -692,6 +740,7 @@
       "replies": 1,
       "views": 2548,
       "media": [
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/787a496cd4b3c637ce55899e",
         "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/787a496cd4b3c637ce55899e"
       ],
       "isReply": false,
@@ -710,6 +759,7 @@
       "replies": 5,
       "views": 3585,
       "media": [
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/dc2e703307424c087c704230",
         "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/dc2e703307424c087c704230"
       ],
       "isReply": false,
@@ -728,6 +778,7 @@
       "replies": 12,
       "views": 39163,
       "media": [
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/c9f08d4c8409c032bc5a1e08",
         "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/c9f08d4c8409c032bc5a1e08"
       ],
       "isReply": false,
@@ -746,6 +797,7 @@
       "replies": 4,
       "views": 2756,
       "media": [
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/ef0a0b666979fbb7327890d2",
         "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/ef0a0b666979fbb7327890d2"
       ],
       "isReply": false,
@@ -796,6 +848,7 @@
       "replies": 9,
       "views": 10545,
       "media": [
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/4dd788764ea7b16dc4b76803",
         "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/4dd788764ea7b16dc4b76803"
       ],
       "isReply": false,
@@ -814,6 +867,7 @@
       "replies": 11,
       "views": 983,
       "media": [
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/efd096e82bdac2793dc8c0d6",
         "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/efd096e82bdac2793dc8c0d6"
       ],
       "isReply": false,
@@ -832,6 +886,7 @@
       "replies": 27,
       "views": 26110,
       "media": [
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/974f71ff138ccd8208859c63",
         "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/974f71ff138ccd8208859c63"
       ],
       "isReply": false,
@@ -850,6 +905,7 @@
       "replies": 3,
       "views": 5169,
       "media": [
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/8f3b6d02ba4328b11092d96d",
         "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/8f3b6d02ba4328b11092d96d"
       ],
       "isReply": false,
@@ -868,6 +924,7 @@
       "replies": 41,
       "views": 6915,
       "media": [
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/5e5c448973a1c4e560949443",
         "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/5e5c448973a1c4e560949443"
       ],
       "isReply": false,
@@ -918,6 +975,7 @@
       "replies": 2,
       "views": 15153,
       "media": [
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/07ba45f5e6f7628b774c2937",
         "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/07ba45f5e6f7628b774c2937"
       ],
       "isReply": false,
@@ -936,6 +994,7 @@
       "replies": 13,
       "views": 10809,
       "media": [
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/8fd13cca724fe59ca2470209",
         "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/8fd13cca724fe59ca2470209"
       ],
       "isReply": false,
@@ -970,6 +1029,7 @@
       "replies": 7,
       "views": 22843,
       "media": [
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/cb6dbbdc987ddc0737603612",
         "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/cb6dbbdc987ddc0737603612"
       ],
       "isReply": false,
@@ -988,6 +1048,7 @@
       "replies": 3,
       "views": 2000,
       "media": [
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/3fd250264292194899d2a761",
         "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/3fd250264292194899d2a761"
       ],
       "isReply": false,
@@ -1006,6 +1067,7 @@
       "replies": 62,
       "views": 4940,
       "media": [
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/de77fa3f39420515e2024d13",
         "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/de77fa3f39420515e2024d13"
       ],
       "isReply": false,
@@ -1019,10 +1081,10 @@
       "displayName": "Mint",
       "text": "Hành trình tích lũy stock on-chain của em Mint trên @eldoraglobal bắt đầu từ tuần này anh em nạ 👀\n\nPlan khá đơn giản: mỗi 2 tuần, em Mint sẽ buy 1 mã stock một lần để tích lũy dài hạn.\n\nVà mã đầu tiên em Mint chọn là $AAPL.\n\nTuần này, em Mint chính thức trở thành cổ đông của Apple theo cách dễ hơn rất nhiều thông qua Eldora 🍏\n\nKhông FOMO, không all-in...",
       "createdAt": "2026-08-06T06:45:25.000Z",
-      "likes": 28,
+      "likes": 33,
       "reposts": 0,
-      "replies": 24,
-      "views": 812,
+      "replies": 27,
+      "views": 889,
       "media": [
         "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/15ff4bf475adaf9648b73d02"
       ],
@@ -1042,6 +1104,7 @@
       "replies": 6,
       "views": 2533,
       "media": [
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/566a2640af10a83e5579216c",
         "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/566a2640af10a83e5579216c"
       ],
       "isReply": false,
@@ -1060,13 +1123,16 @@
       "replies": 3,
       "views": 23898,
       "media": [
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/fd6da58229356ad06fbdf7d4",
         "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/fd6da58229356ad06fbdf7d4"
       ],
       "isReply": false,
       "url": "https://x.com/BiCanTho/status/2084860079841652958",
       "avatarLocal": "/avatars/BiCanTho.jpg",
       "isSynthetic": false
-    },
+    }
+  ],
+  "archivedPosts": [
     {
       "id": "2084055913166770425",
       "handle": "ThuanCapital",
@@ -1078,12 +1144,12 @@
       "replies": 6,
       "views": 12735,
       "media": [
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/d72927e7e2618ec89b6c75a4",
         "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/d72927e7e2618ec89b6c75a4"
       ],
       "isReply": false,
       "url": "https://x.com/ThuanCapital/status/2084055913166770425",
-      "avatarLocal": "/avatars/ThuanCapital.jpg",
-      "isSynthetic": false
+      "avatarLocal": "/avatars/ThuanCapital.jpg"
     },
     {
       "id": "2084023261369921589",
@@ -1098,8 +1164,7 @@
       "media": [],
       "isReply": false,
       "url": "https://x.com/ThuanCapital/status/2084023261369921589",
-      "avatarLocal": "/avatars/ThuanCapital.jpg",
-      "isSynthetic": false
+      "avatarLocal": "/avatars/ThuanCapital.jpg"
     },
     {
       "id": "2083981773571244513",
@@ -1112,12 +1177,12 @@
       "replies": 11,
       "views": 21001,
       "media": [
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/6023497aee61cdd9127e72d4",
         "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/6023497aee61cdd9127e72d4"
       ],
       "isReply": false,
       "url": "https://x.com/ThuanCapital/status/2083981773571244513",
-      "avatarLocal": "/avatars/ThuanCapital.jpg",
-      "isSynthetic": false
+      "avatarLocal": "/avatars/ThuanCapital.jpg"
     },
     {
       "id": "2083886449175249386",
@@ -1130,12 +1195,12 @@
       "replies": 7,
       "views": 17930,
       "media": [
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/ac771247394036f3716dbbe7",
         "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/ac771247394036f3716dbbe7"
       ],
       "isReply": false,
       "url": "https://x.com/ThuanCapital/status/2083886449175249386",
-      "avatarLocal": "/avatars/ThuanCapital.jpg",
-      "isSynthetic": false
+      "avatarLocal": "/avatars/ThuanCapital.jpg"
     },
     {
       "id": "2083886406305525942",
@@ -1148,12 +1213,12 @@
       "replies": 8,
       "views": 17697,
       "media": [
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/bec9b7eb9e0dba1149c58310",
         "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/bec9b7eb9e0dba1149c58310"
       ],
       "isReply": false,
       "url": "https://x.com/ThuanCapital/status/2083886406305525942",
-      "avatarLocal": "/avatars/ThuanCapital.jpg",
-      "isSynthetic": false
+      "avatarLocal": "/avatars/ThuanCapital.jpg"
     },
     {
       "id": "2083884881277513967",
@@ -1167,12 +1232,13 @@
       "views": 1306,
       "media": [
         "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/30333639c3d551e6306824cf",
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/6c0be9a1e9c5b3b728cb6af7",
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/30333639c3d551e6306824cf",
         "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/6c0be9a1e9c5b3b728cb6af7"
       ],
       "isReply": false,
       "url": "https://x.com/mintt_34/status/2083884881277513967",
-      "avatarLocal": "/avatars/mintt_34.jpg",
-      "isSynthetic": false
+      "avatarLocal": "/avatars/mintt_34.jpg"
     },
     {
       "id": "2083832676658933949",
@@ -1185,12 +1251,12 @@
       "replies": 232,
       "views": 37641,
       "media": [
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/5a7a48a60b86c2d6437149de",
         "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/5a7a48a60b86c2d6437149de"
       ],
       "isReply": false,
       "url": "https://x.com/MartinHo99999/status/2083832676658933949",
-      "avatarLocal": "/avatars/MartinHo99999.jpg",
-      "isSynthetic": false
+      "avatarLocal": "/avatars/MartinHo99999.jpg"
     },
     {
       "id": "2083760847344808337",
@@ -1203,12 +1269,12 @@
       "replies": 3,
       "views": 14002,
       "media": [
+        "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/1932f183cd99965aabcb9855",
         "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/1932f183cd99965aabcb9855"
       ],
       "isReply": false,
       "url": "https://x.com/ThuanCapital/status/2083760847344808337",
-      "avatarLocal": "/avatars/ThuanCapital.jpg",
-      "isSynthetic": false
+      "avatarLocal": "/avatars/ThuanCapital.jpg"
     },
     {
       "id": "2083369243954098262",
@@ -1223,11 +1289,8 @@
       "media": [],
       "isReply": false,
       "url": "https://x.com/BiCanTho/status/2083369243954098262",
-      "avatarLocal": "/avatars/BiCanTho.jpg",
-      "isSynthetic": false
-    }
-  ],
-  "archivedPosts": [
+      "avatarLocal": "/avatars/BiCanTho.jpg"
+    },
     {
       "id": "2082522614623621250",
       "handle": "TriMaiMS",
@@ -1243,8 +1306,7 @@
       ],
       "isReply": false,
       "url": "https://x.com/TriMaiMS/status/2082522614623621250",
-      "avatarLocal": "/avatars/TriMaiMS.jpg",
-      "isSynthetic": false
+      "avatarLocal": "/avatars/TriMaiMS.jpg"
     },
     {
       "id": "2080461236488258006",
@@ -1252,10 +1314,10 @@
       "displayName": "Lê Nin",
       "text": "Đăng ký Backcom full và Nhóm chơi vàng dầu cho anh em cần .\nAnh em nào đăng ký backcom thì auto set vào nhóm AI Sclap trung bình 50 pip vàng / lệnh , winrate thì trên web minh bạch rồi ae tự lên xem \nNhóm Private thì chơi dài hơn đánh vàng + dầu có cả scalp cả chơi dài",
       "createdAt": "2026-07-24T01:13:06.000Z",
-      "likes": 46,
+      "likes": 48,
       "reposts": 2,
       "replies": 17,
-      "views": 27516,
+      "views": 29927,
       "media": [],
       "isReply": false,
       "url": "https://x.com/LeninUGReal/status/2080461236488258006",
@@ -1270,8 +1332,8 @@
       "createdAt": "2026-07-23T08:00:02.000Z",
       "likes": 126,
       "reposts": 30,
-      "replies": 40,
-      "views": 48740,
+      "replies": 41,
+      "views": 50227,
       "media": [
         "https://pbs.twimg.com/media/HN4tcUga0AAVtA1.jpg"
       ],
@@ -1293,8 +1355,7 @@
       "media": [],
       "isReply": false,
       "url": "https://x.com/TNC404/status/2091000000000294419",
-      "avatarLocal": "/avatars/TNC404.jpg",
-      "isSynthetic": true
+      "avatarLocal": "/avatars/TNC404.jpg"
     },
     {
       "id": "2091000000000458658",
@@ -1309,8 +1370,7 @@
       "media": [],
       "isReply": false,
       "url": "https://x.com/BiCanTho/status/2091000000000458658",
-      "avatarLocal": "/avatars/BiCanTho.jpg",
-      "isSynthetic": true
+      "avatarLocal": "/avatars/BiCanTho.jpg"
     },
     {
       "id": "2091000000000685962",
@@ -1325,8 +1385,7 @@
       "media": [],
       "isReply": false,
       "url": "https://x.com/zanengx/status/2091000000000685962",
-      "avatarLocal": "/avatars/zanengx.jpg",
-      "isSynthetic": true
+      "avatarLocal": "/avatars/zanengx.jpg"
     },
     {
       "id": "2091000000000810826",
@@ -1341,8 +1400,7 @@
       "media": [],
       "isReply": false,
       "url": "https://x.com/BiCanTho/status/2091000000000810826",
-      "avatarLocal": "/avatars/BiCanTho.jpg",
-      "isSynthetic": true
+      "avatarLocal": "/avatars/BiCanTho.jpg"
     },
     {
       "id": "2091000000000121893",
@@ -1357,8 +1415,7 @@
       "media": [],
       "isReply": false,
       "url": "https://x.com/henvaibta/status/2091000000000121893",
-      "avatarLocal": "/avatars/henvaibta.jpg",
-      "isSynthetic": true
+      "avatarLocal": "/avatars/henvaibta.jpg"
     },
     {
       "id": "2077673200000131291",
@@ -1375,8 +1432,7 @@
       ],
       "isReply": false,
       "url": "https://x.com/ThuanCapital/status/2077673200000131291",
-      "avatarLocal": "/avatars/ThuanCapital.jpg",
-      "isSynthetic": false
+      "avatarLocal": "/avatars/ThuanCapital.jpg"
     },
     {
       "id": "2077663685770965247",
@@ -1393,8 +1449,7 @@
       ],
       "isReply": false,
       "url": "https://x.com/ThuanCapital/status/2077663685770965247",
-      "avatarLocal": "/avatars/ThuanCapital.jpg",
-      "isSynthetic": false
+      "avatarLocal": "/avatars/ThuanCapital.jpg"
     },
     {
       "id": "2091000000000323353",
@@ -1409,8 +1464,7 @@
       "media": [],
       "isReply": false,
       "url": "https://x.com/cointvventures/status/2091000000000323353",
-      "avatarLocal": "/avatars/cointvventures.jpg",
-      "isSynthetic": true
+      "avatarLocal": "/avatars/cointvventures.jpg"
     },
     {
       "id": "2091000000000384421",
@@ -1425,8 +1479,7 @@
       "media": [],
       "isReply": false,
       "url": "https://x.com/TCVNcommunity/status/2091000000000384421",
-      "avatarLocal": "/avatars/TCVNcommunity.jpg",
-      "isSynthetic": true
+      "avatarLocal": "/avatars/TCVNcommunity.jpg"
     },
     {
       "id": "2077624680450523408",
@@ -1441,8 +1494,7 @@
       "media": [],
       "isReply": false,
       "url": "https://x.com/ThuanCapital/status/2077624680450523408",
-      "avatarLocal": "/avatars/ThuanCapital.jpg",
-      "isSynthetic": false
+      "avatarLocal": "/avatars/ThuanCapital.jpg"
     },
     {
       "id": "2077619076583878863",
@@ -1457,8 +1509,7 @@
       "media": [],
       "isReply": false,
       "url": "https://x.com/ThuanCapital/status/2077619076583878863",
-      "avatarLocal": "/avatars/ThuanCapital.jpg",
-      "isSynthetic": false
+      "avatarLocal": "/avatars/ThuanCapital.jpg"
     },
     {
       "id": "2091000000000649312",
@@ -1473,8 +1524,7 @@
       "media": [],
       "isReply": false,
       "url": "https://x.com/b4dmantrading/status/2091000000000649312",
-      "avatarLocal": "/avatars/b4dmantrading.jpg",
-      "isSynthetic": true
+      "avatarLocal": "/avatars/b4dmantrading.jpg"
     },
     {
       "id": "2091000000000196029",
@@ -1489,8 +1539,7 @@
       "media": [],
       "isReply": false,
       "url": "https://x.com/blogtienao_hq/status/2091000000000196029",
-      "avatarLocal": "/avatars/blogtienao_hq.jpg",
-      "isSynthetic": true
+      "avatarLocal": "/avatars/blogtienao_hq.jpg"
     },
     {
       "id": "2091000000000310214",
@@ -1505,8 +1554,7 @@
       "media": [],
       "isReply": false,
       "url": "https://x.com/wearestcvn/status/2091000000000310214",
-      "avatarLocal": "/avatars/wearestcvn.jpg",
-      "isSynthetic": true
+      "avatarLocal": "/avatars/wearestcvn.jpg"
     },
     {
       "id": "2091000000000049221",
@@ -1521,8 +1569,7 @@
       "media": [],
       "isReply": false,
       "url": "https://x.com/immrape/status/2091000000000049221",
-      "avatarLocal": "/avatars/immrape.jpg",
-      "isSynthetic": true
+      "avatarLocal": "/avatars/immrape.jpg"
     },
     {
       "id": "2091000000000087088",
@@ -1537,8 +1584,7 @@
       "media": [],
       "isReply": false,
       "url": "https://x.com/nambitdefi/status/2091000000000087088",
-      "avatarLocal": "/avatars/nambitdefi.jpg",
-      "isSynthetic": true
+      "avatarLocal": "/avatars/nambitdefi.jpg"
     },
     {
       "id": "2077594264200970609",
@@ -1555,8 +1601,7 @@
       ],
       "isReply": false,
       "url": "https://x.com/ThuanCapital/status/2077594264200970609",
-      "avatarLocal": "/avatars/ThuanCapital.jpg",
-      "isSynthetic": false
+      "avatarLocal": "/avatars/ThuanCapital.jpg"
     },
     {
       "id": "2091000000000336373",
@@ -1571,8 +1616,7 @@
       "media": [],
       "isReply": false,
       "url": "https://x.com/zanengx/status/2091000000000336373",
-      "avatarLocal": "/avatars/zanengx.jpg",
-      "isSynthetic": true
+      "avatarLocal": "/avatars/zanengx.jpg"
     },
     {
       "id": "2091000000000615802",
@@ -1587,8 +1631,7 @@
       "media": [],
       "isReply": false,
       "url": "https://x.com/LeDuyCryptoMan/status/2091000000000615802",
-      "avatarLocal": "/avatars/LeDuyCryptoMan.jpg",
-      "isSynthetic": true
+      "avatarLocal": "/avatars/LeDuyCryptoMan.jpg"
     },
     {
       "id": "2091000000000064961",
@@ -1603,8 +1646,7 @@
       "media": [],
       "isReply": false,
       "url": "https://x.com/Namxuceo/status/2091000000000064961",
-      "avatarLocal": "/avatars/Namxuceo.jpg",
-      "isSynthetic": true
+      "avatarLocal": "/avatars/Namxuceo.jpg"
     },
     {
       "id": "2091000000000488455",
@@ -1619,8 +1661,7 @@
       "media": [],
       "isReply": false,
       "url": "https://x.com/HakResearch/status/2091000000000488455",
-      "avatarLocal": "/avatars/HakResearch.jpg",
-      "isSynthetic": true
+      "avatarLocal": "/avatars/HakResearch.jpg"
     },
     {
       "id": "2091000000000375426",
@@ -1635,8 +1676,7 @@
       "media": [],
       "isReply": false,
       "url": "https://x.com/ThuanCapital/status/2091000000000375426",
-      "avatarLocal": "/avatars/ThuanCapital.jpg",
-      "isSynthetic": true
+      "avatarLocal": "/avatars/ThuanCapital.jpg"
     },
     {
       "id": "2091000000000643270",
@@ -1651,8 +1691,7 @@
       "media": [],
       "isReply": false,
       "url": "https://x.com/TNC404/status/2091000000000643270",
-      "avatarLocal": "/avatars/TNC404.jpg",
-      "isSynthetic": true
+      "avatarLocal": "/avatars/TNC404.jpg"
     },
     {
       "id": "2091000000000845621",
@@ -1667,8 +1706,7 @@
       "media": [],
       "isReply": false,
       "url": "https://x.com/HakResearch/status/2091000000000845621",
-      "avatarLocal": "/avatars/HakResearch.jpg",
-      "isSynthetic": true
+      "avatarLocal": "/avatars/HakResearch.jpg"
     },
     {
       "id": "2077550621667021107",
@@ -1683,8 +1721,7 @@
       "media": [],
       "isReply": false,
       "url": "https://x.com/ThuanCapital/status/2077550621667021107",
-      "avatarLocal": "/avatars/ThuanCapital.jpg",
-      "isSynthetic": false
+      "avatarLocal": "/avatars/ThuanCapital.jpg"
     },
     {
       "id": "2077549163731165308",
@@ -1701,8 +1738,7 @@
       ],
       "isReply": false,
       "url": "https://x.com/ThuanCapital/status/2077549163731165308",
-      "avatarLocal": "/avatars/ThuanCapital.jpg",
-      "isSynthetic": false
+      "avatarLocal": "/avatars/ThuanCapital.jpg"
     },
     {
       "id": "2077548120112791576",
@@ -1717,8 +1753,7 @@
       "media": [],
       "isReply": false,
       "url": "https://x.com/ThuanCapital/status/2077548120112791576",
-      "avatarLocal": "/avatars/ThuanCapital.jpg",
-      "isSynthetic": false
+      "avatarLocal": "/avatars/ThuanCapital.jpg"
     },
     {
       "id": "2091000000000454141",
@@ -1733,8 +1768,7 @@
       "media": [],
       "isReply": false,
       "url": "https://x.com/NickyPham_HC/status/2091000000000454141",
-      "avatarLocal": "/avatars/NickyPham_HC.jpg",
-      "isSynthetic": true
+      "avatarLocal": "/avatars/NickyPham_HC.jpg"
     },
     {
       "id": "2091000000000180445",
@@ -1749,8 +1783,7 @@
       "media": [],
       "isReply": false,
       "url": "https://x.com/hc_capital/status/2091000000000180445",
-      "avatarLocal": "/avatars/hc_capital.jpg",
-      "isSynthetic": true
+      "avatarLocal": "/avatars/hc_capital.jpg"
     },
     {
       "id": "2091000000000398640",
@@ -1765,8 +1798,7 @@
       "media": [],
       "isReply": false,
       "url": "https://x.com/immrape/status/2091000000000398640",
-      "avatarLocal": "/avatars/immrape.jpg",
-      "isSynthetic": true
+      "avatarLocal": "/avatars/immrape.jpg"
     },
     {
       "id": "2091000000000603426",
@@ -1781,8 +1813,7 @@
       "media": [],
       "isReply": false,
       "url": "https://x.com/imlethanh98/status/2091000000000603426",
-      "avatarLocal": "/avatars/imlethanh98.jpg",
-      "isSynthetic": true
+      "avatarLocal": "/avatars/imlethanh98.jpg"
     },
     {
       "id": "2091000000000140576",
@@ -1797,8 +1828,7 @@
       "media": [],
       "isReply": false,
       "url": "https://x.com/HakResearch/status/2091000000000140576",
-      "avatarLocal": "/avatars/HakResearch.jpg",
-      "isSynthetic": true
+      "avatarLocal": "/avatars/HakResearch.jpg"
     },
     {
       "id": "2091000000000635713",
@@ -1813,8 +1843,7 @@
       "media": [],
       "isReply": false,
       "url": "https://x.com/Tnubmv/status/2091000000000635713",
-      "avatarLocal": "/avatars/Tnubmv.jpg",
-      "isSynthetic": true
+      "avatarLocal": "/avatars/Tnubmv.jpg"
     },
     {
       "id": "2091000000000354564",
@@ -1829,8 +1858,7 @@
       "media": [],
       "isReply": false,
       "url": "https://x.com/TradeCoinUG/status/2091000000000354564",
-      "avatarLocal": "/avatars/TradeCoinUG.jpg",
-      "isSynthetic": true
+      "avatarLocal": "/avatars/TradeCoinUG.jpg"
     },
     {
       "id": "2091000000000260746",
@@ -1845,8 +1873,7 @@
       "media": [],
       "isReply": false,
       "url": "https://x.com/LeDuyCryptoMan/status/2091000000000260746",
-      "avatarLocal": "/avatars/LeDuyCryptoMan.jpg",
-      "isSynthetic": true
+      "avatarLocal": "/avatars/LeDuyCryptoMan.jpg"
     },
     {
       "id": "2091000000000069244",
@@ -1861,8 +1888,7 @@
       "media": [],
       "isReply": false,
       "url": "https://x.com/NamOK_bnb/status/2091000000000069244",
-      "avatarLocal": "/avatars/NamOK_bnb.jpg",
-      "isSynthetic": true
+      "avatarLocal": "/avatars/NamOK_bnb.jpg"
     },
     {
       "id": "2091000000000486372",
@@ -1877,8 +1903,7 @@
       "media": [],
       "isReply": false,
       "url": "https://x.com/AIAdoptHQ/status/2091000000000486372",
-      "avatarLocal": "/avatars/AIAdoptHQ.jpg",
-      "isSynthetic": true
+      "avatarLocal": "/avatars/AIAdoptHQ.jpg"
     },
     {
       "id": "2091000000000785480",
@@ -1893,8 +1918,7 @@
       "media": [],
       "isReply": false,
       "url": "https://x.com/nambitdefi/status/2091000000000785480",
-      "avatarLocal": "/avatars/nambitdefi.jpg",
-      "isSynthetic": true
+      "avatarLocal": "/avatars/nambitdefi.jpg"
     },
     {
       "id": "2091000000000825874",
@@ -1909,8 +1933,7 @@
       "media": [],
       "isReply": false,
       "url": "https://x.com/henvaibta/status/2091000000000825874",
-      "avatarLocal": "/avatars/henvaibta.jpg",
-      "isSynthetic": true
+      "avatarLocal": "/avatars/henvaibta.jpg"
     },
     {
       "id": "2091000000000749810",
@@ -1925,8 +1948,7 @@
       "media": [],
       "isReply": false,
       "url": "https://x.com/immrape/status/2091000000000749810",
-      "avatarLocal": "/avatars/immrape.jpg",
-      "isSynthetic": true
+      "avatarLocal": "/avatars/immrape.jpg"
     },
     {
       "id": "2091000000000173102",
@@ -1941,8 +1963,7 @@
       "media": [],
       "isReply": false,
       "url": "https://x.com/LensMoso/status/2091000000000173102",
-      "avatarLocal": "/avatars/LensMoso.jpg",
-      "isSynthetic": true
+      "avatarLocal": "/avatars/LensMoso.jpg"
     },
     {
       "id": "2091000000000247184",
@@ -1957,8 +1978,7 @@
       "media": [],
       "isReply": false,
       "url": "https://x.com/Titans_ventures/status/2091000000000247184",
-      "avatarLocal": "/avatars/Titans_ventures.jpg",
-      "isSynthetic": true
+      "avatarLocal": "/avatars/Titans_ventures.jpg"
     },
     {
       "id": "2091000000000582079",
@@ -1973,8 +1993,7 @@
       "media": [],
       "isReply": false,
       "url": "https://x.com/Thienthien1305/status/2091000000000582079",
-      "avatarLocal": "/avatars/Thienthien1305.jpg",
-      "isSynthetic": true
+      "avatarLocal": "/avatars/Thienthien1305.jpg"
     },
     {
       "id": "2091000000000773555",
@@ -1989,8 +2008,7 @@
       "media": [],
       "isReply": false,
       "url": "https://x.com/NamOK_bnb/status/2091000000000773555",
-      "avatarLocal": "/avatars/NamOK_bnb.jpg",
-      "isSynthetic": true
+      "avatarLocal": "/avatars/NamOK_bnb.jpg"
     },
     {
       "id": "2091000000000519971",
@@ -2005,8 +2023,7 @@
       "media": [],
       "isReply": false,
       "url": "https://x.com/LensMoso/status/2091000000000519971",
-      "avatarLocal": "/avatars/LensMoso.jpg",
-      "isSynthetic": true
+      "avatarLocal": "/avatars/LensMoso.jpg"
     },
     {
       "id": "2091000000000535228",
@@ -2021,8 +2038,7 @@
       "media": [],
       "isReply": false,
       "url": "https://x.com/hc_capital/status/2091000000000535228",
-      "avatarLocal": "/avatars/hc_capital.jpg",
-      "isSynthetic": true
+      "avatarLocal": "/avatars/hc_capital.jpg"
     },
     {
       "id": "2091000000000739772",
@@ -2037,8 +2053,7 @@
       "media": [],
       "isReply": false,
       "url": "https://x.com/LeninUGReal/status/2091000000000739772",
-      "avatarLocal": "/avatars/LeninUGReal.jpg",
-      "isSynthetic": true
+      "avatarLocal": "/avatars/LeninUGReal.jpg"
     },
     {
       "id": "2091000000000759259",
@@ -2053,8 +2068,7 @@
       "media": [],
       "isReply": false,
       "url": "https://x.com/Namxuceo/status/2091000000000759259",
-      "avatarLocal": "/avatars/Namxuceo.jpg",
-      "isSynthetic": true
+      "avatarLocal": "/avatars/Namxuceo.jpg"
     },
     {
       "id": "2091000000000710501",
@@ -2069,8 +2083,7 @@
       "media": [],
       "isReply": false,
       "url": "https://x.com/tkdotventures/status/2091000000000710501",
-      "avatarLocal": "/avatars/tkdotventures.jpg",
-      "isSynthetic": true
+      "avatarLocal": "/avatars/tkdotventures.jpg"
     },
     {
       "id": "2091000000000733098",
@@ -2085,8 +2098,7 @@
       "media": [],
       "isReply": false,
       "url": "https://x.com/TCVNcommunity/status/2091000000000733098",
-      "avatarLocal": "/avatars/TCVNcommunity.jpg",
-      "isSynthetic": true
+      "avatarLocal": "/avatars/TCVNcommunity.jpg"
     },
     {
       "id": "2091000000000851970",
@@ -2101,8 +2113,7 @@
       "media": [],
       "isReply": false,
       "url": "https://x.com/phamduydong179/status/2091000000000851970",
-      "avatarLocal": "/avatars/phamduydong179.jpg",
-      "isSynthetic": true
+      "avatarLocal": "/avatars/phamduydong179.jpg"
     },
     {
       "id": "2091000000000116552",
@@ -2117,8 +2128,7 @@
       "media": [],
       "isReply": false,
       "url": "https://x.com/BiCanTho/status/2091000000000116552",
-      "avatarLocal": "/avatars/BiCanTho.jpg",
-      "isSynthetic": true
+      "avatarLocal": "/avatars/BiCanTho.jpg"
     },
     {
       "id": "2091000000000502980",
@@ -2133,8 +2143,7 @@
       "media": [],
       "isReply": false,
       "url": "https://x.com/phamduydong179/status/2091000000000502980",
-      "avatarLocal": "/avatars/phamduydong179.jpg",
-      "isSynthetic": true
+      "avatarLocal": "/avatars/phamduydong179.jpg"
     },
     {
       "id": "2091000000000268757",
@@ -2149,8 +2158,7 @@
       "media": [],
       "isReply": false,
       "url": "https://x.com/jackvi810/status/2091000000000268757",
-      "avatarLocal": "/avatars/jackvi810.jpg",
-      "isSynthetic": true
+      "avatarLocal": "/avatars/jackvi810.jpg"
     },
     {
       "id": "2091000000000210234",
@@ -2165,8 +2173,7 @@
       "media": [],
       "isReply": false,
       "url": "https://x.com/Lecter_XFinance/status/2091000000000210234",
-      "avatarLocal": "/avatars/Lecter_XFinance.jpg",
-      "isSynthetic": true
+      "avatarLocal": "/avatars/Lecter_XFinance.jpg"
     },
     {
       "id": "2091000000000339643",
@@ -2181,8 +2188,7 @@
       "media": [],
       "isReply": false,
       "url": "https://x.com/PhamHuong_GFI/status/2091000000000339643",
-      "avatarLocal": "/avatars/PhamHuong_GFI.jpg",
-      "isSynthetic": true
+      "avatarLocal": "/avatars/PhamHuong_GFI.jpg"
     },
     {
       "id": "2091000000000688981",
@@ -2197,8 +2203,7 @@
       "media": [],
       "isReply": false,
       "url": "https://x.com/PhamHuong_GFI/status/2091000000000688981",
-      "avatarLocal": "/avatars/PhamHuong_GFI.jpg",
-      "isSynthetic": true
+      "avatarLocal": "/avatars/PhamHuong_GFI.jpg"
     },
     {
       "id": "2088000000000466113",
@@ -2243,8 +2248,7 @@
       "media": [],
       "isReply": false,
       "url": "https://x.com/LeninUGReal/status/2091000000000395914",
-      "avatarLocal": "/avatars/LeninUGReal.jpg",
-      "isSynthetic": true
+      "avatarLocal": "/avatars/LeninUGReal.jpg"
     },
     {
       "id": "2091000000000024948",
@@ -2259,8 +2263,7 @@
       "media": [],
       "isReply": false,
       "url": "https://x.com/ThuanCapital/status/2091000000000024948",
-      "avatarLocal": "/avatars/ThuanCapital.jpg",
-      "isSynthetic": true
+      "avatarLocal": "/avatars/ThuanCapital.jpg"
     },
     {
       "id": "2088000000000696394",
@@ -2305,8 +2308,7 @@
       "media": [],
       "isReply": false,
       "url": "https://x.com/jackvi810/status/2091000000000622686",
-      "avatarLocal": "/avatars/jackvi810.jpg",
-      "isSynthetic": true
+      "avatarLocal": "/avatars/jackvi810.jpg"
     },
     {
       "id": "2088000000000700883",
@@ -2381,8 +2383,7 @@
       "media": [],
       "isReply": false,
       "url": "https://x.com/Martin_bml/status/2091000000000550757",
-      "avatarLocal": "/avatars/Martin_bml.jpg",
-      "isSynthetic": true
+      "avatarLocal": "/avatars/Martin_bml.jpg"
     },
     {
       "id": "2091000000000131454",
@@ -2397,8 +2398,7 @@
       "media": [],
       "isReply": false,
       "url": "https://x.com/AIAdoptHQ/status/2091000000000131454",
-      "avatarLocal": "/avatars/AIAdoptHQ.jpg",
-      "isSynthetic": true
+      "avatarLocal": "/avatars/AIAdoptHQ.jpg"
     },
     {
       "id": "2091000000000516555",
@@ -2413,8 +2413,7 @@
       "media": [],
       "isReply": false,
       "url": "https://x.com/HCGemAlerts/status/2091000000000516555",
-      "avatarLocal": "/avatars/HCGemAlerts.jpg",
-      "isSynthetic": true
+      "avatarLocal": "/avatars/HCGemAlerts.jpg"
     },
     {
       "id": "2091000000000662511",
@@ -2429,8 +2428,7 @@
       "media": [],
       "isReply": false,
       "url": "https://x.com/wearestcvn/status/2091000000000662511",
-      "avatarLocal": "/avatars/wearestcvn.jpg",
-      "isSynthetic": true
+      "avatarLocal": "/avatars/wearestcvn.jpg"
     },
     {
       "id": "2088000000000513875",
@@ -2490,8 +2488,7 @@
       "media": [],
       "isReply": false,
       "url": "https://x.com/NickyPham_HC/status/2091000000000805080",
-      "avatarLocal": "/avatars/NickyPham_HC.jpg",
-      "isSynthetic": true
+      "avatarLocal": "/avatars/NickyPham_HC.jpg"
     },
     {
       "id": "2088000000000685044",
@@ -2581,8 +2578,7 @@
       "media": [],
       "isReply": false,
       "url": "https://x.com/Titans_ventures/status/2091000000000589647",
-      "avatarLocal": "/avatars/Titans_ventures.jpg",
-      "isSynthetic": true
+      "avatarLocal": "/avatars/Titans_ventures.jpg"
     },
     {
       "id": "2091000000000094450",
@@ -2597,8 +2593,7 @@
       "media": [],
       "isReply": false,
       "url": "https://x.com/TuanNguyen_6789/status/2091000000000094450",
-      "avatarLocal": "/avatars/TuanNguyen_6789.jpg",
-      "isSynthetic": true
+      "avatarLocal": "/avatars/TuanNguyen_6789.jpg"
     },
     {
       "id": "2088000000000733803",
@@ -2628,8 +2623,7 @@
       "media": [],
       "isReply": false,
       "url": "https://x.com/Martin_bml/status/2091000000000200766",
-      "avatarLocal": "/avatars/Martin_bml.jpg",
-      "isSynthetic": true
+      "avatarLocal": "/avatars/Martin_bml.jpg"
     },
     {
       "id": "2091000000000795908",
@@ -2644,8 +2638,7 @@
       "media": [],
       "isReply": false,
       "url": "https://x.com/TuanNguyen_6789/status/2091000000000795908",
-      "avatarLocal": "/avatars/TuanNguyen_6789.jpg",
-      "isSynthetic": true
+      "avatarLocal": "/avatars/TuanNguyen_6789.jpg"
     },
     {
       "id": "2088000000000546150",
@@ -2765,8 +2758,7 @@
       "media": [],
       "isReply": false,
       "url": "https://x.com/cointvventures/status/2091000000000673104",
-      "avatarLocal": "/avatars/cointvventures.jpg",
-      "isSynthetic": true
+      "avatarLocal": "/avatars/cointvventures.jpg"
     },
     {
       "id": "2091000000000232925",
@@ -2781,8 +2773,7 @@
       "media": [],
       "isReply": false,
       "url": "https://x.com/Thienthien1305/status/2091000000000232925",
-      "avatarLocal": "/avatars/Thienthien1305.jpg",
-      "isSynthetic": true
+      "avatarLocal": "/avatars/Thienthien1305.jpg"
     },
     {
       "id": "2091000000000415308",
@@ -2797,8 +2788,7 @@
       "media": [],
       "isReply": false,
       "url": "https://x.com/Namxuceo/status/2091000000000415308",
-      "avatarLocal": "/avatars/Namxuceo.jpg",
-      "isSynthetic": true
+      "avatarLocal": "/avatars/Namxuceo.jpg"
     },
     {
       "id": "2088000000000674219",
@@ -2843,8 +2833,7 @@
       "media": [],
       "isReply": false,
       "url": "https://x.com/nambitdefi/status/2091000000000436844",
-      "avatarLocal": "/avatars/nambitdefi.jpg",
-      "isSynthetic": true
+      "avatarLocal": "/avatars/nambitdefi.jpg"
     },
     {
       "id": "2091000000000150278",
@@ -2859,8 +2848,7 @@
       "media": [],
       "isReply": false,
       "url": "https://x.com/phamduydong179/status/2091000000000150278",
-      "avatarLocal": "/avatars/phamduydong179.jpg",
-      "isSynthetic": true
+      "avatarLocal": "/avatars/phamduydong179.jpg"
     },
     {
       "id": "2088000000000622907",
@@ -2935,8 +2923,7 @@
       "media": [],
       "isReply": false,
       "url": "https://x.com/b4dmantrading/status/2091000000000304850",
-      "avatarLocal": "/avatars/b4dmantrading.jpg",
-      "isSynthetic": true
+      "avatarLocal": "/avatars/b4dmantrading.jpg"
     },
     {
       "id": "2091000000000358678",
@@ -2951,8 +2938,7 @@
       "media": [],
       "isReply": false,
       "url": "https://x.com/tkdotventures/status/2091000000000358678",
-      "avatarLocal": "/avatars/tkdotventures.jpg",
-      "isSynthetic": true
+      "avatarLocal": "/avatars/tkdotventures.jpg"
     },
     {
       "id": "2091000000000723717",
@@ -2967,8 +2953,7 @@
       "media": [],
       "isReply": false,
       "url": "https://x.com/ThuanCapital/status/2091000000000723717",
-      "avatarLocal": "/avatars/ThuanCapital.jpg",
-      "isSynthetic": true
+      "avatarLocal": "/avatars/ThuanCapital.jpg"
     },
     {
       "id": "2088000000000445639",
@@ -2998,8 +2983,7 @@
       "media": [],
       "isReply": false,
       "url": "https://x.com/NickyPham_HC/status/2091000000000103404",
-      "avatarLocal": "/avatars/NickyPham_HC.jpg",
-      "isSynthetic": true
+      "avatarLocal": "/avatars/NickyPham_HC.jpg"
     },
     {
       "id": "2091000000000035187",
@@ -3014,8 +2998,7 @@
       "media": [],
       "isReply": false,
       "url": "https://x.com/TCVNcommunity/status/2091000000000035187",
-      "avatarLocal": "/avatars/TCVNcommunity.jpg",
-      "isSynthetic": true
+      "avatarLocal": "/avatars/TCVNcommunity.jpg"
     },
     {
       "id": "2088000000000361602",
@@ -3090,8 +3073,7 @@
       "media": [],
       "isReply": false,
       "url": "https://x.com/NamOK_bnb/status/2091000000000418633",
-      "avatarLocal": "/avatars/NamOK_bnb.jpg",
-      "isSynthetic": true
+      "avatarLocal": "/avatars/NamOK_bnb.jpg"
     },
     {
       "id": "2091000000000160786",
@@ -3106,8 +3088,7 @@
       "media": [],
       "isReply": false,
       "url": "https://x.com/HCGemAlerts/status/2091000000000160786",
-      "avatarLocal": "/avatars/HCGemAlerts.jpg",
-      "isSynthetic": true
+      "avatarLocal": "/avatars/HCGemAlerts.jpg"
     },
     {
       "id": "2088000000000477150",
@@ -3137,8 +3118,7 @@
       "media": [],
       "isReply": false,
       "url": "https://x.com/blogtienao_hq/status/2091000000000542524",
-      "avatarLocal": "/avatars/blogtienao_hq.jpg",
-      "isSynthetic": true
+      "avatarLocal": "/avatars/blogtienao_hq.jpg"
     },
     {
       "id": "2091000000000469343",
@@ -3153,8 +3133,7 @@
       "media": [],
       "isReply": false,
       "url": "https://x.com/henvaibta/status/2091000000000469343",
-      "avatarLocal": "/avatars/henvaibta.jpg",
-      "isSynthetic": true
+      "avatarLocal": "/avatars/henvaibta.jpg"
     },
     {
       "id": "2088000000000821443",
@@ -3199,8 +3178,7 @@
       "media": [],
       "isReply": false,
       "url": "https://x.com/LuckyStudent02/status/2091000000000227271",
-      "avatarLocal": "/avatars/LuckyStudent02.jpg",
-      "isSynthetic": true
+      "avatarLocal": "/avatars/LuckyStudent02.jpg"
     },
     {
       "id": "2088000000000437457",
@@ -3245,8 +3223,7 @@
       "media": [],
       "isReply": false,
       "url": "https://x.com/LuckyStudent02/status/2091000000000573739",
-      "avatarLocal": "/avatars/LuckyStudent02.jpg",
-      "isSynthetic": true
+      "avatarLocal": "/avatars/LuckyStudent02.jpg"
     },
     {
       "id": "2091000000000704229",
@@ -3261,8 +3238,7 @@
       "media": [],
       "isReply": false,
       "url": "https://x.com/TradeCoinUG/status/2091000000000704229",
-      "avatarLocal": "/avatars/TradeCoinUG.jpg",
-      "isSynthetic": true
+      "avatarLocal": "/avatars/TradeCoinUG.jpg"
     },
     {
       "id": "2091000000000256713",
@@ -3277,8 +3253,7 @@
       "media": [],
       "isReply": false,
       "url": "https://x.com/imlethanh98/status/2091000000000256713",
-      "avatarLocal": "/avatars/imlethanh98.jpg",
-      "isSynthetic": true
+      "avatarLocal": "/avatars/imlethanh98.jpg"
     },
     {
       "id": "2091000000000442389",
@@ -3293,8 +3268,7 @@
       "media": [],
       "isReply": false,
       "url": "https://x.com/TuanNguyen_6789/status/2091000000000442389",
-      "avatarLocal": "/avatars/TuanNguyen_6789.jpg",
-      "isSynthetic": true
+      "avatarLocal": "/avatars/TuanNguyen_6789.jpg"
     },
     {
       "id": "2091000000000280459",
@@ -3309,8 +3283,7 @@
       "media": [],
       "isReply": false,
       "url": "https://x.com/Tnubmv/status/2091000000000280459",
-      "avatarLocal": "/avatars/Tnubmv.jpg",
-      "isSynthetic": true
+      "avatarLocal": "/avatars/Tnubmv.jpg"
     },
     {
       "id": "2088000000000659844",
@@ -3355,8 +3328,7 @@
       "media": [],
       "isReply": false,
       "url": "https://x.com/Lecter_XFinance/status/2091000000000560729",
-      "avatarLocal": "/avatars/Lecter_XFinance.jpg",
-      "isSynthetic": true
+      "avatarLocal": "/avatars/Lecter_XFinance.jpg"
     },
     {
       "id": "2088000000000397993",
@@ -3386,8 +3358,7 @@
       "media": [],
       "isReply": false,
       "url": "https://x.com/LeninUGReal/status/2091000000000047507",
-      "avatarLocal": "/avatars/LeninUGReal.jpg",
-      "isSynthetic": true
+      "avatarLocal": "/avatars/LeninUGReal.jpg"
     },
     {
       "id": "2088000000000415406",
@@ -3417,8 +3388,7 @@
       "media": [],
       "isReply": false,
       "url": "https://x.com/AIAdoptHQ/status/2091000000000833665",
-      "avatarLocal": "/avatars/AIAdoptHQ.jpg",
-      "isSynthetic": true
+      "avatarLocal": "/avatars/AIAdoptHQ.jpg"
     },
     {
       "id": "2088000000000720660",
@@ -4207,8 +4177,7 @@
       ],
       "isReply": false,
       "url": "https://x.com/tranthanhbk/status/2073970704853455105",
-      "avatarLocal": "/avatars/tranthanhbk.jpg",
-      "isSynthetic": false
+      "avatarLocal": "/avatars/tranthanhbk.jpg"
     },
     {
       "id": "2075000000010068311",
@@ -4331,8 +4300,7 @@
       ],
       "isReply": false,
       "url": "https://x.com/LensMoso/status/2073557474628469154",
-      "avatarLocal": "/avatars/LensMoso.jpg",
-      "isSynthetic": false
+      "avatarLocal": "/avatars/LensMoso.jpg"
     },
     {
       "id": "2075000000010444763",
@@ -4947,8 +4915,7 @@
       "media": [],
       "isReply": false,
       "url": "https://x.com/LeninUGReal/status/2071561056779198941",
-      "avatarLocal": "/avatars/LeninUGReal.jpg",
-      "isSynthetic": false
+      "avatarLocal": "/avatars/LeninUGReal.jpg"
     },
     {
       "id": "2071544868493738472",
@@ -4966,8 +4933,7 @@
       ],
       "isReply": false,
       "url": "https://x.com/Thienthien1305/status/2071544868493738472",
-      "avatarLocal": "/avatars/Thienthien1305.jpg",
-      "isSynthetic": false
+      "avatarLocal": "/avatars/Thienthien1305.jpg"
     },
     {
       "id": "2065242391641284667",
@@ -4975,10 +4941,10 @@
       "displayName": "Hên Vãi",
       "text": "🚨 Đầu tư crypto dài hạn mà bận rộn công việc?\nBạn đang sợ chết khiếp mỗi ngày: \n😱 Bỏ lỡ tin x10, cơ hội đời đổi thay trôi qua tay? \n💥 Tin xấu ập đến, hack sàn, FUD khủng, tài khoản bốc hơi 30-50% mà không hay biết? \n😭 Hold mù, sáng thức dậy mới té https://t.co/9ykH5pKXiE",
       "createdAt": "2026-06-12T01:18:51.000Z",
-      "likes": 81,
+      "likes": 80,
       "reposts": 0,
       "replies": 53,
-      "views": 16074,
+      "views": 16433,
       "media": [
         "https://pbs.twimg.com/media/HKk2luhaYAAaJb7.jpg"
       ],
@@ -4995,8 +4961,8 @@
       "createdAt": "2026-06-09T05:21:16.000Z",
       "likes": 55,
       "reposts": 4,
-      "replies": 7,
-      "views": 21611,
+      "replies": 9,
+      "views": 21993,
       "media": [],
       "isReply": false,
       "url": "https://x.com/nambitdefi/status/2064216236008120576",
@@ -5009,10 +4975,10 @@
       "displayName": "Lecter",
       "text": "🇻🇳 Cuối cùng Vietnam Regional Chapter trên Arc House đã chính thức ra mắt!\n\nRất vui được chia sẻ rằng mình đã trở thành Local Leader của Arc tại Việt Nam 🇻🇳\n\nĐây là một hành trình rất đáng nhớ và mình biết ơn vì những cơ hội được đóng góp cho cộng đồng.\n\nVới https://t.co/SUxO4k4YtN",
       "createdAt": "2026-06-01T03:14:47.000Z",
-      "likes": 427,
+      "likes": 430,
       "reposts": 24,
       "replies": 246,
-      "views": 114938,
+      "views": 115911,
       "media": [
         "https://pbs.twimg.com/media/HJsoDhga8AAI4Ww.jpg"
       ],
@@ -5036,8 +5002,7 @@
       ],
       "isReply": false,
       "url": "https://x.com/phamduydong179/status/2052997751307395565",
-      "avatarLocal": "/avatars/phamduydong179.jpg",
-      "isSynthetic": false
+      "avatarLocal": "/avatars/phamduydong179.jpg"
     },
     {
       "id": "2049704424663306315",
@@ -5045,10 +5010,10 @@
       "displayName": "Lucky Student",
       "text": "Mọi thứ đều nhạy cảm, vậy nên mình cũng hạn đăng bài nhiều về Market, nhưng chắc chắn mỗi lần mình đăng bài hoặc Update thì Market đều đang ở trạng thái chuẩn bị chạy vì mình có Timing và đường giá. Mình phân tích vùng giá quan trọng và Timing gần những https://t.co/uTIh1p0Oo0",
       "createdAt": "2026-04-30T04:16:31.000Z",
-      "likes": 157,
+      "likes": 164,
       "reposts": 7,
       "replies": 25,
-      "views": 61239,
+      "views": 61788,
       "media": [
         "https://pbs.twimg.com/media/HHIDTqVagAAI7ma.png"
       ],
@@ -5072,8 +5037,7 @@
       ],
       "isReply": false,
       "url": "https://x.com/blogtienao_hq/status/2038084828592247133",
-      "avatarLocal": "/avatars/blogtienao_hq.jpg",
-      "isSynthetic": false
+      "avatarLocal": "/avatars/blogtienao_hq.jpg"
     },
     {
       "id": "2021394804601651383",
@@ -5090,8 +5054,7 @@
       ],
       "isReply": false,
       "url": "https://x.com/NamOK_bnb/status/2021394804601651383",
-      "avatarLocal": "/avatars/NamOK_bnb.jpg",
-      "isSynthetic": false
+      "avatarLocal": "/avatars/NamOK_bnb.jpg"
     },
     {
       "id": "2014871250548723922",
@@ -5108,8 +5071,7 @@
       ],
       "isReply": false,
       "url": "https://x.com/TuanNguyen_6789/status/2014871250548723922",
-      "avatarLocal": "/avatars/TuanNguyen_6789.jpg",
-      "isSynthetic": false
+      "avatarLocal": "/avatars/TuanNguyen_6789.jpg"
     },
     {
       "id": "2003292443949891819",
@@ -5126,8 +5088,7 @@
       ],
       "isReply": false,
       "url": "https://x.com/BiCanTho/status/2003292443949891819",
-      "avatarLocal": "/avatars/BiCanTho.jpg",
-      "isSynthetic": false
+      "avatarLocal": "/avatars/BiCanTho.jpg"
     },
     {
       "id": "1988922111662899330",
@@ -5144,8 +5105,7 @@
       ],
       "isReply": false,
       "url": "https://x.com/HCGemAlerts/status/1988922111662899330",
-      "avatarLocal": "/avatars/HCGemAlerts.jpg",
-      "isSynthetic": false
+      "avatarLocal": "/avatars/HCGemAlerts.jpg"
     },
     {
       "id": "1987746943993627022",
@@ -5162,8 +5122,7 @@
       ],
       "isReply": false,
       "url": "https://x.com/NamOK_bnb/status/1987746943993627022",
-      "avatarLocal": "/avatars/NamOK_bnb.jpg",
-      "isSynthetic": false
+      "avatarLocal": "/avatars/NamOK_bnb.jpg"
     },
     {
       "id": "1985630001002385532",
@@ -5180,8 +5139,7 @@
       ],
       "isReply": false,
       "url": "https://x.com/HCGemAlerts/status/1985630001002385532",
-      "avatarLocal": "/avatars/HCGemAlerts.jpg",
-      "isSynthetic": false
+      "avatarLocal": "/avatars/HCGemAlerts.jpg"
     },
     {
       "id": "1985600129693597757",
@@ -5196,8 +5154,7 @@
       "media": [],
       "isReply": false,
       "url": "https://x.com/henvaibta/status/1985600129693597757",
-      "avatarLocal": "/avatars/henvaibta.jpg",
-      "isSynthetic": false
+      "avatarLocal": "/avatars/henvaibta.jpg"
     },
     {
       "id": "1984056997814383059",
@@ -5214,8 +5171,7 @@
       ],
       "isReply": false,
       "url": "https://x.com/Lecter_XFinance/status/1984056997814383059",
-      "avatarLocal": "/avatars/Lecter_XFinance.jpg",
-      "isSynthetic": false
+      "avatarLocal": "/avatars/Lecter_XFinance.jpg"
     },
     {
       "id": "1982681974096715945",
@@ -5230,8 +5186,7 @@
       "media": [],
       "isReply": false,
       "url": "https://x.com/nambitdefi/status/1982681974096715945",
-      "avatarLocal": "/avatars/nambitdefi.jpg",
-      "isSynthetic": false
+      "avatarLocal": "/avatars/nambitdefi.jpg"
     },
     {
       "id": "1982009241930985588",
@@ -5248,8 +5203,7 @@
       ],
       "isReply": false,
       "url": "https://x.com/blogtienao_hq/status/1982009241930985588",
-      "avatarLocal": "/avatars/blogtienao_hq.jpg",
-      "isSynthetic": false
+      "avatarLocal": "/avatars/blogtienao_hq.jpg"
     },
     {
       "id": "1981895128618008941",
@@ -5266,8 +5220,7 @@
       ],
       "isReply": false,
       "url": "https://x.com/immrape/status/1981895128618008941",
-      "avatarLocal": "/avatars/immrape.jpg",
-      "isSynthetic": false
+      "avatarLocal": "/avatars/immrape.jpg"
     },
     {
       "id": "1980372208339021983",
@@ -5284,8 +5237,7 @@
       ],
       "isReply": false,
       "url": "https://x.com/immrape/status/1980372208339021983",
-      "avatarLocal": "/avatars/immrape.jpg",
-      "isSynthetic": false
+      "avatarLocal": "/avatars/immrape.jpg"
     },
     {
       "id": "1978854012914192733",
@@ -5302,8 +5254,7 @@
       ],
       "isReply": false,
       "url": "https://x.com/hc_capital/status/1978854012914192733",
-      "avatarLocal": "/avatars/hc_capital.jpg",
-      "isSynthetic": false
+      "avatarLocal": "/avatars/hc_capital.jpg"
     },
     {
       "id": "1978137602109878589",
@@ -5320,8 +5271,7 @@
       ],
       "isReply": false,
       "url": "https://x.com/hc_capital/status/1978137602109878589",
-      "avatarLocal": "/avatars/hc_capital.jpg",
-      "isSynthetic": false
+      "avatarLocal": "/avatars/hc_capital.jpg"
     },
     {
       "id": "1977560186513715571",
@@ -5338,8 +5288,7 @@
       ],
       "isReply": false,
       "url": "https://x.com/Thienthien1305/status/1977560186513715571",
-      "avatarLocal": "/avatars/Thienthien1305.jpg",
-      "isSynthetic": false
+      "avatarLocal": "/avatars/Thienthien1305.jpg"
     },
     {
       "id": "1976864865064210766",
@@ -5356,8 +5305,7 @@
       ],
       "isReply": false,
       "url": "https://x.com/TCVNcommunity/status/1976864865064210766",
-      "avatarLocal": "/avatars/TCVNcommunity.jpg",
-      "isSynthetic": false
+      "avatarLocal": "/avatars/TCVNcommunity.jpg"
     },
     {
       "id": "1975188809122980170",
@@ -5372,8 +5320,7 @@
       "media": [],
       "isReply": false,
       "url": "https://x.com/imlethanh98/status/1975188809122980170",
-      "avatarLocal": "/avatars/imlethanh98.jpg",
-      "isSynthetic": false
+      "avatarLocal": "/avatars/imlethanh98.jpg"
     },
     {
       "id": "1973337229432099317",
@@ -5390,8 +5337,7 @@
       ],
       "isReply": false,
       "url": "https://x.com/NickyPham_HC/status/1973337229432099317",
-      "avatarLocal": "/avatars/NickyPham_HC.jpg",
-      "isSynthetic": false
+      "avatarLocal": "/avatars/NickyPham_HC.jpg"
     },
     {
       "id": "1967136975967973801",
@@ -5408,8 +5354,7 @@
       ],
       "isReply": false,
       "url": "https://x.com/LeDuyCryptoMan/status/1967136975967973801",
-      "avatarLocal": "/avatars/LeDuyCryptoMan.jpg",
-      "isSynthetic": false
+      "avatarLocal": "/avatars/LeDuyCryptoMan.jpg"
     },
     {
       "id": "1966831189941252388",
@@ -5426,8 +5371,7 @@
       ],
       "isReply": false,
       "url": "https://x.com/LeDuyCryptoMan/status/1966831189941252388",
-      "avatarLocal": "/avatars/LeDuyCryptoMan.jpg",
-      "isSynthetic": false
+      "avatarLocal": "/avatars/LeDuyCryptoMan.jpg"
     },
     {
       "id": "1965812018822484372",
@@ -5444,8 +5388,7 @@
       ],
       "isReply": false,
       "url": "https://x.com/HakResearch/status/1965812018822484372",
-      "avatarLocal": "/avatars/HakResearch.jpg",
-      "isSynthetic": false
+      "avatarLocal": "/avatars/HakResearch.jpg"
     },
     {
       "id": "1963180520109478049",
@@ -5460,8 +5403,7 @@
       "media": [],
       "isReply": false,
       "url": "https://x.com/LuckyStudent02/status/1963180520109478049",
-      "avatarLocal": "/avatars/LuckyStudent02.jpg",
-      "isSynthetic": false
+      "avatarLocal": "/avatars/LuckyStudent02.jpg"
     },
     {
       "id": "1962712698321572188",
@@ -5478,8 +5420,7 @@
       ],
       "isReply": false,
       "url": "https://x.com/jackvi810/status/1962712698321572188",
-      "avatarLocal": "/avatars/jackvi810.jpg",
-      "isSynthetic": false
+      "avatarLocal": "/avatars/jackvi810.jpg"
     },
     {
       "id": "1962363521716674616",
@@ -5499,8 +5440,7 @@
       ],
       "isReply": false,
       "url": "https://x.com/PhamHuong_GFI/status/1962363521716674616",
-      "avatarLocal": "/avatars/PhamHuong_GFI.jpg",
-      "isSynthetic": false
+      "avatarLocal": "/avatars/PhamHuong_GFI.jpg"
     },
     {
       "id": "1961343659032678500",
@@ -5517,8 +5457,7 @@
       ],
       "isReply": false,
       "url": "https://x.com/LensMoso/status/1961343659032678500",
-      "avatarLocal": "/avatars/LensMoso.jpg",
-      "isSynthetic": false
+      "avatarLocal": "/avatars/LensMoso.jpg"
     },
     {
       "id": "1961223068661239983",
@@ -5535,8 +5474,7 @@
       ],
       "isReply": false,
       "url": "https://x.com/PhamHuong_GFI/status/1961223068661239983",
-      "avatarLocal": "/avatars/PhamHuong_GFI.jpg",
-      "isSynthetic": false
+      "avatarLocal": "/avatars/PhamHuong_GFI.jpg"
     },
     {
       "id": "1960877171746152601",
@@ -5553,8 +5491,7 @@
       ],
       "isReply": false,
       "url": "https://x.com/LensMoso/status/1960877171746152601",
-      "avatarLocal": "/avatars/LensMoso.jpg",
-      "isSynthetic": false
+      "avatarLocal": "/avatars/LensMoso.jpg"
     },
     {
       "id": "1959577796159934614",
@@ -5569,8 +5506,7 @@
       "media": [],
       "isReply": false,
       "url": "https://x.com/imlethanh98/status/1959577796159934614",
-      "avatarLocal": "/avatars/imlethanh98.jpg",
-      "isSynthetic": false
+      "avatarLocal": "/avatars/imlethanh98.jpg"
     },
     {
       "id": "1958444209201107262",
@@ -5587,8 +5523,7 @@
       ],
       "isReply": false,
       "url": "https://x.com/TCVNcommunity/status/1958444209201107262",
-      "avatarLocal": "/avatars/TCVNcommunity.jpg",
-      "isSynthetic": false
+      "avatarLocal": "/avatars/TCVNcommunity.jpg"
     },
     {
       "id": "1954368873287098455",
@@ -5603,8 +5538,7 @@
       "media": [],
       "isReply": false,
       "url": "https://x.com/HakResearch/status/1954368873287098455",
-      "avatarLocal": "/avatars/HakResearch.jpg",
-      "isSynthetic": false
+      "avatarLocal": "/avatars/HakResearch.jpg"
     },
     {
       "id": "1939533385749377096",
@@ -5621,8 +5555,7 @@
       ],
       "isReply": false,
       "url": "https://x.com/AIAdoptHQ/status/1939533385749377096",
-      "avatarLocal": "/avatars/AIAdoptHQ.jpg",
-      "isSynthetic": false
+      "avatarLocal": "/avatars/AIAdoptHQ.jpg"
     },
     {
       "id": "1936966105748455921",
@@ -5639,8 +5572,7 @@
       ],
       "isReply": false,
       "url": "https://x.com/TuanNguyen_6789/status/1936966105748455921",
-      "avatarLocal": "/avatars/TuanNguyen_6789.jpg",
-      "isSynthetic": false
+      "avatarLocal": "/avatars/TuanNguyen_6789.jpg"
     },
     {
       "id": "1934444528263696496",
@@ -5657,8 +5589,7 @@
       ],
       "isReply": false,
       "url": "https://x.com/AIAdoptHQ/status/1934444528263696496",
-      "avatarLocal": "/avatars/AIAdoptHQ.jpg",
-      "isSynthetic": false
+      "avatarLocal": "/avatars/AIAdoptHQ.jpg"
     },
     {
       "id": "1912498138583310682",
@@ -5673,8 +5604,7 @@
       "media": [],
       "isReply": false,
       "url": "https://x.com/wearestcvn/status/1912498138583310682",
-      "avatarLocal": "/avatars/wearestcvn.jpg",
-      "isSynthetic": false
+      "avatarLocal": "/avatars/wearestcvn.jpg"
     },
     {
       "id": "1911974816732815710",
@@ -5691,8 +5621,7 @@
       ],
       "isReply": false,
       "url": "https://x.com/phamduydong179/status/1911974816732815710",
-      "avatarLocal": "/avatars/phamduydong179.jpg",
-      "isSynthetic": false
+      "avatarLocal": "/avatars/phamduydong179.jpg"
     },
     {
       "id": "1908180190855107056",
@@ -5709,8 +5638,7 @@
       ],
       "isReply": false,
       "url": "https://x.com/LeninUGReal/status/1908180190855107056",
-      "avatarLocal": "/avatars/LeninUGReal.jpg",
-      "isSynthetic": false
+      "avatarLocal": "/avatars/LeninUGReal.jpg"
     },
     {
       "id": "1896810745125535778",
@@ -5725,8 +5653,7 @@
       "media": [],
       "isReply": false,
       "url": "https://x.com/Tnubmv/status/1896810745125535778",
-      "avatarLocal": "/avatars/Tnubmv.jpg",
-      "isSynthetic": false
+      "avatarLocal": "/avatars/Tnubmv.jpg"
     },
     {
       "id": "1892436049030500493",
@@ -5743,8 +5670,7 @@
       ],
       "isReply": false,
       "url": "https://x.com/Martin_bml/status/1892436049030500493",
-      "avatarLocal": "/avatars/Martin_bml.jpg",
-      "isSynthetic": false
+      "avatarLocal": "/avatars/Martin_bml.jpg"
     },
     {
       "id": "1887030988502716653",
@@ -5761,8 +5687,7 @@
       ],
       "isReply": false,
       "url": "https://x.com/jackvi810/status/1887030988502716653",
-      "avatarLocal": "/avatars/jackvi810.jpg",
-      "isSynthetic": false
+      "avatarLocal": "/avatars/jackvi810.jpg"
     },
     {
       "id": "1881934366513020987",
@@ -5779,8 +5704,7 @@
       ],
       "isReply": false,
       "url": "https://x.com/BiCanTho/status/1881934366513020987",
-      "avatarLocal": "/avatars/BiCanTho.jpg",
-      "isSynthetic": false
+      "avatarLocal": "/avatars/BiCanTho.jpg"
     },
     {
       "id": "1878426283149054020",
@@ -5798,8 +5722,7 @@
       ],
       "isReply": false,
       "url": "https://x.com/Namxuceo/status/1878426283149054020",
-      "avatarLocal": "/avatars/Namxuceo.jpg",
-      "isSynthetic": false
+      "avatarLocal": "/avatars/Namxuceo.jpg"
     },
     {
       "id": "1876148842154119239",
@@ -5816,8 +5739,7 @@
       ],
       "isReply": false,
       "url": "https://x.com/NickyPham_HC/status/1876148842154119239",
-      "avatarLocal": "/avatars/NickyPham_HC.jpg",
-      "isSynthetic": false
+      "avatarLocal": "/avatars/NickyPham_HC.jpg"
     },
     {
       "id": "1868614841637720167",
@@ -5836,8 +5758,7 @@
       ],
       "isReply": false,
       "url": "https://x.com/Martin_bml/status/1868614841637720167",
-      "avatarLocal": "/avatars/Martin_bml.jpg",
-      "isSynthetic": false
+      "avatarLocal": "/avatars/Martin_bml.jpg"
     },
     {
       "id": "1866448843447185666",
@@ -5854,8 +5775,7 @@
       ],
       "isReply": false,
       "url": "https://x.com/Tnubmv/status/1866448843447185666",
-      "avatarLocal": "/avatars/Tnubmv.jpg",
-      "isSynthetic": false
+      "avatarLocal": "/avatars/Tnubmv.jpg"
     },
     {
       "id": "1863899403783680212",
@@ -5872,8 +5792,7 @@
       ],
       "isReply": false,
       "url": "https://x.com/Titans_ventures/status/1863899403783680212",
-      "avatarLocal": "/avatars/Titans_ventures.jpg",
-      "isSynthetic": false
+      "avatarLocal": "/avatars/Titans_ventures.jpg"
     },
     {
       "id": "1863171970151706657",
@@ -5890,8 +5809,7 @@
       ],
       "isReply": false,
       "url": "https://x.com/Namxuceo/status/1863171970151706657",
-      "avatarLocal": "/avatars/Namxuceo.jpg",
-      "isSynthetic": false
+      "avatarLocal": "/avatars/Namxuceo.jpg"
     },
     {
       "id": "1862746827830784346",
@@ -5908,8 +5826,7 @@
       ],
       "isReply": false,
       "url": "https://x.com/Titans_ventures/status/1862746827830784346",
-      "avatarLocal": "/avatars/Titans_ventures.jpg",
-      "isSynthetic": false
+      "avatarLocal": "/avatars/Titans_ventures.jpg"
     },
     {
       "id": "1829707045932843297",
@@ -5926,8 +5843,7 @@
       ],
       "isReply": false,
       "url": "https://x.com/wearestcvn/status/1829707045932843297",
-      "avatarLocal": "/avatars/wearestcvn.jpg",
-      "isSynthetic": false
+      "avatarLocal": "/avatars/wearestcvn.jpg"
     },
     {
       "id": "1724947728596410809",
@@ -5944,8 +5860,7 @@
       ],
       "isReply": false,
       "url": "https://x.com/TNC404/status/1724947728596410809",
-      "avatarLocal": "/avatars/TNC404.jpg",
-      "isSynthetic": false
+      "avatarLocal": "/avatars/TNC404.jpg"
     },
     {
       "id": "1715993368478789771",
@@ -5960,9 +5875,8 @@
       "media": [],
       "isReply": false,
       "url": "https://x.com/TNC404/status/1715993368478789771",
-      "avatarLocal": "/avatars/TNC404.jpg",
-      "isSynthetic": false
+      "avatarLocal": "/avatars/TNC404.jpg"
     }
   ],
-  "archivedCount": 297
+  "archivedCount": 306
 }

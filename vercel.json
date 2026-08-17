@@ -53,6 +53,14 @@
       "destination": "/api/media?key=:path*"
     },
     {
+      "source": "/event",
+      "destination": "/"
+    },
+    {
+      "source": "/event/",
+      "destination": "/"
+    },
+    {
       "source": "/event/:path*",
       "destination": "/"
     },

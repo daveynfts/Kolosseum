@@ -1,17 +1,20 @@
 /**
- * Conviction 2026 side events (map + admin).
+ * Event-map side events (one R2 object per edition slug).
  *
- * GET  /api/event-side-events — public read
- * PUT  /api/event-side-events — Bearer FEED_ADMIN_TOKEN
+ * GET  /api/event-side-events?event=conviction-2026 — public read
+ * GET  /api/event-side-events?list=1               — edition catalog
+ * PUT  /api/event-side-events?event=<slug>         — Bearer FEED_ADMIN_TOKEN
  *
- * R2 key: events/conviction-2026/v1.json
+ * R2: events/<slug>/v1.json + events/index.json
  */
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 import {
   envPresence,
+  EVENT_EDITIONS_INDEX_KEY,
   EVENT_SIDE_EVENTS_OBJECT_KEY,
   r2Client,
   r2GetJson,
+  r2PutJson,
 } from '../lib/server/r2.js'
 import { repairJsonStrings } from '../src/lib/lumaText.js'
 import {
@@ -25,6 +28,18 @@ import {
   sendJson,
 } from '../lib/server/apiHelpers.js'
 import { cacheEventImageUrls } from '../lib/server/mediaCache.js'
+import {
+  DEFAULT_EVENT_SLUG,
+  eventObjectKey,
+  mergeEditionCatalog,
+  parseEventSlug,
+  seedEditionBySlug,
+  titleFromSlug,
+  upsertEditionInCatalog,
+  yearFromSlug,
+  type EventEditionMeta,
+  type EventEditionStatus,
+} from '../src/data/eventEditions.js'
 
 type SideEventBody = {
   id?: string
@@ -45,7 +60,15 @@ type Body = {
   events?: SideEventBody[]
   updatedAt?: string
   note?: string
+  archived?: boolean
   [k: string]: unknown
+}
+
+type IndexBody = {
+  version?: number
+  kind?: string
+  editions?: EventEditionMeta[]
+  updatedAt?: string
 }
 
 function cors(res: VercelResponse) {
@@ -56,6 +79,18 @@ function cors(res: VercelResponse) {
     'Content-Type, Authorization',
   )
   res.setHeader('Cache-Control', 'no-store')
+}
+
+function querySlug(req: VercelRequest): string | null {
+  const raw = req.query.event
+  const v = Array.isArray(raw) ? raw[0] : raw
+  if (v == null || v === '') return DEFAULT_EVENT_SLUG
+  return parseEventSlug(String(v))
+}
+
+function objectKeyForSlug(slug: string): string {
+  if (slug === DEFAULT_EVENT_SLUG) return EVENT_SIDE_EVENTS_OBJECT_KEY
+  return eventObjectKey(slug)
 }
 
 function isValidEvent(e: SideEventBody): boolean {
@@ -72,11 +107,74 @@ function isValidEvent(e: SideEventBody): boolean {
   return true
 }
 
-function isValidBody(body: Body): boolean {
+function isValidBody(body: Body, slug: string): boolean {
   if (!body || typeof body !== 'object') return false
-  if (body.event != null && body.event !== 'conviction-2026') return false
+  if (body.event != null && parseEventSlug(body.event) !== slug) return false
   if (!Array.isArray(body.events)) return false
   return body.events.every(isValidEvent)
+}
+
+function editionMetaFromDataset(
+  slug: string,
+  body: Body,
+): EventEditionMeta {
+  const seed = seedEditionBySlug(slug)
+  const range =
+    body.dateRange && typeof body.dateRange === 'object'
+      ? (body.dateRange as { start?: string; end?: string })
+      : null
+  const start = typeof range?.start === 'string' ? range.start : ''
+  const end = typeof range?.end === 'string' ? range.end : ''
+  const dateLabel =
+    start && end
+      ? `${start.slice(8, 10)}/${start.slice(5, 7)}–${end.slice(8, 10)}/${end.slice(5, 7)}/${end.slice(0, 4)}`
+      : seed?.dateLabel
+  const archived = body.archived === true
+  const status: EventEditionStatus = archived
+    ? 'archive'
+    : seed?.status === 'archive'
+      ? 'live'
+      : seed?.status || 'live'
+  const venue =
+    body.venue && typeof body.venue === 'object'
+      ? (body.venue as { name?: string })
+      : null
+  return {
+    slug,
+    title:
+      (typeof body.title === 'string' && body.title.trim()) ||
+      seed?.title ||
+      titleFromSlug(slug),
+    year: yearFromSlug(slug) || seed?.year || new Date().getUTCFullYear(),
+    status,
+    lumaUrl: seed?.lumaUrl,
+    homeUrl: seed?.homeUrl,
+    logoUrl: seed?.logoUrl,
+    ogImage: seed?.ogImage,
+    venueName:
+      (typeof venue?.name === 'string' && venue.name.trim()) ||
+      seed?.venueName,
+    city: seed?.city,
+    dateLabel,
+    descriptionVi: seed?.descriptionVi,
+    descriptionEn: seed?.descriptionEn,
+  }
+}
+
+async function upsertIndex(
+  client: NonNullable<ReturnType<typeof r2Client>>,
+  edition: EventEditionMeta,
+) {
+  const current = await r2GetJson<IndexBody>(client, EVENT_EDITIONS_INDEX_KEY)
+  const merged = mergeEditionCatalog(current)
+  const editions = upsertEditionInCatalog(merged, edition)
+  const payload: IndexBody = {
+    version: 1,
+    kind: 'event-editions',
+    editions,
+    updatedAt: new Date().toISOString(),
+  }
+  await r2PutJson(client, EVENT_EDITIONS_INDEX_KEY, payload)
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -95,10 +193,36 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
     if (isGetOrHead(req.method)) {
       if (!enforcePublicRateLimit(req, res, 'event-side-events', 90)) return
-      const data = await r2GetJson<Body>(client, EVENT_SIDE_EVENTS_OBJECT_KEY)
+
+      const list =
+        String(req.query.list || '') === '1' ||
+        String(req.query.scope || '') === 'editions'
+      if (list) {
+        const index = await r2GetJson<IndexBody>(
+          client,
+          EVENT_EDITIONS_INDEX_KEY,
+        )
+        const editions = mergeEditionCatalog(index)
+        return sendJson(req, res, 200, {
+          version: 1,
+          kind: 'event-editions',
+          editions,
+          updatedAt: index?.updatedAt || new Date().toISOString(),
+        })
+      }
+
+      const slug = querySlug(req)
+      if (!slug) {
+        return jsonError(res, 400, 'invalid_event', {
+          message: 'event slug must match [a-z0-9][a-z0-9-]{0,62}[a-z0-9]',
+        })
+      }
+      const key = objectKeyForSlug(slug)
+      const data = await r2GetJson<Body>(client, key)
       if (!data || !Array.isArray(data.events)) {
         return sendJson(req, res, 404, {
           error: 'empty',
+          event: slug,
           message:
             'No side-event data yet. Admin → Events → Save to publish.',
         })
@@ -112,13 +236,22 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           message: 'Admin token required for full events dataset',
         })
       }
-      if (wantAll) return sendJson(req, res, 200, repairJsonStrings(data))
-      const events = data.events.filter((e) => e && e.hidden !== true)
-      return sendJson(req, res, 200, repairJsonStrings({ ...data, events }))
+      const repaired = repairJsonStrings({ ...data, event: slug })
+      if (wantAll) return sendJson(req, res, 200, repaired)
+      const events = (repaired.events || []).filter(
+        (e: SideEventBody) => e && e.hidden !== true,
+      )
+      return sendJson(req, res, 200, { ...repaired, events })
     }
 
     if (req.method === 'PUT') {
       if (!requireAdmin(req, res)) return
+      const slug = querySlug(req)
+      if (!slug) {
+        return jsonError(res, 400, 'invalid_event', {
+          message: 'event slug must match [a-z0-9][a-z0-9-]{0,62}[a-z0-9]',
+        })
+      }
       const parsed = parseJsonBody<Body>(req)
       if (parsed.ok === false) {
         return jsonError(res, 400, parsed.error, {
@@ -127,7 +260,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         })
       }
       const body = parsed.body
-      if (!isValidBody(body)) {
+      if (!isValidBody(body, slug)) {
         return jsonError(res, 400, 'invalid_body', {
           message:
             'Need events[] with id, title, date (YYYY-MM-DD), lat, lng per item',
@@ -141,17 +274,21 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       const payload: Body = repairJsonStrings({
         ...body,
         version: 1,
-        kind: 'conviction-side-events',
-        event: 'conviction-2026',
+        kind:
+          slug === DEFAULT_EVENT_SLUG
+            ? 'conviction-side-events'
+            : 'side-events',
+        event: slug,
         events: imagePass.events,
         updatedAt: new Date().toISOString(),
       })
       delete (payload as { baseUpdatedAt?: string }).baseUpdatedAt
+      const key = objectKeyForSlug(slug)
       if (
         !(await commitJsonReplace(
           res,
           client,
-          EVENT_SIDE_EVENTS_OBJECT_KEY,
+          key,
           body as Record<string, unknown>,
           (current) => current?.updatedAt,
           'Server có dữ liệu Events mới hơn. Reload rồi Save lại.',
@@ -160,12 +297,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       ) {
         return
       }
+      try {
+        await upsertIndex(client, editionMetaFromDataset(slug, payload))
+      } catch (e) {
+        console.error('[api/event-side-events] index upsert', e)
+      }
       return res.status(200).json({
         ok: true,
+        event: slug,
         events: Array.isArray(payload.events) ? payload.events.length : 0,
         updatedAt: payload.updatedAt,
         storage: 'r2',
-        key: EVENT_SIDE_EVENTS_OBJECT_KEY,
+        key,
         imagesCached: imagePass.cached,
         imagesFailed: imagePass.failed,
       })

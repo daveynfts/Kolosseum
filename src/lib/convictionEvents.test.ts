@@ -70,6 +70,7 @@ describe('convictionEvents helpers', () => {
     const n = normalizeDataset(CONVICTION_EVENTS_SEED)
     expect(n).not.toBeNull()
     expect(n!.event).toBe('conviction-2026')
+    expect(n!.kind).toBe('conviction-side-events')
     const visibleSeed = CONVICTION_EVENTS_SEED.events.filter((e) => !e.hidden)
     expect(n!.events).toHaveLength(visibleSeed.length)
     expect(n!.events.length).toBeGreaterThanOrEqual(20)

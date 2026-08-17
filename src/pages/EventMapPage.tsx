@@ -56,10 +56,15 @@ import {
 import { applyEventMapSeo } from '../lib/eventMapSeo'
 import { withBase } from '../lib/base'
 import { isSafeImageUrl, safeHref } from '../lib/safeUrl'
+import {
+  DEFAULT_EVENT_SLUG,
+  editionMetaForSlug,
+  isConvictionEdition,
+  parseEventSlugFromPathname,
+} from '../data/eventEditions'
 import './EventMapPage.css'
 
 const CONVICTION_LOGO = withBase('/conviction/logo-full.svg')
-const CONVICTION_HOME = 'https://www.conviction.vn/vi'
 
 /**
  * Dark vector basemap (OpenFreeMap + Noto Sans glyphs).
@@ -156,17 +161,17 @@ function writeEventMapParams(opts: {
   if (opts.id) params.set('id', opts.id)
   const q = params.toString()
   const path = window.location.pathname
-  const onPath = path.toLowerCase().startsWith('/event')
+  const onPath = path.toLowerCase().startsWith('/event/')
   if (onPath) {
     const next = `${path}${q ? `?${q}` : ''}`
     const cur = `${path}${window.location.search}`
     if (cur !== next) history.replaceState(null, '', next)
     return
   }
-  const next = q ? `#/event?${q}` : '#/event'
-  if (window.location.hash !== next) {
-    history.replaceState(null, '', next)
-  }
+  const slug = parseEventSlugFromPathname(path) || DEFAULT_EVENT_SLUG
+  const next = `/event/${slug}${q ? `?${q}` : ''}`
+  const cur = `${path}${window.location.search}${window.location.hash}`
+  if (cur !== next) history.replaceState(null, '', next)
 }
 
 function downloadIcs(ev: SideEvent) {
@@ -432,6 +437,9 @@ export function EventMapPage() {
   const lastFitKeyRef = useRef<string>('')
   const userMovedMapRef = useRef(false)
 
+  const eventSlug =
+    parseEventSlugFromPathname(window.location.pathname) || DEFAULT_EVENT_SLUG
+  const editionMeta = editionMetaForSlug(eventSlug)
   const initialParams = useMemo(() => parseEventMapParams(), [])
 
   const [dataset, setDataset] = useState<SideEventDataset | null>(null)
@@ -536,7 +544,7 @@ export function EventMapPage() {
       }
       inflight = true
       const n = ++seq
-      void loadEventsWithSource()
+      void loadEventsWithSource({ slug: eventSlug })
         .then((r) => {
           if (cancelled || n !== seq) return
           setDataset(r.dataset)
@@ -545,7 +553,7 @@ export function EventMapPage() {
         })
         .catch(() => {
           if (cancelled || n !== seq) return
-          setDataset(getConvictionEvents())
+          setDataset(getConvictionEvents(eventSlug))
           setLoading(false)
         })
         .finally(() => {
@@ -572,7 +580,7 @@ export function EventMapPage() {
       window.removeEventListener(CONVICTION_EVENTS_EVENT, load)
       document.removeEventListener('visibilitychange', onVis)
     }
-  }, [])
+  }, [eventSlug])
 
   // Sync deep link when filters/selection change
   useEffect(() => {
@@ -589,11 +597,11 @@ export function EventMapPage() {
   }, [dataset])
 
   const calMonthLabel = useMemo(() => {
-    if (!dates.length) return 'Conviction week'
+    if (!dates.length) return dataset?.title || editionMeta?.title || 'Event week'
     // Prefer mid-range label (stable month for 13–16/08)
     const mid = dates[Math.floor(dates.length / 2)] || dates[0]
     return formatMonthYear(mid, locale)
-  }, [dates, locale])
+  }, [dates, locale, dataset, editionMeta])
 
   const tbdDateCount = useMemo(
     () => (dataset ? dataset.events.filter((e) => e.dateTbd).length : 0),
@@ -626,8 +634,13 @@ export function EventMapPage() {
   )
 
   useEffect(() => {
-    applyEventMapSeo(locale, { archived })
-  }, [locale, archived])
+    applyEventMapSeo(locale, {
+      archived,
+      slug: eventSlug,
+      edition: editionMeta,
+      title: dataset?.title,
+    })
+  }, [locale, archived, eventSlug, editionMeta, dataset?.title])
 
   /** Archive editions default to chronological list (not “upcoming”). */
   useEffect(() => {
@@ -656,9 +669,9 @@ export function EventMapPage() {
     return {
       lat: dataset?.venue.lat ?? SALA_VENUE.lat,
       lng: dataset?.venue.lng ?? SALA_VENUE.lng,
-      label: 'Conviction',
+      label: editionMeta?.title?.split(' ')[0] || 'Venue',
     }
-  }, [distOrigin, userLoc, selectedEvent, dataset])
+  }, [distOrigin, userLoc, selectedEvent, dataset, editionMeta])
 
   const filtered = useMemo(() => {
     if (!dataset) return []
@@ -1533,6 +1546,9 @@ export function EventMapPage() {
             </strong>
             <p className="emp-archive-banner__body">{tt('archiveBannerBody')}</p>
           </div>
+          <a className="emp-archive-banner__home" href="/event">
+            Events →
+          </a>
           <a className="emp-archive-banner__home" href="/">
             Radar →
           </a>
@@ -1542,10 +1558,18 @@ export function EventMapPage() {
         <div className="emp__brand">
           <h1 className="emp__brand-title emp-luma-copy">
             <span className="emp__brand-title-full">
-              {archived ? tt('pageTitleArchive') : tt('pageTitle')}
+              {isConvictionEdition(eventSlug)
+                ? archived
+                  ? tt('pageTitleArchive')
+                  : tt('pageTitle')
+                : dataset?.title || editionMeta?.title || eventSlug}
             </span>
             <span className="emp__brand-title-short">
-              {archived ? tt('pageTitleShortArchive') : tt('pageTitleShort')}
+              {isConvictionEdition(eventSlug)
+                ? archived
+                  ? tt('pageTitleShortArchive')
+                  : tt('pageTitleShort')
+                : dataset?.title || editionMeta?.title || eventSlug}
             </span>
           </h1>
           <p className="emp__brand-sub emp-luma-copy">
@@ -1672,31 +1696,45 @@ export function EventMapPage() {
                   ? tt('expandList')
                   : tt('collapseList')}
             </button>
-            <a
-              className="emp__btn"
-              href="https://luma.com/conviction-2026"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Luma
-            </a>
-            <a
-              className="emp__btn emp__btn--logo"
-              href={CONVICTION_HOME}
-              target="_blank"
-              rel="noopener noreferrer"
-              title="Conviction 2026"
-              aria-label="Conviction 2026 — conviction.vn"
-            >
-              <img
-                className="emp__conviction-logo"
-                src={CONVICTION_LOGO}
-                alt="Conviction"
-                width={120}
-                height={20}
-                decoding="async"
-              />
-            </a>
+            {editionMeta?.lumaUrl ? (
+              <a
+                className="emp__btn"
+                href={editionMeta.lumaUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Luma
+              </a>
+            ) : null}
+            {editionMeta?.homeUrl &&
+            (isConvictionEdition(eventSlug) || editionMeta.logoUrl) ? (
+              <a
+                className="emp__btn emp__btn--logo"
+                href={editionMeta.homeUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                title={editionMeta.title}
+                aria-label={editionMeta.title}
+              >
+                <img
+                  className="emp__conviction-logo"
+                  src={withBase(editionMeta.logoUrl || CONVICTION_LOGO)}
+                  alt={editionMeta.title}
+                  width={120}
+                  height={20}
+                  decoding="async"
+                />
+              </a>
+            ) : editionMeta?.homeUrl ? (
+              <a
+                className="emp__btn"
+                href={editionMeta.homeUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {editionMeta.title}
+              </a>
+            ) : null}
           </div>
         </div>
       </header>

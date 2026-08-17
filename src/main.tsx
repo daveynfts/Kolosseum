@@ -23,6 +23,11 @@ const EventMapPage = lazy(() =>
     default: m.EventMapPage,
   })),
 )
+const EventHubPage = lazy(() =>
+  import('./pages/EventHubPage.tsx').then((m) => ({
+    default: m.EventHubPage,
+  })),
+)
 const ScexEventBanner = lazy(() =>
   import('./components/ScexEventBanner.tsx').then((m) => ({
     default: m.ScexEventBanner,
@@ -53,7 +58,7 @@ function normalizePathname(): string {
   return p || '/'
 }
 
-function getRoute(): 'map' | 'admin' | 'scex' | 'event' {
+function getRoute(): 'map' | 'admin' | 'scex' | 'event' | 'event-hub' {
   const h = window.location.hash.replace(/^#\/?/, '').toLowerCase()
   const path = normalizePathname()
   // Admin hash/path always wins so /scex#/admin and /admin work.
@@ -66,12 +71,13 @@ function getRoute(): 'map' | 'admin' | 'scex' | 'event' {
   ) {
     return 'admin'
   }
-  if (path.startsWith('/event')) return 'event'
+  if (path === '/event') return 'event-hub'
+  if (path.startsWith('/event/')) return 'event'
   if (path === '/scex' || path.startsWith('/scex/')) return 'scex'
   if (h === 'scex' || h.startsWith('scex/') || h.startsWith('scex?'))
     return 'scex'
-  if (h === 'event' || h.startsWith('event/') || h.startsWith('event?'))
-    return 'event'
+  if (h === 'event' || h === 'event?') return 'event-hub'
+  if (h.startsWith('event/') || h.startsWith('event?')) return 'event'
   return 'map'
 }
 
@@ -90,6 +96,41 @@ function migrateLegacyScexHash() {
     return
   }
   window.history.replaceState(null, '', `/scex${window.location.search}`)
+}
+
+/**
+ * Legacy `#/event` and `#/event?id=` → `/event` or `/event/conviction-2026`.
+ * Deep links with a selected event stay on the 2026 edition.
+ */
+function migrateLegacyEventHash() {
+  const raw = window.location.hash.replace(/^#\/?/, '')
+  const h = raw.toLowerCase()
+  if (!(h === 'event' || h.startsWith('event/') || h.startsWith('event?'))) {
+    return
+  }
+  const path = normalizePathname()
+  if (path === '/event' || path.startsWith('/event/')) {
+    window.history.replaceState(
+      null,
+      '',
+      `${path}${window.location.search}`,
+    )
+    return
+  }
+  const qIdx = raw.indexOf('?')
+  const after = qIdx >= 0 ? raw.slice(0, qIdx) : raw
+  const query = qIdx >= 0 ? raw.slice(qIdx) : window.location.search
+  const rest = after.replace(/^event\/?/i, '')
+  if (rest) {
+    window.history.replaceState(null, '', `/event/${rest}${query}`)
+    return
+  }
+  const params = new URLSearchParams(query.startsWith('?') ? query.slice(1) : query)
+  const dest =
+    params.has('id') || params.has('date')
+      ? `/event/conviction-2026${query}`
+      : `/event${query}`
+  window.history.replaceState(null, '', dest)
 }
 
 function AdminGate({ children }: { children: ReactNode }) {
@@ -139,14 +180,17 @@ function AdminGate({ children }: { children: ReactNode }) {
 function Root() {
   const [route, setRoute] = useState(() => {
     migrateLegacyScexHash()
+    migrateLegacyEventHash()
     return getRoute()
   })
 
   useEffect(() => {
     migrateLegacyScexHash()
+    migrateLegacyEventHash()
     setRoute(getRoute())
     const onHash = () => {
       migrateLegacyScexHash()
+      migrateLegacyEventHash()
       setRoute(getRoute())
     }
     const onPop = () => setRoute(getRoute())
@@ -165,6 +209,19 @@ function Root() {
           <AdminGate>
             <AdminDashboard />
           </AdminGate>
+        </SceneErrorBoundary>
+      </Suspense>
+    )
+  }
+
+  if (route === 'event-hub') {
+    return (
+      <Suspense fallback={<RouteFallback />}>
+        <SceneErrorBoundary title="Event hub failed to render">
+          <div className="app-shell">
+            <SiteChrome active="event" />
+            <EventHubPage />
+          </div>
         </SceneErrorBoundary>
       </Suspense>
     )

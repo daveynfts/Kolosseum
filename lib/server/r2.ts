@@ -72,8 +72,10 @@ export const SCEX_TRACKING_OBJECT_KEY = 'scex/tracking/v1.json'
 export const KOL_REPORTS_OBJECT_KEY = 'internal/kol-reports/v1.json'
 /** Partner event ribbon (text + image URLs) — admin-editable */
 export const SITE_BANNER_OBJECT_KEY = 'site/banner/v1.json'
-/** Conviction 2026 side-event map — admin-editable */
+/** Default / legacy Conviction 2026 side-event map */
 export const EVENT_SIDE_EVENTS_OBJECT_KEY = 'events/conviction-2026/v1.json'
+/** Registry of /event/:slug editions (conviction-2026, conviction-2027, …) */
+export const EVENT_EDITIONS_INDEX_KEY = 'events/index.json'
 /** Prefix for banner image uploads (logo, art background) */
 export const BANNER_IMAGES_PREFIX = 'scex-banner'
 

@@ -1,0 +1,198 @@
+.ehub {
+  position: relative;
+  z-index: 1;
+  min-height: 100%;
+  padding: calc(72px + env(safe-area-inset-top, 0px)) 1.25rem 2.5rem;
+  max-width: 56rem;
+  margin: 0 auto;
+  color: rgba(255, 255, 255, 0.88);
+}
+
+.ehub__hero {
+  margin-bottom: 1.75rem;
+}
+
+.ehub__kicker {
+  margin: 0 0 0.4rem;
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.ehub__title {
+  margin: 0 0 0.55rem;
+  font-size: clamp(1.45rem, 3vw, 2rem);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+}
+
+.ehub__lead {
+  margin: 0;
+  max-width: 38rem;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.62);
+  font-size: 0.95rem;
+}
+
+.ehub__lang {
+  display: inline-flex;
+  gap: 2px;
+  margin-top: 1rem;
+  padding: 2px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.ehub__lang button {
+  border: 0;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.55);
+  font: inherit;
+  font-size: 0.75rem;
+  font-weight: 650;
+  padding: 0.25rem 0.55rem;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.ehub__lang button.is-on {
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+}
+
+.ehub__grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fill, minmax(16.5rem, 1fr));
+}
+
+.ehub__card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  min-height: 12.5rem;
+  padding: 1.05rem 1.1rem 0.95rem;
+  border-radius: 16px;
+  text-decoration: none;
+  color: inherit;
+  background: linear-gradient(
+    165deg,
+    rgba(28, 32, 48, 0.92),
+    rgba(12, 14, 22, 0.94)
+  );
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.28);
+  transition: border-color 0.15s ease, transform 0.15s ease;
+}
+
+.ehub__card:hover {
+  border-color: rgba(232, 197, 106, 0.45);
+  transform: translateY(-1px);
+}
+
+.ehub__card--ghost {
+  color: rgba(255, 255, 255, 0.45);
+  justify-content: center;
+  align-items: center;
+}
+
+.ehub__card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.ehub__logo {
+  height: 20px;
+  width: auto;
+  max-width: 9rem;
+  object-fit: contain;
+  filter: brightness(1.15);
+}
+
+.ehub__slug {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.ehub__badge {
+  flex-shrink: 0;
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.18rem 0.4rem;
+  border-radius: 4px;
+}
+
+.ehub__badge--archive {
+  color: #1a1408;
+  background: #e8c56a;
+}
+
+.ehub__badge--live {
+  color: #04210f;
+  background: #4ade80;
+}
+
+.ehub__badge--draft {
+  color: rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.ehub__card h2 {
+  margin: 0;
+  font-size: 1.12rem;
+  letter-spacing: -0.02em;
+}
+
+.ehub__card > p {
+  margin: 0;
+  font-size: 0.82rem;
+  line-height: 1.45;
+  color: rgba(255, 255, 255, 0.58);
+  flex: 1;
+}
+
+.ehub__card dl {
+  margin: 0;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.15rem 0.65rem;
+  font-size: 0.75rem;
+}
+
+.ehub__card dt {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.ehub__card dd {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.78);
+}
+
+.ehub__go {
+  font-size: 0.78rem;
+  font-weight: 650;
+  color: #e8c56a;
+}
+
+.ehub__foot {
+  margin: 1.75rem 0 0;
+  font-size: 0.78rem;
+  line-height: 1.45;
+  color: rgba(255, 255, 255, 0.42);
+  max-width: 38rem;
+}
+
+@media (max-width: 640px) {
+  .ehub {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+}

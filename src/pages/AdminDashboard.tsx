@@ -89,7 +89,7 @@ const DATASET_FILE: Record<AdminDatasetId, string> = {
   scex: 'scex/tracking/v1.json',
   banner: 'site/banner/v1.json',
   reports: 'internal/kol-reports/v1.json',
-  events: 'events/conviction-2026/v1.json',
+  events: 'events/{slug}/v1.json',
 }
 
 function tabFromHash(): Tab {

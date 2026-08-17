@@ -4,6 +4,13 @@
  * Venue: Thiskyhall Sala, TP.HCM · Main forum 14–15 Aug 2026.
  */
 import { sanitizeLumaText } from '../lib/lumaText'
+import {
+  DEFAULT_EVENT_SLUG,
+  parseEventSlug,
+  seedEditionBySlug,
+  shiftIsoYear,
+  titleFromSlug,
+} from './eventEditions'
 
 export const EVENT_TYPES = [
   'mixer',
@@ -57,10 +64,14 @@ export type MainVenue = {
   lng: number
 }
 
+export type SideEventDatasetKind = 'side-events' | 'conviction-side-events'
+
 export type SideEventDataset = {
   version: 1
-  kind: 'conviction-side-events'
-  event: 'conviction-2026'
+  /** Legacy conviction datasets keep `conviction-side-events`. */
+  kind: SideEventDatasetKind
+  /** Edition slug, e.g. `conviction-2026`. */
+  event: string
   title: string
   venue: MainVenue
   /** Inclusive date range for filter chips */
@@ -1376,6 +1387,78 @@ export function normalizeSideEvent(raw: unknown): SideEvent | null {
 export type NormalizeDatasetOpts = {
   /** Admin load/save must keep hidden events. Public map strips them. */
   includeHidden?: boolean
+  /** When raw.event is missing, bind to this slug. */
+  fallbackSlug?: string
+}
+
+function datasetKindForSlug(slug: string): SideEventDatasetKind {
+  return slug === DEFAULT_EVENT_SLUG ? 'conviction-side-events' : 'side-events'
+}
+
+function fallbackDatasetForSlug(slug: string): SideEventDataset | null {
+  if (slug === DEFAULT_EVENT_SLUG) return CONVICTION_EVENTS_SEED
+  return null
+}
+
+function inferDateRange(events: SideEvent[]): { start: string; end: string } {
+  const dates = events
+    .map((e) => e.date)
+    .filter((d) => /^\d{4}-\d{2}-\d{2}$/.test(d))
+    .sort()
+  if (!dates.length) {
+    const y = new Date().getUTCFullYear()
+    return { start: `${y}-01-01`, end: `${y}-12-31` }
+  }
+  return { start: dates[0]!, end: dates[dates.length - 1]! }
+}
+
+/** Copy venue + date window (+1 year). Side events stay on the old edition. */
+export function cloneEditionTemplate(
+  src: SideEventDataset,
+  nextSlug: string,
+): SideEventDataset {
+  const slug = parseEventSlug(nextSlug)
+  if (!slug) throw new Error('invalid_event_slug')
+  const title = src.title.replace(/\b20\d{2}\b/, String(yearFromTitle(slug, src.title)))
+  return emptyEditionDataset(slug, {
+    title: title || titleFromSlug(slug),
+    venue: { ...src.venue },
+    dateRange: {
+      start: shiftIsoYear(src.dateRange.start, 1),
+      end: shiftIsoYear(src.dateRange.end, 1),
+    },
+    note: `Cloned venue + window from ${src.event}`,
+  })
+}
+
+function yearFromTitle(slug: string, prevTitle: string): number {
+  const m = /(20\d{2})$/.exec(slug)
+  if (m) return Number(m[1])
+  const t = /\b(20\d{2})\b/.exec(prevTitle)
+  return t ? Number(t[1]) + 1 : new Date().getUTCFullYear()
+}
+
+export function emptyEditionDataset(
+  slug: string,
+  extras?: Partial<Pick<SideEventDataset, 'title' | 'venue' | 'dateRange' | 'note'>>,
+): SideEventDataset {
+  const s = parseEventSlug(slug) || DEFAULT_EVENT_SLUG
+  const meta = seedEditionBySlug(s)
+  const fallback = fallbackDatasetForSlug(s)
+  const venue = extras?.venue || fallback?.venue || SALA_VENUE
+  return {
+    version: 1,
+    kind: datasetKindForSlug(s),
+    event: s,
+    title: extras?.title || fallback?.title || meta?.title || s,
+    venue,
+    dateRange: extras?.dateRange ||
+      fallback?.dateRange || { start: `${meta?.year || new Date().getUTCFullYear()}-01-01`, end: `${meta?.year || new Date().getUTCFullYear()}-12-31` },
+    events: [],
+    updatedAt: new Date().toISOString(),
+    note: extras?.note,
+    archived: false,
+  }
 }
 
 export function normalizeDataset(
@@ -1390,41 +1473,47 @@ export function normalizeDataset(
     .map(normalizeSideEvent)
     .filter((e): e is SideEvent => !!e && (includeHidden || !e.hidden))
 
+  const slug =
+    parseEventSlug(o.event) ||
+    parseEventSlug(opts.fallbackSlug) ||
+    DEFAULT_EVENT_SLUG
+  const fallback = fallbackDatasetForSlug(slug)
+
   const venueRaw =
     o.venue && typeof o.venue === 'object'
       ? (o.venue as Record<string, unknown>)
       : null
+  const venueFallback = fallback?.venue || SALA_VENUE
   const venue: MainVenue = {
-    name: lumaStr(venueRaw?.name, SALA_VENUE.name) || SALA_VENUE.name,
-    address: lumaStr(venueRaw?.address, SALA_VENUE.address) || SALA_VENUE.address,
-    lat: num(venueRaw?.lat, SALA_VENUE.lat),
-    lng: num(venueRaw?.lng, SALA_VENUE.lng),
+    name: lumaStr(venueRaw?.name, venueFallback.name) || venueFallback.name,
+    address:
+      lumaStr(venueRaw?.address, venueFallback.address) || venueFallback.address,
+    lat: num(venueRaw?.lat, venueFallback.lat),
+    lng: num(venueRaw?.lng, venueFallback.lng),
   }
 
   const rangeRaw =
     o.dateRange && typeof o.dateRange === 'object'
       ? (o.dateRange as Record<string, unknown>)
       : null
+  const inferred = inferDateRange(events)
+  const rangeFallback = fallback?.dateRange || inferred
 
   const archivedRaw = o.archived
   const archived =
     archivedRaw === true ? true : archivedRaw === false ? false : undefined
 
+  const titleFallback = fallback?.title || seedEditionBySlug(slug)?.title || slug
+
   return {
     version: 1,
-    kind: 'conviction-side-events',
-    event: 'conviction-2026',
-    title:
-      lumaStr(o.title, CONVICTION_EVENTS_SEED.title) ||
-      CONVICTION_EVENTS_SEED.title,
+    kind: datasetKindForSlug(slug),
+    event: slug,
+    title: lumaStr(o.title, titleFallback) || titleFallback,
     venue,
     dateRange: {
-      start:
-        str(rangeRaw?.start, CONVICTION_EVENTS_SEED.dateRange.start) ||
-        CONVICTION_EVENTS_SEED.dateRange.start,
-      end:
-        str(rangeRaw?.end, CONVICTION_EVENTS_SEED.dateRange.end) ||
-        CONVICTION_EVENTS_SEED.dateRange.end,
+      start: str(rangeRaw?.start, rangeFallback.start) || rangeFallback.start,
+      end: str(rangeRaw?.end, rangeFallback.end) || rangeFallback.end,
     },
     events,
     updatedAt: str(o.updatedAt) || new Date().toISOString(),

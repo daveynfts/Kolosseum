@@ -25,5 +25,11 @@ export default function middleware(request: Request) {
   if (pathname === '/scex' || pathname.startsWith('/scex/')) {
     return rewrite(new URL('/scex-preview.html', request.url))
   }
-  return rewrite(new URL('/event-preview.html', request.url))
+  if (
+    pathname === '/event/conviction-2026' ||
+    pathname.startsWith('/event/conviction-2026/')
+  ) {
+    return rewrite(new URL('/event-preview.html', request.url))
+  }
+  return rewrite(new URL('/event-hub-preview.html', request.url))
 }

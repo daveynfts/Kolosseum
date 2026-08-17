@@ -321,9 +321,15 @@ input {
 
 .app-shell > .app,
 .app-shell > .scex-page,
-.app-shell > .emp {
+.app-shell > .emp,
+.app-shell > .ehub {
   flex: 1;
   min-height: 0;
+}
+
+.app-shell > .ehub {
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .app-shell > .emp {

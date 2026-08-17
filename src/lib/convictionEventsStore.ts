@@ -1,21 +1,64 @@
 /**
- * Conviction side events — R2 first, then seed. Admin publishes via FEED_ADMIN_TOKEN
- * (PUT /api/event-side-events → R2 key events/conviction-2026/v1.json).
- * Mojibake in live JSON is repaired on GET and in sanitizeLumaText.
+ * Side-event maps — R2 first, then seed.
+ *
+ *   GET/PUT /api/event-side-events?event=<slug>
+ *   R2 key: events/<slug>/v1.json
+ *
+ * Conviction 2026 stays on events/conviction-2026/v1.json so next year's
+ * clone cannot overwrite the archive.
  */
 import {
   CONVICTION_EVENTS_SEED,
+  emptyEditionDataset,
   normalizeDataset,
   type SideEventDataset,
 } from '../data/convictionEvents'
+import {
+  DEFAULT_EVENT_SLUG,
+  mergeEditionCatalog,
+  parseEventSlug,
+  type EventEditionMeta,
+} from '../data/eventEditions'
 import { withBase } from './base'
 import { getAdminToken } from './feedStore'
 
-const CACHE_KEY = 'vn-kol-map-conviction-events-v5'
+function cacheKey(slug: string) {
+  return `vn-kol-map-event:${slug}:v1`
+}
+
+/** Legacy single-edition cache — migrate into the slug key once. */
+const LEGACY_CACHE_KEY = 'vn-kol-map-conviction-events-v5'
+
 export const CONVICTION_EVENTS_EVENT = 'vn-kol-conviction-events-updated'
 
-function apiUrl() {
-  return withBase('/api/event-side-events')
+function resolveSlug(slug?: string | null): string {
+  return parseEventSlug(slug) || DEFAULT_EVENT_SLUG
+}
+
+export function eventsApiUrl(
+  slug?: string | null,
+  extra?: Record<string, string>,
+): string {
+  const qs = new URLSearchParams({ event: resolveSlug(slug), ...extra })
+  return `${withBase('/api/event-side-events')}?${qs}`
+}
+
+export function editionsIndexApiUrl(): string {
+  return `${withBase('/api/event-side-events')}?list=1`
+}
+
+export async function fetchEditionCatalog(): Promise<EventEditionMeta[]> {
+  try {
+    const res = await fetch(`${editionsIndexApiUrl()}&t=${Date.now()}`, {
+      method: 'GET',
+      cache: 'no-store',
+      headers: { Accept: 'application/json', 'Cache-Control': 'no-cache' },
+    })
+    if (!res.ok) return mergeEditionCatalog(null)
+    return mergeEditionCatalog(await res.json())
+  } catch {
+    return mergeEditionCatalog(null)
+  }
 }
 
 function emit() {
@@ -26,65 +69,103 @@ function emit() {
   }
 }
 
-function writeCache(dataset: SideEventDataset, emitEvent = true) {
+function writeCache(
+  dataset: SideEventDataset,
+  emitEvent = true,
+  slug = dataset.event,
+) {
+  const key = cacheKey(resolveSlug(slug))
   let prev: string | null = null
   try {
-    prev = localStorage.getItem(CACHE_KEY)
+    prev = localStorage.getItem(key)
   } catch {
     prev = null
   }
-  const publicView = normalizeDataset(dataset)
+  const publicView = normalizeDataset(dataset, {
+    fallbackSlug: resolveSlug(slug),
+  })
   const next = JSON.stringify(publicView || dataset)
   try {
-    localStorage.setItem(CACHE_KEY, next)
+    localStorage.setItem(key, next)
   } catch {
     /* ignore */
   }
-  // Same-tab load must not emit: EventMapPage listens and would refetch forever.
   if (emitEvent && prev !== next) emit()
 }
 
-function readCache(): SideEventDataset | null {
+function readCache(slug?: string | null): SideEventDataset | null {
+  const s = resolveSlug(slug)
   try {
-    const raw = localStorage.getItem(CACHE_KEY)
-    if (!raw) return null
-    return normalizeDataset(JSON.parse(raw))
+    const raw = localStorage.getItem(cacheKey(s))
+    if (raw) return normalizeDataset(JSON.parse(raw), { fallbackSlug: s })
+    if (s === DEFAULT_EVENT_SLUG) {
+      const legacy = localStorage.getItem(LEGACY_CACHE_KEY)
+      if (legacy) {
+        const n = normalizeDataset(JSON.parse(legacy), { fallbackSlug: s })
+        if (n) {
+          try {
+            localStorage.setItem(cacheKey(s), JSON.stringify(n))
+          } catch {
+            /* ignore */
+          }
+          return n
+        }
+      }
+    }
+    return null
   } catch {
     return null
   }
 }
 
-export function getConvictionEvents(): SideEventDataset {
-  return readCache() || (normalizeDataset(CONVICTION_EVENTS_SEED) as SideEventDataset)
+export function getConvictionEvents(
+  slug?: string | null,
+): SideEventDataset {
+  const s = resolveSlug(slug)
+  return (
+    readCache(s) ||
+    seedConvictionEvents(false, s)
+  )
 }
 
-export function seedConvictionEvents(includeHidden = false): SideEventDataset {
-  return normalizeDataset(
-    JSON.parse(JSON.stringify(CONVICTION_EVENTS_SEED)),
-    { includeHidden },
-  ) as SideEventDataset
+export function seedConvictionEvents(
+  includeHidden = false,
+  slug?: string | null,
+): SideEventDataset {
+  const s = resolveSlug(slug)
+  if (s === DEFAULT_EVENT_SLUG) {
+    return normalizeDataset(
+      JSON.parse(JSON.stringify(CONVICTION_EVENTS_SEED)),
+      { includeHidden, fallbackSlug: s },
+    ) as SideEventDataset
+  }
+  return emptyEditionDataset(s)
 }
 
 export async function fetchServerEvents(
-  opts: { includeHidden?: boolean } = {},
+  opts: { includeHidden?: boolean; slug?: string | null } = {},
 ): Promise<SideEventDataset | null> {
   const includeHidden = opts.includeHidden === true
+  const slug = resolveSlug(opts.slug)
   const token = includeHidden ? getAdminToken().trim() : ''
-  const qs = new URLSearchParams({ t: String(Date.now()) })
-  if (includeHidden) qs.set('all', '1')
+  const extra: Record<string, string> = { t: String(Date.now()) }
+  if (includeHidden) extra.all = '1'
   const headers: Record<string, string> = {
     Accept: 'application/json',
     'Cache-Control': 'no-cache',
   }
   if (token) headers.Authorization = `Bearer ${token}`
-  const res = await fetch(`${apiUrl()}?${qs}`, {
+  const res = await fetch(eventsApiUrl(slug, extra), {
     method: 'GET',
     cache: 'no-store',
     headers,
   })
   if (res.status === 404 || res.status === 503) return null
   if (!res.ok) throw new Error(`HTTP ${res.status}`)
-  return normalizeDataset(await res.json(), { includeHidden })
+  return normalizeDataset(await res.json(), {
+    includeHidden,
+    fallbackSlug: slug,
+  })
 }
 
 export type LoadEventsResult = {
@@ -93,23 +174,24 @@ export type LoadEventsResult = {
 }
 
 export async function loadEventsWithSource(
-  opts: { includeHidden?: boolean } = {},
+  opts: { includeHidden?: boolean; slug?: string | null } = {},
 ): Promise<LoadEventsResult> {
+  const slug = resolveSlug(opts.slug)
   try {
     const server = await fetchServerEvents(opts)
     if (server) {
-      writeCache(server, false)
+      writeCache(server, false, slug)
       return { dataset: server, source: 'server' }
     }
   } catch {
     /* fall through */
   }
   if (!opts.includeHidden) {
-    const cache = readCache()
+    const cache = readCache(slug)
     if (cache) return { dataset: cache, source: 'cache' }
   }
   return {
-    dataset: seedConvictionEvents(opts.includeHidden === true),
+    dataset: seedConvictionEvents(opts.includeHidden === true, slug),
     source: 'seed',
   }
 }
@@ -121,15 +203,21 @@ export type EventsSaveResult =
 export async function saveEventsToServer(
   dataset: SideEventDataset,
   tokenOverride?: string,
+  slugOverride?: string | null,
 ): Promise<EventsSaveResult> {
   const token = (tokenOverride ?? getAdminToken()).trim()
   if (!token) {
     return { ok: false, error: 'Missing FEED_ADMIN_TOKEN — Apply token first' }
   }
 
+  const slug = resolveSlug(slugOverride || dataset.event)
+
   let baseUpdatedAt: string | undefined
   try {
-    const server = await fetchServerEvents({ includeHidden: true })
+    const server = await fetchServerEvents({
+      includeHidden: true,
+      slug,
+    })
     baseUpdatedAt = server?.updatedAt
   } catch {
     return {
@@ -142,11 +230,10 @@ export async function saveEventsToServer(
     {
       ...dataset,
       version: 1,
-      kind: 'conviction-side-events',
-      event: 'conviction-2026',
+      event: slug,
       updatedAt: new Date().toISOString(),
     },
-    { includeHidden: true },
+    { includeHidden: true, fallbackSlug: slug },
   )
   if (!normalized) {
     return { ok: false, error: 'Invalid dataset' }
@@ -158,7 +245,7 @@ export async function saveEventsToServer(
   }
 
   try {
-    const res = await fetch(apiUrl(), {
+    const res = await fetch(eventsApiUrl(slug), {
       method: 'PUT',
       headers: {
         Authorization: `Bearer ${token}`,
@@ -189,7 +276,7 @@ export async function saveEventsToServer(
       ...normalized,
       updatedAt: j.updatedAt || normalized.updatedAt,
     }
-    writeCache(saved)
+    writeCache(saved, true, slug)
     return {
       ok: true,
       dataset: saved,
@@ -203,9 +290,21 @@ export async function saveEventsToServer(
   }
 }
 
-export function clearEventsCache() {
+export function clearEventsCache(slug?: string | null) {
+  const s = parseEventSlug(slug)
   try {
-    localStorage.removeItem(CACHE_KEY)
+    if (s) {
+      localStorage.removeItem(cacheKey(s))
+      if (s === DEFAULT_EVENT_SLUG) localStorage.removeItem(LEGACY_CACHE_KEY)
+    } else {
+      const keys: string[] = []
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i)
+        if (k && k.startsWith('vn-kol-map-event:')) keys.push(k)
+      }
+      for (const k of keys) localStorage.removeItem(k)
+      localStorage.removeItem(LEGACY_CACHE_KEY)
+    }
   } catch {
     /* ignore */
   }
@@ -214,14 +313,23 @@ export function clearEventsCache() {
 
 export function exportEventsJson(dataset: SideEventDataset): string {
   return JSON.stringify(
-    normalizeDataset(dataset, { includeHidden: true }),
+    normalizeDataset(dataset, {
+      includeHidden: true,
+      fallbackSlug: dataset.event,
+    }),
     null,
     2,
   )
 }
 
-export function importEventsJson(text: string): SideEventDataset {
-  const n = normalizeDataset(JSON.parse(text), { includeHidden: true })
+export function importEventsJson(
+  text: string,
+  fallbackSlug?: string | null,
+): SideEventDataset {
+  const n = normalizeDataset(JSON.parse(text), {
+    includeHidden: true,
+    fallbackSlug: fallbackSlug || undefined,
+  })
   if (!n) throw new Error('Invalid Events JSON')
   return n
 }

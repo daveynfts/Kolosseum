@@ -1,11 +1,12 @@
 /**
- * Admin: Conviction 2026 side events — CRUD → Save R2 for public map.
+ * Admin: event-map editions — CRUD → Save R2 for /event/:slug.
  */
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import {
   EVENT_TYPES,
   EVENT_TYPE_LABELS,
   SALA_VENUE,
+  cloneEditionTemplate,
   createEmptySideEvent,
   directionsUrl,
   formatShortDate,
@@ -15,8 +16,17 @@ import {
   type SideEventType,
 } from '../data/convictionEvents'
 import {
+  DEFAULT_EVENT_SLUG,
+  eventObjectKey,
+  eventPublicPath,
+  nextYearSlug,
+  parseEventSlug,
+  type EventEditionMeta,
+} from '../data/eventEditions'
+import {
   clearEventsCache,
   exportEventsJson,
+  fetchEditionCatalog,
   importEventsJson,
   loadEventsWithSource,
   saveEventsToServer,
@@ -60,28 +70,54 @@ async function geocodeAddress(
 }
 
 export function AdminConvictionEventsEditor({ onToast }: Props) {
+  const [slug, setSlug] = useState(DEFAULT_EVENT_SLUG)
+  const [catalog, setCatalog] = useState<EventEditionMeta[]>([])
   const [dataset, setDataset] = useState<SideEventDataset>(() =>
-    seedConvictionEvents(true),
+    seedConvictionEvents(true, DEFAULT_EVENT_SLUG),
   )
   const [source, setSource] = useState<'server' | 'cache' | 'seed'>('seed')
   const [dirty, setDirty] = useState(false)
   const dirtyRef = useDirtyRef(dirty)
   const [saving, setSaving] = useState(false)
+  const [cloning, setCloning] = useState(false)
   const [geocoding, setGeocoding] = useState(false)
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [listQuery, setListQuery] = useState('')
+  const [newSlugInput, setNewSlugInput] = useState('')
+
+  useEffect(() => {
+    void fetchEditionCatalog().then(setCatalog)
+  }, [])
 
   useRemoteDatasetLoad(
-    () => loadEventsWithSource({ includeHidden: true }),
+    () => loadEventsWithSource({ includeHidden: true, slug: DEFAULT_EVENT_SLUG }),
     dirtyRef,
     (r) => {
       setDataset(r.dataset)
       setSource(r.source)
+      setSlug(r.dataset.event || DEFAULT_EVENT_SLUG)
       if (!selectedId && r.dataset.events[0]) {
         setSelectedId(r.dataset.events[0].id)
       }
     },
   )
+
+  const applyEdition = async (nextSlug: string) => {
+    const s = parseEventSlug(nextSlug)
+    if (!s) {
+      onToast('Slug không hợp lệ (a-z, 0-9, dấu gạch)')
+      return
+    }
+    if (s === slug) return
+    if (!confirmDiscardUnsaved(dirty)) return
+    const r = await loadEventsWithSource({ includeHidden: true, slug: s })
+    setSlug(s)
+    setDataset(r.dataset)
+    setSource(r.source)
+    setSelectedId(r.dataset.events[0]?.id ?? null)
+    setDirty(false)
+    onToast(`Đang sửa ${s} (${r.source})`)
+  }
 
   const sorted = useMemo(
     () => sortEvents(dataset.events),
@@ -182,7 +218,7 @@ export function AdminConvictionEventsEditor({ onToast }: Props) {
     }
     setAdminToken(token)
     setSaving(true)
-    const result = await saveEventsToServer(dataset, token)
+    const result = await saveEventsToServer(dataset, token, slug)
     setSaving(false)
     if (!result.ok) {
       onToast(`Publish thất bại: ${result.error}`)
@@ -191,12 +227,15 @@ export function AdminConvictionEventsEditor({ onToast }: Props) {
     setDataset(result.dataset)
     setSource('server')
     setDirty(false)
-    onToast(`Đã publish ${result.dataset.events.length} events → R2`)
+    onToast(
+      `Đã publish ${result.dataset.events.length} events → events/${slug}/v1.json`,
+    )
+    void fetchEditionCatalog().then(setCatalog)
   }
 
   const onReload = () => {
     if (!confirmDiscardUnsaved(dirty)) return
-    void loadEventsWithSource({ includeHidden: true }).then((r) => {
+    void loadEventsWithSource({ includeHidden: true, slug }).then((r) => {
       setDataset(r.dataset)
       setSource(r.source)
       setDirty(false)
@@ -206,8 +245,8 @@ export function AdminConvictionEventsEditor({ onToast }: Props) {
 
   const onResetSeed = () => {
     if (!confirm('Reset về seed mẫu trong repo?')) return
-    clearEventsCache()
-    const seed = seedConvictionEvents(true)
+    clearEventsCache(slug)
+    const seed = seedConvictionEvents(true, slug)
     setDataset(seed)
     setSource('seed')
     setSelectedId(seed.events[0]?.id ?? null)
@@ -221,7 +260,7 @@ export function AdminConvictionEventsEditor({ onToast }: Props) {
     })
     const a = document.createElement('a')
     a.href = URL.createObjectURL(blob)
-    a.download = `conviction-events-${new Date().toISOString().slice(0, 10)}.json`
+    a.download = `${slug}-${new Date().toISOString().slice(0, 10)}.json`
     a.click()
     URL.revokeObjectURL(a.href)
     onToast('Exported JSON')
@@ -229,8 +268,8 @@ export function AdminConvictionEventsEditor({ onToast }: Props) {
 
   const onImport = async (file: File) => {
     try {
-      const imported = importEventsJson(await file.text())
-      setDataset(imported)
+      const imported = importEventsJson(await file.text(), slug)
+      setDataset({ ...imported, event: slug })
       setSource('seed')
       setSelectedId(imported.events[0]?.id ?? null)
       setDirty(true)
@@ -238,6 +277,57 @@ export function AdminConvictionEventsEditor({ onToast }: Props) {
     } catch (e) {
       onToast(e instanceof Error ? e.message : 'Import failed')
     }
+  }
+
+  const onCloneNextYear = async () => {
+    const next = nextYearSlug(slug)
+    if (!next) {
+      onToast('Slug hiện tại không có năm (vd. conviction-2026)')
+      return
+    }
+    if (
+      !confirm(
+        `Tạo ${next} từ venue + khung ngày của ${slug}? Side events năm cũ được giữ nguyên trên ${slug}.`,
+      )
+    ) {
+      return
+    }
+    const token = getAdminToken()
+    if (!token) {
+      onToast('Dán FEED_ADMIN_TOKEN trước')
+      return
+    }
+    setCloning(true)
+    try {
+      const existing = await loadEventsWithSource({
+        includeHidden: true,
+        slug: next,
+      })
+      if (existing.source === 'server' && existing.dataset.events.length) {
+        onToast(`${next} đã có dữ liệu — mở edition đó thay vì ghi đè`)
+        await applyEdition(next)
+        return
+      }
+      const cloned = cloneEditionTemplate(dataset, next)
+      const result = await saveEventsToServer(cloned, token, next)
+      if (!result.ok) {
+        onToast(`Clone thất bại: ${result.error}`)
+        return
+      }
+      setSlug(next)
+      setDataset(result.dataset)
+      setSource('server')
+      setSelectedId(null)
+      setDirty(false)
+      void fetchEditionCatalog().then(setCatalog)
+      onToast(`Đã tạo ${next} → ${eventPublicPath(next)}`)
+    } finally {
+      setCloning(false)
+    }
+  }
+
+  const onOpenNewSlug = () => {
+    void applyEdition(newSlugInput)
   }
 
   const onGeocode = async () => {
@@ -275,14 +365,57 @@ export function AdminConvictionEventsEditor({ onToast }: Props) {
   return (
     <div className="admin-feed admin-events-page">
       <div className="admin-ai-banner" style={{ marginBottom: 12 }}>
-        <strong>Conviction 2026 · Side Events</strong>
+        <strong>Event maps · {slug}</strong>
         <span>
           Public:{' '}
-          <a href="/event/conviction-2026" target="_blank" rel="noreferrer">
-            /event/conviction-2026
+          <a href={eventPublicPath(slug)} target="_blank" rel="noreferrer">
+            {eventPublicPath(slug)}
           </a>{' '}
-          · R2 <code>events/conviction-2026/v1.json</code>
+          · R2 <code>{eventObjectKey(slug)}</code>
+          {' · '}
+          <a href="/event" target="_blank" rel="noreferrer">
+            /event
+          </a>
         </span>
+      </div>
+
+      <div className="admin-events-meta glass" style={{ marginBottom: 12 }}>
+        <h3>Edition</h3>
+        <div className="admin-events-grid">
+          <label>
+            Đang sửa
+            <select
+              value={slug}
+              onChange={(e) => void applyEdition(e.target.value)}
+            >
+              {(catalog.some((e) => e.slug === slug)
+                ? catalog
+                : [{ slug, title: slug, year: 0, status: 'draft' as const }, ...catalog]
+              ).map((ed) => (
+                <option key={ed.slug} value={ed.slug}>
+                  {ed.title} ({ed.slug})
+                </option>
+              ))}
+            </select>
+          </label>
+          <label>
+            Mở / tạo slug
+            <span style={{ display: 'flex', gap: 8 }}>
+              <input
+                value={newSlugInput}
+                onChange={(e) => setNewSlugInput(e.target.value)}
+                placeholder="conviction-2027"
+              />
+              <button type="button" className="btn" onClick={onOpenNewSlug}>
+                Mở
+              </button>
+            </span>
+          </label>
+        </div>
+        <p style={{ margin: '8px 0 0', opacity: 0.7, fontSize: 13 }}>
+          Năm sau: clone venue + khung ngày sang slug mới. Dataset{' '}
+          <code>{slug}</code> không bị ghi đè.
+        </p>
       </div>
 
       <div className="admin-feed-toolbar">
@@ -316,7 +449,15 @@ export function AdminConvictionEventsEditor({ onToast }: Props) {
             }}
           />
         </label>
-        <a className="btn" href="/event/conviction-2026" target="_blank" rel="noreferrer">
+        <button
+          type="button"
+          className="btn"
+          disabled={cloning || !nextYearSlug(slug)}
+          onClick={() => void onCloneNextYear()}
+        >
+          {cloning ? 'Cloning…' : `Tạo năm sau (${nextYearSlug(slug) || '—'})`}
+        </button>
+        <a className="btn" href={eventPublicPath(slug)} target="_blank" rel="noreferrer">
           Open map ↗
         </a>
       </div>

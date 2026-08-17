@@ -3,15 +3,30 @@
  * Telegram/Facebook crawlers use middleware → /event-preview.html (static OG HTML).
  */
 
-const TITLE = 'Conviction 2026 — Side Events Map | DaveyNFTs'
-const DESCRIPTION =
-  'Bản đồ side events Conviction 2026 tại TP.HCM (14–15/08). Lịch, pin, khoảng cách, trùng giờ — Thiskyhall Sala & venues around the city.'
-const DESCRIPTION_EN =
-  'Interactive map of Conviction 2026 side events in Ho Chi Minh City · 14–15 Aug · calendar, pins, distance & schedule conflicts.'
+const CANONICAL = 'https://radar.daveynfts.com/event/conviction-2026'
 /** Cache-bust query when replacing the product screenshot OG card. */
 const OG_IMAGE =
-  'https://radar.daveynfts.com/og/conviction-2026-events.jpg?v=20260805c'
-const CANONICAL = 'https://radar.daveynfts.com/event/conviction-2026'
+  'https://radar.daveynfts.com/og/conviction-2026-events.jpg?v=20260817a'
+
+const LIVE = {
+  title: 'Conviction 2026 — Side Events Map | DaveyNFTs',
+  descriptionVi:
+    'Bản đồ side events Conviction 2026 tại TP.HCM (14–15/08). Lịch, pin, khoảng cách, trùng giờ — Thiskyhall Sala & venues around the city.',
+  descriptionEn:
+    'Interactive map of Conviction 2026 side events in Ho Chi Minh City · 14–15 Aug · calendar, pins, distance & schedule conflicts.',
+  ogTitle: 'Conviction 2026 — Side Events Map',
+  ogAlt: 'Conviction 2026 Side Events Map — Ho Chi Minh City',
+}
+
+const ARCHIVE = {
+  title: 'Conviction 2026 — Side Events Map (Archive) | DaveyNFTs',
+  descriptionVi:
+    'Bản đồ lưu trữ side events Conviction 2026 (13–16/08, TP.HCM). Sự kiện đã kết thúc — xem lại pin, lịch & venue quanh Thiskyhall Sala.',
+  descriptionEn:
+    'Archive map of Conviction 2026 side events in Ho Chi Minh City (13–16 Aug). Event week has ended — browse pins, schedule & venues.',
+  ogTitle: 'Conviction 2026 — Side Events Map (Archive)',
+  ogAlt: 'Conviction 2026 Side Events Map — archive · Ho Chi Minh City',
+}
 
 function upsertMeta(
   attr: 'name' | 'property',
@@ -41,9 +56,13 @@ function upsertLink(rel: string, href: string) {
   el.href = href
 }
 
-export function applyEventMapSeo(locale: 'vi' | 'en' = 'vi') {
-  const desc = locale === 'en' ? DESCRIPTION_EN : DESCRIPTION
-  document.title = TITLE
+export function applyEventMapSeo(
+  locale: 'vi' | 'en' = 'vi',
+  opts: { archived?: boolean } = {},
+) {
+  const pack = opts.archived ? ARCHIVE : LIVE
+  const desc = locale === 'en' ? pack.descriptionEn : pack.descriptionVi
+  document.title = pack.title
 
   upsertMeta('name', 'description', desc)
   upsertMeta('name', 'theme-color', '#030305')
@@ -51,20 +70,16 @@ export function applyEventMapSeo(locale: 'vi' | 'en' = 'vi') {
   upsertMeta('property', 'og:site_name', 'DaveyNFTs Radar')
   upsertMeta('property', 'og:type', 'website')
   upsertMeta('property', 'og:url', CANONICAL)
-  upsertMeta('property', 'og:title', 'Conviction 2026 — Side Events Map')
-  upsertMeta('property', 'og:description', DESCRIPTION_EN)
+  upsertMeta('property', 'og:title', pack.ogTitle)
+  upsertMeta('property', 'og:description', pack.descriptionEn)
   upsertMeta('property', 'og:image', OG_IMAGE)
   upsertMeta('property', 'og:image:width', '1200')
   upsertMeta('property', 'og:image:height', '630')
-  upsertMeta(
-    'property',
-    'og:image:alt',
-    'Conviction 2026 Side Events Map — Ho Chi Minh City',
-  )
+  upsertMeta('property', 'og:image:alt', pack.ogAlt)
 
   upsertMeta('name', 'twitter:card', 'summary_large_image')
-  upsertMeta('name', 'twitter:title', 'Conviction 2026 — Side Events Map')
-  upsertMeta('name', 'twitter:description', DESCRIPTION_EN)
+  upsertMeta('name', 'twitter:title', pack.ogTitle)
+  upsertMeta('name', 'twitter:description', pack.descriptionEn)
   upsertMeta('name', 'twitter:image', OG_IMAGE)
 
   upsertLink('canonical', CANONICAL)

@@ -14,6 +14,7 @@ import {
   eventsOnDate,
   formatDistanceKm,
   getSideEventStatus,
+  isEditionArchived,
   isMainEvent,
   isMainVenueSideStage,
   matchesDateFilter,
@@ -21,10 +22,38 @@ import {
   normalizeSideEvent,
   pinDisplayPositions,
   sortEvents,
+  todayIsoVn,
   type SideEvent,
 } from '../data/convictionEvents'
 
 describe('convictionEvents helpers', () => {
+  it('isEditionArchived respects flag and dateRange.end (VN day)', () => {
+    const range = { start: '2026-08-13', end: '2026-08-16' }
+    expect(
+      isEditionArchived({ dateRange: range, archived: true }),
+    ).toBe(true)
+    expect(
+      isEditionArchived({ dateRange: range, archived: false }),
+    ).toBe(false)
+    expect(
+      isEditionArchived(
+        { dateRange: range },
+        new Date('2026-08-16T12:00:00+07:00'),
+      ),
+    ).toBe(false)
+    expect(
+      isEditionArchived(
+        { dateRange: range },
+        new Date('2026-08-17T00:30:00+07:00'),
+      ),
+    ).toBe(true)
+    expect(todayIsoVn(new Date('2026-08-11T22:00:00Z'))).toMatch(
+      /^\d{4}-\d{2}-\d{2}$/,
+    )
+    expect(CONVICTION_EVENTS_SEED.archived).toBe(true)
+    expect(isEditionArchived(CONVICTION_EVENTS_SEED)).toBe(true)
+  })
+
   it('admin normalize keeps hidden events; public strips them', () => {
     const hidden = CONVICTION_EVENTS_SEED.events.filter((e) => e.hidden)
     expect(hidden.length).toBeGreaterThan(0)

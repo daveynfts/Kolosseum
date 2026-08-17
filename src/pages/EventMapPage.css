@@ -28,6 +28,75 @@
   }
 }
 
+/* Soft-archive banner (post Conviction week) */
+.emp-archive-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  padding: 0.65rem 1rem;
+  background: linear-gradient(
+    90deg,
+    rgba(120, 90, 40, 0.35),
+    rgba(30, 28, 22, 0.92)
+  );
+  border-bottom: 1px solid rgba(255, 200, 100, 0.22);
+  z-index: 5;
+  position: relative;
+}
+
+.emp-archive-banner__badge {
+  flex-shrink: 0;
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #1a1408;
+  background: #e8c56a;
+  padding: 0.2rem 0.45rem;
+  border-radius: 4px;
+  margin-top: 0.15rem;
+}
+
+.emp-archive-banner__text {
+  flex: 1 1 12rem;
+  min-width: 0;
+}
+
+.emp-archive-banner__title {
+  display: block;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: rgba(255, 245, 220, 0.95);
+  margin: 0 0 0.15rem;
+}
+
+.emp-archive-banner__body {
+  margin: 0;
+  font-size: 0.78rem;
+  line-height: 1.4;
+  color: rgba(255, 255, 255, 0.62);
+}
+
+.emp-archive-banner__home {
+  flex-shrink: 0;
+  align-self: center;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #9ec9ff;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.emp-archive-banner__home:hover {
+  color: #fff;
+  text-decoration: underline;
+}
+
+.emp--archive .emp__brand-title {
+  opacity: 0.92;
+}
+
 /* Language toggle EN/VI */
 .emp-lang {
   flex-shrink: 0;

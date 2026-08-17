@@ -28,6 +28,7 @@ import {
   formatLumaTime,
   formatShortDate,
   getSideEventStatus,
+  isEditionArchived,
   mainForumMeta,
   matchesDateFilter,
   shortEventTitle,
@@ -420,10 +421,6 @@ export function EventMapPage() {
   const ttRef = useRef(tt)
   ttRef.current = tt
 
-  useEffect(() => {
-    applyEventMapSeo(locale)
-  }, [locale])
-
   const mapEl = useRef<HTMLDivElement>(null)
   const mapRef = useRef<MapLibreMap | null>(null)
   const markersRef = useRef<Map<string, Marker>>(new Map())
@@ -463,6 +460,7 @@ export function EventMapPage() {
   const [geoBusy, setGeoBusy] = useState(false)
   const [geoNotice, setGeoNotice] = useState<string | null>(null)
   const [sortMode, setSortMode] = useState<SortMode>('upcoming')
+  const archiveSortSynced = useRef(false)
   const [sheetMode, setSheetMode] = useState<SheetMode>(() =>
     isMobileViewport() ? 'half' : 'full',
   )
@@ -622,6 +620,24 @@ export function EventMapPage() {
     return dataset.events.filter((e) => isLive(e, nowDate)).length
   }, [dataset, nowDate])
 
+  const archived = useMemo(
+    () => (dataset ? isEditionArchived(dataset, nowDate) : false),
+    [dataset, nowDate],
+  )
+
+  useEffect(() => {
+    applyEventMapSeo(locale, { archived })
+  }, [locale, archived])
+
+  /** Archive editions default to chronological list (not “upcoming”). */
+  useEffect(() => {
+    if (!dataset || archiveSortSynced.current) return
+    if (isEditionArchived(dataset)) {
+      setSortMode('alpha')
+      archiveSortSynced.current = true
+    }
+  }, [dataset])
+
   const distanceFrom = useMemo(() => {
     if (distOrigin === 'me' && userLoc) {
       return { lat: userLoc.lat, lng: userLoc.lng, label: 'bạn' }
@@ -680,12 +696,14 @@ export function EventMapPage() {
         return da - db
       })
     }
-    if (sortMode === 'upcoming') {
+    // Archive (or explicit "alpha"): schedule order. Live week: upcoming-first.
+    if (sortMode === 'upcoming' && !archived) {
       return sortEventsUpcoming(list, today, nowHm, nowDate)
     }
     return sortEvents(list)
   }, [
     dataset,
+    archived,
     dateFilter,
     typeFilter,
     timeOfDay,
@@ -1202,7 +1220,7 @@ export function EventMapPage() {
             badgeDateTbd: tr('badgeDateTbd'),
             badgeLocTbd: tr('badgeLocTbd'),
             badgeFree: tr('badgeFree'),
-            register: tr('register'),
+            register: archived ? tr('viewLuma') : tr('register'),
             directions: tr('directions'),
             host: tr('host'),
             place: tr('place'),
@@ -1497,6 +1515,7 @@ export function EventMapPage() {
     <div
       className={[
         'emp',
+        archived ? 'emp--archive' : '',
         isMobile ? 'emp--mobile' : '',
         !filtersOpen ? 'emp--filters-collapsed' : '',
         isMobile ? `emp--sheet-${sheetMode}` : '',
@@ -1505,18 +1524,38 @@ export function EventMapPage() {
         .filter(Boolean)
         .join(' ')}
     >
+      {archived ? (
+        <div className="emp-archive-banner" role="status">
+          <span className="emp-archive-banner__badge">{tt('archiveBadge')}</span>
+          <div className="emp-archive-banner__text">
+            <strong className="emp-archive-banner__title">
+              {tt('archiveBannerTitle')}
+            </strong>
+            <p className="emp-archive-banner__body">{tt('archiveBannerBody')}</p>
+          </div>
+          <a className="emp-archive-banner__home" href="/">
+            Radar →
+          </a>
+        </div>
+      ) : null}
       <header className="emp__header">
         <div className="emp__brand">
           <h1 className="emp__brand-title emp-luma-copy">
-            <span className="emp__brand-title-full">{tt('pageTitle')}</span>
-            <span className="emp__brand-title-short">{tt('pageTitleShort')}</span>
+            <span className="emp__brand-title-full">
+              {archived ? tt('pageTitleArchive') : tt('pageTitle')}
+            </span>
+            <span className="emp__brand-title-short">
+              {archived ? tt('pageTitleShortArchive') : tt('pageTitleShort')}
+            </span>
           </h1>
           <p className="emp__brand-sub emp-luma-copy">
-            {tt('mainHeader', {
+            {tt(archived ? 'mainHeaderArchive' : 'mainHeader', {
               window: MAIN_FORUM_SCHEDULE.windowLabel,
               venue: MAIN_FORUM_SCHEDULE.venue,
             })}
-            {liveCount > 0 ? ` · ${tt('liveCount', { n: liveCount })}` : ''}
+            {!archived && liveCount > 0
+              ? ` · ${tt('liveCount', { n: liveCount })}`
+              : ''}
             {source !== 'server' ? ` · ${source}` : ''}
           </p>
         </div>
@@ -1605,11 +1644,13 @@ export function EventMapPage() {
             <div className="emp__btn-group" role="group" aria-label={tt('sortGroup')}>
               <button
                 type="button"
-                className={`emp__btn ${sortMode === 'upcoming' ? 'emp__btn--primary' : ''}`}
-                onClick={() => setSortMode('upcoming')}
-                title={tt('sortUpcomingTitle')}
+                className={`emp__btn ${sortMode === 'upcoming' || sortMode === 'alpha' ? 'emp__btn--primary' : ''}`}
+                onClick={() => setSortMode(archived ? 'alpha' : 'upcoming')}
+                title={
+                  archived ? tt('sortChronoTitle') : tt('sortUpcomingTitle')
+                }
               >
-                {tt('sortUpcoming')}
+                {archived ? tt('sortChrono') : tt('sortUpcoming')}
               </button>
               <button
                 type="button"
@@ -2427,7 +2468,7 @@ export function EventMapPage() {
                               target="_blank"
                               rel="noopener noreferrer"
                             >
-                              {tt('registerLuma')}
+                              {archived ? tt('viewLuma') : tt('registerLuma')}
                             </a>
                           ) : null}
                           {!ev.locationTbd ? (

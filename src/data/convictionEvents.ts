@@ -68,6 +68,42 @@ export type SideEventDataset = {
   events: SideEvent[]
   updatedAt: string
   note?: string
+  /**
+   * Soft-archive edition for public map.
+   * - `true`: force archive (banner, SEO, chronological sort)
+   * - `false`: force live even if dateRange ended
+   * - omit: auto when VN calendar day is after `dateRange.end`
+   */
+  archived?: boolean
+}
+
+/** YYYY-MM-DD in Asia/Ho_Chi_Minh (same convention as EventMap “today”). */
+export function todayIsoVn(now: Date = new Date()): string {
+  try {
+    return new Intl.DateTimeFormat('en-CA', {
+      timeZone: 'Asia/Ho_Chi_Minh',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    }).format(now)
+  } catch {
+    return now.toISOString().slice(0, 10)
+  }
+}
+
+/**
+ * Whether this side-event edition should show as archive (post-event).
+ * Explicit `archived` wins; otherwise auto after `dateRange.end` (VN day).
+ */
+export function isEditionArchived(
+  dataset: Pick<SideEventDataset, 'dateRange' | 'archived'>,
+  now: Date = new Date(),
+): boolean {
+  if (dataset.archived === true) return true
+  if (dataset.archived === false) return false
+  const end = String(dataset.dateRange?.end || '').trim()
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(end)) return false
+  return todayIsoVn(now) > end
 }
 
 /** Thiskyhall Sala — Conviction main venue (Thủ Đức, TP.HCM). */
@@ -1271,8 +1307,9 @@ export const CONVICTION_EVENTS_SEED: SideEventDataset = {
   venue: SALA_VENUE,
   dateRange: { start: '2026-08-13', end: '2026-08-16' },
   events: SIDE_EVENTS,
-  updatedAt: '2026-08-12T10:00:00.000Z',
-  note: 'Stellar After Hours → Galaxy Coffee & Tea Sarimi A2',
+  updatedAt: '2026-08-17T00:00:00.000Z',
+  note: 'Soft-archive: Conviction 2026 side-event week ended',
+  archived: true,
 }
 
 function isEventType(v: unknown): v is SideEventType {
@@ -1369,6 +1406,10 @@ export function normalizeDataset(
       ? (o.dateRange as Record<string, unknown>)
       : null
 
+  const archivedRaw = o.archived
+  const archived =
+    archivedRaw === true ? true : archivedRaw === false ? false : undefined
+
   return {
     version: 1,
     kind: 'conviction-side-events',
@@ -1388,6 +1429,7 @@ export function normalizeDataset(
     events,
     updatedAt: str(o.updatedAt) || new Date().toISOString(),
     note: lumaStr(o.note) || undefined,
+    archived,
   }
 }
 

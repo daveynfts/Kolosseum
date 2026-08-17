@@ -5,7 +5,12 @@ export type SiteChromePage = 'map' | 'scex' | 'event'
 const TABS: Array<{ id: SiteChromePage; href: string; label: string }> = [
   { id: 'map', href: '/', label: 'Map' },
   { id: 'scex', href: '/scex', label: 'SCEX' },
-  { id: 'event', href: '/event/conviction-2026', label: 'Events' },
+  /** Conviction week archived — keep URL, soft-label nav */
+  {
+    id: 'event',
+    href: '/event/conviction-2026',
+    label: 'Events · Archive',
+  },
 ]
 
 type SearchProps = {

@@ -4,7 +4,12 @@
  * Telegram/Facebook crawlers use middleware → static OG HTML.
  */
 import type { EventEditionMeta } from '../data/eventEditions'
-import { DEFAULT_EVENT_SLUG } from '../data/eventEditions'
+import {
+  CONVICTION_2026_SLUG,
+  DEFAULT_EVENT_SLUG,
+  LIVE_EVENT_SLUG,
+  eventPublicPath,
+} from '../data/eventEditions'
 
 const SITE = 'https://radar.daveynfts.com'
 const DEFAULT_OG =
@@ -87,22 +92,7 @@ function applyPack(opts: {
 }
 
 export function applyEventHubSeo(locale: 'vi' | 'en' = 'vi') {
-  const title =
-    locale === 'en'
-      ? 'Event maps | DaveyNFTs Radar'
-      : 'Bản đồ sự kiện | DaveyNFTs Radar'
-  const description =
-    locale === 'en'
-      ? 'Side-event maps on Davey’s Radar. Each conference week has its own URL — last year stays archived, next year starts a new map.'
-      : 'Bản đồ side events trên Davey’s Radar. Mỗi tuần sự kiện có URL riêng — năm trước lưu trữ, năm sau mở map mới.'
-  applyPack({
-    title,
-    description,
-    ogTitle: title,
-    ogAlt: 'Davey’s Radar event maps',
-    canonical: `${SITE}/event`,
-    ogImage: DEFAULT_OG,
-  })
+  applyEventMapSeo(locale, { slug: LIVE_EVENT_SLUG })
 }
 
 export function applyEventMapSeo(
@@ -115,10 +105,31 @@ export function applyEventMapSeo(
   } = {},
 ) {
   const slug = opts.slug || opts.edition?.slug || DEFAULT_EVENT_SLUG
-  const canonical = `${SITE}/event/${slug}`
+  const canonical = `${SITE}${eventPublicPath(slug)}`
   const archived = opts.archived === true || opts.edition?.status === 'archive'
 
-  if (slug === DEFAULT_EVENT_SLUG) {
+  if (slug === LIVE_EVENT_SLUG) {
+    const title =
+      opts.title ||
+      (locale === 'en'
+        ? 'Event Map | DaveyNFTs Radar'
+        : 'Bản đồ sự kiện | DaveyNFTs Radar')
+    const description =
+      locale === 'en'
+        ? 'Live side-event map on Davey’s Radar. Add and browse new events in Ho Chi Minh City.'
+        : 'Bản đồ side events mới trên Davey’s Radar. Cập nhật sự kiện tại TP.HCM tại đây.'
+    applyPack({
+      title,
+      description,
+      ogTitle: title,
+      ogAlt: 'Davey’s Radar event map',
+      canonical,
+      ogImage: opts.edition?.ogImage || DEFAULT_OG,
+    })
+    return
+  }
+
+  if (slug === CONVICTION_2026_SLUG) {
     const pack = archived ? CONVICTION_2026.archive : CONVICTION_2026.live
     const desc = locale === 'en' ? pack.descriptionEn : pack.descriptionVi
     applyPack({

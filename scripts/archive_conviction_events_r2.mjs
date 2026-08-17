@@ -42,7 +42,7 @@ async function main() {
     process.exit(1)
   }
 
-  const getRes = await fetch(`${apiBase}/api/event-side-events?t=${Date.now()}`, {
+  const getRes = await fetch(`${apiBase}/api/event-side-events?event=conviction-2026&t=${Date.now()}`, {
     cache: 'no-store',
     headers: { Accept: 'application/json', 'Cache-Control': 'no-cache' },
   })
@@ -61,7 +61,7 @@ async function main() {
   // Optimistic concurrency: server compares baseUpdatedAt to R2 current
   body.baseUpdatedAt = baseUpdatedAt
 
-  const putRes = await fetch(`${apiBase}/api/event-side-events`, {
+  const putRes = await fetch(`${apiBase}/api/event-side-events?event=conviction-2026`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',

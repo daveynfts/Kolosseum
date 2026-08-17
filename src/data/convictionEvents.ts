@@ -5,7 +5,9 @@
  */
 import { sanitizeLumaText } from '../lib/lumaText'
 import {
+  CONVICTION_2026_SLUG,
   DEFAULT_EVENT_SLUG,
+  LIVE_EVENT_SLUG,
   parseEventSlug,
   seedEditionBySlug,
   shiftIsoYear,
@@ -1310,6 +1312,28 @@ const SIDE_EVENTS: SideEvent[] = [
   },
 ]
 
+/** Downtown HCMC — default pin origin for the live /event map. */
+export const HCMC_DEFAULT_VENUE: MainVenue = {
+  name: 'TP. Hồ Chí Minh',
+  address: 'Thành phố Hồ Chí Minh, Vietnam',
+  lat: 10.776889,
+  lng: 106.700897,
+}
+
+/** Fresh live map at /event — not Conviction 2026. */
+export const LIVE_EVENTS_SEED: SideEventDataset = {
+  version: 1,
+  kind: 'side-events',
+  event: LIVE_EVENT_SLUG,
+  title: "Davey's Radar — Event Map",
+  venue: HCMC_DEFAULT_VENUE,
+  dateRange: { start: '2026-08-17', end: '2026-08-31' },
+  events: [],
+  updatedAt: '2026-08-17T00:00:00.000Z',
+  note: 'Live event map — add new side events. Conviction 2026 stays at /event/conviction-2026.',
+  archived: false,
+}
+
 export const CONVICTION_EVENTS_SEED: SideEventDataset = {
   version: 1,
   kind: 'conviction-side-events',
@@ -1392,11 +1416,12 @@ export type NormalizeDatasetOpts = {
 }
 
 function datasetKindForSlug(slug: string): SideEventDatasetKind {
-  return slug === DEFAULT_EVENT_SLUG ? 'conviction-side-events' : 'side-events'
+  return slug === CONVICTION_2026_SLUG ? 'conviction-side-events' : 'side-events'
 }
 
 function fallbackDatasetForSlug(slug: string): SideEventDataset | null {
-  if (slug === DEFAULT_EVENT_SLUG) return CONVICTION_EVENTS_SEED
+  if (slug === CONVICTION_2026_SLUG) return CONVICTION_EVENTS_SEED
+  if (slug === LIVE_EVENT_SLUG) return LIVE_EVENTS_SEED
   return null
 }
 

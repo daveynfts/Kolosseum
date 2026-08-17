@@ -57,8 +57,11 @@ import { applyEventMapSeo } from '../lib/eventMapSeo'
 import { withBase } from '../lib/base'
 import { isSafeImageUrl, safeHref } from '../lib/safeUrl'
 import {
+  CONVICTION_2026_SLUG,
   DEFAULT_EVENT_SLUG,
+  LIVE_EVENT_SLUG,
   editionMetaForSlug,
+  eventPublicPath,
   isConvictionEdition,
   parseEventSlugFromPathname,
 } from '../data/eventEditions'
@@ -161,16 +164,10 @@ function writeEventMapParams(opts: {
   if (opts.id) params.set('id', opts.id)
   const q = params.toString()
   const path = window.location.pathname
-  const onPath = path.toLowerCase().startsWith('/event/')
-  if (onPath) {
-    const next = `${path}${q ? `?${q}` : ''}`
-    const cur = `${path}${window.location.search}`
-    if (cur !== next) history.replaceState(null, '', next)
-    return
-  }
   const slug = parseEventSlugFromPathname(path) || DEFAULT_EVENT_SLUG
-  const next = `/event/${slug}${q ? `?${q}` : ''}`
-  const cur = `${path}${window.location.search}${window.location.hash}`
+  const base = eventPublicPath(slug)
+  const next = `${base}${q ? `?${q}` : ''}`
+  const cur = `${path}${window.location.search}`
   if (cur !== next) history.replaceState(null, '', next)
 }
 
@@ -1562,21 +1559,27 @@ export function EventMapPage() {
                 ? archived
                   ? tt('pageTitleArchive')
                   : tt('pageTitle')
-                : dataset?.title || editionMeta?.title || eventSlug}
+                : dataset?.title || editionMeta?.title || 'Event Map'}
             </span>
             <span className="emp__brand-title-short">
               {isConvictionEdition(eventSlug)
                 ? archived
                   ? tt('pageTitleShortArchive')
                   : tt('pageTitleShort')
-                : dataset?.title || editionMeta?.title || eventSlug}
+                : 'Events'}
             </span>
           </h1>
           <p className="emp__brand-sub emp-luma-copy">
-            {tt(archived ? 'mainHeaderArchive' : 'mainHeader', {
-              window: MAIN_FORUM_SCHEDULE.windowLabel,
-              venue: MAIN_FORUM_SCHEDULE.venue,
-            })}
+            {isConvictionEdition(eventSlug)
+              ? tt(archived ? 'mainHeaderArchive' : 'mainHeader', {
+                  window: MAIN_FORUM_SCHEDULE.windowLabel,
+                  venue: MAIN_FORUM_SCHEDULE.venue,
+                })
+              : `${dataset?.venue.name || editionMeta?.venueName || 'TP.HCM'}${
+                  dataset?.dateRange
+                    ? ` · ${dataset.dateRange.start} – ${dataset.dateRange.end}`
+                    : ''
+                }`}
             {!archived && liveCount > 0
               ? ` · ${tt('liveCount', { n: liveCount })}`
               : ''}
@@ -1696,6 +1699,15 @@ export function EventMapPage() {
                   ? tt('expandList')
                   : tt('collapseList')}
             </button>
+            {eventSlug === LIVE_EVENT_SLUG ? (
+              <a
+                className="emp__btn"
+                href={eventPublicPath(CONVICTION_2026_SLUG)}
+                title="Conviction 2026 archive"
+              >
+                Archive 2026
+              </a>
+            ) : null}
             {editionMeta?.lumaUrl ? (
               <a
                 className="emp__btn"

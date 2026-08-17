@@ -1,10 +1,12 @@
 import { describe, expect, it } from 'vitest'
 import {
+  CONVICTION_2026_SLUG,
   DEFAULT_EVENT_SLUG,
+  LIVE_EVENT_SLUG,
   SEED_EVENT_EDITIONS,
   eventObjectKey,
   eventPublicPath,
-  isEventHubPath,
+  isLiveEventPath,
   latestLiveSlug,
   mergeEditionCatalog,
   nextYearSlug,
@@ -15,6 +17,7 @@ import {
 } from '../data/eventEditions'
 import {
   CONVICTION_EVENTS_SEED,
+  LIVE_EVENTS_SEED,
   cloneEditionTemplate,
   normalizeDataset,
 } from '../data/convictionEvents'
@@ -28,26 +31,33 @@ describe('event edition slugs', () => {
     expect(parseEventSlug('')).toBeNull()
   })
 
-  it('parses /event and /event/:slug', () => {
-    expect(isEventHubPath('/event')).toBe(true)
-    expect(isEventHubPath('/event/')).toBe(true)
-    expect(isEventHubPath('/event/conviction-2026')).toBe(false)
+  it('parses /event as the live map and keeps conviction-2026 archived', () => {
+    expect(isLiveEventPath('/event')).toBe(true)
+    expect(isLiveEventPath('/event/')).toBe(true)
+    expect(isLiveEventPath('/event/live')).toBe(true)
+    expect(isLiveEventPath('/event/conviction-2026')).toBe(false)
+    expect(parseEventSlugFromPathname('/event')).toBe(LIVE_EVENT_SLUG)
+    expect(parseEventSlugFromPathname('/event/live')).toBe(LIVE_EVENT_SLUG)
     expect(parseEventSlugFromPathname('/event/conviction-2026')).toBe(
-      'conviction-2026',
+      CONVICTION_2026_SLUG,
     )
     expect(parseEventSlugFromPathname('/event/conviction-2026/')).toBe(
-      'conviction-2026',
+      CONVICTION_2026_SLUG,
     )
-    expect(parseEventSlugFromPathname('/event')).toBeNull()
-    expect(eventPublicPath('conviction-2026')).toBe('/event/conviction-2026')
-    expect(eventObjectKey('conviction-2026')).toBe(
+    expect(eventPublicPath(LIVE_EVENT_SLUG)).toBe('/event')
+    expect(eventPublicPath(CONVICTION_2026_SLUG)).toBe(
+      '/event/conviction-2026',
+    )
+    expect(eventObjectKey(LIVE_EVENT_SLUG)).toBe('events/live/v1.json')
+    expect(eventObjectKey(CONVICTION_2026_SLUG)).toBe(
       'events/conviction-2026/v1.json',
     )
+    expect(DEFAULT_EVENT_SLUG).toBe(LIVE_EVENT_SLUG)
   })
 
   it('computes next-year slug without colliding with the archive', () => {
-    expect(nextYearSlug('conviction-2026')).toBe('conviction-2027')
-    expect(nextYearSlug(DEFAULT_EVENT_SLUG)).not.toBe(DEFAULT_EVENT_SLUG)
+    expect(nextYearSlug(CONVICTION_2026_SLUG)).toBe('conviction-2027')
+    expect(nextYearSlug(CONVICTION_2026_SLUG)).not.toBe(CONVICTION_2026_SLUG)
     expect(shiftIsoYear('2026-08-13', 1)).toBe('2027-08-13')
   })
 
@@ -87,9 +97,10 @@ describe('event edition slugs', () => {
         },
       ],
     })
-    expect(list.some((e) => e.slug === 'conviction-2026')).toBe(true)
-    expect(list[0]?.slug).toBe('conviction-2027')
-    expect(latestLiveSlug(list)).toBe('conviction-2027')
+    expect(list.some((e) => e.slug === CONVICTION_2026_SLUG)).toBe(true)
+    expect(list.some((e) => e.slug === LIVE_EVENT_SLUG)).toBe(true)
+    expect(list[0]?.slug).toBe(LIVE_EVENT_SLUG)
+    expect(latestLiveSlug(list)).toBe(LIVE_EVENT_SLUG)
     const up = upsertEditionInCatalog(list, {
       slug: 'conviction-2027',
       title: 'Conviction 2027 · HCMC',
@@ -105,6 +116,16 @@ describe('event edition slugs', () => {
   it('ignores a leaked side-event dataset as catalog payload', () => {
     const list = mergeEditionCatalog(CONVICTION_EVENTS_SEED)
     expect(list).toHaveLength(SEED_EVENT_EDITIONS.length)
-    expect(list.every((e) => e.slug === 'conviction-2026')).toBe(true)
+    expect(list.map((e) => e.slug).sort()).toEqual(
+      ['conviction-2026', 'live'].sort(),
+    )
+  })
+
+  it('live seed is empty and separate from Conviction 2026', () => {
+    expect(LIVE_EVENTS_SEED.event).toBe('live')
+    expect(LIVE_EVENTS_SEED.events).toEqual([])
+    expect(LIVE_EVENTS_SEED.archived).toBe(false)
+    expect(CONVICTION_EVENTS_SEED.event).toBe('conviction-2026')
+    expect(CONVICTION_EVENTS_SEED.events.length).toBeGreaterThan(10)
   })
 })

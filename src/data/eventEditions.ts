@@ -1,14 +1,13 @@
 /**
- * Event-map editions under /event/:slug
+ * Event-map editions
  *
- * Each conference week is its own slug + R2 object so last year's map stays
- * readable while next year starts a fresh dataset.
- *
- *   /event                      → hub (all editions)
- *   /event/conviction-2026      → 2026 archive (current data)
- *   /event/conviction-2027      → next year (clone from admin)
+ *   /event                      → live map (new events, R2 events/live/v1.json)
+ *   /event/conviction-2026      → archived Conviction week (untouched)
  */
-export const DEFAULT_EVENT_SLUG = 'conviction-2026'
+export const LIVE_EVENT_SLUG = 'live'
+export const CONVICTION_2026_SLUG = 'conviction-2026'
+/** Default public map at /event */
+export const DEFAULT_EVENT_SLUG = LIVE_EVENT_SLUG
 
 /** `conviction-2026`, `token2049-2027` — no dots, no slash. */
 export const EVENT_SLUG_RE = /^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$/
@@ -48,16 +47,20 @@ export function eventObjectKey(slug: string): string {
 
 export function eventPublicPath(slug: string): string {
   const s = parseEventSlug(slug) || DEFAULT_EVENT_SLUG
+  if (s === LIVE_EVENT_SLUG) return '/event'
   return `/event/${s}`
 }
 
-export function isEventHubPath(pathname: string): boolean {
+export function isLiveEventPath(pathname: string): boolean {
   const p = (pathname || '/').replace(/\/+$/, '') || '/'
-  return p.toLowerCase() === '/event'
+  return p.toLowerCase() === '/event' || p.toLowerCase() === '/event/live'
 }
 
 export function parseEventSlugFromPathname(pathname: string): string | null {
   const p = (pathname || '/').replace(/\/+$/, '') || '/'
+  if (p.toLowerCase() === '/event' || p.toLowerCase() === '/event/live') {
+    return LIVE_EVENT_SLUG
+  }
   const m = /^\/event\/([^/?#]+)$/i.exec(p)
   if (!m) return null
   try {
@@ -85,7 +88,19 @@ export function shiftIsoYear(iso: string, delta = 1): string {
 
 export const SEED_EVENT_EDITIONS: EventEditionMeta[] = [
   {
-    slug: DEFAULT_EVENT_SLUG,
+    slug: LIVE_EVENT_SLUG,
+    title: "Davey's Radar — Event Map",
+    year: 2026,
+    status: 'live',
+    venueName: 'TP. Hồ Chí Minh',
+    city: 'Việt Nam',
+    descriptionVi:
+      'Bản đồ side events mới trên Davey’s Radar. Cập nhật sự kiện tại đây — Conviction 2026 được lưu riêng.',
+    descriptionEn:
+      'Live side-event map on Davey’s Radar. Add new events here — Conviction 2026 stays archived.',
+  },
+  {
+    slug: CONVICTION_2026_SLUG,
     title: 'Conviction 2026',
     year: 2026,
     status: 'archive',
@@ -135,7 +150,7 @@ export function editionMetaForSlug(slug: string): EventEditionMeta | null {
   const known = seedEditionBySlug(s)
   if (known) return known
   if (!isConvictionEdition(s)) return null
-  const base = seedEditionBySlug(DEFAULT_EVENT_SLUG)
+  const base = seedEditionBySlug(CONVICTION_2026_SLUG)
   if (!base) return null
   return {
     ...base,
@@ -217,10 +232,14 @@ export function mergeEditionCatalog(
     const n = normalizeEditionMeta(row)
     if (n) bySlug.set(n.slug, { ...bySlug.get(n.slug), ...n })
   }
-  return [...bySlug.values()].sort((a, b) => {
-    if (b.year !== a.year) return b.year - a.year
-    return a.slug.localeCompare(b.slug)
-  })
+  return [...bySlug.values()].sort(compareEditions)
+}
+
+function compareEditions(a: EventEditionMeta, b: EventEditionMeta): number {
+  if (a.slug === LIVE_EVENT_SLUG) return -1
+  if (b.slug === LIVE_EVENT_SLUG) return 1
+  if (b.year !== a.year) return b.year - a.year
+  return a.slug.localeCompare(b.slug)
 }
 
 export function upsertEditionInCatalog(
@@ -229,14 +248,13 @@ export function upsertEditionInCatalog(
 ): EventEditionMeta[] {
   const next = list.filter((e) => e.slug !== edition.slug)
   next.push(edition)
-  return next.sort((a, b) => {
-    if (b.year !== a.year) return b.year - a.year
-    return a.slug.localeCompare(b.slug)
-  })
+  return next.sort(compareEditions)
 }
 
 export function latestLiveSlug(editions: EventEditionMeta[]): string {
-  const live = editions.find((e) => e.status === 'live')
+  const live =
+    editions.find((e) => e.slug === LIVE_EVENT_SLUG) ||
+    editions.find((e) => e.status === 'live')
   if (live) return live.slug
   return editions[0]?.slug || DEFAULT_EVENT_SLUG
 }

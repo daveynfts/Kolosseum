@@ -31,5 +31,5 @@ export default function middleware(request: Request) {
   ) {
     return rewrite(new URL('/event-preview.html', request.url))
   }
-  return rewrite(new URL('/event-hub-preview.html', request.url))
+  return rewrite(new URL('/event-live-preview.html', request.url))
 }

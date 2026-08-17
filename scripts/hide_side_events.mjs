@@ -48,7 +48,7 @@ async function main() {
   }
 
   const getRes = await fetch(
-    `${apiBase}/api/event-side-events?all=1&t=${Date.now()}`,
+    `${apiBase}/api/event-side-events?event=conviction-2026&all=1&t=${Date.now()}`,
     {
       cache: 'no-store',
       headers: {
@@ -81,10 +81,10 @@ async function main() {
 
   const { adminPutJson } = await import('./lib/adminPut.mjs')
   const putRes = await adminPutJson(
-    `${apiBase}/api/event-side-events`,
+    `${apiBase}/api/event-side-events?event=conviction-2026`,
     token,
     body,
-    { getUrl: `${apiBase}/api/event-side-events?all=1&t=${Date.now()}` },
+    { getUrl: `${apiBase}/api/event-side-events?event=conviction-2026&all=1&t=${Date.now()}` },
   )
   const putBody = await putRes.json().catch(() => ({}))
   console.log('PUT', putRes.status, putBody)

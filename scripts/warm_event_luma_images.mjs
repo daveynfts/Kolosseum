@@ -237,7 +237,7 @@ async function loadDataset(r2cfg) {
   // Fallback API
   try {
     const res = await fetch(
-      `${apiBase}/api/event-side-events?all=1&t=${Date.now()}`,
+      `${apiBase}/api/event-side-events?event=conviction-2026&all=1&t=${Date.now()}`,
       {
         headers: {
           Accept: 'application/json',
@@ -265,7 +265,7 @@ async function putDataset(data) {
     process.exit(1)
   }
   const res = await adminPutJson(
-    `${apiBase}/api/event-side-events`,
+    `${apiBase}/api/event-side-events?event=conviction-2026`,
     token,
     data,
   )

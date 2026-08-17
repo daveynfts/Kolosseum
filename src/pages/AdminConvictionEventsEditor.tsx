@@ -365,7 +365,11 @@ export function AdminConvictionEventsEditor({ onToast }: Props) {
   return (
     <div className="admin-feed admin-events-page">
       <div className="admin-ai-banner" style={{ marginBottom: 12 }}>
-        <strong>Event maps · {slug}</strong>
+        <strong>
+          {slug === DEFAULT_EVENT_SLUG
+            ? 'Live map · /event'
+            : `Edition · ${slug}`}
+        </strong>
         <span>
           Public:{' '}
           <a href={eventPublicPath(slug)} target="_blank" rel="noreferrer">

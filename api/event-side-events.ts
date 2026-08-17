@@ -29,6 +29,7 @@ import {
 } from '../lib/server/apiHelpers.js'
 import { cacheEventImageUrls } from '../lib/server/mediaCache.js'
 import {
+  CONVICTION_2026_SLUG,
   DEFAULT_EVENT_SLUG,
   eventObjectKey,
   mergeEditionCatalog,
@@ -89,7 +90,7 @@ function querySlug(req: VercelRequest): string | null {
 }
 
 function objectKeyForSlug(slug: string): string {
-  if (slug === DEFAULT_EVENT_SLUG) return EVENT_SIDE_EVENTS_OBJECT_KEY
+  if (slug === CONVICTION_2026_SLUG) return EVENT_SIDE_EVENTS_OBJECT_KEY
   return eventObjectKey(slug)
 }
 
@@ -275,7 +276,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         ...body,
         version: 1,
         kind:
-          slug === DEFAULT_EVENT_SLUG
+          slug === CONVICTION_2026_SLUG
             ? 'conviction-side-events'
             : 'side-events',
         event: slug,

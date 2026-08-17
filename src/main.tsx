@@ -23,11 +23,6 @@ const EventMapPage = lazy(() =>
     default: m.EventMapPage,
   })),
 )
-const EventHubPage = lazy(() =>
-  import('./pages/EventHubPage.tsx').then((m) => ({
-    default: m.EventHubPage,
-  })),
-)
 const ScexEventBanner = lazy(() =>
   import('./components/ScexEventBanner.tsx').then((m) => ({
     default: m.ScexEventBanner,
@@ -58,7 +53,7 @@ function normalizePathname(): string {
   return p || '/'
 }
 
-function getRoute(): 'map' | 'admin' | 'scex' | 'event' | 'event-hub' {
+function getRoute(): 'map' | 'admin' | 'scex' | 'event' {
   const h = window.location.hash.replace(/^#\/?/, '').toLowerCase()
   const path = normalizePathname()
   // Admin hash/path always wins so /scex#/admin and /admin work.
@@ -71,13 +66,12 @@ function getRoute(): 'map' | 'admin' | 'scex' | 'event' | 'event-hub' {
   ) {
     return 'admin'
   }
-  if (path === '/event') return 'event-hub'
-  if (path.startsWith('/event/')) return 'event'
+  if (path === '/event' || path.startsWith('/event/')) return 'event'
   if (path === '/scex' || path.startsWith('/scex/')) return 'scex'
   if (h === 'scex' || h.startsWith('scex/') || h.startsWith('scex?'))
     return 'scex'
-  if (h === 'event' || h === 'event?') return 'event-hub'
-  if (h.startsWith('event/') || h.startsWith('event?')) return 'event'
+  if (h === 'event' || h.startsWith('event/') || h.startsWith('event?'))
+    return 'event'
   return 'map'
 }
 
@@ -99,16 +93,27 @@ function migrateLegacyScexHash() {
 }
 
 /**
- * Legacy `#/event` and `#/event?id=` → `/event` or `/event/conviction-2026`.
- * Deep links with a selected event stay on the 2026 edition.
+ * Canonicalize event URLs:
+ * - `#/event` → `/event` (live map)
+ * - `#/event?id=` old Conviction deep links → `/event/conviction-2026`
+ * - `/event/live` → `/event`
  */
 function migrateLegacyEventHash() {
+  const path = normalizePathname()
+  if (path === '/event/live') {
+    window.history.replaceState(
+      null,
+      '',
+      `/event${window.location.search}`,
+    )
+    return
+  }
+
   const raw = window.location.hash.replace(/^#\/?/, '')
   const h = raw.toLowerCase()
   if (!(h === 'event' || h.startsWith('event/') || h.startsWith('event?'))) {
     return
   }
-  const path = normalizePathname()
   if (path === '/event' || path.startsWith('/event/')) {
     window.history.replaceState(
       null,
@@ -121,11 +126,13 @@ function migrateLegacyEventHash() {
   const after = qIdx >= 0 ? raw.slice(0, qIdx) : raw
   const query = qIdx >= 0 ? raw.slice(qIdx) : window.location.search
   const rest = after.replace(/^event\/?/i, '')
-  if (rest) {
+  if (rest && rest.toLowerCase() !== 'live') {
     window.history.replaceState(null, '', `/event/${rest}${query}`)
     return
   }
-  const params = new URLSearchParams(query.startsWith('?') ? query.slice(1) : query)
+  const params = new URLSearchParams(
+    query.startsWith('?') ? query.slice(1) : query,
+  )
   const dest =
     params.has('id') || params.has('date')
       ? `/event/conviction-2026${query}`
@@ -209,19 +216,6 @@ function Root() {
           <AdminGate>
             <AdminDashboard />
           </AdminGate>
-        </SceneErrorBoundary>
-      </Suspense>
-    )
-  }
-
-  if (route === 'event-hub') {
-    return (
-      <Suspense fallback={<RouteFallback />}>
-        <SceneErrorBoundary title="Event hub failed to render">
-          <div className="app-shell">
-            <SiteChrome active="event" />
-            <EventHubPage />
-          </div>
         </SceneErrorBoundary>
       </Suspense>
     )

@@ -9,12 +9,15 @@
  */
 import {
   CONVICTION_EVENTS_SEED,
+  LIVE_EVENTS_SEED,
   emptyEditionDataset,
   normalizeDataset,
   type SideEventDataset,
 } from '../data/convictionEvents'
 import {
+  CONVICTION_2026_SLUG,
   DEFAULT_EVENT_SLUG,
+  LIVE_EVENT_SLUG,
   mergeEditionCatalog,
   parseEventSlug,
   type EventEditionMeta,
@@ -98,7 +101,7 @@ function readCache(slug?: string | null): SideEventDataset | null {
   try {
     const raw = localStorage.getItem(cacheKey(s))
     if (raw) return normalizeDataset(JSON.parse(raw), { fallbackSlug: s })
-    if (s === DEFAULT_EVENT_SLUG) {
+    if (s === CONVICTION_2026_SLUG) {
       const legacy = localStorage.getItem(LEGACY_CACHE_KEY)
       if (legacy) {
         const n = normalizeDataset(JSON.parse(legacy), { fallbackSlug: s })
@@ -133,9 +136,15 @@ export function seedConvictionEvents(
   slug?: string | null,
 ): SideEventDataset {
   const s = resolveSlug(slug)
-  if (s === DEFAULT_EVENT_SLUG) {
+  if (s === CONVICTION_2026_SLUG) {
     return normalizeDataset(
       JSON.parse(JSON.stringify(CONVICTION_EVENTS_SEED)),
+      { includeHidden, fallbackSlug: s },
+    ) as SideEventDataset
+  }
+  if (s === LIVE_EVENT_SLUG) {
+    return normalizeDataset(
+      JSON.parse(JSON.stringify(LIVE_EVENTS_SEED)),
       { includeHidden, fallbackSlug: s },
     ) as SideEventDataset
   }
@@ -295,7 +304,7 @@ export function clearEventsCache(slug?: string | null) {
   try {
     if (s) {
       localStorage.removeItem(cacheKey(s))
-      if (s === DEFAULT_EVENT_SLUG) localStorage.removeItem(LEGACY_CACHE_KEY)
+      if (s === CONVICTION_2026_SLUG) localStorage.removeItem(LEGACY_CACHE_KEY)
     } else {
       const keys: string[] = []
       for (let i = 0; i < localStorage.length; i++) {

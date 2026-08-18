@@ -438,7 +438,6 @@ export function EventMapPage() {
   const initialParams = useMemo(() => parseEventMapParams(), [])
 
   const [dataset, setDataset] = useState<SideEventDataset | null>(null)
-  const [source, setSource] = useState<'server' | 'cache' | 'seed'>('seed')
   const [loading, setLoading] = useState(true)
   const [dateFilter, setDateFilter] = useState<string>(
     () => initialParams.date || 'all',
@@ -570,7 +569,6 @@ export function EventMapPage() {
         .then((r) => {
           if (cancelled || n !== seq) return
           setDataset(r.dataset)
-          setSource(r.source)
           setLoading(false)
         })
         .catch(() => {
@@ -1640,7 +1638,6 @@ export function EventMapPage() {
             {!archived && liveCount > 0
               ? ` · ${tt('liveCount', { n: liveCount })}`
               : ''}
-            {source !== 'server' ? ` · ${source}` : ''}
           </p>
         </div>
         <div className="emp__header-actions">

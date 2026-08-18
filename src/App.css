@@ -65,6 +65,7 @@
 }
 
 .app--panel-open .hud-detail,
+.app--panel-open .hud-left .panel,
 .app--panel-open .feed-panel,
 .app--panel-open .compare-panel {
   background-color: rgba(8, 10, 20, 0.78);

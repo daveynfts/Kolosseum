@@ -348,9 +348,9 @@ export function Hud({
   const [detailTab, setDetailTab] = useState<
     'overview' | 'analysis' | 'follows'
   >('overview')
-  const [shareHint, setShareHint] = useState<'idle' | 'copied' | 'shared'>(
-    'idle',
-  )
+  const [shareHint, setShareHint] = useState<
+    'idle' | 'copied' | 'shared' | 'failed'
+  >('idle')
 
   useEffect(() => {
     setDetailTab('overview')
@@ -362,22 +362,38 @@ export function Hud({
     const url = kolShareUrl(window.location.origin, selected.handle)
     if (!url) return
     const title = `${selected.displayName} (@${selected.handle}) — Davey's Radar`
+    const copyUrl = async () => {
+      try {
+        await navigator.clipboard.writeText(url)
+        return true
+      } catch {
+        const el = document.createElement('textarea')
+        el.value = url
+        el.setAttribute('readonly', '')
+        el.style.position = 'fixed'
+        el.style.opacity = '0'
+        document.body.appendChild(el)
+        el.select()
+        const ok = document.execCommand('copy')
+        el.remove()
+        return ok
+      }
+    }
+    const preferNativeShare =
+      typeof navigator.share === 'function' &&
+      window.matchMedia('(pointer: coarse)').matches
     try {
-      if (typeof navigator.share === 'function') {
+      if (preferNativeShare) {
         await navigator.share({ title, url, text: title })
         setShareHint('shared')
-      } else {
-        await navigator.clipboard.writeText(url)
+      } else if (await copyUrl()) {
         setShareHint('copied')
+      } else {
+        setShareHint('failed')
       }
     } catch (err) {
       if (err instanceof DOMException && err.name === 'AbortError') return
-      try {
-        await navigator.clipboard.writeText(url)
-        setShareHint('copied')
-      } catch {
-        /* ignore */
-      }
+      setShareHint((await copyUrl()) ? 'copied' : 'failed')
     }
     window.setTimeout(() => setShareHint('idle'), 1800)
   }
@@ -563,13 +579,16 @@ export function Hud({
               type="button"
               className={`btn ${shareHint !== 'idle' ? 'btn--copied' : ''}`}
               onClick={() => void shareSelected()}
-              title="Copy link to this KOL"
+              title="Copy or share a link to this KOL"
+              aria-live="polite"
             >
               {shareHint === 'copied'
                 ? 'Copied'
                 : shareHint === 'shared'
                   ? 'Shared'
-                  : 'Share'}
+                  : shareHint === 'failed'
+                    ? "Can't copy"
+                    : 'Share'}
             </button>
           </div>
 

@@ -131,10 +131,10 @@ function App() {
 
   useEffect(() => {
     if (!selectedId) return
-    if (!sceneKols.some((k) => k.id === selectedId)) {
+    if (!publicKols.some((k) => k.id === selectedId)) {
       setSelectedId(null)
     }
-  }, [sceneKols, selectedId])
+  }, [publicKols, selectedId])
 
   const selected = useMemo(
     () => publicKols.find((k) => k.id === selectedId) ?? null,
@@ -227,7 +227,7 @@ function App() {
         <button
           type="button"
           className="map-dim"
-          tabIndex={panelOpen ? 0 : -1}
+          tabIndex={-1}
           aria-label="Đóng panel"
           aria-hidden={!panelOpen}
           onClick={closePanels}

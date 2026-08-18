@@ -1,8 +1,11 @@
 // @vitest-environment node
 import { describe, expect, it } from 'vitest'
 import {
+  askedAdminSlice,
   assertNotStale,
   isGetOrHead,
+  parseJsonBody,
+  queryFlag,
   readBaseUpdatedAt,
 } from './apiHelpers.js'
 import { checkRateLimit } from './rateLimit.js'
@@ -79,3 +82,33 @@ describe('isGetOrHead', () => {
     expect(isGetOrHead(undefined)).toBe(false)
   })
 })
+
+describe('queryFlag / askedAdminSlice', () => {
+  it('reads ?all=1 from string or string[] (Vercel rewrite)', () => {
+    expect(queryFlag({ query: { all: '1' } }, 'all')).toBe(true)
+    expect(queryFlag({ query: { all: ['1'] } }, 'all')).toBe(true)
+    expect(queryFlag({ query: { all: ['1', '1'] } }, 'all')).toBe(true)
+    expect(queryFlag({ query: {} }, 'all')).toBe(false)
+    expect(askedAdminSlice({ query: { scope: 'admin' } })).toBe(true)
+    expect(askedAdminSlice({ query: { all: ['true'] } })).toBe(true)
+  })
+})
+
+describe('parseJsonBody', () => {
+  it('parses Buffer JSON (bodyParser: false)', () => {
+    const parsed = parseJsonBody({
+      body: Buffer.from('{"href":"https://x.com","title":"t"}'),
+    } as never)
+    expect(parsed.ok).toBe(true)
+    if (parsed.ok) {
+      expect((parsed.body as { title: string }).title).toBe('t')
+    }
+  })
+
+  it('rejects empty Buffer', () => {
+    const parsed = parseJsonBody({ body: Buffer.alloc(0) } as never)
+    expect(parsed.ok).toBe(false)
+    if (!parsed.ok) expect(parsed.error).toBe('empty_body')
+  })
+})
+

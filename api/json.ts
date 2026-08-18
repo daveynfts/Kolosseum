@@ -1,26 +1,33 @@
 /**
  * Hobby-plan JSON CRUD — one serverless function.
  * Public URLs stay /api/feed, /api/kols, … via vercel.json rewrites (?route=).
+ *
+ * Handlers load on demand so a heavy route (SCEX) cannot take down feed/kols
+ * during module init, and Vercel does not parse the SCEX seed on every JSON call.
  */
 import type { VercelRequest, VercelResponse } from '@vercel/node'
-import { apiRouteName, isJsonRoute } from '../lib/server/apiRoute.js'
-import feed from '../lib/server/handlers/feed.js'
-import kols from '../lib/server/handlers/kols.js'
-import scexTracking from '../lib/server/handlers/scex-tracking.js'
-import kolReports from '../lib/server/handlers/kol-reports.js'
-import recentFollowers from '../lib/server/handlers/recent-followers.js'
-import twitterscoreTop100 from '../lib/server/handlers/twitterscore-top100.js'
-import eventSideEvents from '../lib/server/handlers/event-side-events.js'
+import {
+  apiRouteName,
+  isJsonRoute,
+  type JsonRoute,
+} from '../lib/server/apiRoute.js'
 
-const HANDLERS = {
-  feed,
-  kols,
-  'scex-tracking': scexTracking,
-  'kol-reports': kolReports,
-  'recent-followers': recentFollowers,
-  'twitterscore-top100': twitterscoreTop100,
-  'event-side-events': eventSideEvents,
-} as const
+type ApiHandler = (
+  req: VercelRequest,
+  res: VercelResponse,
+) => unknown | Promise<unknown>
+
+const LOADERS: Record<JsonRoute, () => Promise<{ default: ApiHandler }>> = {
+  feed: () => import('../lib/server/handlers/feed.js'),
+  kols: () => import('../lib/server/handlers/kols.js'),
+  'scex-tracking': () => import('../lib/server/handlers/scex-tracking.js'),
+  'kol-reports': () => import('../lib/server/handlers/kol-reports.js'),
+  'recent-followers': () => import('../lib/server/handlers/recent-followers.js'),
+  'twitterscore-top100': () =>
+    import('../lib/server/handlers/twitterscore-top100.js'),
+  'event-side-events': () =>
+    import('../lib/server/handlers/event-side-events.js'),
+}
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   const name = apiRouteName(req)
@@ -30,5 +37,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       message: `Unknown JSON API route${name ? `: ${name}` : ''}`,
     })
   }
-  return HANDLERS[name](req, res)
+  const { default: run } = await LOADERS[name]()
+  return run(req, res)
 }

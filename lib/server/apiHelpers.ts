@@ -43,14 +43,58 @@ export function assertNotStale(
   return { ok: true }
 }
 
+export function queryValue(
+  req: Pick<VercelRequest, 'query'>,
+  name: string,
+): string {
+  const v = req.query?.[name]
+  if (typeof v === 'string') return v.trim()
+  if (Array.isArray(v) && typeof v[0] === 'string') return v[0].trim()
+  return ''
+}
+
+export function queryFlag(
+  req: Pick<VercelRequest, 'query'>,
+  name: string,
+): boolean {
+  const s = queryValue(req, name).toLowerCase()
+  return s === '1' || s === 'true' || s === 'yes'
+}
+
+/** Client asked for the unfiltered admin GET (?all=1 / ?scope=admin). */
+export function askedAdminSlice(req: Pick<VercelRequest, 'query'>): boolean {
+  return (
+    queryFlag(req, 'all') || queryValue(req, 'scope').toLowerCase() === 'admin'
+  )
+}
+
+/**
+ * Full R2 slice: admin Bearer always, or an explicit ?all=1.
+ * Bearer without ?all=1 still gets the full slice so a rewrite that drops
+ * query params cannot strip hidden rows that the next Save would wipe.
+ */
+export function serveAdminSlice(req: VercelRequest): boolean {
+  return isAdmin(req) || askedAdminSlice(req)
+}
+
+function utf8Body(raw: unknown): string | null {
+  if (typeof raw === 'string') return raw
+  if (typeof Buffer !== 'undefined' && Buffer.isBuffer(raw)) {
+    return raw.toString('utf8')
+  }
+  if (raw instanceof Uint8Array) return Buffer.from(raw).toString('utf8')
+  return null
+}
+
 export function parseJsonBody<T = Record<string, unknown>>(
   req: VercelRequest,
 ): { ok: true; body: T } | { ok: false; error: 'empty_body' | 'invalid_json' } {
   try {
     const raw = req.body
     if (raw == null || raw === '') return { ok: false, error: 'empty_body' }
-    if (typeof raw === 'string') {
-      const t = raw.trim()
+    const text = utf8Body(raw)
+    if (text != null) {
+      const t = text.trim()
       if (!t) return { ok: false, error: 'empty_body' }
       return { ok: true, body: JSON.parse(t) as T }
     }

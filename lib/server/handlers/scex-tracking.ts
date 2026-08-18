@@ -15,6 +15,7 @@ import {
 } from '../r2.js'
 import {
   commitJsonReplace,
+  askedAdminSlice,
   enforcePublicRateLimit,
   isAdmin,
   isGetOrHead,
@@ -22,8 +23,9 @@ import {
   parseJsonBody,
   requireAdmin,
   sendJson,
+  serveAdminSlice,
 } from '../apiHelpers.js'
-import { publicScexDataset } from '../../../src/data/scexTracking.js'
+import { publicScexDataset } from '../scexPublic.js'
 
 type Body = {
   version?: number
@@ -80,10 +82,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           message: 'No SCEX tracking data on server yet. Admin → SCEX → Save.',
         })
       }
-      const wantAll =
-        String(req.query.all || '') === '1' ||
-        String(req.query.scope || '') === 'admin'
-      if (wantAll && !isAdmin(req)) {
+      const wantAll = serveAdminSlice(req)
+      if (askedAdminSlice(req) && !isAdmin(req)) {
         return sendJson(req, res, 401, {
           error: 'unauthorized',
           message: 'Admin token required for full SCEX dataset',

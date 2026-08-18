@@ -23,6 +23,8 @@ import {
   parseJsonBody,
   requireAdmin,
   sendJson,
+  askedAdminSlice,
+  serveAdminSlice,
 } from '../apiHelpers.js'
 
 type Body = {
@@ -84,10 +86,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
     if (isGetOrHead(req.method)) {
       if (!enforcePublicRateLimit(req, res, 'kol-reports', 90)) return
-      const wantAll =
-        String(req.query.all || '') === '1' ||
-        String(req.query.scope || '') === 'admin'
-      if (wantAll && !isAdmin(req)) {
+      if (askedAdminSlice(req) && !isAdmin(req)) {
         return sendJson(req, res, 401, {
           error: 'unauthorized',
           message: 'Admin token required for full reports dataset',
@@ -100,7 +99,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           message: 'No KOL reports on server yet.',
         })
       }
-      if (wantAll) return sendJson(req, res, 200, data)
+      if (serveAdminSlice(req)) return sendJson(req, res, 200, data)
       return sendJson(req, res, 200, publicSlice(data))
     }
 

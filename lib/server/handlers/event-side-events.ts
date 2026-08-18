@@ -19,13 +19,17 @@ import {
 import { repairJsonStrings } from '../../../src/lib/lumaText.js'
 import {
   commitJsonReplace,
+  askedAdminSlice,
   enforcePublicRateLimit,
   isAdmin,
   isGetOrHead,
   jsonError,
   parseJsonBody,
+  queryFlag,
+  queryValue,
   requireAdmin,
   sendJson,
+  serveAdminSlice,
 } from '../apiHelpers.js'
 import { cacheEventImageUrls } from '../mediaCache.js'
 import {
@@ -191,8 +195,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       if (!enforcePublicRateLimit(req, res, 'event-side-events', 90)) return
 
       const list =
-        String(req.query.list || '') === '1' ||
-        String(req.query.scope || '') === 'editions'
+        queryFlag(req, 'list') ||
+        queryValue(req, 'scope').toLowerCase() === 'editions'
       if (list) {
         const index = await r2GetJson<IndexBody>(
           client,
@@ -223,17 +227,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             'No side-event data yet. Admin → Events → Save to publish.',
         })
       }
-      const wantAll =
-        String(req.query.all || '') === '1' ||
-        String(req.query.scope || '') === 'admin'
-      if (wantAll && !isAdmin(req)) {
+      if (askedAdminSlice(req) && !isAdmin(req)) {
         return sendJson(req, res, 401, {
           error: 'unauthorized',
           message: 'Admin token required for full events dataset',
         })
       }
       const repaired = repairJsonStrings({ ...data, event: slug })
-      if (wantAll) return sendJson(req, res, 200, repaired)
+      if (serveAdminSlice(req)) return sendJson(req, res, 200, repaired)
       const events = (repaired.events || []).filter(
         (e: SideEventBody) => e && e.hidden !== true,
       )

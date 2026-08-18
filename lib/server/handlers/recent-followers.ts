@@ -109,7 +109,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         count: Object.keys(body.map).length,
         map: body.map,
         smartMap:
-          body.smartMap && typeof body.smartMap === 'object'
+          body.smartMap &&
+          typeof body.smartMap === 'object' &&
+          Object.keys(body.smartMap).length > 0
             ? body.smartMap
             : current?.smartMap,
       }

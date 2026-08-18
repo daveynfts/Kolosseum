@@ -134,6 +134,21 @@ describe('JSON write handlers', () => {
     expect(body.count).toBe(1)
   })
 
+  it('GET /api/kols with Bearer and no ?all=1 still returns hidden', async () => {
+    r2.getJson.mockResolvedValue({
+      updatedAt: STAMP,
+      kols: [
+        { id: 'a', handle: 'vis' },
+        { id: 'b', handle: 'hid', hidden: true },
+      ],
+    })
+    const res = mockRes()
+    await kolsHandler(mockReq({ method: 'GET', headers: auth() }), res)
+    expect(res.statusCode).toBe(200)
+    const body = res.body as { kols: { handle: string }[] }
+    expect(body.kols.map((k) => k.handle)).toEqual(['vis', 'hid'])
+  })
+
   it('GET /api/kols?all=1 without token → 401', async () => {
     const res = mockRes()
     await kolsHandler(mockReq({ method: 'GET', query: { all: '1' } }), res)
@@ -280,5 +295,39 @@ describe('JSON write handlers', () => {
     )
     expect(res.statusCode).toBe(404)
     expect(r2.getJson).not.toHaveBeenCalled()
+  })
+
+  it('PUT /api/recent-followers empty smartMap keeps existing smartMap', async () => {
+    r2.getJson.mockResolvedValue({
+      updatedAt: STAMP,
+      map: { hakresearch: [{ handle: 'a' }] },
+      smartMap: { henvaibta: [{ handle: 'b' }] },
+    })
+    r2.getJsonMeta.mockResolvedValue({
+      data: {
+        updatedAt: STAMP,
+        map: { hakresearch: [{ handle: 'a' }] },
+        smartMap: { henvaibta: [{ handle: 'b' }] },
+      },
+      etag: '"1"',
+    })
+    const res = mockRes()
+    await followersHandler(
+      mockReq({
+        method: 'PUT',
+        headers: auth(),
+        body: {
+          map: { hakresearch: [{ handle: 'a' }] },
+          smartMap: {},
+          baseUpdatedAt: STAMP,
+        },
+      }),
+      res,
+    )
+    expect(res.statusCode).toBe(200)
+    const payload = r2.putJson.mock.calls[0][2] as {
+      smartMap: Record<string, unknown>
+    }
+    expect(payload.smartMap).toEqual({ henvaibta: [{ handle: 'b' }] })
   })
 })

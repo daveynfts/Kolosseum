@@ -97,7 +97,7 @@ const DICT = {
     fromSelected: 'event chọn',
     fromVenue: 'Conviction',
     emptyToday: 'Không có sự kiện hôm nay. Thử',
-    emptyFilter: 'Không khớp bộ lọc. Thử “Tất cả” hoặc bỏ “Chỉ Free”.',
+    emptyFilter: 'Không khớp bộ lọc. Thử “Tất cả” hoặc xóa ô tìm.',
     orOtherDay: 'hoặc ngày khác.',
     dateTbd: 'Ngày TBD',
     today: 'Hôm nay',
@@ -176,6 +176,15 @@ const DICT = {
     calendarShow: 'Expand',
     calendarCollapsedHint: 'đã thu · map rộng hơn',
     panelTitleSimple: 'Side events',
+    emptyLiveBadge: 'Live',
+    emptyLiveBannerTitle: 'Chưa có sự kiện mới',
+    emptyLiveBannerBody:
+      'Conviction 2026 đã kết thúc. Bản đồ này dành cho tuần sự kiện tiếp theo tại TP.HCM.',
+    emptyLiveTitle: 'Map đang chờ sự kiện mới',
+    emptyLiveBody:
+      'Hiện chưa có side event trên bản đồ live. Xem lại Conviction 2026 hoặc quay về bản đồ KOL.',
+    emptyLiveArchive: 'Conviction 2026',
+    emptyLiveRadar: 'Bản đồ KOL',
   },
   en: {
     pageTitle: 'Conviction 2026 · Side Events',
@@ -265,7 +274,7 @@ const DICT = {
     fromSelected: 'selected event',
     fromVenue: 'Conviction',
     emptyToday: 'No events today. Try',
-    emptyFilter: 'No matches. Try “All” or turn off “Free only”.',
+    emptyFilter: 'No matches. Try “All” or clear search.',
     orOtherDay: 'or another day.',
     dateTbd: 'Date TBD',
     today: 'Today',
@@ -339,6 +348,15 @@ const DICT = {
     calendarShow: 'Expand',
     calendarCollapsedHint: 'minimized · larger map',
     panelTitleSimple: 'Side events',
+    emptyLiveBadge: 'Live',
+    emptyLiveBannerTitle: 'No new events yet',
+    emptyLiveBannerBody:
+      'Conviction 2026 has ended. This map is for the next conference week in Ho Chi Minh City.',
+    emptyLiveTitle: 'Live map is empty',
+    emptyLiveBody:
+      'No side events on the live map yet. Browse the Conviction 2026 archive or head back to the KOL map.',
+    emptyLiveArchive: 'Conviction 2026',
+    emptyLiveRadar: 'KOL map',
   },
 } as const
 

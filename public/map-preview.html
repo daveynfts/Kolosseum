@@ -2,24 +2,20 @@
 <html lang="vi">
   <head>
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
-    <link rel="icon" type="image/png" sizes="64x64" href="/favicon-64.png" />
-    <link rel="shortcut icon" type="image/png" href="/favicon-32.png" />
     <link rel="apple-touch-icon" href="/favicon-64.png" />
-
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <link rel="preload" href="/fonts/be-vietnam-pro-400.woff2" as="font" type="font/woff2" crossorigin />
-    <link rel="preload" href="/fonts/be-vietnam-pro-600.woff2" as="font" type="font/woff2" crossorigin />
-    <link rel="stylesheet" href="/fonts/vn-fonts.css" />
     <title>Davey's Radar — VN KOL Map</title>
     <meta
       name="description"
       content="Davey's Radar — bản đồ KOL crypto Việt Nam, ma trận SCEX và side events Conviction."
     />
     <meta name="theme-color" content="#05060a" />
+
     <meta property="og:site_name" content="DaveyNFTs Radar" />
     <meta property="og:type" content="website" />
     <meta property="og:locale" content="vi_VN" />
+    <meta property="og:locale:alternate" content="en_US" />
     <meta property="og:url" content="https://radar.daveynfts.com/" />
     <meta property="og:title" content="Davey's Radar — VN KOL Map" />
     <meta
@@ -37,6 +33,7 @@
       property="og:image:alt"
       content="Davey's Radar — Vietnamese crypto KOL constellation map"
     />
+
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="Davey's Radar — VN KOL Map" />
     <meta
@@ -47,35 +44,26 @@
       name="twitter:image"
       content="https://radar.daveynfts.com/og/vn-kol-map.jpg?v=20260818a"
     />
+
     <link rel="canonical" href="https://radar.daveynfts.com/" />
-    <style>
-      html, body, #root { height: 100%; margin: 0; background: #050814; }
-      .boot-splash {
-        min-height: 100%;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        gap: 10px;
-        color: rgba(255,255,255,.7);
-        font-family: "Be Vietnam Pro", "Noto Sans", Inter, system-ui, sans-serif;
-      }
-      .boot-splash__mark {
-        width: 36px; height: 36px; border-radius: 11px;
-        object-fit: cover; display: block;
-      }
-      .boot-splash__title { margin: 0; font-weight: 650; color: #fff; }
-      .boot-splash small { color: rgba(255,255,255,.45); font-size: 0.78rem; }
-    </style>
   </head>
-  <body>
-    <div id="root">
-      <div class="boot-splash" aria-busy="true">
-        <img class="boot-splash__mark" src="/logo.jpg" alt="" width="64" height="64" decoding="async" />
-        <p class="boot-splash__title">Davey's Radar</p>
-        <small>Bấm avatar · Lọc rank · Mở Feed</small>
-      </div>
-    </div>
-    <script type="module" src="/src/main.tsx"></script>
+  <body style="margin:0;background:#05060a;color:#fff;font-family:system-ui,sans-serif">
+    <main style="padding:2rem;max-width:40rem">
+      <h1 style="font-size:1.35rem;margin:0 0 0.5rem">Davey's Radar — VN KOL Map</h1>
+      <p style="opacity:0.7;line-height:1.5;margin:0 0 1rem">
+        Bản đồ KOL crypto Việt Nam, ma trận SCEX và side events.
+      </p>
+      <a href="/" style="color:#7eb8ff">Mở bản đồ →</a>
+    </main>
+    <script>
+      if (
+        typeof navigator !== 'undefined' &&
+        !/bot|crawl|spider|slurp|facebook|telegram|whatsapp|preview|embed/i.test(
+          navigator.userAgent || '',
+        )
+      ) {
+        location.replace('/' + location.search + location.hash)
+      }
+    </script>
   </body>
 </html>

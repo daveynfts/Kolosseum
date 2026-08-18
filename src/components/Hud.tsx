@@ -20,6 +20,7 @@ import { StatusBadge } from './StatusBadge'
 import { SurfAnalysisMock } from './SurfAnalysisMock'
 import { RecentFollowersPanel } from './RecentFollowersPanel'
 import { hasFollowerTabData } from '../data/recentFollowers'
+import { kolShareUrl } from '../lib/kolDeepLink'
 
 const NICHES: Array<Niche | 'All'> = [
   'All',
@@ -347,10 +348,39 @@ export function Hud({
   const [detailTab, setDetailTab] = useState<
     'overview' | 'analysis' | 'follows'
   >('overview')
+  const [shareHint, setShareHint] = useState<'idle' | 'copied' | 'shared'>(
+    'idle',
+  )
 
   useEffect(() => {
     setDetailTab('overview')
+    setShareHint('idle')
   }, [selected?.id])
+
+  const shareSelected = async () => {
+    if (!selected) return
+    const url = kolShareUrl(window.location.origin, selected.handle)
+    if (!url) return
+    const title = `${selected.displayName} (@${selected.handle}) — Davey's Radar`
+    try {
+      if (typeof navigator.share === 'function') {
+        await navigator.share({ title, url, text: title })
+        setShareHint('shared')
+      } else {
+        await navigator.clipboard.writeText(url)
+        setShareHint('copied')
+      }
+    } catch (err) {
+      if (err instanceof DOMException && err.name === 'AbortError') return
+      try {
+        await navigator.clipboard.writeText(url)
+        setShareHint('copied')
+      } catch {
+        /* ignore */
+      }
+    }
+    window.setTimeout(() => setShareHint('idle'), 1800)
+  }
 
   return (
     <>
@@ -528,6 +558,18 @@ export function Hud({
               onClick={() => onToggleShortlist(selected)}
             >
               {inShortlist ? '★ In shortlist' : '☆ Add to shortlist'}
+            </button>
+            <button
+              type="button"
+              className={`btn ${shareHint !== 'idle' ? 'btn--copied' : ''}`}
+              onClick={() => void shareSelected()}
+              title="Copy link to this KOL"
+            >
+              {shareHint === 'copied'
+                ? 'Copied'
+                : shareHint === 'shared'
+                  ? 'Shared'
+                  : 'Share'}
             </button>
           </div>
 

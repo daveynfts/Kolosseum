@@ -654,6 +654,8 @@ export function EventMapPage() {
     () => (dataset ? isEditionArchived(dataset, nowDate) : false),
     [dataset, nowDate],
   )
+  const catalogEmpty =
+    !loading && !!dataset && dataset.events.length === 0
 
   useEffect(() => {
     applyEventMapSeo(locale, {
@@ -1586,6 +1588,26 @@ export function EventMapPage() {
           </a>
         </div>
       ) : null}
+      {!archived && catalogEmpty ? (
+        <div className="emp-empty-banner" role="status">
+          <span className="emp-empty-banner__badge">{tt('emptyLiveBadge')}</span>
+          <div className="emp-empty-banner__text">
+            <strong className="emp-empty-banner__title">
+              {tt('emptyLiveBannerTitle')}
+            </strong>
+            <p className="emp-empty-banner__body">{tt('emptyLiveBannerBody')}</p>
+          </div>
+          <a
+            className="emp-empty-banner__home"
+            href="/event/conviction-2026"
+          >
+            {tt('emptyLiveArchive')}
+          </a>
+          <a className="emp-empty-banner__home" href="/">
+            {tt('emptyLiveRadar')}
+          </a>
+        </div>
+      ) : null}
       <header className="emp__header">
         <div className="emp__brand">
           <h1 className="emp__brand-title emp-luma-copy">
@@ -2313,8 +2335,29 @@ export function EventMapPage() {
           </div>
           <div className="emp__list">
             {!filtered.length && (
-              <div className="emp__empty">
-                {dateFilter === today ? (
+              <div
+                className={`emp__empty${catalogEmpty ? ' emp__empty--hero' : ''}`}
+              >
+                {catalogEmpty ? (
+                  <>
+                    <p className="emp__empty-title">{tt('emptyLiveTitle')}</p>
+                    <p className="emp__empty-body">{tt('emptyLiveBody')}</p>
+                    <div className="emp__empty-actions">
+                      <a
+                        className="emp__empty-cta"
+                        href="/event/conviction-2026"
+                      >
+                        {tt('emptyLiveArchive')}
+                      </a>
+                      <a
+                        className="emp__empty-cta emp__empty-cta--ghost"
+                        href="/"
+                      >
+                        {tt('emptyLiveRadar')}
+                      </a>
+                    </div>
+                  </>
+                ) : dateFilter === today ? (
                   <>
                     {tt('emptyToday')}{' '}
                     <button

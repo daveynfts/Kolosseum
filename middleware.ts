@@ -10,7 +10,7 @@ const BOT_UA =
   /TelegramBot|twitterbot|facebookexternalhit|Facebot|LinkedInBot|Slackbot|Discordbot|WhatsApp|redditbot|Pinterest|vkShare|SkypeUriPreview|Embedly|Iframely|Slack-ImgProxy|Quora Link Preview|Showyoubot|outbrain|W3C_Validator|Qwantify|bitlybot|nuzzel|Googlebot|bingbot|Applebot|Baiduspider|YandexBot|DuckDuckBot|Slurp|Viber|line-poker|SteamChatURLLookup|Discordbot|Xing-preview|ZoominfoBot/i
 
 export const config = {
-  matcher: ['/event', '/event/(.*)', '/scex', '/scex/(.*)'],
+  matcher: ['/', '/event', '/event/(.*)', '/scex', '/scex/(.*)'],
 }
 
 export default function middleware(request: Request) {
@@ -22,6 +22,9 @@ export default function middleware(request: Request) {
 
   const { pathname } = new URL(request.url)
   // Static files in public/ — do not count toward Hobby serverless limit
+  if (pathname === '/' || pathname === '') {
+    return rewrite(new URL('/map-preview.html', request.url))
+  }
   if (pathname === '/scex' || pathname.startsWith('/scex/')) {
     return rewrite(new URL('/scex-preview.html', request.url))
   }
@@ -31,5 +34,8 @@ export default function middleware(request: Request) {
   ) {
     return rewrite(new URL('/event-preview.html', request.url))
   }
-  return rewrite(new URL('/event-live-preview.html', request.url))
+  if (pathname === '/event' || pathname.startsWith('/event/')) {
+    return rewrite(new URL('/event-live-preview.html', request.url))
+  }
+  return next()
 }

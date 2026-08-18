@@ -10,6 +10,11 @@ import {
   loadKolsWithSource,
   visibleKols as onlyVisible,
 } from './lib/kolStore'
+import { applyMapSeo } from './lib/mapSeo'
+import {
+  parseKolHandle,
+  writeKolParam,
+} from './lib/kolDeepLink'
 import type { Kol, KolRank, Niche, StatusLabel } from './types'
 import { formatRank, getKolNiches, getKolRank, kolMatchesNiche } from './types'
 import './App.css'
@@ -55,16 +60,23 @@ function App() {
   const [feedOpen, setFeedOpen] = useState(false)
   const [compareOpen, setCompareOpen] = useState(false)
   const [shortlistIds, setShortlistIds] = useState<string[]>([])
+  const [remoteKolsReady, setRemoteKolsReady] = useState(false)
+  const [kolParamReady, setKolParamReady] = useState(
+    () => !parseKolHandle(window.location.search),
+  )
 
   useEffect(() => {
-    document.title = "Davey's Radar — VN KOL Map"
+    applyMapSeo(null)
   }, [])
 
   useEffect(() => {
     let cancelled = false
     void (async () => {
       const { kols: list } = await loadKolsWithSource()
-      if (!cancelled) setKols(list)
+      if (!cancelled) {
+        setKols(list)
+        setRemoteKolsReady(true)
+      }
     })()
     return () => {
       cancelled = true
@@ -129,6 +141,35 @@ function App() {
     [publicKols, selectedId],
   )
 
+  useEffect(() => {
+    if (kolParamReady) return
+    const handle = parseKolHandle(window.location.search)
+    if (!handle) {
+      setKolParamReady(true)
+      return
+    }
+    if (!publicKols.length && !remoteKolsReady) return
+    const hit = publicKols.find(
+      (k) => k.handle.toLowerCase() === handle.toLowerCase(),
+    )
+    if (hit) {
+      setSelectedId(hit.id)
+      setKolParamReady(true)
+      return
+    }
+    if (remoteKolsReady) setKolParamReady(true)
+  }, [publicKols, remoteKolsReady, kolParamReady])
+
+  useEffect(() => {
+    if (!kolParamReady) return
+    writeKolParam(selected?.handle ?? null)
+    applyMapSeo(
+      selected
+        ? { handle: selected.handle, displayName: selected.displayName }
+        : null,
+    )
+  }, [selected, kolParamReady])
+
   const shortlist = useMemo(
     () =>
       shortlistIds
@@ -159,9 +200,16 @@ function App() {
     if (hit) setSelectedId(hit.id)
   }, [searchHits])
 
+  const panelOpen = !!(feedOpen || compareOpen || selected)
+  const closePanels = useCallback(() => {
+    setFeedOpen(false)
+    setCompareOpen(false)
+    setSelectedId(null)
+  }, [])
+
   return (
     <div className="app-shell app-shell--map">
-      <div className="app app--2d">
+      <div className={`app app--2d${panelOpen ? ' app--panel-open' : ''}`}>
         <div className="canvas-wrap">
           <SceneErrorBoundary>
             <Suspense fallback={<SceneLoading />}>
@@ -176,6 +224,14 @@ function App() {
           </SceneErrorBoundary>
         </div>
         <div className="map-html-layer" id="map-html-layer" />
+        <button
+          type="button"
+          className="map-dim"
+          tabIndex={panelOpen ? 0 : -1}
+          aria-label="Đóng panel"
+          aria-hidden={!panelOpen}
+          onClick={closePanels}
+        />
         <SiteChrome
           overlay
           active="map"

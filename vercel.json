@@ -17,6 +17,11 @@
       "source": "/api/scex-share",
       "destination": "https://radar.daveynfts.com/scex-preview.html",
       "permanent": false
+    },
+    {
+      "source": "/api/map-share",
+      "destination": "https://radar.daveynfts.com/map-preview.html",
+      "permanent": false
     }
   ],
   "rewrites": [

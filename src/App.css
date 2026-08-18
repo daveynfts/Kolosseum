@@ -39,6 +39,49 @@
   z-index: 2;
 }
 
+.map-dim {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  background: rgba(5, 8, 20, 0.52);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.app--panel-open .map-dim {
+  opacity: 1;
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+.app--panel-open .hud-left,
+.app--panel-open .hud-bottom,
+.app--panel-open .hud-detail {
+  z-index: 4;
+}
+
+.app--panel-open .hud-detail,
+.app--panel-open .feed-panel,
+.app--panel-open .compare-panel {
+  background-color: rgba(8, 10, 20, 0.78);
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .app--panel-open .map-dim {
+    background: rgba(5, 8, 20, 0.72);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .map-dim {
+    transition: none;
+  }
+}
+
 .vignette {
   pointer-events: none;
   position: absolute;
@@ -753,7 +796,19 @@ button.hud-action:active {
 }
 
 .detail-actions {
+  display: flex;
+  gap: 8px;
   margin: 0 0 12px;
+}
+
+.detail-actions .btn {
+  flex: 1;
+  min-width: 0;
+}
+
+.btn--copied {
+  border-color: rgba(125, 211, 252, 0.45);
+  color: #bae6fd;
 }
 
 .btn--starred {

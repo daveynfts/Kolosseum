@@ -10,7 +10,7 @@ import {
   RECENT_FOLLOWERS_OBJECT_KEY,
   r2Client,
   r2GetJson,
-} from '../lib/server/r2.js'
+} from '../r2.js'
 import {
   commitJsonReplace,
   debugAllowed,
@@ -20,7 +20,7 @@ import {
   parseJsonBody,
   requireAdmin,
   sendJson,
-} from '../lib/server/apiHelpers.js'
+} from '../apiHelpers.js'
 
 type Body = {
   version?: number
@@ -92,8 +92,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         return jsonError(res, 400, parsed.error, { message: 'Need map{}' })
       }
       const body = parsed.body
-      if (!body?.map || typeof body.map !== 'object') {
-        return jsonError(res, 400, 'invalid_body', { message: 'Need map{}' })
+      if (
+        !body?.map ||
+        typeof body.map !== 'object' ||
+        Object.keys(body.map).length === 0
+      ) {
+        return jsonError(res, 400, 'invalid_body', { message: 'Need non-empty map{}' })
       }
 
       const current = await r2GetJson<Body>(client, RECENT_FOLLOWERS_OBJECT_KEY)

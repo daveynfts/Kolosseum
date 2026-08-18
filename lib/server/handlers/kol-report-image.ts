@@ -23,19 +23,12 @@ import {
   r2Configured,
   r2PublicBase,
   r2PutBytes,
-} from '../lib/server/r2.js'
+} from '../r2.js'
 import {
   BodyTooLargeError,
   readRawBodyLimited,
   sniffImageContentType,
-} from '../lib/server/sniffImage.js'
-
-export const config = {
-  api: {
-    // Raw binary PUT — parser would corrupt image bytes / break magic sniff
-    bodyParser: false,
-  },
-}
+} from '../sniffImage.js'
 
 /** Always under this R2 prefix — durable public CDN path */
 const PREFIX = 'kol-reports/images'

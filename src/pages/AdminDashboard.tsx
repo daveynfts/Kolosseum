@@ -55,6 +55,7 @@ import { AdminScexEditor } from './AdminScexEditor'
 import { AdminKolReportsEditor } from './AdminKolReportsEditor'
 import { AdminBannerEditor } from './AdminBannerEditor'
 import { AdminConvictionEventsEditor } from './AdminConvictionEventsEditor'
+import { AdminOpsHealth } from './AdminOpsHealth'
 import './AdminDashboard.css'
 
 type Tab =
@@ -67,6 +68,7 @@ type Tab =
   | 'banner'
   | 'reports'
   | 'events'
+  | 'ops'
   | 'legend'
 
 const TAB_HASH: Record<Tab, string> = {
@@ -79,6 +81,7 @@ const TAB_HASH: Record<Tab, string> = {
   banner: '#/admin/banner',
   reports: '#/admin/reports',
   events: '#/admin/events',
+  ops: '#/admin/ops',
   legend: '#/admin/legend',
 }
 
@@ -610,6 +613,13 @@ export function AdminDashboard() {
           >
             Legend
           </button>
+          <button
+            type="button"
+            className={`admin-tab ${tab === 'ops' ? 'is-active' : ''}`}
+            onClick={() => goTab('ops')}
+          >
+            Ops
+          </button>
         </div>
       </nav>
       </div>
@@ -643,6 +653,8 @@ export function AdminDashboard() {
       )}
 
       {tab === 'events' && <AdminConvictionEventsEditor onToast={flash} />}
+
+      {tab === 'ops' && <AdminOpsHealth onToast={flash} />}
 
       {tab === 'legend' && <FieldLegend />}
 

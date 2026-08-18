@@ -17,7 +17,7 @@ import {
   r2GetJson,
   r2PublicBase,
   r2PutBytes,
-} from '../lib/server/r2.js'
+} from '../r2.js'
 import {
   commitJsonReplace,
   cors,
@@ -27,15 +27,7 @@ import {
   parseJsonBody,
   requireAdmin,
   sendJson,
-} from '../lib/server/apiHelpers.js'
-
-export const config = {
-  api: {
-    bodyParser: {
-      sizeLimit: '4.5mb',
-    },
-  },
-}
+} from '../apiHelpers.js'
 
 type Body = {
   version?: number
@@ -249,6 +241,21 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       // Image upload branch (was /api/banner-image)
       if (isImagePut(req)) {
         return handleImagePut(req, res, client)
+      }
+
+      if (req.body == null || req.body === '') {
+        const raw = await readRawBody(req)
+        const text = raw.toString('utf8').trim()
+        if (text) {
+          try {
+            req.body = JSON.parse(text)
+          } catch {
+            return jsonError(res, 400, 'invalid_json', {
+              message:
+                'Need href and title at minimum (or ?slot=logo|art for images)',
+            })
+          }
+        }
       }
 
       const parsed = parseJsonBody<Body>(req)

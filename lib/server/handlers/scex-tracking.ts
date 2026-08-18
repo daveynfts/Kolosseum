@@ -1,43 +1,39 @@
 /**
- * Internal TwitterScore Top 100 benchmark (admin-editable).
+ * SCEX partner tracking (matrix + livefeed).
  *
- * GET  /api/twitterscore-top100 — public read
- * PUT  /api/twitterscore-top100 — Bearer FEED_ADMIN_TOKEN
+ * GET  /api/scex-tracking — public read
+ * PUT  /api/scex-tracking — Bearer FEED_ADMIN_TOKEN
  *
- * R2 key: internal/twitterscore-top100/v1.json
+ * R2 key: scex/tracking/v1.json
  */
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 import {
   envPresence,
-  TWITTERSCORE_TOP100_OBJECT_KEY,
+  SCEX_TRACKING_OBJECT_KEY,
   r2Client,
   r2GetJson,
-} from '../lib/server/r2.js'
+} from '../r2.js'
 import {
   commitJsonReplace,
   enforcePublicRateLimit,
+  isAdmin,
   isGetOrHead,
   jsonError,
   parseJsonBody,
   requireAdmin,
   sendJson,
-} from '../lib/server/apiHelpers.js'
+} from '../apiHelpers.js'
+import { publicScexDataset } from '../../../src/data/scexTracking.js'
 
 type Body = {
   version?: number
   kind?: string
   asOf?: string
-  source?: string
-  sourceNote?: string
-  maxScore?: number
-  top100Threshold?: number
-  median?: number
-  mean?: number
-  atMax?: number
-  accounts?: unknown[]
+  config?: unknown
+  actors?: unknown[]
+  posts?: unknown[]
   updatedAt?: string
   note?: string
-  baseUpdatedAt?: string
   [k: string]: unknown
 }
 
@@ -52,7 +48,13 @@ function cors(res: VercelResponse) {
 }
 
 function isValidBody(body: Body): boolean {
-  return Array.isArray(body.accounts) && body.accounts.length > 0
+  return (
+    !!body &&
+    typeof body === 'object' &&
+    body.config != null &&
+    Array.isArray(body.actors) &&
+    Array.isArray(body.posts)
+  )
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -70,18 +72,25 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   try {
     if (isGetOrHead(req.method)) {
-      if (!enforcePublicRateLimit(req, res, 'twitterscore-top100', 90)) return
-      const data = await r2GetJson<Body>(
-        client,
-        TWITTERSCORE_TOP100_OBJECT_KEY,
-      )
-      if (!data || !Array.isArray(data.accounts) || !data.accounts.length) {
+      if (!enforcePublicRateLimit(req, res, 'scex-tracking', 90)) return
+      const data = await r2GetJson<Body>(client, SCEX_TRACKING_OBJECT_KEY)
+      if (!data || !data.config) {
         return sendJson(req, res, 404, {
           error: 'empty',
-          message: 'No TwitterScore Top 100 on server yet.',
+          message: 'No SCEX tracking data on server yet. Admin → SCEX → Save.',
         })
       }
-      return sendJson(req, res, 200, data)
+      const wantAll =
+        String(req.query.all || '') === '1' ||
+        String(req.query.scope || '') === 'admin'
+      if (wantAll && !isAdmin(req)) {
+        return sendJson(req, res, 401, {
+          error: 'unauthorized',
+          message: 'Admin token required for full SCEX dataset',
+        })
+      }
+      if (wantAll) return sendJson(req, res, 200, data)
+      return sendJson(req, res, 200, publicScexDataset(data))
     }
 
     if (req.method === 'PUT') {
@@ -89,31 +98,40 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       const parsed = parseJsonBody<Body>(req)
       if (parsed.ok === false) {
         return jsonError(res, 400, parsed.error, {
-          message: 'Need accounts[] with at least 1 row',
+          message: 'Need config object plus actors[] and posts[] arrays',
         })
       }
       const body = parsed.body
       if (!isValidBody(body)) {
         return jsonError(res, 400, 'invalid_body', {
-          message: 'Need accounts[] with at least 1 row',
+          message: 'Need config object plus actors[] and posts[] arrays',
+        })
+      }
+      if (
+        (body.actors as unknown[]).length === 0 &&
+        (body.posts as unknown[]).length === 0
+      ) {
+        return jsonError(res, 400, 'invalid_body', {
+          message: 'actors[] and posts[] cannot both be empty',
         })
       }
       const payload: Body = {
         ...body,
         version: body.version ?? 1,
-        kind: 'twitterscore-top100',
+        kind: body.kind || 'scex-tracking',
         updatedAt: new Date().toISOString(),
-        source: body.source || 'admin server',
+        actors: body.actors,
+        posts: body.posts,
       }
       delete (payload as { baseUpdatedAt?: string }).baseUpdatedAt
       if (
         !(await commitJsonReplace(
           res,
           client,
-          TWITTERSCORE_TOP100_OBJECT_KEY,
+          SCEX_TRACKING_OBJECT_KEY,
           body as Record<string, unknown>,
           (current) => current?.updatedAt,
-          'Server có TwitterScore mới hơn. Reload rồi Save lại.',
+          'Server có SCEX mới hơn. Reload rồi Save lại.',
           payload,
         ))
       ) {
@@ -121,16 +139,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }
       return res.status(200).json({
         ok: true,
-        count: Array.isArray(payload.accounts) ? payload.accounts.length : 0,
+        actors: Array.isArray(payload.actors) ? payload.actors.length : 0,
+        posts: Array.isArray(payload.posts) ? payload.posts.length : 0,
         updatedAt: payload.updatedAt,
         storage: 'r2',
-        key: TWITTERSCORE_TOP100_OBJECT_KEY,
+        key: SCEX_TRACKING_OBJECT_KEY,
       })
     }
 
     return res.status(405).json({ error: 'method_not_allowed' })
   } catch (e) {
-    console.error('[api/twitterscore-top100]', e)
+    console.error('[api/scex-tracking]', e)
     return res.status(500).json({
       error: 'server_error',
       message: e instanceof Error ? e.message : 'unknown',

@@ -1,6 +1,6 @@
 /**
- * Social crawlers (Telegram, etc.) get static OG HTML (no serverless fn —
- * Hobby plan cap is 12 functions).
+ * Social crawlers (Telegram, etc.) get static OG HTML (Edge Middleware —
+ * not a serverless function).
  * Real users continue to the Vite SPA via vercel.json rewrite.
  */
 import { rewrite, next } from '@vercel/functions'

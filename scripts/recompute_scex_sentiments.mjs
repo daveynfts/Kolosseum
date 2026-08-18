@@ -7,7 +7,7 @@
  * Keep inferScexSentiment heuristics in sync with src/data/scexTracking.ts
  */
 import fs from 'fs'
-import { adminPutJson } from './lib/adminPut.mjs'
+import { adminGetJson, adminPutJson } from './lib/adminPut.mjs'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import { createRequire } from 'module'
@@ -132,15 +132,15 @@ let dataset = JSON.parse(
   ),
 )
 let baseUpdatedAt = dataset.updatedAt
+let liveLoaded = false
 try {
-  const liveRes = await fetch(`${base}/api/scex-tracking?t=${Date.now()}`)
-  if (liveRes.ok) {
-    const live = await liveRes.json()
-    if (live?.actors?.length) {
-      dataset = live
-      baseUpdatedAt = live.updatedAt
-      console.log('loaded live', live.actors.length, live.posts?.length, live.updatedAt)
-    }
+  if (!token) throw new Error('FEED_ADMIN_TOKEN missing')
+  const live = await adminGetJson(`${base}/api/scex-tracking`, token)
+  if (live?.actors?.length) {
+    dataset = live
+    baseUpdatedAt = live.updatedAt
+    liveLoaded = true
+    console.log('loaded live', live.actors.length, live.posts?.length, live.updatedAt)
   }
 } catch (e) {
   console.warn('live load fail', e.message)
@@ -267,6 +267,10 @@ console.log(
 if (doPut) {
   if (!token) {
     console.error('FEED_ADMIN_TOKEN missing')
+    process.exit(1)
+  }
+  if (!liveLoaded) {
+    console.error('Abort PUT: could not GET admin SCEX slice (would clobber R2 with seed)')
     process.exit(1)
   }
   const putBody = { ...dataset, baseUpdatedAt }

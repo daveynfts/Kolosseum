@@ -3889,3 +3889,77 @@ body.akr-split-resizing .report-md--editable {
   font-size: 0.85rem;
   padding: 12px 4px;
 }
+
+.admin-ops-health {
+  max-width: 960px;
+  padding: 8px 0 24px;
+}
+
+.admin-ops-health__bar {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.admin-ops-health__lede,
+.admin-ops-health__hint,
+.admin-ops-health__checked {
+  color: #9ca3af;
+  font-size: 13px;
+  line-height: 1.45;
+  margin: 0 0 12px;
+}
+
+.admin-ops-health__lede code,
+.admin-ops-health__hint code,
+.admin-ops-health__table code {
+  font-size: 12px;
+  color: #d1d5db;
+}
+
+.admin-ops-health__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.admin-ops-health__table th,
+.admin-ops-health__table td {
+  text-align: left;
+  padding: 8px 10px;
+  border-bottom: 1px solid #2a2a2a;
+  vertical-align: top;
+}
+
+.admin-ops-health__table th {
+  color: #6b7280;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-weight: 600;
+}
+
+.admin-ops-health__pill {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.admin-ops-health__pill.is-ok {
+  color: #86efac;
+  background: #052e16;
+}
+
+.admin-ops-health__pill.is-warn {
+  color: #fde68a;
+  background: #3b2a05;
+}
+
+.admin-ops-health__pill.is-stale,
+.admin-ops-health__pill.is-error {
+  color: #fecaca;
+  background: #3f1010;
+}

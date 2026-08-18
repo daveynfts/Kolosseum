@@ -126,6 +126,7 @@ export type AdminTab =
   | 'banner'
   | 'reports'
   | 'events'
+  | 'ops'
   | 'legend'
 
 const TAB_SUFFIX: Record<string, AdminTab> = {
@@ -150,6 +151,8 @@ const TAB_SUFFIX: Record<string, AdminTab> = {
   conviction: 'events',
   'side-event': 'events',
   'side-events': 'events',
+  ops: 'ops',
+  health: 'ops',
   legend: 'legend',
 }
 

@@ -11,7 +11,7 @@
  *   node scripts/hydrate_scex_media.mjs --limit 10
  */
 import fs from 'fs'
-import { adminPutJson } from './lib/adminPut.mjs'
+import { adminGetJson, adminPutJson } from './lib/adminPut.mjs'
 import path from 'path'
 import crypto from 'crypto'
 import { fileURLToPath } from 'url'
@@ -304,7 +304,26 @@ async function hydrateViaApi(postUrl) {
 }
 
 async function main() {
-  const dataset = JSON.parse(fs.readFileSync(seedPaths[0], 'utf8'))
+  let dataset = JSON.parse(fs.readFileSync(seedPaths[0], 'utf8'))
+  if (doPut) {
+    if (!token) {
+      console.error('FEED_ADMIN_TOKEN missing')
+      process.exit(1)
+    }
+    try {
+      const live = await adminGetJson(`${base}/api/scex-tracking`, token)
+      if (live?.posts) {
+        dataset = live
+        console.log('loaded live SCEX', live.posts.length, live.updatedAt)
+      }
+    } catch (e) {
+      console.error(
+        'Abort: cannot GET admin SCEX slice',
+        e instanceof Error ? e.message : e,
+      )
+      process.exit(1)
+    }
+  }
   const posts = Array.isArray(dataset.posts) ? dataset.posts : []
   let targets = posts.filter((p) => p && p.url && !p.hidden)
   if (!force) {

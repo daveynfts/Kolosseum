@@ -1,18 +1,19 @@
 /**
- * SCEX partner tracking (matrix + livefeed).
+ * KOL evaluation reports (text corpus + changelog).
  *
- * GET  /api/scex-tracking — public read
- * PUT  /api/scex-tracking — Bearer FEED_ADMIN_TOKEN
+ * GET  /api/kol-reports           — public: only visibility=public
+ * GET  /api/kol-reports?all=1     — full dataset (Bearer FEED_ADMIN_TOKEN)
+ * PUT  /api/kol-reports           — Bearer FEED_ADMIN_TOKEN (full replace)
  *
- * R2 key: scex/tracking/v1.json
+ * R2 key: internal/kol-reports/v1.json
  */
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 import {
   envPresence,
-  SCEX_TRACKING_OBJECT_KEY,
+  KOL_REPORTS_OBJECT_KEY,
   r2Client,
   r2GetJson,
-} from '../lib/server/r2.js'
+} from '../r2.js'
 import {
   commitJsonReplace,
   enforcePublicRateLimit,
@@ -22,18 +23,14 @@ import {
   parseJsonBody,
   requireAdmin,
   sendJson,
-} from '../lib/server/apiHelpers.js'
-import { publicScexDataset } from '../src/data/scexTracking.js'
+} from '../apiHelpers.js'
 
 type Body = {
   version?: number
   kind?: string
-  asOf?: string
-  config?: unknown
-  actors?: unknown[]
-  posts?: unknown[]
+  reports?: unknown[]
+  trash?: unknown[]
   updatedAt?: string
-  note?: string
   [k: string]: unknown
 }
 
@@ -47,14 +44,28 @@ function cors(res: VercelResponse) {
   res.setHeader('Cache-Control', 'no-store')
 }
 
-function isValidBody(body: Body): boolean {
-  return (
-    !!body &&
-    typeof body === 'object' &&
-    body.config != null &&
-    Array.isArray(body.actors) &&
-    Array.isArray(body.posts)
-  )
+function publicSlice(data: Body): Body {
+  const reports = Array.isArray(data.reports) ? data.reports : []
+  const pub = reports
+    .filter((r) => {
+      if (!r || typeof r !== 'object') return false
+      return (r as { visibility?: string }).visibility === 'public'
+    })
+    .map((r) => {
+      const o = r as Record<string, unknown>
+      const cl = Array.isArray(o.changelog) ? o.changelog.slice(0, 5) : []
+      const { sourceFilename: _sf, sourcePath: _sp, ...rest } = o
+      return { ...rest, changelog: cl }
+    })
+  return {
+    version: data.version ?? 1,
+    kind: 'kol-reports',
+    updatedAt: data.updatedAt || new Date().toISOString(),
+    asOf: data.asOf,
+    note: 'Public KOL reports only',
+    reports: pub,
+    trash: [],
+  }
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -72,58 +83,58 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   try {
     if (isGetOrHead(req.method)) {
-      if (!enforcePublicRateLimit(req, res, 'scex-tracking', 90)) return
-      const data = await r2GetJson<Body>(client, SCEX_TRACKING_OBJECT_KEY)
-      if (!data || !data.config) {
-        return sendJson(req, res, 404, {
-          error: 'empty',
-          message: 'No SCEX tracking data on server yet. Admin → SCEX → Save.',
-        })
-      }
+      if (!enforcePublicRateLimit(req, res, 'kol-reports', 90)) return
       const wantAll =
         String(req.query.all || '') === '1' ||
         String(req.query.scope || '') === 'admin'
       if (wantAll && !isAdmin(req)) {
         return sendJson(req, res, 401, {
           error: 'unauthorized',
-          message: 'Admin token required for full SCEX dataset',
+          message: 'Admin token required for full reports dataset',
+        })
+      }
+      const data = await r2GetJson<Body>(client, KOL_REPORTS_OBJECT_KEY)
+      if (!data) {
+        return sendJson(req, res, 404, {
+          error: 'empty',
+          message: 'No KOL reports on server yet.',
         })
       }
       if (wantAll) return sendJson(req, res, 200, data)
-      return sendJson(req, res, 200, publicScexDataset(data))
+      return sendJson(req, res, 200, publicSlice(data))
     }
 
     if (req.method === 'PUT') {
       if (!requireAdmin(req, res)) return
       const parsed = parseJsonBody<Body>(req)
       if (parsed.ok === false) {
-        return jsonError(res, 400, parsed.error, {
-          message: 'Need config object plus actors[] and posts[] arrays',
-        })
+        return jsonError(res, 400, parsed.error)
       }
       const body = parsed.body
-      if (!isValidBody(body)) {
+      if (!body || typeof body !== 'object') {
+        return jsonError(res, 400, 'invalid_body')
+      }
+      if (!Array.isArray(body.reports)) {
         return jsonError(res, 400, 'invalid_body', {
-          message: 'Need config object plus actors[] and posts[] arrays',
+          message: 'Need reports array',
         })
       }
       const payload: Body = {
         ...body,
         version: body.version ?? 1,
-        kind: body.kind || 'scex-tracking',
+        kind: 'kol-reports',
+        trash: Array.isArray(body.trash) ? body.trash : [],
         updatedAt: new Date().toISOString(),
-        actors: body.actors,
-        posts: body.posts,
       }
       delete (payload as { baseUpdatedAt?: string }).baseUpdatedAt
       if (
         !(await commitJsonReplace(
           res,
           client,
-          SCEX_TRACKING_OBJECT_KEY,
+          KOL_REPORTS_OBJECT_KEY,
           body as Record<string, unknown>,
           (current) => current?.updatedAt,
-          'Server có SCEX mới hơn. Reload rồi Save lại.',
+          'Server có reports mới hơn. Reload rồi Save lại.',
           payload,
         ))
       ) {
@@ -131,20 +142,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }
       return res.status(200).json({
         ok: true,
-        actors: Array.isArray(payload.actors) ? payload.actors.length : 0,
-        posts: Array.isArray(payload.posts) ? payload.posts.length : 0,
+        reports: (payload.reports as unknown[]).length,
+        trash: (payload.trash as unknown[]).length,
         updatedAt: payload.updatedAt,
         storage: 'r2',
-        key: SCEX_TRACKING_OBJECT_KEY,
+        key: KOL_REPORTS_OBJECT_KEY,
       })
     }
 
     return res.status(405).json({ error: 'method_not_allowed' })
   } catch (e) {
-    console.error('[api/scex-tracking]', e)
+    console.error('[api/kol-reports]', e)
     return res.status(500).json({
       error: 'server_error',
-      message: e instanceof Error ? e.message : 'unknown',
+      message: e instanceof Error ? e.message : String(e),
     })
   }
 }

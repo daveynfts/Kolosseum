@@ -4,12 +4,13 @@
  *   node scripts/fetch_scex_blue_mentions_7d.mjs
  *   node scripts/fetch_scex_blue_mentions_7d.mjs --seed-only
  *   node scripts/fetch_scex_blue_mentions_7d.mjs --since=2026-07-27 --until=2026-08-04
+ *   node scripts/fetch_scex_blue_mentions_7d.mjs --require-fetch
  *
  * Uses X guest GraphQL SearchTimeline (queryId from fa0311 docs) + blue_verified filter.
  * Falls back to seeded status list if search fails.
  */
 import fs from 'fs'
-import { adminPutJson } from './lib/adminPut.mjs'
+import { adminGetJson, adminPutJson } from './lib/adminPut.mjs'
 import path from 'path'
 import { fileURLToPath } from 'url'
 
@@ -39,6 +40,9 @@ loadEnv('.env.local')
 loadEnv('.env.production.local')
 
 const seedOnly = process.argv.includes('--seed-only')
+const requireFetch =
+  process.argv.includes('--require-fetch') ||
+  process.env.RADAR_REQUIRE_FETCH === '1'
 const argSince = process.argv.find((a) => a.startsWith('--since='))?.slice(8)
 const argUntil = process.argv.find((a) => a.startsWith('--until='))?.slice(8)
 
@@ -617,6 +621,12 @@ async function main() {
     byHandle.get(p.handle).push(p)
   }
   console.log('Unique blue handles:', byHandle.size)
+  if (requireFetch && byHandle.size === 0) {
+    console.error(
+      'Abort: --require-fetch but 0 blue-verified mentions in window — not merging or PUT.',
+    )
+    process.exit(1)
+  }
   for (const [h, posts] of [...byHandle.entries()].sort(
     (a, b) => b[1].length - a[1].length,
   )) {
@@ -625,20 +635,21 @@ async function main() {
     )
   }
 
-  // Load dataset: prefer live R2
+  // Load dataset: prefer live R2 admin slice (public GET strips hidden/notes)
   let dataset = JSON.parse(fs.readFileSync(SEED, 'utf8'))
   if (!seedOnly) {
-    console.log('GET', `${base}/api/scex-tracking`)
-    const getRes = await fetch(`${base}/api/scex-tracking?t=${Date.now()}`)
-    if (getRes.ok) {
-      const remote = await getRes.json()
-      if (remote?.posts && remote?.actors) {
-        dataset = remote
-        console.log('Using R2', {
-          posts: remote.posts.length,
-          actors: remote.actors.length,
-        })
-      }
+    if (!token) {
+      console.error('FEED_ADMIN_TOKEN missing — cannot GET admin SCEX slice')
+      process.exit(1)
+    }
+    console.log('GET', `${base}/api/scex-tracking?all=1`)
+    const remote = await adminGetJson(`${base}/api/scex-tracking`, token)
+    if (remote?.posts && remote?.actors) {
+      dataset = remote
+      console.log('Using R2', {
+        posts: remote.posts.length,
+        actors: remote.actors.length,
+      })
     }
   }
 

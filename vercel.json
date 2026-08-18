@@ -21,36 +21,84 @@
   ],
   "rewrites": [
     {
+      "source": "/api/feed",
+      "destination": "/api/json?route=feed"
+    },
+    {
+      "source": "/api/kols",
+      "destination": "/api/json?route=kols"
+    },
+    {
+      "source": "/api/scex-tracking",
+      "destination": "/api/json?route=scex-tracking"
+    },
+    {
+      "source": "/api/kol-reports",
+      "destination": "/api/json?route=kol-reports"
+    },
+    {
+      "source": "/api/recent-followers",
+      "destination": "/api/json?route=recent-followers"
+    },
+    {
+      "source": "/api/twitterscore-top100",
+      "destination": "/api/json?route=twitterscore-top100"
+    },
+    {
+      "source": "/api/event-side-events",
+      "destination": "/api/json?route=event-side-events"
+    },
+    {
+      "source": "/api/media",
+      "destination": "/api/bin?route=media"
+    },
+    {
+      "source": "/api/avatar",
+      "destination": "/api/bin?route=avatar"
+    },
+    {
+      "source": "/api/x-status",
+      "destination": "/api/bin?route=x-status"
+    },
+    {
+      "source": "/api/kol-report-image",
+      "destination": "/api/bin?route=kol-report-image"
+    },
+    {
+      "source": "/api/site-banner",
+      "destination": "/api/bin?route=site-banner"
+    },
+    {
       "source": "/api/banner-image",
-      "destination": "/api/site-banner"
+      "destination": "/api/bin?route=site-banner"
     },
     {
       "source": "/api/surf-report",
-      "destination": "/api/kol-report-image"
+      "destination": "/api/bin?route=kol-report-image"
     },
     {
       "source": "/r2/radar/:path*",
-      "destination": "/api/media?key=radar/:path*"
+      "destination": "/api/bin?route=media&key=radar/:path*"
     },
     {
       "source": "/r2/media/:path*",
-      "destination": "/api/media?key=media/:path*"
+      "destination": "/api/bin?route=media&key=media/:path*"
     },
     {
       "source": "/r2/scex-banner/:path*",
-      "destination": "/api/media?key=scex-banner/:path*"
+      "destination": "/api/bin?route=media&key=scex-banner/:path*"
     },
     {
       "source": "/r2/kol-reports/:path*",
-      "destination": "/api/media?key=kol-reports/:path*"
+      "destination": "/api/bin?route=media&key=kol-reports/:path*"
     },
     {
       "source": "/r2/RadarKOLsReport/:path*",
-      "destination": "/api/media?key=RadarKOLsReport/:path*"
+      "destination": "/api/bin?route=media&key=RadarKOLsReport/:path*"
     },
     {
       "source": "/r2/:path*",
-      "destination": "/api/media?key=:path*"
+      "destination": "/api/bin?route=media&key=:path*"
     },
     {
       "source": "/events",

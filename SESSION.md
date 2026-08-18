@@ -4,7 +4,7 @@
 **Workspace:** `C:\VibeCode\KOL Radar`  
 **Prod:** https://radar.daveynfts.com  
 
-> Đọc file này trước khi tiếp tục. README gốc vẫn mô tả pipeline Sheet → map 3D; **partner SCEX + R2** là lớp sản phẩm đã phát triển sau.
+> Đọc file này trước khi tiếp tục. README gốc vẫn mô tả pipeline Sheet → map 3D; **partner SCEX + R2** là lớp sản phẩm đã phát triển sau. Vận hành định kỳ: [`docs/OPS.md`](./docs/OPS.md).
 
 ---
 
@@ -22,7 +22,7 @@
 
 ### R2 = source of truth (server)
 
-- Cloudflare R2 bucket; API Vercel: `api/*.ts` → `lib/server/r2.ts`.
+- Cloudflare R2 bucket; API Vercel: `api/json.ts` + `api/bin.ts` (Hobby: 2 functions) → `lib/server/handlers/` + `lib/server/r2.ts`. Public URLs `/api/feed` v.v. rewrite trong `vercel.json`.
 - Key objects hay dùng:
   - `recent-followers/v1.json` — recent + **smartMap**
   - KOL list, feed, SCEX tracking, kol-reports (xem từng API)
@@ -72,7 +72,8 @@
 
 ### Quy ước mở rộng (để API/editor mới không lặp lỗ hổng)
 
-- **JSON admin API mới:** `parseJsonBody` → `requireAdmin` → build payload → `commitJsonReplace(...)` trong `lib/server/apiHelpers.ts`. Không `JSON.parse` trần (trả 500). Không default mảng thiếu thành `[]` trên full replace.
+- **JSON admin API mới:** handler trong `lib/server/handlers/` + rewrite `/api/<name>` → `/api/json?route=<name>` (không thêm file `api/*.ts`). `parseJsonBody` → `requireAdmin` → `commitJsonReplace(...)`. Không `JSON.parse` trần. Không default mảng thiếu thành `[]` trên full replace.
+- **Binary/upload mới:** cùng pattern vào `lib/server/handlers/` + rewrite tới `/api/bin?route=<name>` (`bodyParser: false`).
 - **Script PUT JSON:** `import { adminPutJson } from './lib/adminPut.mjs'` (GET live + `baseUpdatedAt`). Events: helper tự GET `?all=1` để không mất `hidden`.
 - **Editor admin mới:** `useDirtyRef` + `useRemoteDatasetLoad` + Reload qua `confirmDiscardUnsaved` (`src/lib/adminLoadGuard.ts`).
 - **URL ra ngoài:** `safeHref` / `cssSafeUrl` / `isSafeImageUrl` từ `src/lib/safeUrl.ts`.
@@ -95,7 +96,7 @@
 | `src/components/DaveysRadarLink.tsx` | Link brand Radar |
 | `src/data/scexTracking.ts` | Types, scoring, quadrant labels, helpers |
 | `src/data/internal/scex-tracking.json` | Seed SCEX dataset |
-| `api/scex-tracking.ts` | GET/PUT SCEX trên R2 |
+| `lib/server/handlers/scex-tracking.ts` | GET/PUT SCEX trên R2 (`/api/scex-tracking` → `api/json.ts`) |
 
 ### Map Radar + KOL data
 
@@ -116,7 +117,7 @@
 | `src/lib/recentFollowersStore.ts` | Load/save R2 + cache |
 | `src/components/RecentFollowersPanel.tsx` | UI trong detail |
 | `src/pages/AdminRecentFollowersEditor.tsx` | Admin CRUD |
-| `api/recent-followers.ts` | GET/PUT `recent-followers/v1.json` |
+| `lib/server/handlers/recent-followers.ts` | GET/PUT `recent-followers/v1.json` |
 | `scripts/push_*_followers.mjs` | One-shot publish R2 |
 
 ### Admin / reports / feed
@@ -126,7 +127,7 @@
 | `src/pages/AdminDashboard.tsx` | Hub admin |
 | `src/pages/AdminScexEditor.tsx` | Editor SCEX |
 | `src/pages/AdminKolReportsEditor.tsx` | KOL Reports (MD/R2) |
-| `api/kols.ts`, `api/feed.ts`, `api/kol-reports.ts` | R2 backends |
+| `lib/server/handlers/{kols,feed,kol-reports}.ts` | R2 backends (rewrite → `api/json.ts`) |
 | `docs/FEED_SERVER.md` | Feed server notes |
 | `docs/BIO_R2_WORKFLOW.md` | Bio/R2 workflow |
 
@@ -148,9 +149,11 @@ cd "C:\VibeCode\KOL Radar"
 npm run dev          # http://localhost:5173/
 npm run build        # tsc + vite
 
-# Publish followers lên R2 (cần FEED_ADMIN_TOKEN)
-node scripts/push_henvaibta_smart_followers.mjs
-node scripts/push_hakresearch_recent_followers.mjs
+# Ops CLI (cần FEED_ADMIN_TOKEN)
+node scripts/radar.mjs health
+node scripts/radar.mjs push followers --handle hakresearch --type recent --file followers.json
+node scripts/radar.mjs hide kol --handle somehandle
+node scripts/radar.mjs refresh feed --require-live
 ```
 
 ---
@@ -169,9 +172,11 @@ node scripts/push_hakresearch_recent_followers.mjs
 ## 6. Backlog gợi ý (không chặn)
 
 1. Merge thêm smart lists (Martin seed) lên R2 nếu cần online parity.
-2. Warm avatars cho smart/recent handles mới (`scripts/warm_smart_follower_avatars.mjs`).
-3. Admin UI nhập score cho Recent followers.
-4. Đồng bộ `quadrantLabels` trên R2 SCEX config (bỏ TRỌNG ĐIỂM trong JSON server).
+2. Admin UI nhập score cho Recent followers.
+3. Đồng bộ `quadrantLabels` trên R2 SCEX config (bỏ TRỌNG ĐIỂM trong JSON server).
+4. Tắt Public Development URL trên Cloudflare R2 rồi xoay `FEED_ADMIN_TOKEN` nếu chưa làm.
+
+Cron + CLI + `#/admin/ops`: xem [`docs/OPS.md`](./docs/OPS.md). GitHub Actions cần secret `FEED_ADMIN_TOKEN` + `R2_*`. Schedule tắt sau 60 ngày không commit.
 
 ---
 

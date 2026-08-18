@@ -1,0 +1,68 @@
+# Daily X feed refresh → PUT /api/feed.
+# Hobby Vercel: API is two functions (json + bin). Cron here calls /api/feed
+# via rewrite rather than adding a third serverless route.
+#
+# Required repo secrets: FEED_ADMIN_TOKEN, R2_ACCOUNT_ID, R2_ACCESS_KEY_ID,
+# R2_SECRET_ACCESS_KEY, R2_BUCKET_NAME
+# Optional: RADAR_API_BASE (default https://radar.daveynfts.com)
+#
+# GitHub pauses scheduled workflows after 60 days with no commits.
+# Re-enable by pushing, or use workflow_dispatch.
+#
+# X guest GraphQL is often blocked from GitHub IPs. --require-live aborts
+# instead of publishing a feed whose generatedAt looks fresh with 0 new tweets.
+name: Refresh X feed
+
+on:
+  schedule:
+    - cron: '0 17 * * *' # 00:00 ICT
+  workflow_dispatch:
+
+concurrency:
+  group: refresh-feed
+  cancel-in-progress: true
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - run: npm ci
+
+      - name: Check secrets
+        env:
+          FEED_ADMIN_TOKEN: ${{ secrets.FEED_ADMIN_TOKEN }}
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_BUCKET_NAME: ${{ secrets.R2_BUCKET_NAME }}
+        run: |
+          missing=
+          for k in FEED_ADMIN_TOKEN R2_ACCOUNT_ID R2_ACCESS_KEY_ID R2_SECRET_ACCESS_KEY R2_BUCKET_NAME; do
+            eval "v=\${$k}"
+            if [ -z "$v" ]; then missing="$missing $k"; fi
+          done
+          if [ -n "$missing" ]; then
+            echo "Missing GitHub secrets:$missing"
+            echo "Settings → Secrets and variables → Actions"
+            exit 1
+          fi
+
+      - name: Refresh Challenger+Master+Diamond feed
+        env:
+          FEED_ADMIN_TOKEN: ${{ secrets.FEED_ADMIN_TOKEN }}
+          RADAR_API_BASE: ${{ secrets.RADAR_API_BASE }}
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_BUCKET_NAME: ${{ secrets.R2_BUCKET_NAME }}
+          R2_PUBLIC_BASE_URL: ${{ secrets.R2_PUBLIC_BASE_URL }}
+          R2_PUBLIC_URL: ${{ secrets.R2_PUBLIC_URL }}
+        run: node scripts/refresh_feed_challenger_master.mjs --require-live

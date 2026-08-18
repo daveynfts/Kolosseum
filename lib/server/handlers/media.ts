@@ -11,14 +11,14 @@ import {
   enforcePublicRateLimit,
   isGetOrHead,
   jsonError,
-} from '../lib/server/apiHelpers.js'
+} from '../apiHelpers.js'
 import {
   isPublicMediaKey,
   mediaObjectKey,
   r2Client,
   r2Configured,
   r2GetObject,
-} from '../lib/server/r2.js'
+} from '../r2.js'
 
 function cacheForKey(key: string): string {
   if (key.startsWith('media/')) {

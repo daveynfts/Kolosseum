@@ -15,9 +15,9 @@ import {
   r2GetObject,
   r2PutBytes,
   r2PublicBase,
-} from '../lib/server/r2.js'
-import { enforcePublicRateLimit } from '../lib/server/apiHelpers.js'
-import { sniffImageContentType } from '../lib/server/sniffImage.js'
+} from '../r2.js'
+import { enforcePublicRateLimit } from '../apiHelpers.js'
+import { readRawBodyLimited, sniffImageContentType } from '../sniffImage.js'
 
 function cors(res: VercelResponse) {
   res.setHeader('Access-Control-Allow-Origin', '*')
@@ -123,15 +123,6 @@ async function fetchXAvatar(handle: string): Promise<{
   return null
 }
 
-/** Accept raw image uploads (PNG/JPEG/WebP) up to ~2MB */
-export const config = {
-  api: {
-    bodyParser: {
-      sizeLimit: '2mb',
-    },
-  },
-}
-
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   cors(res)
   if (req.method === 'OPTIONS') return res.status(204).end()
@@ -218,6 +209,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             (raw as { contentType?: string }).contentType ||
             String(req.headers['content-type'] || 'image/jpeg').split(';')[0] ||
             'image/jpeg'
+        }
+      }
+
+      if (!body || body.length < MIN_AVATAR_BYTES) {
+        const streamed = await readRawBodyLimited(req, 2_000_000)
+        if (streamed.length >= MIN_AVATAR_BYTES) {
+          body = streamed
+          contentType =
+            String(req.headers['content-type'] || contentType).split(';')[0] ||
+            contentType
         }
       }
 

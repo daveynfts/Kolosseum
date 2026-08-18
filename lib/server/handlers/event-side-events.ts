@@ -15,8 +15,8 @@ import {
   r2Client,
   r2GetJson,
   r2PutJson,
-} from '../lib/server/r2.js'
-import { repairJsonStrings } from '../src/lib/lumaText.js'
+} from '../r2.js'
+import { repairJsonStrings } from '../../../src/lib/lumaText.js'
 import {
   commitJsonReplace,
   enforcePublicRateLimit,
@@ -26,8 +26,8 @@ import {
   parseJsonBody,
   requireAdmin,
   sendJson,
-} from '../lib/server/apiHelpers.js'
-import { cacheEventImageUrls } from '../lib/server/mediaCache.js'
+} from '../apiHelpers.js'
+import { cacheEventImageUrls } from '../mediaCache.js'
 import {
   CONVICTION_2026_SLUG,
   DEFAULT_EVENT_SLUG,
@@ -40,7 +40,7 @@ import {
   catalogStatusFromSave,
   yearFromSlug,
   type EventEditionMeta,
-} from '../src/data/eventEditions.js'
+} from '../../../src/data/eventEditions.js'
 
 type SideEventBody = {
   id?: string

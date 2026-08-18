@@ -1,0 +1,88 @@
+# Weekly SCEX mention harvest. Disable this workflow if the partner page
+# is retired — it is independent of the daily feed job.
+#
+# Required secrets: same as refresh-feed.yml
+# GitHub pauses schedules after 60 days with no commits.
+name: Refresh SCEX tracking
+
+on:
+  schedule:
+    - cron: '0 18 * * 1' # Monday 01:00 ICT
+  workflow_dispatch:
+
+concurrency:
+  group: refresh-scex
+  cancel-in-progress: true
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - run: npm ci
+
+      - name: Check secrets
+        env:
+          FEED_ADMIN_TOKEN: ${{ secrets.FEED_ADMIN_TOKEN }}
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_BUCKET_NAME: ${{ secrets.R2_BUCKET_NAME }}
+        run: |
+          missing=
+          for k in FEED_ADMIN_TOKEN R2_ACCOUNT_ID R2_ACCESS_KEY_ID R2_SECRET_ACCESS_KEY R2_BUCKET_NAME; do
+            eval "v=\${$k}"
+            if [ -z "$v" ]; then missing="$missing $k"; fi
+          done
+          if [ -n "$missing" ]; then
+            echo "Missing GitHub secrets:$missing"
+            exit 1
+          fi
+
+      - name: Fetch blue-verified mentions (7d)
+        env:
+          FEED_ADMIN_TOKEN: ${{ secrets.FEED_ADMIN_TOKEN }}
+          RADAR_API_BASE: ${{ secrets.RADAR_API_BASE }}
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_BUCKET_NAME: ${{ secrets.R2_BUCKET_NAME }}
+          R2_PUBLIC_BASE_URL: ${{ secrets.R2_PUBLIC_BASE_URL }}
+          R2_PUBLIC_URL: ${{ secrets.R2_PUBLIC_URL }}
+        run: node scripts/fetch_scex_blue_mentions_7d.mjs --require-fetch
+
+      - name: Hydrate tweet media to R2
+        env:
+          FEED_ADMIN_TOKEN: ${{ secrets.FEED_ADMIN_TOKEN }}
+          RADAR_API_BASE: ${{ secrets.RADAR_API_BASE }}
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_BUCKET_NAME: ${{ secrets.R2_BUCKET_NAME }}
+          R2_PUBLIC_BASE_URL: ${{ secrets.R2_PUBLIC_BASE_URL }}
+          R2_PUBLIC_URL: ${{ secrets.R2_PUBLIC_URL }}
+        run: node scripts/hydrate_scex_media.mjs --put
+
+      - name: Recompute sentiments + matrix scores
+        env:
+          FEED_ADMIN_TOKEN: ${{ secrets.FEED_ADMIN_TOKEN }}
+          RADAR_API_BASE: ${{ secrets.RADAR_API_BASE }}
+        run: node scripts/recompute_scex_sentiments.mjs --put
+
+      - name: Warm SCEX avatars
+        env:
+          FEED_ADMIN_TOKEN: ${{ secrets.FEED_ADMIN_TOKEN }}
+          RADAR_API_BASE: ${{ secrets.RADAR_API_BASE }}
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_BUCKET_NAME: ${{ secrets.R2_BUCKET_NAME }}
+        run: node scripts/warm_scex_avatars.mjs
+        continue-on-error: true

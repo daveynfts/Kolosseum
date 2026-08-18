@@ -17,7 +17,8 @@ function needsAdminSlice(url) {
   return (
     path.includes('/api/event-side-events') ||
     path.includes('/api/kols') ||
-    path.includes('/api/kol-reports')
+    path.includes('/api/kol-reports') ||
+    path.includes('/api/scex-tracking')
   )
 }
 

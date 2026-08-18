@@ -6,8 +6,8 @@
  * Optional Authorization: Bearer FEED_ADMIN_TOKEN still accepted.
  */
 import type { VercelRequest, VercelResponse } from '@vercel/node'
-import { r2Client } from '../lib/server/r2.js'
-import { cacheRemoteImage } from '../lib/server/mediaCache.js'
+import { r2Client } from '../r2.js'
+import { cacheRemoteImage } from '../mediaCache.js'
 import {
   cors as applyCors,
   enforcePublicRateLimit,
@@ -15,7 +15,7 @@ import {
   isGetOrHead,
   jsonError,
   sendJson,
-} from '../lib/server/apiHelpers.js'
+} from '../apiHelpers.js'
 
 type TweetOut = {
   id: string

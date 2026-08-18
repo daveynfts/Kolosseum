@@ -12,6 +12,7 @@
  *   node scripts/refresh_feed_challenger_master.mjs --fresh
  *   node scripts/refresh_feed_challenger_master.mjs --synthetic
  *   node scripts/refresh_feed_challenger_master.mjs --skip-media
+ *   node scripts/refresh_feed_challenger_master.mjs --require-live
  */
 import fs from 'fs'
 import { adminPutJson } from './lib/adminPut.mjs'
@@ -38,6 +39,10 @@ const freshRebuild = process.argv.includes('--fresh')
 const fillSynthetic = process.argv.includes('--synthetic')
 /** Skip R2 photo overwrite (feed JSON still published) */
 const skipMedia = process.argv.includes('--skip-media')
+/** CI: do not PUT a feed whose generatedAt looks fresh if X returned nothing */
+const requireLive =
+  process.argv.includes('--require-live') ||
+  process.env.RADAR_REQUIRE_LIVE === '1'
 
 /** Public web client bearer (same as x.com guest sessions) */
 const X_BEARER =
@@ -909,6 +914,13 @@ async function main() {
     }
   } else {
     console.log('Skipping live fetch (--no-live)')
+  }
+
+  if (requireLive && !noLive && liveFromNetwork === 0) {
+    console.error(
+      'Abort: --require-live but 0 tweets from the network — not writing seed or PUT (would fake freshness).',
+    )
+    process.exit(1)
   }
 
   // 3) Fill with synthetic only when --synthetic (fake IDs 404 on X)

@@ -16,6 +16,8 @@ describe('parseAdminTabFromHash', () => {
     expect(parseAdminTabFromHash('#/admin?tab=feed')).toBe('feed')
     expect(parseAdminTabFromHash('#/admin/followers')).toBe('follows')
     expect(parseAdminTabFromHash('#/admin/kol-reports')).toBe('reports')
+    expect(parseAdminTabFromHash('#/admin/ops')).toBe('ops')
+    expect(parseAdminTabFromHash('#/admin/health')).toBe('ops')
   })
 })
 
@@ -24,6 +26,7 @@ describe('datasetForAdminTab', () => {
     expect(datasetForAdminTab('list')).toBe('kols')
     expect(datasetForAdminTab('edit')).toBe('kols')
     expect(datasetForAdminTab('legend')).toBe(null)
+    expect(datasetForAdminTab('ops')).toBe(null)
     expect(datasetForAdminTab('data')).toBe('twitterscore')
   })
 })

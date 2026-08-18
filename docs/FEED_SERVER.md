@@ -83,6 +83,12 @@ Objects are namespaced: `feed/v1.json`, `media/{id}` — will not overwrite rand
 | `GET /api/media?id=` | no | Proxy image from R2 |
 | `GET /api/feed?debug=1` | no | Env presence (no secrets) |
 
+Public URLs above are unchanged. On Vercel they rewrite to two Hobby functions: `api/json.ts` (feed, kols, …) and `api/bin.ts` (media, avatar, uploads). Handlers live in `lib/server/handlers/`. See [`OPS.md`](./OPS.md).
+
+## Daily refresh
+
+GitHub Actions (`.github/workflows/refresh-feed.yml`) runs `scripts/refresh_feed_challenger_master.mjs --require-live` once a day. See [`OPS.md`](./OPS.md). Do not add a Vercel cron function — JSON + binary APIs already occupy two Hobby functions; cron would need a third.
+
 ## Load priority (client)
 
 1. Server `GET /api/feed` (R2)  

@@ -14,6 +14,8 @@ npm run dev
 
 Open `http://localhost:5173/`.
 
+Ops (cron, CLI, data health): [`docs/OPS.md`](./docs/OPS.md).
+
 ## Data pipeline
 
 ```bash

@@ -101,8 +101,8 @@ export const BANNER_IMAGES_PREFIX = 'scex-banner'
  *
  * The Cloudflare R2 “Public Development URL” (pub-*.r2.dev) exposes every
  * object in the bucket. `r2PublicBase()` ignores that host; `/r2/*` is
- * proxied through `/api/media` (`isPublicMediaKey`). Disable the public
- * development URL in the R2 dashboard so JSON keys cannot be fetched
+ * proxied through `/api/bin` (`route=media`, `isPublicMediaKey`). Disable the
+ * public development URL in the R2 dashboard so JSON keys cannot be fetched
  * directly from pub-*.r2.dev.
  */
 export const R2_PUBLIC_MEDIA_PREFIXES = [

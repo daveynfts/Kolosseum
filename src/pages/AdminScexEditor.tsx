@@ -82,7 +82,10 @@ export function AdminScexEditor({ onToast }: Props) {
     'all' | ScexRadarPipeline | 'needs_avatar'
   >('candidate')
 
-  useRemoteDatasetLoad(loadScexWithSource, dirtyRef, (r) => {
+  useRemoteDatasetLoad(
+    () => loadScexWithSource({ includeHidden: true }),
+    dirtyRef,
+    (r) => {
     setDataset(r.dataset)
     setSource(r.source)
     if (!selectedActorId && r.dataset.actors[0]) {
@@ -391,7 +394,7 @@ export function AdminScexEditor({ onToast }: Props) {
   const onReload = async () => {
     if (!confirmDiscardUnsaved(dirty)) return
     clearScexCache()
-    const r = await loadScexWithSource()
+    const r = await loadScexWithSource({ includeHidden: true })
     setDataset(r.dataset)
     setSource(r.source)
     setDirty(false)

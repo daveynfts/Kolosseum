@@ -14,6 +14,16 @@ export const EVENT_SLUG_RE = /^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$/
 
 export type EventEditionStatus = 'live' | 'archive' | 'draft'
 
+/** Catalog status written on edition save. Omitted `archived` keeps the seed. */
+export function catalogStatusFromSave(
+  archived: unknown,
+  seedStatus?: EventEditionStatus,
+): EventEditionStatus {
+  if (archived === true) return 'archive'
+  if (archived === false) return 'live'
+  return seedStatus || 'live'
+}
+
 export type EventEditionMeta = {
   slug: string
   title: string

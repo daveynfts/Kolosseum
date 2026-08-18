@@ -5,7 +5,7 @@
  */
 
 import { isGenericImageAlt } from './imageAlt'
-import { isSafeImageUrl as isSafeUrl } from './safeUrl'
+import { isSafeHttpUrl, isSafeImageUrl as isSafeUrl } from './safeUrl'
 
 function escapeHtml(s: string): string {
   return s
@@ -39,7 +39,7 @@ function inlineToHtml(text: string): string {
     } else if (m[0].startsWith('[')) {
       const label = m[4] || ''
       const href = m[5] || ''
-      if (isSafeUrl(href)) {
+      if (isSafeHttpUrl(href)) {
         parts.push(
           `<a href="${escapeHtml(href)}" target="_blank" rel="noopener noreferrer" class="report-md__a">${escapeHtml(label)}</a>`,
         )

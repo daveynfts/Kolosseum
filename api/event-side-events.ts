@@ -37,9 +37,9 @@ import {
   seedEditionBySlug,
   titleFromSlug,
   upsertEditionInCatalog,
+  catalogStatusFromSave,
   yearFromSlug,
   type EventEditionMeta,
-  type EventEditionStatus,
 } from '../src/data/eventEditions.js'
 
 type SideEventBody = {
@@ -130,12 +130,7 @@ function editionMetaFromDataset(
     start && end
       ? `${start.slice(8, 10)}/${start.slice(5, 7)}–${end.slice(8, 10)}/${end.slice(5, 7)}/${end.slice(0, 4)}`
       : seed?.dateLabel
-  const archived = body.archived === true
-  const status: EventEditionStatus = archived
-    ? 'archive'
-    : seed?.status === 'archive'
-      ? 'live'
-      : seed?.status || 'live'
+  const status = catalogStatusFromSave(body.archived, seed?.status)
   const venue =
     body.venue && typeof body.venue === 'object'
       ? (body.venue as { name?: string })
@@ -302,6 +297,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         await upsertIndex(client, editionMetaFromDataset(slug, payload))
       } catch (e) {
         console.error('[api/event-side-events] index upsert', e)
+        return res.status(500).json({
+          error: 'index_upsert_failed',
+          message:
+            'Đã lưu map nhưng không cập nhật được catalog editions. Thử Save lại.',
+          event: slug,
+          updatedAt: payload.updatedAt,
+        })
       }
       return res.status(200).json({
         ok: true,

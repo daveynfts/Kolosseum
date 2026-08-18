@@ -729,12 +729,18 @@ export function AdminKolReportsEditor({ onToast, kols = [] }: Props) {
         if (m) {
           const alt = m[1] || 'image'
           const src = m[2]
+          const esc = (s: string) =>
+            s
+              .replace(/&/g, '&amp;')
+              .replace(/</g, '&lt;')
+              .replace(/>/g, '&gt;')
+              .replace(/"/g, '&quot;')
           document.execCommand(
             'insertHTML',
             false,
-            `<figure class="report-md__figure"><img src="${src}" alt="${alt}" class="report-md__img" loading="lazy" />${
+            `<figure class="report-md__figure"><img src="${esc(src)}" alt="${esc(alt)}" class="report-md__img" loading="lazy" />${
               alt
-                ? `<figcaption class="report-md__caption">${alt}</figcaption>`
+                ? `<figcaption class="report-md__caption">${esc(alt)}</figcaption>`
                 : ''
             }</figure><p><br></p>`,
           )

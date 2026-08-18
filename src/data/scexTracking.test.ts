@@ -6,6 +6,7 @@ import {
   dominantScexSentiment,
   inferScexSentiment,
   isScexEventTaskSpam,
+  publicScexDataset,
   recomputeScexSentiments,
   scoreScexActor,
   type ScexActor,
@@ -241,5 +242,33 @@ describe('recomputeScexSentiments', () => {
         { sentiment: 'neutral' },
       ]),
     ).toBe('bullish')
+  })
+})
+
+describe('publicScexDataset', () => {
+  it('drops hidden posts and admin-only fields', () => {
+    const pub = publicScexDataset({
+      actors: [
+        {
+          id: 'a1',
+          handle: 'alice',
+          notes: 'public note',
+          scoreLog: 'secret log',
+          radarNote: 'pipeline',
+          trackingCode: 'T1',
+        },
+      ],
+      posts: [
+        { id: 'p1', handle: 'alice', text: 'hi', hidden: true, notes: 'ops' },
+        { id: 'p2', handle: 'alice', text: 'yo', hidden: false, notes: 'ops2' },
+      ],
+    })
+    expect(pub.posts).toHaveLength(1)
+    expect(pub.posts[0].id).toBe('p2')
+    expect(pub.posts[0].notes).toBeUndefined()
+    expect(pub.actors[0].notes).toBe('public note')
+    expect(pub.actors[0].scoreLog).toBeUndefined()
+    expect(pub.actors[0].radarNote).toBeUndefined()
+    expect(pub.actors[0].trackingCode).toBeUndefined()
   })
 })

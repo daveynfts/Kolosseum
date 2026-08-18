@@ -327,7 +327,7 @@ export function ScexTrackingPage() {
         })
         .catch(() => {
           if (cancelled || n !== seq) return
-          setDataset(getScexDataset())
+          setDataset((prev) => prev ?? getScexDataset())
         })
         .finally(() => {
           if (n !== seq) return

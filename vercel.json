@@ -30,27 +30,39 @@
     },
     {
       "source": "/r2/radar/:path*",
-      "destination": "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/radar/:path*"
+      "destination": "/api/media?key=radar/:path*"
     },
     {
       "source": "/r2/media/:path*",
-      "destination": "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/media/:path*"
+      "destination": "/api/media?key=media/:path*"
     },
     {
       "source": "/r2/scex-banner/:path*",
-      "destination": "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/scex-banner/:path*"
+      "destination": "/api/media?key=scex-banner/:path*"
     },
     {
       "source": "/r2/kol-reports/:path*",
-      "destination": "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/kol-reports/:path*"
+      "destination": "/api/media?key=kol-reports/:path*"
     },
     {
       "source": "/r2/RadarKOLsReport/:path*",
-      "destination": "https://pub-8288264395e64bebab09946b5bc0b740.r2.dev/RadarKOLsReport/:path*"
+      "destination": "/api/media?key=RadarKOLsReport/:path*"
     },
     {
       "source": "/r2/:path*",
       "destination": "/api/media?key=:path*"
+    },
+    {
+      "source": "/events",
+      "destination": "/"
+    },
+    {
+      "source": "/events/",
+      "destination": "/"
+    },
+    {
+      "source": "/events/:path*",
+      "destination": "/"
     },
     {
       "source": "/event",

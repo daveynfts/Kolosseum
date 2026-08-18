@@ -18,6 +18,11 @@ const ScexTrackingPage = lazy(() =>
     default: m.ScexTrackingPage,
   })),
 )
+const EventHubPage = lazy(() =>
+  import('./pages/EventHubPage.tsx').then((m) => ({
+    default: m.EventHubPage,
+  })),
+)
 const EventMapPage = lazy(() =>
   import('./pages/EventMapPage.tsx').then((m) => ({
     default: m.EventMapPage,
@@ -53,7 +58,7 @@ function normalizePathname(): string {
   return p || '/'
 }
 
-function getRoute(): 'map' | 'admin' | 'scex' | 'event' {
+function getRoute(): 'map' | 'admin' | 'scex' | 'event' | 'event-hub' {
   const h = window.location.hash.replace(/^#\/?/, '').toLowerCase()
   const path = normalizePathname()
   // Admin hash/path always wins so /scex#/admin and /admin work.
@@ -66,12 +71,14 @@ function getRoute(): 'map' | 'admin' | 'scex' | 'event' {
   ) {
     return 'admin'
   }
+  if (path === '/events' || path.startsWith('/events/')) return 'event-hub'
   if (path === '/event' || path.startsWith('/event/')) return 'event'
   if (path === '/scex' || path.startsWith('/scex/')) return 'scex'
   if (h === 'scex' || h.startsWith('scex/') || h.startsWith('scex?'))
     return 'scex'
   if (h === 'event' || h.startsWith('event/') || h.startsWith('event?'))
     return 'event'
+  if (h === 'events' || h.startsWith('events/')) return 'event-hub'
   return 'map'
 }
 
@@ -216,6 +223,19 @@ function Root() {
           <AdminGate>
             <AdminDashboard />
           </AdminGate>
+        </SceneErrorBoundary>
+      </Suspense>
+    )
+  }
+
+  if (route === 'event-hub') {
+    return (
+      <Suspense fallback={<RouteFallback />}>
+        <SceneErrorBoundary title="Event hub failed to render">
+          <div className="app-shell app-shell--map">
+            <SiteChrome active="event" overlay />
+            <EventHubPage />
+          </div>
         </SceneErrorBoundary>
       </Suspense>
     )

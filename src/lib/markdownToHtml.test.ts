@@ -30,4 +30,10 @@ describe('markdownToHtml images', () => {
     const html = markdownToHtml(`![chart](${R2})`)
     expect(html.includes('figure') || html.includes('<img')).toBe(true)
   })
+
+  it('does not turn data: URLs into hrefs', () => {
+    const html = markdownToHtml('[x](data:text/html,hi)')
+    expect(html).not.toContain('href="data:')
+    expect(html).toContain('x')
+  })
 })

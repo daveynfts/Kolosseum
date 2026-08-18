@@ -12,6 +12,7 @@ import { getAdminToken } from './feedStore'
 import { loadKolsWithSource } from './kolStore'
 
 const CACHE_KEY = 'vn-kol-map-scex-tracking-v1'
+const PUBLIC_CACHE_KEY = 'vn-kol-map-scex-tracking-public-v1'
 export const SCEX_TRACKING_EVENT = 'vn-kol-scex-tracking-updated'
 
 function apiUrl() {
@@ -26,16 +27,21 @@ function emit() {
   }
 }
 
-function writeCache(dataset: ScexDataset, emitEvent = true) {
+function writeCache(
+  dataset: ScexDataset,
+  emitEvent = true,
+  includeHidden = false,
+) {
+  const key = includeHidden ? CACHE_KEY : PUBLIC_CACHE_KEY
   let prev: string | null = null
   try {
-    prev = localStorage.getItem(CACHE_KEY)
+    prev = localStorage.getItem(key)
   } catch {
     prev = null
   }
   const next = JSON.stringify(dataset)
   try {
-    localStorage.setItem(CACHE_KEY, next)
+    localStorage.setItem(key, next)
   } catch {
     /* ignore */
   }
@@ -43,14 +49,21 @@ function writeCache(dataset: ScexDataset, emitEvent = true) {
   if (emitEvent && prev !== next) emit()
 }
 
-function readCache(): ScexDataset | null {
-  try {
-    const raw = localStorage.getItem(CACHE_KEY)
-    if (!raw) return null
-    return normalizeScexDataset(JSON.parse(raw))
-  } catch {
-    return null
+function readCache(includeHidden = false): ScexDataset | null {
+  const keys = includeHidden
+    ? [CACHE_KEY]
+    : [PUBLIC_CACHE_KEY, CACHE_KEY]
+  for (const key of keys) {
+    try {
+      const raw = localStorage.getItem(key)
+      if (!raw) continue
+      const ds = normalizeScexDataset(JSON.parse(raw))
+      if (ds) return ds
+    } catch {
+      /* try next */
+    }
   }
+  return null
 }
 
 export function getScexDataset(): ScexDataset {
@@ -63,11 +76,22 @@ export function seedScexDataset(): ScexDataset {
   ) as ScexDataset
 }
 
-export async function fetchServerScex(): Promise<ScexDataset | null> {
-  const res = await fetch(`${apiUrl()}?t=${Date.now()}`, {
+export async function fetchServerScex(opts?: {
+  includeHidden?: boolean
+}): Promise<ScexDataset | null> {
+  const includeHidden = opts?.includeHidden === true
+  const token = includeHidden ? getAdminToken().trim() : ''
+  const qs = new URLSearchParams({ t: String(Date.now()) })
+  if (includeHidden) qs.set('all', '1')
+  const headers: Record<string, string> = {
+    Accept: 'application/json',
+    'Cache-Control': 'no-cache',
+  }
+  if (token) headers.Authorization = `Bearer ${token}`
+  const res = await fetch(`${apiUrl()}?${qs}`, {
     method: 'GET',
     cache: 'no-store',
-    headers: { Accept: 'application/json', 'Cache-Control': 'no-cache' },
+    headers,
   })
   if (res.status === 404 || res.status === 503) return null
   if (!res.ok) throw new Error(`HTTP ${res.status}`)
@@ -79,17 +103,20 @@ export type LoadScexResult = {
   source: 'server' | 'cache' | 'seed'
 }
 
-export async function loadScexWithSource(): Promise<LoadScexResult> {
+export async function loadScexWithSource(opts?: {
+  includeHidden?: boolean
+}): Promise<LoadScexResult> {
+  const includeHidden = opts?.includeHidden === true
   try {
-    const server = await fetchServerScex()
+    const server = await fetchServerScex(opts)
     if (server) {
-      writeCache(server, false)
+      writeCache(server, false, includeHidden)
       return { dataset: server, source: 'server' }
     }
   } catch {
     /* cache/seed */
   }
-  const cache = readCache()
+  const cache = readCache(includeHidden)
   if (cache) return { dataset: cache, source: 'cache' }
   return { dataset: seedScexDataset(), source: 'seed' }
 }
@@ -110,7 +137,7 @@ export async function saveScexToServer(
 
   let baseUpdatedAt: string | undefined
   try {
-    const server = await fetchServerScex()
+    const server = await fetchServerScex({ includeHidden: true })
     baseUpdatedAt = server?.updatedAt
   } catch {
     return {
@@ -122,7 +149,7 @@ export async function saveScexToServer(
   let mapKols: { handle: string; rank?: string; tier?: number; score?: number }[] =
     []
   try {
-    const k = await loadKolsWithSource()
+    const k = await loadKolsWithSource({ includeHidden: true })
     mapKols = k.kols || []
   } catch {
     /* score without map join */
@@ -167,7 +194,7 @@ export async function saveScexToServer(
         status: res.status,
       }
     }
-    writeCache(toCache as ScexDataset)
+    writeCache(toCache as ScexDataset, true, true)
     return {
       ok: true,
       dataset: toCache as ScexDataset,
@@ -184,6 +211,7 @@ export async function saveScexToServer(
 export function clearScexCache() {
   try {
     localStorage.removeItem(CACHE_KEY)
+    localStorage.removeItem(PUBLIC_CACHE_KEY)
   } catch {
     /* ignore */
   }

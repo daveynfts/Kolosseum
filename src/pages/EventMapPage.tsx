@@ -482,6 +482,33 @@ export function EventMapPage() {
   const today = todayVn()
   const nowHm = nowHmVn()
   const nowDate = useMemo(() => new Date(nowTick), [nowTick])
+  const prevSlugRef = useRef(eventSlug)
+
+  useEffect(() => {
+    if (prevSlugRef.current === eventSlug) return
+    prevSlugRef.current = eventSlug
+    deepLinkApplied.current = false
+    archiveSortSynced.current = false
+    lastFitKeyRef.current = ''
+    const params = parseEventMapParams()
+    setDateFilter(params.date || 'all')
+    setSelectedId(params.id || null)
+    setTypeFilter('all')
+    setTimeOfDay('all')
+    setTbdFocus(false)
+    setQuery('')
+    setSortMode('upcoming')
+  }, [eventSlug])
+
+  useEffect(() => {
+    const onPop = () => {
+      const params = parseEventMapParams()
+      setDateFilter(params.date || 'all')
+      setSelectedId(params.id || null)
+    }
+    window.addEventListener('popstate', onPop)
+    return () => window.removeEventListener('popstate', onPop)
+  }, [])
 
   useEffect(() => {
     const mq = window.matchMedia('(max-width: 900px)')
@@ -723,6 +750,15 @@ export function EventMapPage() {
     nowHm,
     nowDate,
   ])
+
+  useEffect(() => {
+    if (!selectedId || !dataset) return
+    const inDataset = dataset.events.some((e) => e.id === selectedId)
+    if (!inDataset) return
+    if (!filtered.some((ev) => ev.id === selectedId)) {
+      setSelectedId(null)
+    }
+  }, [filtered, selectedId, dataset])
 
   const distanceLabelFor = (ev: SideEvent): string | null => {
     if (ev.locationTbd) return null
@@ -1333,6 +1369,7 @@ export function EventMapPage() {
       requestAnimationFrame(() => selectEvent(ev, true))
     } else {
       deepLinkApplied.current = true
+      setSelectedId(null)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dataset, mapReady])
@@ -1689,21 +1726,26 @@ export function EventMapPage() {
                   ? tt('expandList')
                   : tt('collapseList')}
             </button>
-            {editionMeta?.lumaUrl ? (
+            {(() => {
+              const lumaHref = safeHref(editionMeta?.lumaUrl)
+              const homeHref = safeHref(editionMeta?.homeUrl)
+              return (
+                <>
+            {lumaHref ? (
               <a
                 className="emp__btn"
-                href={editionMeta.lumaUrl}
+                href={lumaHref}
                 target="_blank"
                 rel="noopener noreferrer"
               >
                 Luma
               </a>
             ) : null}
-            {editionMeta?.homeUrl &&
+            {homeHref && editionMeta &&
             (isConvictionEdition(eventSlug) || editionMeta.logoUrl) ? (
               <a
                 className="emp__btn emp__btn--logo"
-                href={editionMeta.homeUrl}
+                href={homeHref}
                 target="_blank"
                 rel="noopener noreferrer"
                 title={editionMeta.title}
@@ -1718,16 +1760,22 @@ export function EventMapPage() {
                   decoding="async"
                 />
               </a>
-            ) : editionMeta?.homeUrl ? (
+            ) : homeHref && editionMeta ? (
               <a
                 className="emp__btn"
-                href={editionMeta.homeUrl}
+                href={homeHref}
                 target="_blank"
                 rel="noopener noreferrer"
               >
                 {editionMeta.title}
               </a>
             ) : null}
+                </>
+              )
+            })()}
+            <a className="emp__btn" href="/events">
+              Maps
+            </a>
           </div>
         </div>
       </header>

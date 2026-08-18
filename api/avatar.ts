@@ -17,6 +17,7 @@ import {
   r2PublicBase,
 } from '../lib/server/r2.js'
 import { enforcePublicRateLimit } from '../lib/server/apiHelpers.js'
+import { sniffImageContentType } from '../lib/server/sniffImage.js'
 
 function cors(res: VercelResponse) {
   res.setHeader('Access-Control-Allow-Origin', '*')
@@ -235,6 +236,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             ? 'image/webp'
             : 'image/jpeg'
       }
+
+      const sniffed = sniffImageContentType(
+        body,
+        contentType || String(req.headers['content-type'] || ''),
+      )
+      if (!sniffed) {
+        return res.status(415).json({
+          error: 'invalid_image',
+          message: 'Only PNG, JPEG, WebP, GIF allowed',
+        })
+      }
+      contentType = sniffed
 
       // Always store as .jpg key; content-type from source
       await r2PutBytes(client, key, body, contentType)

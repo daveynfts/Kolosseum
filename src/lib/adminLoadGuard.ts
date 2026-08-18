@@ -30,6 +30,8 @@ export function useRemoteDatasetLoad<T>(
     void load().then((data) => {
       if (cancelled || dirtyRef.current) return
       apply(data)
+    }).catch(() => {
+      /* Loaders should not reject; ignore so a throw cannot hang the editor. */
     })
     return () => {
       cancelled = true

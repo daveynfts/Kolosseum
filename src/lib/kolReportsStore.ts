@@ -204,7 +204,14 @@ export async function saveKolReportsToServer(
         message: 'Token sai — Apply token rồi Reload trước khi Save.',
       }
     }
-    baseUpdatedAt = server.ok ? server.dataset.updatedAt : undefined
+    if (!server.ok) {
+      return {
+        ok: false,
+        status: server.status,
+        message: 'Không đọc được bản server — thử lại trước khi Save.',
+      }
+    }
+    baseUpdatedAt = server.dataset.updatedAt
   } catch {
     return {
       ok: false,

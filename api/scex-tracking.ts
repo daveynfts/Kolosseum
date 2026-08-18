@@ -16,12 +16,14 @@ import {
 import {
   commitJsonReplace,
   enforcePublicRateLimit,
+  isAdmin,
   isGetOrHead,
   jsonError,
   parseJsonBody,
   requireAdmin,
   sendJson,
 } from '../lib/server/apiHelpers.js'
+import { publicScexDataset } from '../src/data/scexTracking.js'
 
 type Body = {
   version?: number
@@ -78,7 +80,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           message: 'No SCEX tracking data on server yet. Admin → SCEX → Save.',
         })
       }
-      return sendJson(req, res, 200, data)
+      const wantAll =
+        String(req.query.all || '') === '1' ||
+        String(req.query.scope || '') === 'admin'
+      if (wantAll && !isAdmin(req)) {
+        return sendJson(req, res, 401, {
+          error: 'unauthorized',
+          message: 'Admin token required for full SCEX dataset',
+        })
+      }
+      if (wantAll) return sendJson(req, res, 200, data)
+      return sendJson(req, res, 200, publicScexDataset(data))
     }
 
     if (req.method === 'PUT') {

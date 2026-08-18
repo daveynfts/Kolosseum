@@ -55,8 +55,24 @@ export function r2Bucket(): string {
  * Optional public CDN/base URL for media.
  * Supports daveynfts.com naming: R2_PUBLIC_URL (alias of R2_PUBLIC_BASE_URL).
  */
+/** Cloudflare “Public Development URL” hosts expose every object, including JSON. */
+export function isLeakyR2DevUrl(url: string): boolean {
+  const raw = String(url || '').trim()
+  if (!raw) return false
+  try {
+    return new URL(raw).hostname.toLowerCase().endsWith('.r2.dev')
+  } catch {
+    return /\.r2\.dev/i.test(raw)
+  }
+}
+
 export function r2PublicBase(): string {
-  return (env('R2_PUBLIC_BASE_URL') || env('R2_PUBLIC_URL')).replace(/\/$/, '')
+  const raw = (env('R2_PUBLIC_BASE_URL') || env('R2_PUBLIC_URL')).replace(
+    /\/$/,
+    '',
+  )
+  if (!raw || isLeakyR2DevUrl(raw)) return ''
+  return raw
 }
 
 export const FEED_OBJECT_KEY = 'feed/v1.json'
@@ -84,8 +100,10 @@ export const BANNER_IMAGES_PREFIX = 'scex-banner'
  * listed here — they are served only through `/api/*`.
  *
  * The Cloudflare R2 “Public Development URL” (pub-*.r2.dev) exposes every
- * object in the bucket. Disable that URL in the R2 dashboard after media is
- * served via `/r2/*` rewrites + `/api/media?key=`, or JSON keys leak.
+ * object in the bucket. `r2PublicBase()` ignores that host; `/r2/*` is
+ * proxied through `/api/media` (`isPublicMediaKey`). Disable the public
+ * development URL in the R2 dashboard so JSON keys cannot be fetched
+ * directly from pub-*.r2.dev.
  */
 export const R2_PUBLIC_MEDIA_PREFIXES = [
   'radar/',

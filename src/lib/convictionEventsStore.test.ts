@@ -50,4 +50,48 @@ describe('loadEventsWithSource', () => {
     await loadEventsWithSource({ slug: 'conviction-2026' })
     expect(urls[0]).toContain('event=conviction-2026')
   })
+
+  it('admin cache round-trips hidden events', async () => {
+    const hiddenSeed = {
+      ...CONVICTION_EVENTS_SEED,
+      events: [
+        ...CONVICTION_EVENTS_SEED.events,
+        {
+          ...CONVICTION_EVENTS_SEED.events[0],
+          id: 'hidden-test-event',
+          title: 'Hidden test',
+          hidden: true,
+        },
+      ],
+    }
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => {
+        return new Response(JSON.stringify(hiddenSeed), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        })
+      }),
+    )
+    const admin = await loadEventsWithSource({
+      includeHidden: true,
+      slug: 'conviction-2026',
+    })
+    expect(admin.dataset.events.some((e) => e.id === 'hidden-test-event')).toBe(
+      true,
+    )
+
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => new Response('fail', { status: 503 })),
+    )
+    const offline = await loadEventsWithSource({
+      includeHidden: true,
+      slug: 'conviction-2026',
+    })
+    expect(offline.source).toBe('cache')
+    expect(
+      offline.dataset.events.some((e) => e.id === 'hidden-test-event'),
+    ).toBe(true)
+  })
 })

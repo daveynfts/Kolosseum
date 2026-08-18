@@ -4,6 +4,7 @@ import {
   DEFAULT_EVENT_SLUG,
   LIVE_EVENT_SLUG,
   SEED_EVENT_EDITIONS,
+  catalogStatusFromSave,
   eventObjectKey,
   eventPublicPath,
   isLiveEventPath,
@@ -29,6 +30,13 @@ describe('event edition slugs', () => {
     expect(parseEventSlug('../secret')).toBeNull()
     expect(parseEventSlug('events/conviction-2026')).toBeNull()
     expect(parseEventSlug('')).toBeNull()
+  })
+
+  it('keeps archived seed status unless archived is explicit', () => {
+    expect(catalogStatusFromSave(undefined, 'archive')).toBe('archive')
+    expect(catalogStatusFromSave(true, 'live')).toBe('archive')
+    expect(catalogStatusFromSave(false, 'archive')).toBe('live')
+    expect(catalogStatusFromSave(undefined, 'live')).toBe('live')
   })
 
   it('parses /event as the live map and keeps conviction-2026 archived', () => {

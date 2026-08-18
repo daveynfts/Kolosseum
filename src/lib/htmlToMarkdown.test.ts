@@ -91,6 +91,17 @@ describe('html ↔ markdown image roundtrip', () => {
     const md = htmlToMarkdown(html, { loose: true })
     expect(md).toBe(`![](${SAMPLE_URL})`)
   })
+
+  it('drops javascript and data hrefs', () => {
+    const html =
+      '<p><a href="javascript:alert(1)">x</a> <a href="data:text/html,hi">y</a> <a href="https://x.com/a">z</a></p>'
+    const md = htmlToMarkdown(html, { loose: true })
+    expect(md).not.toContain('javascript:')
+    expect(md).not.toContain('data:text/html')
+    expect(md).toContain('[z](https://x.com/a)')
+    expect(md).toContain('x')
+    expect(md).toContain('y')
+  })
 })
 
 describe('blockquote roundtrip', () => {

@@ -338,7 +338,7 @@ export function AdminFeedEditor({ kols, onToast, addSignal = 0 }: Props) {
     if (!feed) return
     const n = countArchivablePosts(feed)
     if (n === 0) {
-      onToast('Không có post nào cũ hơn 7 ngày trong feed live')
+      onToast('Không có post nào cũ hơn 14 ngày trong feed live')
       return
     }
     if (
@@ -707,7 +707,7 @@ export function AdminFeedEditor({ kols, onToast, addSignal = 0 }: Props) {
                       type="button"
                       className="btn btn--primary"
                       onClick={() => void onSaveServer()}
-                      disabled={savingServer}
+                      disabled={savingServer || !dirty}
                     >
                       {savingServer ? 'Saving…' : 'Save (R2)'}
                     </button>

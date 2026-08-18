@@ -4,6 +4,7 @@
  */
 
 import { isGenericImageAlt } from './imageAlt'
+import { isSafeHttpUrl } from './safeUrl'
 
 function cleanText(s: string): string {
   return s
@@ -69,7 +70,7 @@ function inlineFromNode(node: Node): string {
   if (tag === 'a') {
     const href = el.getAttribute('href') || ''
     const label = cleanText(childrenInline(el))
-    if (!href || href.startsWith('javascript:')) return label
+    if (!href || !isSafeHttpUrl(href)) return label
     return `[${label || href}](${href})`
   }
   if (tag === 'strong' || tag === 'b') {

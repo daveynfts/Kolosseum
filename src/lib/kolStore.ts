@@ -4,6 +4,7 @@ import { withBase } from './base'
 import { getAdminToken } from './feedStore'
 
 const STORAGE_KEY = 'vn-kol-map-admin-v4'
+const PUBLIC_CACHE_KEY = 'vn-kol-map-public-v4'
 const STORAGE_VERSION = 4
 export const KOLS_EVENT = 'vn-kol-kols-updated'
 /** Global default Surf mock PDF (R2 public URL) */
@@ -196,6 +197,7 @@ export async function fetchServerKols(opts?: {
 export async function loadKolsWithSource(opts?: {
   includeHidden?: boolean
 }): Promise<LoadKolsResult> {
+  const includeHidden = opts?.includeHidden === true
   let server: KolStorePayload | null = null
   try {
     server = await fetchServerKols(opts)
@@ -208,17 +210,19 @@ export async function loadKolsWithSource(opts?: {
       if (server.surfDefaultPdfUrl) {
         setSurfDefaultPdfUrl(server.surfDefaultPdfUrl)
       }
+      const payload = {
+        ...server,
+        kols,
+        version: server.version ?? STORAGE_VERSION,
+        updatedAt: server.updatedAt || new Date().toISOString(),
+        count: kols.length,
+        surfDefaultPdfUrl:
+          server.surfDefaultPdfUrl || getSurfDefaultPdfUrl() || undefined,
+      }
+      // Public map must not clobber the admin mirror (hidden KOLs).
       localStorage.setItem(
-        STORAGE_KEY,
-        JSON.stringify({
-          ...server,
-          kols,
-          version: server.version ?? STORAGE_VERSION,
-          updatedAt: server.updatedAt || new Date().toISOString(),
-          count: kols.length,
-          surfDefaultPdfUrl:
-            server.surfDefaultPdfUrl || getSurfDefaultPdfUrl() || undefined,
-        }),
+        includeHidden ? STORAGE_KEY : PUBLIC_CACHE_KEY,
+        JSON.stringify(payload),
       )
     } catch {
       /* ignore */
@@ -232,23 +236,28 @@ export async function loadKolsWithSource(opts?: {
     }
   }
 
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY)
-    if (raw) {
-      const data = JSON.parse(raw) as KolStorePayload
-      if (data?.kols?.length) {
-        if (data.surfDefaultPdfUrl) setSurfDefaultPdfUrl(data.surfDefaultPdfUrl)
-        return {
-          kols: data.kols,
-          source: 'local',
-          updatedAt: data.updatedAt ?? null,
-          surfDefaultPdfUrl:
-            data.surfDefaultPdfUrl || getSurfDefaultPdfUrl() || undefined,
+  const cacheKeys = includeHidden
+    ? [STORAGE_KEY]
+    : [PUBLIC_CACHE_KEY, STORAGE_KEY]
+  for (const key of cacheKeys) {
+    try {
+      const raw = localStorage.getItem(key)
+      if (raw) {
+        const data = JSON.parse(raw) as KolStorePayload
+        if (data?.kols?.length) {
+          if (data.surfDefaultPdfUrl) setSurfDefaultPdfUrl(data.surfDefaultPdfUrl)
+          return {
+            kols: includeHidden ? data.kols : data.kols.filter((k) => !k.hidden),
+            source: 'local',
+            updatedAt: data.updatedAt ?? null,
+            surfDefaultPdfUrl:
+              data.surfDefaultPdfUrl || getSurfDefaultPdfUrl() || undefined,
+          }
         }
       }
+    } catch {
+      /* try next key */
     }
-  } catch {
-    /* ignore */
   }
 
   return {
@@ -265,7 +274,8 @@ export type ServerSaveResult =
 
 /**
  * Merge local admin list with current server copy so missing
- * surfReportPdfUrl / avatarUrl on a stale draft don't erase R2 values.
+ * surfReportPdfUrl / avatarUrl on a stale draft don't erase R2 values,
+ * and KOLs that exist only on the server (e.g. hidden) are not dropped.
  */
 export function mergeKolsPreserveServerExtras(
   local: Kol[],
@@ -276,7 +286,7 @@ export function mergeKolsPreserveServerExtras(
   const byHandle = new Map(
     server.map((k) => [String(k.handle).toLowerCase(), k]),
   )
-  return local.map((k) => {
+  const merged = local.map((k) => {
     const s =
       byId.get(k.id) || byHandle.get(String(k.handle).toLowerCase()) || null
     if (!s) return k
@@ -289,6 +299,16 @@ export function mergeKolsPreserveServerExtras(
     if (!localAv && serverAv) next.avatarUrl = serverAv
     return next
   })
+  const seenIds = new Set(merged.map((k) => k.id))
+  const seenHandles = new Set(
+    merged.map((k) => String(k.handle).toLowerCase()),
+  )
+  for (const s of server) {
+    if (seenIds.has(s.id)) continue
+    if (seenHandles.has(String(s.handle).toLowerCase())) continue
+    merged.push(s)
+  }
+  return merged
 }
 
 /** PUT /api/kols + local mirror. Uses FEED_ADMIN_TOKEN. */

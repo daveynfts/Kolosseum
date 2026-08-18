@@ -1,25 +1,29 @@
 /**
  * KOL avatars on Cloudflare R2 (prefix radar/avatars).
  *
- * - DOM <img>: direct R2 public URL (no crossOrigin unless CORS is configured)
- * - WebGL textures: same-origin /r2/* rewrite → R2 (TextureLoader CORS)
+ * - DOM <img>: same-origin /r2/* (proxied via /api/media)
+ * - WebGL textures: same-origin /r2/* rewrite (TextureLoader CORS)
  * - Optional per-KOL `avatarUrl` override (admin-edited R2 link)
  *
- * Override CDN: VITE_R2_PUBLIC_URL
+ * Override CDN: VITE_R2_PUBLIC_URL (must not be a pub-*.r2.dev host)
  */
-
-const DEFAULT_R2_PUBLIC =
-  'https://pub-8288264395e64bebab09946b5bc0b740.r2.dev'
 
 const RADAR_PREFIX = 'radar'
 
-/** Public R2 base (no trailing slash). */
+/** Public R2 / custom CDN base (no trailing slash). Never default to pub-*.r2.dev. */
 export function r2PublicBase(): string {
   const fromEnv =
     (import.meta.env.VITE_R2_PUBLIC_URL as string | undefined) ||
     (import.meta.env.VITE_AVATAR_CDN_BASE as string | undefined) ||
-    DEFAULT_R2_PUBLIC
-  return String(fromEnv).replace(/\/$/, '')
+    ''
+  const raw = String(fromEnv).replace(/\/$/, '')
+  if (!raw) return ''
+  try {
+    if (new URL(raw).hostname.toLowerCase().endsWith('.r2.dev')) return ''
+  } catch {
+    return ''
+  }
+  return raw
 }
 
 /**
@@ -55,9 +59,11 @@ export function avatarHandleVariants(handle: string): string[] {
   return [...out]
 }
 
-/** Direct R2 URL — best for <img> display. */
+/** Same-origin /r2 path, or custom CDN when VITE_R2_PUBLIC_URL is set. */
 export function xAvatarUrl(handle: string): string {
-  return `${r2PublicBase()}/${avatarObjectKey(handle)}`
+  const key = avatarObjectKey(handle)
+  const base = r2PublicBase()
+  return base ? `${base}/${key}` : `/r2/${key}`
 }
 
 /**
@@ -69,7 +75,7 @@ export function xAvatarUrlCandidates(handle: string): string[] {
   const urls: string[] = []
   for (const h of avatarHandleVariants(handle)) {
     const key = avatarObjectKey(h)
-    urls.push(`${base}/${key}`)
+    if (base) urls.push(`${base}/${key}`)
     urls.push(`/r2/${key}`)
   }
   return [...new Set(urls)]
@@ -157,13 +163,15 @@ export function toTextureSafeUrl(pathOrUrl: string, fallbackHandle?: string): st
   if (/^https?:\/\//i.test(raw)) {
     try {
       const u = new URL(raw)
+      if (u.hostname.toLowerCase().endsWith('.r2.dev')) {
+        const key = u.pathname.replace(/^\/+/, '')
+        return `/r2/${key}${u.search}`
+      }
       const base = r2PublicBase()
-      // Our public R2 or custom CDN base → same-origin rewrite
       if (base && raw.startsWith(base + '/')) {
         const key = raw.slice(base.length + 1)
         return `/r2/${key}`
       }
-      // Any …/radar/avatars/… path on R2-like host
       const m = u.pathname.match(/\/(radar\/avatars\/[^/?#]+)$/i)
       if (m) return `/r2/${m[1]}`
     } catch {
@@ -180,7 +188,19 @@ export function toTextureSafeUrl(pathOrUrl: string, fallbackHandle?: string): st
  */
 export function resolveMediaUrl(path: string): string {
   if (!path) return path
-  if (/^(https?:|data:|blob:)/i.test(path)) return path
+  if (/^(data:|blob:)/i.test(path)) return path
+  if (/^https?:\/\//i.test(path)) {
+    try {
+      const u = new URL(path)
+      if (u.hostname.toLowerCase().endsWith('.r2.dev')) {
+        const key = u.pathname.replace(/^\/+/, '')
+        return `/r2/${key}${u.search}`
+      }
+    } catch {
+      /* keep */
+    }
+    return path
+  }
 
   const p = path.startsWith('/') ? path : `/${path}`
   const m = p.match(/^\/avatars\/([^/?#]+)$/i)
@@ -193,11 +213,13 @@ export function resolveMediaUrl(path: string): string {
   }
 
   if (p.startsWith('/radar/')) {
-    return `${r2PublicBase()}${p}`
+    const base = r2PublicBase()
+    return base ? `${base}${p}` : `/r2${p}`
   }
 
   if (p.startsWith('/r2/')) {
-    return `${r2PublicBase()}${p.slice(3)}`
+    const base = r2PublicBase()
+    return base ? `${base}${p.slice(3)}` : p
   }
 
   return p

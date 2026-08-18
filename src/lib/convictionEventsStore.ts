@@ -76,6 +76,7 @@ function writeCache(
   dataset: SideEventDataset,
   emitEvent = true,
   slug = dataset.event,
+  includeHidden = false,
 ) {
   const key = cacheKey(resolveSlug(slug))
   let prev: string | null = null
@@ -84,10 +85,21 @@ function writeCache(
   } catch {
     prev = null
   }
-  const publicView = normalizeDataset(dataset, {
+  if (!includeHidden && prev) {
+    try {
+      const existing = JSON.parse(prev) as { events?: Array<{ hidden?: boolean }> }
+      if (existing.events?.some((e) => e.hidden === true)) {
+        return
+      }
+    } catch {
+      /* write through */
+    }
+  }
+  const stored = normalizeDataset(dataset, {
+    includeHidden: true,
     fallbackSlug: resolveSlug(slug),
   })
-  const next = JSON.stringify(publicView || dataset)
+  const next = JSON.stringify(stored || dataset)
   try {
     localStorage.setItem(key, next)
   } catch {
@@ -96,18 +108,37 @@ function writeCache(
   if (emitEvent && prev !== next) emit()
 }
 
-function readCache(slug?: string | null): SideEventDataset | null {
+function readCache(
+  slug?: string | null,
+  includeHidden = false,
+): SideEventDataset | null {
   const s = resolveSlug(slug)
   try {
     const raw = localStorage.getItem(cacheKey(s))
-    if (raw) return normalizeDataset(JSON.parse(raw), { fallbackSlug: s })
+    if (raw) {
+      return normalizeDataset(JSON.parse(raw), {
+        includeHidden,
+        fallbackSlug: s,
+      })
+    }
     if (s === CONVICTION_2026_SLUG) {
       const legacy = localStorage.getItem(LEGACY_CACHE_KEY)
       if (legacy) {
-        const n = normalizeDataset(JSON.parse(legacy), { fallbackSlug: s })
+        const n = normalizeDataset(JSON.parse(legacy), {
+          includeHidden,
+          fallbackSlug: s,
+        })
         if (n) {
           try {
-            localStorage.setItem(cacheKey(s), JSON.stringify(n))
+            localStorage.setItem(
+              cacheKey(s),
+              JSON.stringify(
+                normalizeDataset(JSON.parse(legacy), {
+                  includeHidden: true,
+                  fallbackSlug: s,
+                }) || n,
+              ),
+            )
           } catch {
             /* ignore */
           }
@@ -189,16 +220,14 @@ export async function loadEventsWithSource(
   try {
     const server = await fetchServerEvents(opts)
     if (server) {
-      writeCache(server, false, slug)
+      writeCache(server, false, slug, opts.includeHidden === true)
       return { dataset: server, source: 'server' }
     }
   } catch {
     /* fall through */
   }
-  if (!opts.includeHidden) {
-    const cache = readCache(slug)
-    if (cache) return { dataset: cache, source: 'cache' }
-  }
+  const cache = readCache(slug, opts.includeHidden === true)
+  if (cache) return { dataset: cache, source: 'cache' }
   return {
     dataset: seedConvictionEvents(opts.includeHidden === true, slug),
     source: 'seed',
@@ -285,7 +314,7 @@ export async function saveEventsToServer(
       ...normalized,
       updatedAt: j.updatedAt || normalized.updatedAt,
     }
-    writeCache(saved, true, slug)
+    writeCache(saved, true, slug, true)
     return {
       ok: true,
       dataset: saved,

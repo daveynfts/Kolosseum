@@ -24,6 +24,11 @@ import {
   r2PublicBase,
   r2PutBytes,
 } from '../lib/server/r2.js'
+import {
+  BodyTooLargeError,
+  readRawBodyLimited,
+  sniffImageContentType,
+} from '../lib/server/sniffImage.js'
 
 export const config = {
   api: {
@@ -36,13 +41,6 @@ export const config = {
 const PREFIX = 'kol-reports/images'
 const SURF_PREFIX = 'RadarKOLsReport'
 const MAX_BYTES = 4.5 * 1024 * 1024
-const ALLOWED = new Set([
-  'image/png',
-  'image/jpeg',
-  'image/jpg',
-  'image/webp',
-  'image/gif',
-])
 
 function cors(res: VercelResponse) {
   res.setHeader('Access-Control-Allow-Origin', '*')
@@ -65,41 +63,6 @@ function extFromType(ct: string): string {
   if (ct.includes('webp')) return 'webp'
   if (ct.includes('gif')) return 'gif'
   return 'jpg'
-}
-
-function snifContentType(body: Buffer, hinted: string): string | null {
-  if (body.length >= 8) {
-    if (
-      body[0] === 0x89 &&
-      body[1] === 0x50 &&
-      body[2] === 0x4e &&
-      body[3] === 0x47
-    )
-      return 'image/png'
-    if (body[0] === 0xff && body[1] === 0xd8 && body[2] === 0xff)
-      return 'image/jpeg'
-    if (
-      body[0] === 0x47 &&
-      body[1] === 0x49 &&
-      body[2] === 0x46 &&
-      body[3] === 0x38
-    )
-      return 'image/gif'
-    if (
-      body[0] === 0x52 &&
-      body[1] === 0x49 &&
-      body[2] === 0x46 &&
-      body[3] === 0x46 &&
-      body[8] === 0x57 &&
-      body[9] === 0x45 &&
-      body[10] === 0x42 &&
-      body[11] === 0x50
-    )
-      return 'image/webp'
-  }
-  const h = (hinted || '').toLowerCase().split(';')[0].trim()
-  if (ALLOWED.has(h)) return h === 'image/jpg' ? 'image/jpeg' : h
-  return null
 }
 
 /** One-shot unique name (no overwrite) */
@@ -163,27 +126,6 @@ function sanitizeSurfFilename(raw: string): string {
   return name
 }
 
-async function readRawBody(req: VercelRequest): Promise<Buffer> {
-  // Prefer streaming the request (bodyParser: false). Fall back if already buffered.
-  const raw = req.body
-  if (raw && (Buffer.isBuffer(raw) || raw instanceof Uint8Array)) {
-    return Buffer.from(raw)
-  }
-  if (typeof raw === 'string' && raw.length > 0) {
-    if (raw.startsWith('data:') && raw.includes('base64,')) {
-      const b64 = raw.split('base64,')[1] || ''
-      return Buffer.from(b64, 'base64')
-    }
-    // latin1 preserves byte values 0–255 (utf8 would corrupt binary)
-    return Buffer.from(raw, 'latin1')
-  }
-  const chunks: Buffer[] = []
-  for await (const chunk of req) {
-    chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk))
-  }
-  return Buffer.concat(chunks)
-}
-
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   cors(res)
   if (req.method === 'OPTIONS') return res.status(204).end()
@@ -213,7 +155,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   try {
     const kind = String(req.query.kind || '').toLowerCase()
-    const body = await readRawBody(req)
+    const body = await readRawBodyLimited(req, MAX_BYTES)
     const qName = String(req.query.filename || req.query.name || '')
     const hName = String(req.headers['x-filename'] || '')
     const rawName = (qName || hName || '').toLowerCase()
@@ -295,7 +237,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     const hinted = String(req.headers['content-type'] || '')
-    const contentType = snifContentType(body, hinted)
+    const contentType = sniffImageContentType(body, hinted)
     if (!contentType) {
       return res.status(415).json({
         error: 'invalid_image',
@@ -374,6 +316,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       publicBase: publicBase || null,
     })
   } catch (e) {
+    if (e instanceof BodyTooLargeError) {
+      return res.status(413).json({
+        error: 'too_large',
+        message: `Max ${MAX_BYTES} bytes`,
+      })
+    }
     console.error('[api/kol-report-image]', e)
     return res.status(500).json({
       error: 'server_error',

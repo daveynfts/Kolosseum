@@ -174,26 +174,22 @@ export function hasRecentFollowersOverride(): boolean {
 }
 
 export async function fetchServerRecentFollowers(): Promise<RecentFollowersPayload | null> {
-  try {
-    const res = await fetch(`${apiUrl()}?t=${Date.now()}`, {
-      method: 'GET',
-      cache: 'no-store',
-      headers: { Accept: 'application/json', 'Cache-Control': 'no-cache' },
-    })
-    if (res.status === 404 || res.status === 503) return null
-    if (!res.ok) throw new Error(`HTTP ${res.status}`)
-    const data = (await res.json()) as RecentFollowersPayload
-    if (!data?.map || typeof data.map !== 'object') return null
-    const map = normalizeMap(data.map)
-    const smartMap = normalizeSmartMap(data.smartMap)
-    if (!Object.keys(map).length && !Object.keys(smartMap).length) return null
-    return {
-      ...data,
-      map,
-      smartMap: Object.keys(smartMap).length ? smartMap : undefined,
-    }
-  } catch {
-    return null
+  const res = await fetch(`${apiUrl()}?t=${Date.now()}`, {
+    method: 'GET',
+    cache: 'no-store',
+    headers: { Accept: 'application/json', 'Cache-Control': 'no-cache' },
+  })
+  if (res.status === 404 || res.status === 503) return null
+  if (!res.ok) throw new Error(`HTTP ${res.status}`)
+  const data = (await res.json()) as RecentFollowersPayload
+  if (!data?.map || typeof data.map !== 'object') return null
+  const map = normalizeMap(data.map)
+  const smartMap = normalizeSmartMap(data.smartMap)
+  if (!Object.keys(map).length && !Object.keys(smartMap).length) return null
+  return {
+    ...data,
+    map,
+    smartMap: Object.keys(smartMap).length ? smartMap : undefined,
   }
 }
 
@@ -205,15 +201,19 @@ export type LoadFollowersResult = {
 }
 
 export async function loadRecentFollowersWithSource(): Promise<LoadFollowersResult> {
-  const server = await fetchServerRecentFollowers()
-  if (server) {
-    writeCache(server.map, server)
-    return {
-      map: server.map,
-      smartMap: server.smartMap ?? {},
-      source: 'server',
-      updatedAt: server.updatedAt ?? null,
+  try {
+    const server = await fetchServerRecentFollowers()
+    if (server) {
+      writeCache(server.map, server)
+      return {
+        map: server.map,
+        smartMap: server.smartMap ?? {},
+        source: 'server',
+        updatedAt: server.updatedAt ?? null,
+      }
     }
+  } catch {
+    /* cache / seed */
   }
   const cache = readCache()
   if (cache) {
@@ -270,7 +270,15 @@ export async function saveRecentFollowersToServer(
     }
   }
 
-  const server = await fetchServerRecentFollowers()
+  let server: RecentFollowersPayload | null
+  try {
+    server = await fetchServerRecentFollowers()
+  } catch {
+    return {
+      ok: false,
+      error: 'Không đọc được bản server — thử lại trước khi Save.',
+    }
+  }
   const next = normalizeMap(map)
   const mergedMap = mergeFollowersMapsForPublish(server?.map, next)
   const mergedSmart = mergeSmartFollowersMapsForPublish(

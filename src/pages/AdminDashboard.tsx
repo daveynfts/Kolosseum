@@ -32,6 +32,7 @@ import { getAdminToken, setAdminToken } from '../lib/feedStore'
 import { FIELD_META, SOURCE_LABELS, type FieldSource } from '../lib/fieldMeta'
 import { kolMatchesAdminQuery } from '../lib/adminSearch'
 import { normalizeAvatarUrl, xAvatarUrl } from '../lib/avatar'
+import { safeHref } from '../lib/safeUrl'
 import {
   confirmDiscardUnsaved,
   datasetForAdminTab,
@@ -94,6 +95,12 @@ const DATASET_FILE: Record<AdminDatasetId, string> = {
 
 function tabFromHash(): Tab {
   return parseAdminTabFromHash(window.location.hash)
+}
+
+function optionalNumber(raw: string): number | undefined {
+  if (raw === '') return undefined
+  const n = Number(raw)
+  return Number.isFinite(n) ? n : undefined
 }
 
 export function AdminDashboard() {
@@ -1048,16 +1055,16 @@ export function AdminDashboard() {
                                 Xóa override
                               </button>
                             )}
-                            {draft.avatarUrl && (
+                            {draft.avatarUrl && safeHref(draft.avatarUrl) ? (
                               <a
                                 className="btn btn--sm"
-                                href={draft.avatarUrl}
+                                href={safeHref(draft.avatarUrl)}
                                 target="_blank"
                                 rel="noreferrer"
                               >
                                 Mở link
                               </a>
-                            )}
+                            ) : null}
                           </div>
                           <span className="admin-hint">
                             Dán public URL R2 (vd.{' '}
@@ -1246,7 +1253,7 @@ export function AdminDashboard() {
                             e.target.value.trim() || undefined,
                           )
                         }
-                        placeholder="https://pub-xxxx.r2.dev/RadarKOLsReport/….pdf"
+                            placeholder="/r2/RadarKOLsReport/….pdf"
                         spellCheck={false}
                         autoComplete="off"
                       />
@@ -1271,10 +1278,10 @@ export function AdminDashboard() {
                           }}
                         />
                       </label>
-                      {draft.surfReportPdfUrl ? (
+                      {safeHref(draft.surfReportPdfUrl) ? (
                         <a
                           className="btn btn--sm"
-                          href={draft.surfReportPdfUrl}
+                          href={safeHref(draft.surfReportPdfUrl)}
                           target="_blank"
                           rel="noreferrer"
                         >
@@ -1406,7 +1413,7 @@ export function AdminDashboard() {
                             'activity7dPosts',
                             e.target.value === ''
                               ? undefined
-                              : Number(e.target.value),
+                              : optionalNumber(e.target.value),
                           )
                         }
                       />
@@ -1420,7 +1427,7 @@ export function AdminDashboard() {
                             'activity7dLikes',
                             e.target.value === ''
                               ? undefined
-                              : Number(e.target.value),
+                              : optionalNumber(e.target.value),
                           )
                         }
                       />
@@ -1434,7 +1441,7 @@ export function AdminDashboard() {
                             'activity7dViews',
                             e.target.value === ''
                               ? undefined
-                              : Number(e.target.value),
+                              : optionalNumber(e.target.value),
                           )
                         }
                       />
@@ -1449,7 +1456,7 @@ export function AdminDashboard() {
                             'activity7dScore',
                             e.target.value === ''
                               ? undefined
-                              : Number(e.target.value),
+                              : optionalNumber(e.target.value),
                           )
                         }
                       />

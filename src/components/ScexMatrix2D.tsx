@@ -760,6 +760,7 @@ export function ScexMatrix2D({
                         handle={a.handle}
                         name={a.displayName}
                         size={Math.max(24, Math.round(diam - 8))}
+                        liveFallback
                       />
                     </span>
                     {onMap && <span className="scex-bubble__map-dot" />}

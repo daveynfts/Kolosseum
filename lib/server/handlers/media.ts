@@ -20,6 +20,18 @@ import {
   r2GetObject,
 } from '../r2.js'
 
+/**
+ * Misses must never be cached. A vercel.json `headers` rule applies to every
+ * response on its path regardless of status, so the old /r2/* rules stamped
+ * their TTL onto 404s too — an avatar warmed minutes later kept serving a
+ * stale 404 for a week, and a missing media/ object for a year. Those rules
+ * are gone: cacheForKey below is the only source of truth for /r2/* caching,
+ * because only the handler can tell a hit from a miss.
+ */
+function noStore(res: VercelResponse): void {
+  res.setHeader('Cache-Control', 'no-store')
+}
+
 function cacheForKey(key: string): string {
   if (key.startsWith('media/')) {
     return 'public, max-age=31536000, immutable'
@@ -49,6 +61,7 @@ async function servePublicKey(
     return jsonError(res, 400, 'invalid_key')
   }
   if (!isPublicMediaKey(key)) {
+    noStore(res)
     return jsonError(res, 404, 'not_found')
   }
   if (!r2Configured()) {
@@ -62,6 +75,7 @@ async function servePublicKey(
   try {
     const obj = await r2GetObject(client, key)
     if (!obj) {
+      noStore(res)
       return jsonError(res, 404, 'not_found')
     }
     res.setHeader('Content-Type', obj.contentType || 'application/octet-stream')
@@ -111,6 +125,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
     const obj = await r2GetObject(client, mediaObjectKey(id))
     if (!obj) {
+      noStore(res)
       return jsonError(res, 404, 'not_found')
     }
     res.setHeader('Content-Type', obj.contentType || 'image/jpeg')

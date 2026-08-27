@@ -85,8 +85,11 @@ console.log(
 
 async function exists(handle) {
   try {
+    // Bearer skips the 90/min public GET limit — without it the probe starts
+    // returning 429, every handle reads as missing and gets re-uploaded.
     const r = await fetch(
       `${base}/api/avatar?handle=${encodeURIComponent(handle)}`,
+      { headers: { Authorization: `Bearer ${token}` } },
     )
     if (!r.ok) return false
     const len = Number(r.headers.get('content-length') || 0)
@@ -156,4 +159,14 @@ async function worker() {
 
 await Promise.all(Array.from({ length: concurrency }, () => worker()))
 console.log(JSON.stringify({ ...stats, fails: fails.slice(0, 30) }, null, 2))
-if (stats.fail > 0) process.exitCode = 1
+
+if (fails.length) {
+  const logPath = path.join(ROOT, 'data/internal/scex-avatar-fails.json')
+  fs.mkdirSync(path.dirname(logPath), { recursive: true })
+  fs.writeFileSync(logPath, JSON.stringify(fails, null, 2) + '\n')
+  console.log('Wrote fail log →', logPath)
+}
+
+// Dead/renamed X accounts always fail, so a few failures are normal and a
+// re-run picks up the rest. Only a total wipeout means the warm itself broke.
+if (stats.fail > 0 && !stats.ok && !stats.skip) process.exit(1)

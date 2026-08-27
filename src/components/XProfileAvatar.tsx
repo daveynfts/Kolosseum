@@ -10,8 +10,10 @@ interface Props {
   size?: number
   className?: string
   /**
-   * After R2/unavatar fail, try live fxtwitter once.
-   * Default false — long lists (TwitterScore 1k+) must not hammer live API.
+   * After R2/unavatar fail, try live fxtwitter once. Lookups are capped
+   * globally (see LIVE_MAX_* below), so a long list degrades to initials
+   * rather than hammering the live API.
+   * Default false — leave it off for lists that are expected to miss in bulk.
    */
   liveFallback?: boolean
 }
@@ -22,6 +24,40 @@ function upgradeTwimg(url: string): string {
     .replace('_bigger.', '_400x400.')
     .replace('_mini.', '_400x400.')
     .split('?')[0]
+}
+
+/**
+ * Live lookups are the last resort for avatars missing from R2. The SCEX
+ * matrix renders 300+ bubbles at once, so an unbounded stampede would
+ * rate-limit fxtwitter exactly the way it already rate-limits unavatar.
+ * Cap concurrency and total lookups per page load; past the cap we show
+ * initials instead of queueing requests that would 429 anyway.
+ */
+const LIVE_MAX_CONCURRENT = 3
+const LIVE_MAX_PER_PAGELOAD = 60
+let liveInFlight = 0
+let liveStarted = 0
+const liveWaiters: Array<() => void> = []
+
+async function acquireLiveSlot(): Promise<boolean> {
+  if (liveStarted >= LIVE_MAX_PER_PAGELOAD) return false
+  liveStarted += 1
+  if (liveInFlight < LIVE_MAX_CONCURRENT) {
+    liveInFlight += 1
+    return true
+  }
+  // Slot is handed over directly by releaseLiveSlot, so inFlight stays put.
+  await new Promise<void>((resolve) => liveWaiters.push(resolve))
+  return true
+}
+
+function releaseLiveSlot(): void {
+  const next = liveWaiters.shift()
+  if (next) {
+    next()
+    return
+  }
+  liveInFlight -= 1
 }
 
 async function fetchLiveAvatarUrl(handle: string): Promise<string | null> {
@@ -112,7 +148,17 @@ export function XProfileAvatar({
       return
     }
     triedLive.current = true
-    const url = await fetchLiveAvatarUrl(clean)
+    if (!(await acquireLiveSlot())) {
+      setFailed(true)
+      setStatus('error')
+      return
+    }
+    let url: string | null = null
+    try {
+      url = await fetchLiveAvatarUrl(clean)
+    } finally {
+      releaseLiveSlot()
+    }
     if (url) {
       setLiveUrl(url)
       setIdx(0)

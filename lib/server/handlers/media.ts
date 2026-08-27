@@ -21,6 +21,15 @@ import {
 } from '../r2.js'
 
 /**
+ * One /scex view legitimately pulls ~700 avatars through this proxy, so the
+ * old 120/min ceiling tripped on an honest page load whenever the edge cache
+ * was cold — a fresh deploy, a purge, a newly warmed batch — and answered 429
+ * for most of them. Warm responses are served by the edge without invoking
+ * this function at all, so this ceiling only ever meets genuine misses.
+ */
+const PUBLIC_MEDIA_RATE_PER_MIN = 1000
+
+/**
  * Misses must never be cached. A vercel.json `headers` rule applies to every
  * response on its path regardless of status, so the old /r2/* rules stamped
  * their TTL onto 404s too — an avatar warmed minutes later kept serving a
@@ -49,7 +58,10 @@ async function servePublicKey(
   req: VercelRequest,
   res: VercelResponse,
 ): Promise<VercelResponse> {
-  if (!enforcePublicRateLimit(req, res, 'r2-public', 120)) return res
+  if (
+    !enforcePublicRateLimit(req, res, 'r2-public', PUBLIC_MEDIA_RATE_PER_MIN)
+  )
+    return res
 
   const raw = Array.isArray(req.query.key)
     ? req.query.key.join('/')

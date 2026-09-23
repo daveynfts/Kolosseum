@@ -235,3 +235,29 @@
 .app-shell--arena .scex-detail__tab-n { background: rgba(216, 174, 104, .2); color: #f1ce91; }
 .app-shell--arena .scex-detail__x-logo,
 .app-shell--arena .scex-detail__close { border-color: rgba(216, 174, 104, .28); color: #ecd5b1; }
+/* Keep the legacy Surf AI tab functional when research is off, with arena paint. */
+.app-shell--arena .surf-analysis {
+  border-color: rgba(216, 174, 104, .32);
+  background: radial-gradient(ellipse at 100% 0%, rgba(177, 102, 57, .14), transparent 60%), #211a1b;
+}
+.app-shell--arena .surf-analysis__title { color: #f2ddbb; font-family: Georgia, 'Times New Roman', serif; }
+.app-shell--arena .surf-analysis__sub,
+.app-shell--arena .surf-analysis__hint,
+.app-shell--arena .surf-analysis__steps li { color: #c5b49d; }
+.app-shell--arena .surf-btn {
+  border-color: rgba(234, 186, 105, .55);
+  color: #f1ce91;
+  background: linear-gradient(135deg, rgba(216, 174, 104, .2), rgba(126, 72, 43, .15));
+  box-shadow: inset 0 1px 0 rgba(255, 224, 166, .13);
+}
+.app-shell--arena .surf-btn:hover:not(:disabled) {
+  border-color: #f1ce91;
+  color: #fff1d7;
+  background: linear-gradient(135deg, rgba(216, 174, 104, .3), rgba(126, 72, 43, .24));
+  box-shadow: 0 8px 24px rgba(18, 10, 8, .33);
+}
+.app-shell--arena .surf-analysis__ready {
+  color: #f1ce91;
+  background: rgba(216, 174, 104, .11);
+  border-color: rgba(216, 174, 104, .3);
+}

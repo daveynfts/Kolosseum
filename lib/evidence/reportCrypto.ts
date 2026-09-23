@@ -31,12 +31,19 @@ export function hashesMatch(a: string, b: string): boolean {
   return timingSafeEqual(Buffer.from(a, 'hex'), Buffer.from(b, 'hex'))
 }
 
-const ADVICE_LINE = /(?:\b(?:buy now|sell now|you should buy|you should sell|entry price|take profit|stop loss)\b|(?:^|[\s:])(?:nên|hãy|phải)\s+(?:mua|bán|long|short)\b|(?:điểm\s+(?:mua|bán|vào lệnh)))/i
+const ADVICE_PATTERNS = [
+  /\b(?:buy now|sell now|you should buy|you should sell|should buy|should sell|strong buy|strong sell|buy the dip|sell the rally|entry price|take profit|stop loss)\b/i,
+  /\b(?:recommend|suggest)\s+(?:buying|selling|to buy|to sell)\b/i,
+  /\b(?:recommendation|action)\s*:\s*(?:buy|sell)\b/i,
+  /^\s*(?:[-*+]\s+|\d+[.)]\s+|#{1,6}\s+)?(?:buy|sell|long|short|accumulate|invest in|exit position)\b/i,
+  /^\s*#{1,6}\s*(?:trading recommendation|trade setup|investment advice)\b/i,
+  /(?:^|[\s:])(?:nên|hãy|phải)\s+(?:mua|bán|long|short)\b|(?:điểm\s+(?:mua|bán|vào lệnh))/i,
+]
 
 export function sanitizeResearch(markdown: string): string {
   const withoutImages = markdown.replace(/!\[[^\]]*\]\([^)]*\)/g, '[Image omitted]')
   const safeLines = withoutImages.split(/\r?\n/).map((line) =>
-    ADVICE_LINE.test(line) ? '[Trading recommendation removed.]' : line,
+    ADVICE_PATTERNS.some((pattern) => pattern.test(line)) ? '[Trading recommendation removed.]' : line,
   )
   const body = safeLines.join('\n').trim()
   if (!body) throw new Error('Research body is empty after sanitization')

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { decryptReport, encryptReport, hashesMatch, sanitizeResearch, sha256 } from './reportCrypto'
+import { REPORT_DISCLAIMER, decryptReport, encryptReport, hashesMatch, sanitizeResearch, sha256 } from './reportCrypto'
 
 const key = 'a7'.repeat(32)
 
@@ -21,5 +21,22 @@ describe('research report integrity', () => {
     expect(clean).not.toContain('https://bad.test')
     expect(clean).toContain('Một nguồn khác.')
     expect(clean).toContain('not investment advice')
+  })
+
+  it('blocks imperative trade calls while preserving factual context', () => {
+    const clean = sanitizeResearch('## Summary\nBuy SOL at $100.\nRecommendation: sell BTC.\n- Strong buy signal.\nThe linked post described a past purchase.')
+    expect(clean).not.toContain('Buy SOL at $100')
+    expect(clean).not.toContain('Recommendation: sell BTC')
+    expect(clean).not.toContain('Strong buy signal')
+    expect(clean).toContain('The linked post described a past purchase.')
+    expect(clean).toContain(REPORT_DISCLAIMER)
+  })
+
+  it('removes recommendation sections and alternative imperative calls', () => {
+    const clean = sanitizeResearch('## Trade setup\nWe recommend buying this token.\nSell 25% now.\nThe source post was published on 1 September.')
+    expect(clean).not.toContain('Trade setup')
+    expect(clean).not.toContain('recommend buying')
+    expect(clean).not.toContain('Sell 25%')
+    expect(clean).toContain('The source post was published on 1 September.')
   })
 })

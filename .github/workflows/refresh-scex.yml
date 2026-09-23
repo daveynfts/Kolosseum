@@ -1,9 +1,9 @@
-# Weekly SCEX mention harvest. Disable this workflow if the partner page
-# is retired — it is independent of the daily feed job.
+# Weekly SCEX mention harvest and Kolosseum avatar sync.
+# Independent of the daily feed job.
 #
 # Required secrets: same as refresh-feed.yml
 # GitHub pauses schedules after 60 days with no commits.
-name: Refresh SCEX tracking
+name: Refresh Kolosseum SCEX tracking
 
 on:
   schedule:
@@ -76,7 +76,7 @@ jobs:
           RADAR_API_BASE: ${{ secrets.RADAR_API_BASE }}
         run: node scripts/recompute_scex_sentiments.mjs --put
 
-      - name: Warm SCEX avatars
+      - name: Sync missing SCEX avatars to R2
         env:
           FEED_ADMIN_TOKEN: ${{ secrets.FEED_ADMIN_TOKEN }}
           RADAR_API_BASE: ${{ secrets.RADAR_API_BASE }}
@@ -84,4 +84,4 @@ jobs:
           R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
           R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
           R2_BUCKET_NAME: ${{ secrets.R2_BUCKET_NAME }}
-        run: node scripts/warm_scex_avatars.mjs
+        run: node scripts/warm_scex_avatars.mjs --apply

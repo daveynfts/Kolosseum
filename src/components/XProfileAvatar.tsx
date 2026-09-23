@@ -1,12 +1,16 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import {
   initials,
+  resolveMediaUrl,
   xAvatarUrlCandidates,
 } from '../lib/avatar'
+import { isSafeImageUrl } from '../lib/safeUrl'
+import './XProfileAvatar.css'
 
 interface Props {
   handle: string
   name: string
+  avatarUrl?: string
   size?: number
   className?: string
   /**
@@ -99,6 +103,7 @@ async function fetchLiveAvatarUrl(handle: string): Promise<string | null> {
 export function XProfileAvatar({
   handle,
   name,
+  avatarUrl,
   size = 40,
   className = '',
   liveFallback = false,
@@ -114,7 +119,11 @@ export function XProfileAvatar({
   const sources = useMemo(() => {
     // R2 keys are case-sensitive (Lecter_XFinance.jpg ≠ lecter_xfinance.jpg).
     // Try casing variants + same-origin /r2 proxy, then unavatar, then optional live.
+    const preferred = avatarUrl
+      ? /^https?:\/\//i.test(avatarUrl) ? avatarUrl : resolveMediaUrl(avatarUrl)
+      : ''
     const list: string[] = [
+      ...(isSafeImageUrl(preferred) ? [preferred] : []),
       ...xAvatarUrlCandidates(clean),
       `/avatars/${encodeURIComponent(clean)}.jpg`,
       `/avatars/${encodeURIComponent(clean.toLowerCase())}.jpg`,
@@ -125,7 +134,7 @@ export function XProfileAvatar({
     ]
     if (liveUrl) list.push(liveUrl)
     return [...new Set(list.filter(Boolean))]
-  }, [clean, liveUrl])
+  }, [clean, avatarUrl, liveUrl])
 
   useEffect(() => {
     setIdx(0)
@@ -133,7 +142,7 @@ export function XProfileAvatar({
     setLiveUrl(null)
     setStatus('loading')
     triedLive.current = false
-  }, [clean])
+  }, [clean, avatarUrl])
 
   useEffect(() => {
     const el = imgRef.current
@@ -207,10 +216,12 @@ export function XProfileAvatar({
     >
       {status === 'loading' && (
         <span
-          className="avatar-skeleton"
-          style={{ width: size, height: size, borderRadius: '50%' }}
+          className="x-profile-avatar__placeholder"
+          style={{ fontSize: size * 0.32 }}
           aria-hidden
-        />
+        >
+          {initials(name || clean)}
+        </span>
       )}
       <img
         key={sources[idx] ?? clean}

@@ -9,9 +9,9 @@ const radarReadOnlyPlugin: Plugin = {
   name: 'radar-read-only-dev-proxy',
   configureServer(server) {
     server.middlewares.use((request, response, next) => {
-      if (/^\/api(?:\/|$)/.test(request.url || '') && !['GET', 'HEAD'].includes(request.method || '')) {
+      if (/^\/(?:api|r2)(?:\/|$)/.test(request.url || '') && !['GET', 'HEAD'].includes(request.method || '')) {
         response.statusCode = 405
-        response.end('Local Radar proxy is read-only')
+        response.end('Local data proxy is read-only')
         return
       }
       next()
@@ -45,6 +45,7 @@ export default defineConfig(({ mode }) => {
     server: {
       proxy: researchEnabled ? {
         '/api': radarProxy,
+        '/r2': radarProxy,
         '/dr-api': {
           target: env.RESEARCH_PROXY_TARGET || 'http://127.0.0.1:4174',
           changeOrigin: true,

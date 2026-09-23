@@ -1,55 +1,54 @@
 <!doctype html>
-<html lang="vi">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
-    <link rel="icon" type="image/png" sizes="64x64" href="/favicon-64.png" />
-    <link rel="shortcut icon" type="image/png" href="/favicon-32.png" />
-    <link rel="apple-touch-icon" href="/favicon-64.png" />
+    <link rel="icon" type="image/svg+xml" href="/kolosseum-mark.svg" />
+    <link rel="shortcut icon" type="image/svg+xml" href="/kolosseum-mark.svg" />
+    <link rel="apple-touch-icon" href="/kolosseum-icon-180.png" />
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <link rel="preload" href="/fonts/be-vietnam-pro-400.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="preload" href="/fonts/be-vietnam-pro-600.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="stylesheet" href="/fonts/vn-fonts.css" />
-    <title>Davey's Radar — VN KOL Map</title>
+    <title>Kolosseum — The Vietnamese Crypto KOL Arena</title>
     <meta
       name="description"
-      content="Davey's Radar — bản đồ KOL crypto Việt Nam, ma trận SCEX và side events Conviction."
+      content="Explore Vietnamese crypto KOLs through a credibility and volume matrix, live SCEX posts on X, and sourced KOL profiles."
     />
-    <meta name="theme-color" content="#05060a" />
-    <meta property="og:site_name" content="DaveyNFTs Radar" />
+    <meta name="theme-color" content="#211817" />
+    <meta property="og:site_name" content="Kolosseum" />
     <meta property="og:type" content="website" />
-    <meta property="og:locale" content="vi_VN" />
-    <meta property="og:url" content="https://radar.daveynfts.com/" />
-    <meta property="og:title" content="Davey's Radar — VN KOL Map" />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:url" content="https://radar.daveynfts.com/scex" />
+    <meta property="og:title" content="Kolosseum — The Vietnamese Crypto KOL Arena" />
     <meta
       property="og:description"
-      content="Bản đồ KOL crypto Việt Nam — rank, feed X, shortlist. Davey's Radar."
+      content="Explore Vietnamese crypto KOLs through a credibility and volume matrix, live SCEX posts on X, and sourced KOL profiles."
     />
     <meta
       property="og:image"
-      content="https://radar.daveynfts.com/og/vn-kol-map.jpg?v=20260818a"
+      content="https://radar.daveynfts.com/kolosseum-og.png"
     />
-    <meta property="og:image:type" content="image/jpeg" />
+    <meta property="og:image:type" content="image/png" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
     <meta
       property="og:image:alt"
-      content="Davey's Radar — Vietnamese crypto KOL constellation map"
+      content="Kolosseum — Vietnamese crypto KOL arena"
     />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Davey's Radar — VN KOL Map" />
+    <meta name="twitter:title" content="Kolosseum — The Vietnamese Crypto KOL Arena" />
     <meta
       name="twitter:description"
-      content="Bản đồ KOL crypto Việt Nam — rank, feed X, shortlist."
+      content="KOL matrix, live X feed, and Deep Research on Solana devnet."
     />
     <meta
       name="twitter:image"
-      content="https://radar.daveynfts.com/og/vn-kol-map.jpg?v=20260818a"
+      content="https://radar.daveynfts.com/kolosseum-og.png"
     />
-    <link rel="canonical" href="https://radar.daveynfts.com/" />
+    <link rel="canonical" href="https://radar.daveynfts.com/scex" />
     <style>
-      html, body, #root { height: 100%; margin: 0; background: #050814; }
+      html, body, #root { height: 100%; margin: 0; background: #171115; }
       .boot-splash {
         min-height: 100%;
         display: flex;
@@ -71,32 +70,11 @@
   <body>
     <div id="root">
       <div class="boot-splash" aria-busy="true">
-        <img class="boot-splash__mark" src="/logo.jpg" alt="" width="64" height="64" decoding="async" />
-        <p class="boot-splash__title">Davey's Radar</p>
-        <small>Bấm avatar · Lọc rank · Mở Feed</small>
+        <img class="boot-splash__mark" src="/kolosseum-mark.svg" alt="" width="64" height="64" decoding="async" />
+        <p class="boot-splash__title">Kolosseum</p>
+        <small>The Vietnamese crypto KOL arena</small>
       </div>
     </div>
-    <script>
-      // Keep the legacy Radar entry point unchanged; brand the arena before React loads.
-      (() => {
-        const path = location.pathname.toLowerCase()
-        const arena = path === '/scex' || path.startsWith('/scex/') || path.startsWith('/reports/') || /^#\/?scex(?:[/?]|$)/i.test(location.hash)
-        if (!arena) return
-        document.title = 'Kolosseum — Đấu trường KOL crypto Việt Nam'
-        const mark = document.querySelector('.boot-splash__mark')
-        const title = document.querySelector('.boot-splash__title')
-        const hint = document.querySelector('.boot-splash small')
-        if (mark) mark.setAttribute('src', '/kolosseum-mark.svg')
-        if (title) title.textContent = 'Kolosseum'
-        if (hint) hint.textContent = 'Đấu trường KOL crypto Việt Nam'
-        for (const icon of document.querySelectorAll('link[rel~="icon"]')) {
-          icon.setAttribute('href', '/kolosseum-mark.svg')
-          icon.setAttribute('type', 'image/svg+xml')
-          icon.removeAttribute('sizes')
-        }
-        document.querySelector('link[rel="apple-touch-icon"]')?.setAttribute('href', '/kolosseum-icon-180.png')
-      })()
-    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

@@ -50,12 +50,12 @@ export function KolReportViewer({ report, avatarHandle, onClose }: Props) {
       className="kol-report-viewer"
       role="dialog"
       aria-modal="true"
-      aria-label={report.title || `Báo cáo @${report.handle}`}
+      aria-label={report.title || `Report @${report.handle}`}
     >
       <button
         type="button"
         className="kol-report-viewer__backdrop"
-        aria-label="Đóng"
+        aria-label="Close"
         onClick={onClose}
       />
       <div className="kol-report-viewer__panel glass">
@@ -75,7 +75,7 @@ export function KolReportViewer({ report, avatarHandle, onClose }: Props) {
             className="kol-report-viewer__close"
             onClick={onClose}
           >
-            Đóng · Esc
+            Close · Esc
           </button>
         </header>
 
@@ -114,8 +114,8 @@ export function KolReportViewer({ report, avatarHandle, onClose }: Props) {
                       <span className="akr-score-chip">{score}/100</span>
                     )}
                     <time dateTime={report.updatedAt}>
-                      Cập nhật{' '}
-                      {new Date(report.updatedAt).toLocaleString('vi-VN')}
+                      Updated{' '}
+                      {new Date(report.updatedAt).toLocaleString('en-US')}
                     </time>
                   </div>
                 </div>

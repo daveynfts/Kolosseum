@@ -8,7 +8,6 @@ import { getAdminToken, setAdminToken } from './lib/feedStore'
 import './components/SiteChrome.css'
 import './styles/kolosseum.css'
 
-const App = lazy(() => import('./App.tsx'))
 const AdminDashboard = lazy(() =>
   import('./pages/AdminDashboard.tsx').then((m) => ({
     default: m.AdminDashboard,
@@ -22,30 +21,19 @@ const ScexTrackingPage = lazy(() =>
 const ReportPage = lazy(() =>
   import('./research/ReportPage.tsx').then((m) => ({ default: m.ReportPage })),
 )
-const EventHubPage = lazy(() =>
-  import('./pages/EventHubPage.tsx').then((m) => ({
-    default: m.EventHubPage,
-  })),
-)
-const EventMapPage = lazy(() =>
-  import('./pages/EventMapPage.tsx').then((m) => ({
-    default: m.EventMapPage,
-  })),
-)
 function RouteFallback() {
-  const arena = getRoute() === 'scex' || getRoute() === 'report'
   return (
     <div className="boot-splash" aria-busy="true">
       <img
         className="boot-splash__mark"
-        src={arena ? '/kolosseum-mark.svg' : '/logo.jpg'}
+        src="/kolosseum-mark.svg"
         alt=""
         width={64}
         height={64}
         decoding="async"
       />
-      <p className="boot-splash__title">{arena ? 'Kolosseum' : "Davey's Radar"}</p>
-      <small>{arena ? 'Đấu trường KOL crypto Việt Nam' : 'Bấm avatar · Lọc rank · Mở Feed'}</small>
+      <p className="boot-splash__title">Kolosseum</p>
+      <small>The Vietnamese crypto KOL arena</small>
     </div>
   )
 }
@@ -57,7 +45,7 @@ function normalizePathname(): string {
   return p || '/'
 }
 
-function getRoute(): 'map' | 'admin' | 'scex' | 'event' | 'event-hub' | 'report' {
+function getRoute(): 'admin' | 'scex' | 'report' {
   const h = window.location.hash.replace(/^#\/?/, '').toLowerCase()
   const path = normalizePathname()
   // Admin hash/path always wins so /scex#/admin and /admin work.
@@ -71,15 +59,7 @@ function getRoute(): 'map' | 'admin' | 'scex' | 'event' | 'event-hub' | 'report'
     return 'admin'
   }
   if (__DEEP_RESEARCH_ENABLED__ && path.startsWith('/reports/')) return 'report'
-  if (path === '/events' || path.startsWith('/events/')) return 'event-hub'
-  if (path === '/event' || path.startsWith('/event/')) return 'event'
-  if (path === '/scex' || path.startsWith('/scex/')) return 'scex'
-  if (h === 'scex' || h.startsWith('scex/') || h.startsWith('scex?'))
-    return 'scex'
-  if (h === 'event' || h.startsWith('event/') || h.startsWith('event?'))
-    return 'event'
-  if (h === 'events' || h.startsWith('events/')) return 'event-hub'
-  return 'map'
+  return 'scex'
 }
 
 /** Redirect legacy #/scex → /scex (keeps bookmarks working). */
@@ -99,52 +79,14 @@ function migrateLegacyScexHash() {
   window.history.replaceState(null, '', `/scex${window.location.search}`)
 }
 
-/**
- * Canonicalize event URLs:
- * - `#/event` → `/event` (live map)
- * - `#/event?id=` old Conviction deep links → `/event/conviction-2026`
- * - `/event/live` → `/event`
- */
-function migrateLegacyEventHash() {
+/** Keep old entry URLs pointed at the Kolosseum arena. */
+function migrateLegacyArenaPaths() {
   const path = normalizePathname()
-  if (path === '/event/live') {
-    window.history.replaceState(
-      null,
-      '',
-      `/event${window.location.search}`,
-    )
-    return
+  const hash = window.location.hash.replace(/^#\/?/, '').toLowerCase()
+  if (hash === 'admin' || hash.startsWith('admin/') || hash.startsWith('admin?')) return
+  if (path === '/' || /^\/events?(?:\/|$)/.test(path)) {
+    window.history.replaceState(null, '', '/scex' + window.location.search)
   }
-
-  const raw = window.location.hash.replace(/^#\/?/, '')
-  const h = raw.toLowerCase()
-  if (!(h === 'event' || h.startsWith('event/') || h.startsWith('event?'))) {
-    return
-  }
-  if (path === '/event' || path.startsWith('/event/')) {
-    window.history.replaceState(
-      null,
-      '',
-      `${path}${window.location.search}`,
-    )
-    return
-  }
-  const qIdx = raw.indexOf('?')
-  const after = qIdx >= 0 ? raw.slice(0, qIdx) : raw
-  const query = qIdx >= 0 ? raw.slice(qIdx) : window.location.search
-  const rest = after.replace(/^event\/?/i, '')
-  if (rest && rest.toLowerCase() !== 'live') {
-    window.history.replaceState(null, '', `/event/${rest}${query}`)
-    return
-  }
-  const params = new URLSearchParams(
-    query.startsWith('?') ? query.slice(1) : query,
-  )
-  const dest =
-    params.has('id') || params.has('date')
-      ? `/event/conviction-2026${query}`
-      : `/event${query}`
-  window.history.replaceState(null, '', dest)
 }
 
 function AdminGate({ children }: { children: ReactNode }) {
@@ -159,8 +101,7 @@ function AdminGate({ children }: { children: ReactNode }) {
     <div className="admin-gate glass">
       <h1>Admin</h1>
       <p>
-        Dán <code>FEED_ADMIN_TOKEN</code> để mở editor. Token lưu trong phiên
-        tab (sessionStorage).
+        Enter <code>FEED_ADMIN_TOKEN</code> to open the editor. The token is kept in this tab session.
       </p>
       <label className="admin-gate__row">
         Token
@@ -185,7 +126,7 @@ function AdminGate({ children }: { children: ReactNode }) {
         Continue
       </button>
       <p className="admin-gate__hint">
-        <a href="/">← Back to map</a>
+        <a href="/scex">← Back to Kolosseum</a>
       </p>
     </div>
   )
@@ -194,20 +135,20 @@ function AdminGate({ children }: { children: ReactNode }) {
 function Root() {
   const [route, setRoute] = useState(() => {
     migrateLegacyScexHash()
-    migrateLegacyEventHash()
+    migrateLegacyArenaPaths()
     return getRoute()
   })
 
   useEffect(() => {
     migrateLegacyScexHash()
-    migrateLegacyEventHash()
+    migrateLegacyArenaPaths()
     setRoute(getRoute())
     const onHash = () => {
       migrateLegacyScexHash()
-      migrateLegacyEventHash()
+      migrateLegacyArenaPaths()
       setRoute(getRoute())
     }
-    const onPop = () => setRoute(getRoute())
+    const onPop = () => { migrateLegacyArenaPaths(); setRoute(getRoute()) }
     window.addEventListener('hashchange', onHash)
     window.addEventListener('popstate', onPop)
     return () => {
@@ -218,37 +159,11 @@ function Root() {
 
   if (route === 'admin') {
     return (
-      <Suspense fallback={<RouteFallback />}>
+    <Suspense fallback={<RouteFallback />}>
         <SceneErrorBoundary title="Admin failed to render">
           <AdminGate>
             <AdminDashboard />
           </AdminGate>
-        </SceneErrorBoundary>
-      </Suspense>
-    )
-  }
-
-  if (route === 'event-hub') {
-    return (
-      <Suspense fallback={<RouteFallback />}>
-        <SceneErrorBoundary title="Event hub failed to render">
-          <div className="app-shell app-shell--map">
-            <SiteChrome active="event" overlay />
-            <EventHubPage />
-          </div>
-        </SceneErrorBoundary>
-      </Suspense>
-    )
-  }
-
-  if (route === 'event') {
-    return (
-      <Suspense fallback={<RouteFallback />}>
-        <SceneErrorBoundary title="Event map failed to render">
-          <div className="app-shell app-shell--map">
-            <SiteChrome active="event" overlay />
-            <EventMapPage />
-          </div>
         </SceneErrorBoundary>
       </Suspense>
     )
@@ -267,22 +182,14 @@ function Root() {
     )
   }
 
-  if (route === 'scex') {
-    return (
-      <Suspense fallback={<RouteFallback />}>
-        <SceneErrorBoundary title="SCEX page failed to render">
-          <div className="app-shell app-shell--arena">
-            <SiteChrome active="scex" />
-            <ScexTrackingPage />
-          </div>
-        </SceneErrorBoundary>
-      </Suspense>
-    )
-  }
-
   return (
     <Suspense fallback={<RouteFallback />}>
-      <App />
+      <SceneErrorBoundary title="Kolosseum failed to render">
+        <div className="app-shell app-shell--arena">
+          <SiteChrome active="scex" />
+          <ScexTrackingPage />
+        </div>
+      </SceneErrorBoundary>
     </Suspense>
   )
 }

@@ -1,5 +1,5 @@
 /**
- * Kolosseum arena view powered by the existing SCEX matrix and live feed (VI).
+ * Kolosseum arena view powered by the existing SCEX matrix and live feed.
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
@@ -20,10 +20,10 @@ import {
 import { KOLS_EVENT, loadKolsWithSource } from '../lib/kolStore'
 import type { Kol } from '../types'
 import { XProfileAvatar } from '../components/XProfileAvatar'
-import { DaveysRadarLink } from '../components/DaveysRadarLink'
 import { ScexMatrix2D } from '../components/ScexMatrix2D'
 import { ScexKolDetail } from '../components/ScexKolDetail'
 import { resolveMediaUrl } from '../lib/avatar'
+import { arenaSentimentLabel } from '../lib/kolosseumLabels'
 import { applyScexSeo } from '../lib/scexSeo'
 import { safeHref } from '../lib/safeUrl'
 import './ScexTrackingPage.css'
@@ -32,7 +32,6 @@ const FILTER_KEY = 'scex-matrix-filters-v1'
 
 /** Matrix filter pill ids — multi-select with AND logic */
 type MatrixFilterId =
-  | 'on_map'
   | 'f_10k'
   | 'f_50k'
   | 'f_100k'
@@ -64,94 +63,88 @@ const MATRIX_FILTER_PILLS: Array<{
   label: string
   title: string
   group?: 'followers' | 'sentiment' | 'quad'
-  /** Lite Partner: primary row vs collapsible “Thêm lọc” */
+  /** Primary row vs collapsible advanced filters. */
   tier: 'primary' | 'more'
 }> = [
   {
-    id: 'on_map',
-    label: 'Có trên Radar',
-    title: 'KOL đã có hồ sơ trên bản đồ Radar nguồn',
-    tier: 'primary',
-  },
-  {
     id: 'f_10k',
     label: '≥10K FL',
-    title: 'Followers ≥ 10.000',
+    title: 'Followers ≥ 10,000',
     group: 'followers',
     tier: 'primary',
   },
   {
     id: 'f_50k',
     label: '≥50K FL',
-    title: 'Followers ≥ 50.000',
+    title: 'Followers ≥ 50,000',
     group: 'followers',
     tier: 'primary',
   },
   {
     id: 'sent_bullish',
-    label: 'Tích cực',
+    label: 'Positive',
     title: 'Sentiment bullish',
     group: 'sentiment',
     tier: 'primary',
   },
   {
     id: 'sent_bearish',
-    label: 'Tiêu cực',
+    label: 'Negative',
     title: 'Sentiment bearish',
     group: 'sentiment',
     tier: 'primary',
   },
   {
     id: 'quad_stars',
-    label: 'Ưu tiên',
-    title: 'Vùng Ưu tiên hợp tác (hay mention + chất lượng cao)',
+    label: 'Leading voices',
+    title: 'Leading voices (high mentions and credibility)',
     group: 'quad',
     tier: 'primary',
   },
   {
     id: 'quad_nurture',
-    label: 'Có tiềm năng',
-    title: 'Vùng Có tiềm năng (chất lượng cao · ít mention)',
+    label: 'Emerging',
+    title: 'Emerging (high credibility, fewer mentions)',
     group: 'quad',
     tier: 'primary',
   },
   {
     id: 'f_100k',
     label: '≥100K FL',
-    title: 'Followers ≥ 100.000',
+    title: 'Followers ≥ 100,000',
     group: 'followers',
     tier: 'more',
   },
   {
     id: 'sent_neutral',
-    label: 'Trung lập',
-    title: 'Neutral / hỗn hợp',
+    label: 'Neutral',
+    title: 'Neutral / mixed',
     group: 'sentiment',
     tier: 'more',
   },
   {
     id: 'vol_high',
-    label: 'Tần suất cao',
-    title: 'Volume score ≥ split (trục X)',
+    label: 'High volume',
+    title: 'Volume score ≥ split (X axis)',
     tier: 'more',
   },
   {
     id: 'qual_high',
-    label: 'Chất lượng cao',
-    title: 'Quality score ≥ split (trục Y)',
+    label: 'High credibility',
+    title: 'Credibility score ≥ split (Y axis)',
     tier: 'more',
   },
   {
     id: 'quad_noise',
-    label: 'Rà soát',
-    title: 'Vùng Cần rà soát (hay mention · chất lượng thấp)',
+    label: 'Needs review',
+    title: 'Needs review (frequent mentions, low credibility)',
     group: 'quad',
     tier: 'more',
   },
   {
     id: 'quad_ignore',
-    label: 'Ít ưu tiên',
-    title: 'Vùng Ít ưu tiên (ít mention · chất lượng thấp)',
+    label: 'Low activity',
+    title: 'Low activity (few mentions, low credibility)',
     group: 'quad',
     tier: 'more',
   },
@@ -179,21 +172,15 @@ function readFilters(): Set<MatrixFilterId> {
 function actorMatchesFilters(
   a: ScexActor,
   filters: Set<MatrixFilterId>,
-  mapHandles: Set<string>,
   volumeSplit: number,
   qualitySplit: number,
   config: ScexDataset['config'],
 ): boolean {
   if (!filters.size) return true
-  const h = a.handle.toLowerCase()
   const vol = actorVolumeMetric(a, config)
-  const onMap = mapHandles.has(h)
 
   for (const f of filters) {
     switch (f) {
-      case 'on_map':
-        if (!onMap) return false
-        break
       case 'f_10k':
         if (a.followers < 10_000) return false
         break
@@ -247,7 +234,7 @@ function formatTime(iso: string): string {
   try {
     const d = new Date(iso)
     if (Number.isNaN(d.getTime())) return iso.slice(0, 16)
-    return d.toLocaleString('vi-VN', {
+    return d.toLocaleString('en-US', {
       month: 'short',
       day: 'numeric',
       hour: '2-digit',
@@ -280,9 +267,8 @@ export function ScexTrackingPage() {
   >('all')
   const [feedDays, setFeedDays] = useState<0 | 7 | 14 | 30>(0)
   const [feedMediaOnly, setFeedMediaOnly] = useState(false)
-  const [feedOnMapOnly, setFeedOnMapOnly] = useState(false)
   const [feedExpandAll, setFeedExpandAll] = useState(false)
-  /** Fullscreen overflow: Có media / On Radar / expand / export */
+  /** Fullscreen overflow: media, expanded text and export. */
   const [feedMoreOpen, setFeedMoreOpen] = useState(false)
   const feedFsMainRef = useRef<HTMLDivElement>(null)
   /** Lite Partner: collapse advanced matrix filters (open if any “more” filter already active) */
@@ -462,11 +448,6 @@ export function ScexTrackingPage() {
     return m
   }, [mapKols])
 
-  const mapHandles = useMemo(
-    () => new Set(mapByHandle.keys()),
-    [mapByHandle],
-  )
-
   const actorsByHandle = useMemo(() => {
     const m = new Map<string, ScexActor>()
     if (!dataset) return m
@@ -489,18 +470,12 @@ export function ScexTrackingPage() {
       actorMatchesFilters(
         a,
         matrixFilters,
-        mapHandles,
         dataset.config.volumeSplit,
         dataset.config.qualitySplit,
         dataset.config,
       ),
     )
-  }, [dataset, baseVisible, matrixFilters, mapHandles])
-
-  const onMapCount = useMemo(
-    () => visible.filter((a) => mapHandles.has(a.handle.toLowerCase())).length,
-    [visible, mapHandles],
-  )
+  }, [dataset, baseVisible, matrixFilters])
 
   const allPosts = useMemo(() => {
     if (!dataset) return [] as ScexPost[]
@@ -508,6 +483,10 @@ export function ScexTrackingPage() {
       (p) => !p.hidden && !isScexEventTaskSpam(p.text),
     )
   }, [dataset])
+  const voicesCount = useMemo(
+    () => new Set(allPosts.map((post) => post.handle.toLowerCase())).size,
+    [allPosts],
+  )
 
   /** Handles that actually have feed posts (for filter chips) */
   const { feedKolOptions, feedKolCounts } = useMemo(() => {
@@ -569,9 +548,6 @@ export function ScexTrackingPage() {
     if (feedMediaOnly) {
       list = list.filter((p) => (p.media?.length || 0) > 0)
     }
-    if (feedOnMapOnly) {
-      list = list.filter((p) => mapHandles.has(p.handle.toLowerCase()))
-    }
 
     const eng = (p: ScexPost) =>
       (Number(p.likes) || 0) +
@@ -597,17 +573,14 @@ export function ScexTrackingPage() {
     feedSentiment,
     feedDays,
     feedMediaOnly,
-    feedOnMapOnly,
     feedSort,
     feedFullscreen,
-    mapHandles,
   ])
 
   const feedResearchStats = useMemo(() => {
     const bySent = { bullish: 0, neutral: 0, bearish: 0 }
     const handles = new Set<string>()
     let withMedia = 0
-    let onMap = 0
     for (const p of filteredPosts) {
       handles.add(p.handle.toLowerCase())
       if (p.sentiment === 'bullish') bySent.bullish++
@@ -615,16 +588,14 @@ export function ScexTrackingPage() {
         bySent.bearish++
       else bySent.neutral++
       if ((p.media?.length || 0) > 0) withMedia++
-      if (mapHandles.has(p.handle.toLowerCase())) onMap++
     }
     return {
       total: filteredPosts.length,
       kols: handles.size,
       bySent,
       withMedia,
-      onMap,
     }
-  }, [filteredPosts, mapHandles])
+  }, [filteredPosts])
 
   /** Day buckets for research timeline (newest-first day groups) */
   const feedDayGroups = useMemo(() => {
@@ -633,8 +604,8 @@ export function ScexTrackingPage() {
     for (const p of filteredPosts) {
       const d = new Date(p.postedAt)
       const key = Number.isNaN(d.getTime())
-        ? 'Không rõ ngày'
-        : d.toLocaleDateString('vi-VN', {
+        ? 'Unknown date'
+        : d.toLocaleDateString('en-US', {
             weekday: 'short',
             day: 'numeric',
             month: 'short',
@@ -674,7 +645,7 @@ export function ScexTrackingPage() {
       [
         `SCEX Live Feed export · ${new Date().toISOString()}\n`,
         `Posts: ${filteredPosts.length} · KOLs: ${feedResearchStats.kols}\n`,
-        `Filter: sort=${feedSort} sent=${feedSentiment} days=${feedDays || 'all'} media=${feedMediaOnly} onMap=${feedOnMapOnly} handle=${feedFilter || 'all'} q=${feedQuery || '-'}\n\n`,
+        `Filter: sort=${feedSort} sent=${feedSentiment} days=${feedDays || 'all'} media=${feedMediaOnly} handle=${feedFilter || 'all'} q=${feedQuery || '-'}\n\n`,
         lines.join('\n\n'),
       ],
       { type: 'text/plain;charset=utf-8' },
@@ -691,7 +662,6 @@ export function ScexTrackingPage() {
     feedSentiment,
     feedDays,
     feedMediaOnly,
-    feedOnMapOnly,
     feedFilter,
     feedQuery,
   ])
@@ -712,7 +682,7 @@ export function ScexTrackingPage() {
   if (!dataset) {
     return (
       <div className="scex-loading">
-        <p>Đang tải…</p>
+        <p>Loading…</p>
       </div>
     )
   }
@@ -724,7 +694,7 @@ export function ScexTrackingPage() {
         <div className="scex-card">
           <h1>{config.brandName || 'SCEX'}</h1>
           <p className="scex-empty" style={{ padding: 0 }}>
-            Tracking đang tạm tắt.
+            Tracking is temporarily unavailable.
           </p>
         </div>
       </div>
@@ -746,7 +716,6 @@ export function ScexTrackingPage() {
       actorMatchesFilters(
         a,
         new Set([pill.id]),
-        mapHandles,
         config.volumeSplit,
         config.qualitySplit,
         config,
@@ -790,18 +759,18 @@ export function ScexTrackingPage() {
             <h1 className="scex-page__title">
               <span className="scex-page__name">Kolosseum</span>
               <span className="scex-page__legal">
-                Đấu trường ảnh hưởng KOL crypto Việt Nam
+                The Vietnamese crypto KOL arena
               </span>
             </h1>
             <div className="scex-page__meta">
               <span className="scex-page__window">
-                Nguồn {config.brandName} · {config.timeWindowDays} ngày gần đây
-                {dataset?.asOf ? ` · chốt ${dataset.asOf.slice(0, 10)}` : ''}
+                Source: {config.brandName} · Last {config.timeWindowDays} days
+                {dataset?.asOf ? ` · as of ${dataset.asOf.slice(0, 10)}` : ''}
               </span>
             </div>
           </div>
         </div>
-        <div className="scex-page__stats" aria-label="Chỉ số KOL theo dõi SCEX">
+        <div className="scex-page__stats" aria-label="SCEX KOL tracking metrics">
           <div className="scex-stat">
             <em>
               {visible.length}
@@ -811,13 +780,11 @@ export function ScexTrackingPage() {
           </div>
           <div className="scex-stat">
             <em>{allPosts.length}</em>
-            <span>Mention</span>
+            <span>Mentions</span>
           </div>
           <div className="scex-stat scex-stat--accent">
-            <em>{onMapCount}</em>
-            <span>
-              Có trên <DaveysRadarLink>Radar gốc</DaveysRadarLink>
-            </span>
+            <em>{voicesCount}</em>
+            <span>Voices</span>
           </div>
           <div className="scex-stat scex-stat--muted">
             <em>{formatCompact(totalFollowers)}</em>
@@ -829,12 +796,12 @@ export function ScexTrackingPage() {
       <div className="scex-page__grid">
         <section
           className={`scex-card scex-matrix ${matrixFullscreen ? 'is-fullscreen' : ''}`}
-          aria-label="Đấu trường KOL theo dõi SCEX"
+          aria-label="SCEX KOL arena"
         >
           <div className="scex-card__head">
             <div>
-              <h2>Đấu trường KOL</h2>
-              <p className="scex-card__sub">Bấm avatar để xem chi tiết</p>
+              <h2>The KOL Arena</h2>
+              <p className="scex-card__sub">Select an avatar to see details</p>
             </div>
             <div className="scex-matrix__toolbar">
               <button
@@ -842,8 +809,8 @@ export function ScexTrackingPage() {
                 className={`scex-fs-btn ${matrixFullscreen ? 'is-on' : ''}`}
                 title={
                   matrixFullscreen
-                    ? 'Thoát fullscreen (Esc)'
-                    : 'Xem ma trận full màn hình'
+                    ? 'Exit fullscreen (Esc)'
+                    : 'View matrix fullscreen'
                 }
                 aria-pressed={matrixFullscreen}
                 onClick={() => {
@@ -854,19 +821,19 @@ export function ScexTrackingPage() {
                   }
                 }}
               >
-                {matrixFullscreen ? 'Thoát · Esc' : 'Toàn màn hình'}
+                {matrixFullscreen ? 'Exit · Esc' : 'Fullscreen'}
               </button>
             </div>
           </div>
 
-          <div className="scex-matrix__filters" role="toolbar" aria-label="Lọc ma trận KOL">
+          <div className="scex-matrix__filters" role="toolbar" aria-label="Filter KOL matrix">
             <button
               type="button"
               className={`scex-matrix-pill ${matrixFilters.size === 0 ? 'is-active' : ''}`}
               onClick={clearMatrixFilters}
-              title="Hiện tất cả KOL"
+              title="Show all KOLs"
             >
-              Tất cả
+              All
               <span className="scex-matrix-pill__n">{baseVisible.length}</span>
             </button>
             {PRIMARY_FILTER_PILLS.map(renderFilterPill)}
@@ -875,9 +842,9 @@ export function ScexTrackingPage() {
               className={`scex-matrix-pill scex-matrix-pill--more ${showMoreFilters || moreFiltersActiveCount ? 'is-open' : ''} ${moreFiltersActiveCount ? 'is-active' : ''}`}
               onClick={() => setShowMoreFilters((v) => !v)}
               aria-expanded={showMoreFilters}
-              title="Bộ lọc nâng cao"
+              title="Advanced filters"
             >
-              {showMoreFilters ? 'Thu gọn' : 'Thêm lọc'}
+              {showMoreFilters ? 'Collapse' : 'More filters'}
               {moreFiltersActiveCount > 0 && (
                 <span className="scex-matrix-pill__n">{moreFiltersActiveCount}</span>
               )}
@@ -888,9 +855,9 @@ export function ScexTrackingPage() {
                 type="button"
                 className="scex-matrix-pill scex-matrix-pill--clear"
                 onClick={clearMatrixFilters}
-                title="Xóa mọi bộ lọc"
+                title="Clear all filters"
               >
-                Xóa lọc ×
+                Clear filters ×
               </button>
             )}
           </div>
@@ -901,7 +868,6 @@ export function ScexTrackingPage() {
               actors={visible}
               config={config}
               selectedId={selectedActor?.id ?? null}
-              mapHandles={mapHandles}
               onSelect={onSelectActor}
               showZoomControls={matrixFullscreen}
             />
@@ -910,15 +876,15 @@ export function ScexTrackingPage() {
 
         <section
           className={`scex-card scex-feed ${feedFullscreen ? 'is-fullscreen' : ''}`}
-          aria-label="Dòng tin X nhắc đến SCEX"
+          aria-label="X posts mentioning SCEX"
         >
           <div className="scex-card__head">
             <div>
-              <h2>Dòng tin đấu trường</h2>
+              <h2>Arena feed</h2>
               <p>
                 {feedFullscreen ? (
                   <>
-                    {feedResearchStats.total} bài · {feedResearchStats.kols} KOL
+                    {feedResearchStats.total} posts · {feedResearchStats.kols} KOL
                     {' · '}
                     <span className="is-bull">
                       +{feedResearchStats.bySent.bullish}
@@ -931,21 +897,20 @@ export function ScexTrackingPage() {
                     <span className="is-bear">
                       −{feedResearchStats.bySent.bearish}
                     </span>
-                    {' · timeline đầy đủ'}
+                    {' · full timeline'}
                     {feedFilter ? ` · @${feedFilter}` : ''}
                   </>
                 ) : (
                   <>
-                    Bài X nhắc SCEX · {filteredPosts.length}
+                    {filteredPosts.length}
                     {feedFilter ||
                     feedQuery ||
                     feedSentiment !== 'all' ||
                     feedDays > 0 ||
-                    feedMediaOnly ||
-                    feedOnMapOnly
+                    feedMediaOnly
                       ? ` / ${allPosts.length}`
                       : ''}{' '}
-                    bài
+                    posts mentioning SCEX
                     {feedFilter ? ` · @${feedFilter}` : ''}
                   </>
                 )}
@@ -954,16 +919,17 @@ export function ScexTrackingPage() {
             <div className="scex-feed__head-actions">
               {selectedActor && (
                 <div className="scex-feed__viewing" role="status">
-                  <span className="scex-feed__viewing-label">Đang xem</span>
+                  <span className="scex-feed__viewing-label">Viewing</span>
                   <button
                     type="button"
                     className="scex-feed__viewing-chip"
                     onClick={() => onSelectActor(selectedActor)}
-                    title="Mở lại panel chi tiết"
+                    title="Reopen details panel"
                   >
                     <XProfileAvatar
                       handle={selectedActor.handle}
                       name={selectedActor.displayName}
+                      avatarUrl={selectedActor.avatarUrl}
                       size={20}
                     />
                     @{selectedActor.handle}
@@ -974,17 +940,17 @@ export function ScexTrackingPage() {
                         type="button"
                         className="scex-feed__viewing-action"
                         onClick={() => setFeedFilter(selectedHandleLc)}
-                        title="Lọc bảng tin theo KOL này"
+                        title="Filter feed by this KOL"
                       >
-                        Lọc feed ({selectedFeedCount})
+                        Filter feed ({selectedFeedCount})
                       </button>
                     )}
                   <button
                     type="button"
                     className="scex-feed__viewing-close"
                     onClick={() => setSelectedActor(null)}
-                    title="Bỏ chọn"
-                    aria-label="Bỏ chọn KOL"
+                    title="Deselect"
+                    aria-label="Deselect KOL"
                   >
                     ×
                   </button>
@@ -995,15 +961,15 @@ export function ScexTrackingPage() {
                 className={`scex-fs-btn ${feedFullscreen ? 'is-on' : ''}`}
                 title={
                   feedFullscreen
-                    ? 'Thoát fullscreen (Esc)'
-                    : 'Xem tất cả — timeline toàn màn hình'
+                    ? 'Exit fullscreen (Esc)'
+                    : 'View full timeline'
                 }
                 aria-pressed={feedFullscreen}
                 onClick={() =>
                   feedFullscreen ? closeFeedFullscreen() : openFeedFullscreen()
                 }
               >
-                {feedFullscreen ? 'Thoát · Esc' : 'Xem tất cả'}
+                {feedFullscreen ? 'Exit · Esc' : 'View all'}
               </button>
             </div>
           </div>
@@ -1014,24 +980,24 @@ export function ScexTrackingPage() {
                 <input
                   className="scex-feed__search"
                   type="search"
-                  placeholder="Tìm handle / nội dung…"
+                  placeholder="Search handle or post text…"
                   value={feedQuery}
                   onChange={(e) => setFeedQuery(e.target.value)}
-                  aria-label="Tìm trong livefeed"
+                  aria-label="Search live feed"
                 />
                 <div
                   className="scex-feed__toolbar-groups"
                   role="toolbar"
-                  aria-label="Bộ lọc timeline"
+                  aria-label="Timeline filters"
                 >
                   <div className="scex-feed__research-row" aria-label="Tone">
                     <span className="scex-feed__research-label">Tone</span>
                     {(
                       [
-                        ['all', 'Tất cả'],
-                        ['bullish', 'Tích cực'],
-                        ['neutral', 'Trung lập'],
-                        ['bearish', 'Tiêu cực'],
+                        ['all', 'All'],
+                        ['bullish', 'Positive'],
+                        ['neutral', 'Neutral'],
+                        ['bearish', 'Negative'],
                       ] as const
                     ).map(([id, label]) => (
                       <button
@@ -1044,14 +1010,14 @@ export function ScexTrackingPage() {
                       </button>
                     ))}
                   </div>
-                  <div className="scex-feed__research-row" aria-label="Thời gian">
-                    <span className="scex-feed__research-label">Thời gian</span>
+                  <div className="scex-feed__research-row" aria-label="Time period">
+                    <span className="scex-feed__research-label">Time period</span>
                     {(
                       [
-                        [0, 'Toàn bộ'],
-                        [7, '7 ngày'],
-                        [14, '14 ngày'],
-                        [30, '30 ngày'],
+                        [0, 'All time'],
+                        [7, '7 days'],
+                        [14, '14 days'],
+                        [30, '30 days'],
                       ] as const
                     ).map(([d, label]) => (
                       <button
@@ -1064,13 +1030,13 @@ export function ScexTrackingPage() {
                       </button>
                     ))}
                   </div>
-                  <div className="scex-feed__research-row" aria-label="Sắp xếp">
-                    <span className="scex-feed__research-label">Sắp xếp</span>
+                  <div className="scex-feed__research-row" aria-label="Sort by">
+                    <span className="scex-feed__research-label">Sort by</span>
                     {(
                       [
-                        ['newest', 'Mới nhất'],
-                        ['oldest', 'Cũ nhất'],
-                        ['engage', 'Tương tác'],
+                        ['newest', 'Newest'],
+                        ['oldest', 'Oldest'],
+                        ['engage', 'Engagement'],
                       ] as const
                     ).map(([id, label]) => (
                       <button
@@ -1087,12 +1053,12 @@ export function ScexTrackingPage() {
                 <div className="scex-feed__toolbar-more">
                   <button
                     type="button"
-                    className={`scex-feed__chip ${feedMoreOpen || feedMediaOnly || feedOnMapOnly || feedExpandAll ? 'is-active' : ''}`}
+                    className={`scex-feed__chip ${feedMoreOpen || feedMediaOnly || feedExpandAll ? 'is-active' : ''}`}
                     aria-expanded={feedMoreOpen}
                     onClick={() => setFeedMoreOpen((v) => !v)}
                   >
-                    Thêm
-                    {feedMediaOnly || feedOnMapOnly || feedExpandAll ? ' ·' : ''}
+                    More
+                    {feedMediaOnly || feedExpandAll ? ' ·' : ''}
                   </button>
                   {feedMoreOpen && (
                     <div className="scex-feed__more-pop" role="menu">
@@ -1103,16 +1069,7 @@ export function ScexTrackingPage() {
                         className={`scex-feed__chip ${feedMediaOnly ? 'is-active' : ''}`}
                         onClick={() => setFeedMediaOnly((v) => !v)}
                       >
-                        Có media
-                      </button>
-                      <button
-                        type="button"
-                        role="menuitemcheckbox"
-                        aria-checked={feedOnMapOnly}
-                        className={`scex-feed__chip ${feedOnMapOnly ? 'is-active' : ''}`}
-                        onClick={() => setFeedOnMapOnly((v) => !v)}
-                      >
-                        On Radar
+                        Has media
                       </button>
                       <button
                         type="button"
@@ -1121,7 +1078,7 @@ export function ScexTrackingPage() {
                         className={`scex-feed__chip ${feedExpandAll ? 'is-active' : ''}`}
                         onClick={() => setFeedExpandAll((v) => !v)}
                       >
-                        {feedExpandAll ? 'Thu gọn text' : 'Mở rộng text'}
+                        {feedExpandAll ? 'Collapse text' : 'Expand text'}
                       </button>
                       <button
                         type="button"
@@ -1131,7 +1088,7 @@ export function ScexTrackingPage() {
                           exportFeedResearch()
                           setFeedMoreOpen(false)
                         }}
-                        title="Tải file .txt các bài đang lọc"
+                        title="Download filtered posts as .txt"
                       >
                         Export .txt
                       </button>
@@ -1146,14 +1103,14 @@ export function ScexTrackingPage() {
                   className={`scex-feed__chip ${!feedFilter ? 'is-active' : ''}`}
                   onClick={() => setFeedFilter(null)}
                 >
-                  Tất cả KOL
+                  All KOLs
                 </button>
                 {feedFilter && (
                   <button
                     type="button"
                     className="scex-feed__chip is-active is-clear"
                     onClick={() => setFeedFilter(null)}
-                    title="Bỏ lọc"
+                    title="Clear filter"
                   >
                     @{feedFilter} ×
                   </button>
@@ -1161,10 +1118,10 @@ export function ScexTrackingPage() {
                 <input
                   className="scex-feed__search"
                   type="search"
-                  placeholder="Tìm handle / nội dung…"
+                  placeholder="Search handle or post text…"
                   value={feedQuery}
                   onChange={(e) => setFeedQuery(e.target.value)}
-                  aria-label="Tìm trong livefeed"
+                  aria-label="Search live feed"
                 />
               </div>
             )}
@@ -1173,12 +1130,12 @@ export function ScexTrackingPage() {
                 type="button"
                 className="scex-feed__chip is-active is-clear"
                 onClick={() => setFeedFilter(null)}
-                title="Bỏ lọc"
+                title="Clear filter"
               >
                 @{feedFilter} ×
               </button>
             )}
-            <div className="scex-feed__kol-scroll" role="listbox" aria-label="Lọc theo KOL">
+            <div className="scex-feed__kol-scroll" role="listbox" aria-label="Filter by KOL">
               {feedKolOptions.map((a) => {
                 const h = a.handle.toLowerCase()
                 const n = feedKolCounts.get(h) || 0
@@ -1193,11 +1150,12 @@ export function ScexTrackingPage() {
                     onClick={() =>
                       setFeedFilter((prev) => (prev === h ? null : h))
                     }
-                    title={`@${a.handle} · ${n} bài · ${a.followers.toLocaleString()} followers`}
+                    title={`@${a.handle} · ${n} posts · ${a.followers.toLocaleString()} followers`}
                   >
                     <XProfileAvatar
                       handle={a.handle}
                       name={a.displayName}
+                      avatarUrl={a.avatarUrl}
                       size={22}
                     />
                     <span className="scex-feed__kol-chip-name">
@@ -1220,7 +1178,7 @@ export function ScexTrackingPage() {
                     <section key={g.day} className="scex-feed__day">
                       <header className="scex-feed__day-head">
                         <h3>{g.day}</h3>
-                        <span>{g.posts.length} bài</span>
+                        <span>{g.posts.length} posts</span>
                       </header>
                       <ul className="scex-feed__list scex-feed__list--research">
                         {g.posts.map((p, index) => {
@@ -1235,7 +1193,6 @@ export function ScexTrackingPage() {
                               sentimentLabel={
                                 config.sentimentLabels[p.sentiment]
                               }
-                              onMap={mapHandles.has(p.handle.toLowerCase())}
                               expanded={feedExpandAll || !!expanded[p.id]}
                               onToggleExpand={() =>
                                 setExpanded((prev) => ({
@@ -1259,8 +1216,8 @@ export function ScexTrackingPage() {
                   ))}
                   {!feedDayGroups.length && (
                     <div className="scex-empty scex-empty--cta">
-                      <strong>Không có bài khớp bộ lọc</strong>
-                      <p>Thử nới tone / thời gian / bỏ “Có media”.</p>
+                      <strong>No posts match these filters</strong>
+                      <p>Try a broader sentiment or time range, or turn off “Has media”.</p>
                     </div>
                   )}
                 </div>
@@ -1270,12 +1227,12 @@ export function ScexTrackingPage() {
                   <button
                     type="button"
                     className="scex-feed__fs-scrim"
-                    aria-label="Đóng chi tiết KOL"
+                    aria-label="Close KOL details"
                     onClick={() => setSelectedActor(null)}
                   />
                   <aside
                     className="scex-feed__fs-side"
-                    aria-label="Chi tiết KOL"
+                    aria-label="KOL details"
                   >
                     <ScexKolDetail
                       actor={selectedActor}
@@ -1303,7 +1260,6 @@ export function ScexTrackingPage() {
                     post={p}
                     actor={actor}
                     sentimentLabel={config.sentimentLabels[p.sentiment]}
-                    onMap={mapHandles.has(p.handle.toLowerCase())}
                     expanded={!!expanded[p.id]}
                     onToggleExpand={() =>
                       setExpanded((prev) => ({
@@ -1322,8 +1278,8 @@ export function ScexTrackingPage() {
                 <li className="scex-empty scex-empty--cta">
                   {feedFilter || feedQuery ? (
                     <>
-                      <strong>Không có bài khớp bộ lọc</strong>
-                      <p>Thử bỏ lọc KOL hoặc xóa từ khóa tìm kiếm.</p>
+                      <strong>No posts match these filters</strong>
+                      <p>Clear the KOL filter or search query.</p>
                       <div className="scex-empty__actions">
                         {feedFilter && (
                           <button
@@ -1331,7 +1287,7 @@ export function ScexTrackingPage() {
                             className="scex-empty__btn"
                             onClick={() => setFeedFilter(null)}
                           >
-                            Xem tất cả KOL
+                            View all KOL
                           </button>
                         )}
                         {feedQuery && (
@@ -1340,17 +1296,17 @@ export function ScexTrackingPage() {
                             className="scex-empty__btn scex-empty__btn--ghost"
                             onClick={() => setFeedQuery('')}
                           >
-                            Xóa tìm kiếm
+                            Clear search
                           </button>
                         )}
                       </div>
                     </>
                   ) : (
                     <>
-                      <strong>Chưa có mention trong cửa sổ này</strong>
+                      <strong>No mentions in this time window</strong>
                       <p>
-                        Chọn KOL trên ma trận để xem thống kê, hoặc đợi batch
-                        cập nhật tiếp theo.
+                        Select a KOL in the arena to see details, or wait for the next
+                        data update.
                       </p>
                     </>
                   )}
@@ -1367,7 +1323,7 @@ export function ScexTrackingPage() {
           <button
             type="button"
             className="scex-detail-scrim"
-            aria-label="Đóng chi tiết"
+            aria-label="Close details"
             onClick={() => setSelectedActor(null)}
           />
           <ScexKolDetail
@@ -1391,7 +1347,6 @@ function ScexFeedCard({
   post,
   actor,
   sentimentLabel,
-  onMap,
   expanded,
   onToggleExpand,
   onOpenActor,
@@ -1402,7 +1357,6 @@ function ScexFeedCard({
   post: ScexPost
   actor?: ScexActor
   sentimentLabel?: { label: string; color: string }
-  onMap: boolean
   expanded: boolean
   onToggleExpand: () => void
   onOpenActor: () => void
@@ -1443,11 +1397,7 @@ function ScexFeedCard({
           type="button"
           className="scex-feed-card__author"
           onClick={onOpenActor}
-          title={
-            onMap
-              ? 'Xem chi tiết KOL có hồ sơ trên Radar gốc'
-              : 'Xem thống kê SCEX'
-          }
+          title="Open KOL profile"
         >
           <div
             className="scex-feed-card__av"
@@ -1456,17 +1406,13 @@ function ScexFeedCard({
             <XProfileAvatar
               handle={post.handle}
               name={actor?.displayName || post.handle}
+              avatarUrl={actor?.avatarUrl}
               size={42}
             />
           </div>
           <div className="scex-feed-card__meta">
             <div className="scex-feed-card__name">
               <strong>{actor?.displayName || post.handle}</strong>
-              {onMap && (
-                <span className="scex-pill scex-pill--map">
-                  <DaveysRadarLink>Radar gốc</DaveysRadarLink>
-                </span>
-              )}
               {!fullMedia && actor?.tier && (
                 <span className="scex-pill scex-pill--tier">{actor.tier}</span>
               )}
@@ -1477,7 +1423,7 @@ function ScexFeedCard({
                 className="scex-pill scex-pill--sent"
                 style={{ background: sentColor }}
               >
-                {sentimentLabel?.label || post.sentiment}
+                {arenaSentimentLabel(post.sentiment)}
               </span>
             </div>
             <span className="scex-feed-card__sub">
@@ -1493,7 +1439,7 @@ function ScexFeedCard({
             href={safeHref(post.url)}
             target="_blank"
             rel="noreferrer"
-            title="Mở trên X"
+            title="Open on X"
           >
             ↗
           </a>
@@ -1505,7 +1451,7 @@ function ScexFeedCard({
       </p>
       {long && (
         <button type="button" className="scex-feed-card__more" onClick={onToggleExpand}>
-          {expanded ? 'Thu gọn' : 'Xem thêm'}
+          {expanded ? 'Show less' : 'Show more'}
         </button>
       )}
 

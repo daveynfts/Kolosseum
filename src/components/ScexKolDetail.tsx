@@ -12,26 +12,22 @@ import {
   STATUS_LABELS,
 } from '../types'
 import type { ScexActor, ScexConfig, ScexPost } from '../data/scexTracking'
-import {
-  actorVolumeMetric,
-  partnerQuadrantTitle,
-} from '../data/scexTracking'
+import { actorVolumeMetric } from '../data/scexTracking'
 import {
   extractKolReportSummary,
   type KolReport,
 } from '../data/kolReports'
 import { loadPublicReportForHandle } from '../lib/kolReportsStore'
-import { AvatarImg } from './AvatarImg'
 import { BioRichText } from './BioRichText'
 import { RankBadge } from './RankBadge'
 import { SurfAnalysisMock } from './SurfAnalysisMock'
 import { DeepResearchPanel } from '../research/DeepResearchPanel'
 import { XProfileAvatar } from './XProfileAvatar'
-import { DaveysRadarLink } from './DaveysRadarLink'
 import { resolveMediaUrl } from '../lib/avatar'
+import { arenaQuadrantTitle, arenaSentimentLabel } from '../lib/kolosseumLabels'
 import { isSafeImageUrl, safeHref } from '../lib/safeUrl'
 
-/** Minimal Kol for Surf AI when actor is off Radar map but has a public report. */
+/** Minimal Kol for Surf AI when actor is outside the legacy KOL dataset but has a public report. */
 function stubKolFromActor(actor: ScexActor): Kol {
   return {
     id: `scex_${actor.handle}`,
@@ -63,7 +59,7 @@ function fmt(n: number): string {
 
 function formatWhen(iso: string): string {
   try {
-    return new Date(iso).toLocaleString('vi-VN', {
+    return new Date(iso).toLocaleString('en-US', {
       day: '2-digit',
       month: '2-digit',
       hour: '2-digit',
@@ -156,14 +152,14 @@ export function ScexKolDetail({
       className={`scex-detail glass ${isPanel ? 'scex-detail--panel' : ''}`}
       role={isPanel ? 'region' : 'dialog'}
       aria-modal={isPanel ? undefined : true}
-      aria-label={`Chi tiết @${actor.handle}`}
+      aria-label={`Details for @${actor.handle}`}
     >
       <button
         type="button"
         className="scex-detail__close"
         onClick={onClose}
-        aria-label={isPanel ? 'Bỏ chọn KOL' : 'Đóng'}
-        title={isPanel ? 'Bỏ chọn' : 'Đóng'}
+        aria-label={isPanel ? 'Deselect KOL' : 'Close'}
+        title={isPanel ? 'Deselect' : 'Close'}
       >
         ×
       </button>
@@ -171,19 +167,21 @@ export function ScexKolDetail({
 
       <div className="scex-detail__head">
         {mapKol ? (
-          <AvatarImg
-            handle={mapKol.handle}
-            name={mapKol.displayName}
-            size={56}
-            color={accent}
-            avatarUrl={mapKol.avatarUrl}
-            className="scex-detail__avatar"
-          />
+          <div className="scex-detail__avatar">
+            <XProfileAvatar
+              handle={mapKol.handle}
+              name={mapKol.displayName}
+              avatarUrl={mapKol.avatarUrl || actor.avatarUrl}
+              size={56}
+              liveFallback
+            />
+          </div>
         ) : (
           <div className="scex-detail__avatar">
             <XProfileAvatar
               handle={actor.handle}
               name={actor.displayName}
+              avatarUrl={actor.avatarUrl}
               size={56}
               liveFallback
             />
@@ -197,8 +195,8 @@ export function ScexKolDetail({
               href={`https://x.com/${actor.handle}`}
               target="_blank"
               rel="noreferrer"
-              title={`Mở @${actor.handle} trên X`}
-              aria-label={`Mở profile X của @${actor.handle}`}
+              title={`Open @${actor.handle} on X`}
+              aria-label={`Open X profile for @${actor.handle}`}
             >
               <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden>
                 <path
@@ -217,16 +215,9 @@ export function ScexKolDetail({
             @{actor.handle}
           </a>
           <div className="scex-detail__head-badges">
-            {mapKol ? (
-              <span className="scex-detail__badge scex-detail__badge--map">
-                Có trên <DaveysRadarLink>Radar gốc</DaveysRadarLink>
-              </span>
-            ) : (
-              <span className="scex-detail__badge">Off-map</span>
-            )}
             {actor.quadrant && (
               <span className="scex-detail__badge">
-                {partnerQuadrantTitle(actor.quadrant)}
+                {arenaQuadrantTitle(actor.quadrant)}
               </span>
             )}
             <span
@@ -236,7 +227,7 @@ export function ScexKolDetail({
                 borderColor: `${sent?.color || '#94a3b8'}55`,
               }}
             >
-              {sent?.label || actor.sentiment}
+              {arenaSentimentLabel(actor.sentiment)}
             </span>
           </div>
         </div>
@@ -244,15 +235,15 @@ export function ScexKolDetail({
 
       <div className="scex-detail__quick">
         <div>
-          <span>Số mention</span>
+          <span>Mentions</span>
           <strong>{actor.postsVolume}</strong>
         </div>
         <div>
-          <span>Tần suất</span>
+          <span>Volume</span>
           <strong>{vol}</strong>
         </div>
         <div>
-          <span>Uy tín</span>
+          <span>Credibility</span>
           <strong>{Math.round(actor.qualityScore)}</strong>
         </div>
         <div>
@@ -260,7 +251,7 @@ export function ScexKolDetail({
           <strong>{fmt(actor.followers)}</strong>
         </div>
         <div>
-          <span>Bài trong feed</span>
+          <span>Feed posts</span>
           <strong>{sortedPosts.length}</strong>
         </div>
       </div>
@@ -286,7 +277,7 @@ export function ScexKolDetail({
             aria-selected={tab === 'overview'}
             onClick={() => setTab('overview')}
           >
-            Tổng quan
+            Overview
           </button>
         )}
         <button
@@ -306,7 +297,7 @@ export function ScexKolDetail({
           <div className="scex-detail__body">
             <div className="scex-detail__stats">
               <div>
-                <span>Gốc / Reply</span>
+                <span>Original / replies</span>
                 <strong>
                   {actor.gocPosts ?? '—'} / {actor.replyPosts ?? '—'}
                 </strong>
@@ -318,13 +309,13 @@ export function ScexKolDetail({
                 </strong>
               </div>
               <div>
-                <span>Map tier</span>
+                <span>Profile tier</span>
                 <strong>{actor.mapRank || actor.tier || '—'}</strong>
               </div>
               <div>
-                <span>Cảm xúc</span>
+                <span>Sentiment</span>
                 <strong style={{ color: sent?.color }}>
-                  {sent?.label || actor.sentiment}
+                  {arenaSentimentLabel(actor.sentiment)}
                 </strong>
               </div>
             </div>
@@ -333,13 +324,13 @@ export function ScexKolDetail({
             )}
 
             <div className="scex-detail__feed-head">
-              <h3>Bài mention SCEX</h3>
-              <span>{sortedPosts.length} bài</span>
+              <h3>SCEX mentions</h3>
+              <span>{sortedPosts.length} posts</span>
             </div>
 
             {sortedPosts.length === 0 ? (
               <p className="scex-detail__feed-empty">
-                Chưa có bài mention SCEX trong cửa sổ tracking cho @{actor.handle}.
+                No SCEX mentions in the current tracking window for @{actor.handle}.
               </p>
             ) : (
               <ul className="scex-detail__feed">
@@ -360,7 +351,7 @@ export function ScexKolDetail({
                           className="scex-detail__post-sent"
                           style={{ color: sLab?.color || '#94a3b8' }}
                         >
-                          {sLab?.label || p.sentiment}
+                          {arenaSentimentLabel(p.sentiment)}
                         </span>
                       </div>
                       <p className="scex-detail__post-text">{show}</p>
@@ -375,7 +366,7 @@ export function ScexKolDetail({
                             }))
                           }
                         >
-                          {open ? 'Thu gọn' : 'Xem thêm'}
+                          {open ? 'Show less' : 'Show more'}
                         </button>
                       )}
                       {media.length > 0 && (
@@ -414,7 +405,7 @@ export function ScexKolDetail({
                             target="_blank"
                             rel="noreferrer"
                           >
-                            Xem trên X ↗
+                            View on X ↗
                           </a>
                         )}
                       </div>
@@ -430,13 +421,13 @@ export function ScexKolDetail({
         {tab === 'overview' && (
           <div className="scex-detail__body">
             {reportLoading && (
-              <p className="scex-detail__label">Đang tải tóm tắt report…</p>
+              <p className="scex-detail__label">Loading report summary…</p>
             )}
 
             {hasReport && reportSummary ? (
               <>
                 <p className="scex-detail__label">
-                  Tóm tắt SurfAI report
+                  Surf AI report summary
                   {pubReport?.structured?.overallScore != null && (
                     <span className="scex-detail__score-inline">
                       {' '}
@@ -454,7 +445,7 @@ export function ScexKolDetail({
                   className="scex-detail__open-report"
                   onClick={() => setTab('analysis')}
                 >
-                  Xem full report trên tab Surf AI →
+                  View full report in the Surf AI tab →
                 </button>
               </>
             ) : (
@@ -462,8 +453,8 @@ export function ScexKolDetail({
                 <>
                   <p className="scex-detail__label">
                     {mapKol
-                      ? 'Hoạt động & assessment (map)'
-                      : 'Chưa có SurfAI report public'}
+                      ? 'Activity and profile assessment'
+                      : 'No public Surf AI report yet'}
                   </p>
                   {mapKol?.bio ? (
                     <BioRichText
@@ -472,8 +463,8 @@ export function ScexKolDetail({
                     />
                   ) : (
                     <p className="scex-detail__feed-empty">
-                      Publish report public trong Admin → KOL Reports để hiện
-                      tóm tắt tại đây.
+                      Publish a public report in Admin → KOL Reports to show
+                      a summary here.
                     </p>
                   )}
                 </>
@@ -517,7 +508,7 @@ export function ScexKolDetail({
                     <strong>{fmt(mapKol.followers)}</strong>
                   </div>
                   <div>
-                    <span>Score map</span>
+                    <span>Profile score</span>
                     <strong>{mapKol.score.toFixed(1)}</strong>
                   </div>
                   <div>
@@ -529,7 +520,7 @@ export function ScexKolDetail({
                     </strong>
                   </div>
                   <div>
-                    <span>Lần nhắc SCEX</span>
+                    <span>SCEX mentions</span>
                     <strong>{actor.postsVolume}</strong>
                   </div>
                 </div>
@@ -543,16 +534,16 @@ export function ScexKolDetail({
                   <strong>{fmt(actor.followers)}</strong>
                 </div>
                 <div>
-                  <span>Uy tín SCEX</span>
+                  <span>SCEX credibility</span>
                   <strong>{Math.round(actor.qualityScore)}</strong>
                 </div>
                 <div>
-                  <span>Lần nhắc SCEX</span>
+                  <span>SCEX mentions</span>
                   <strong>{actor.postsVolume}</strong>
                 </div>
                 <div>
-                  <span>Map</span>
-                  <strong>Off-map</strong>
+                  <span>Sentiment</span>
+                  <strong>{arenaSentimentLabel(actor.sentiment)}</strong>
                 </div>
               </div>
             )}

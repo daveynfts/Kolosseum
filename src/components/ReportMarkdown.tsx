@@ -123,7 +123,7 @@ export function ReportMarkdown({
                   className="report-md__img-blocked report-md__img-fallback"
                   hidden={isSafeUrl(b.src)}
                 >
-                  Không tải được ảnh
+                  Image unavailable
                   {b.src ? `: ${b.src.slice(0, 72)}` : ''}
                 </div>
                 {b.alt && !isGenericImageAlt(b.alt) ? (

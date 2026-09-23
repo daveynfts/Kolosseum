@@ -32,7 +32,7 @@ export function ReportPage() {
   const [error, setError] = useState('')
 
   useEffect(() => {
-    document.title = report ? `Hồ sơ @${report.kolHandle} — Kolosseum` : 'Deep Research — Kolosseum'
+    document.title = report ? `Profile @${report.kolHandle} — Kolosseum` : 'Deep Research — Kolosseum'
   }, [report])
 
   const load = useCallback(async (adminToken: string) => {
@@ -44,34 +44,34 @@ export function ReportPage() {
     if (verifyResponse.ok) setVerify(await verifyResponse.json() as Verification)
     if (!reportResponse.ok) {
       setReport(null)
-      setError(reportResponse.status === 401 ? 'Cần ADMIN_TOKEN của demo M1 để mở nội dung report.' : `Không tải được report (HTTP ${reportResponse.status}).`)
+      setError(reportResponse.status === 401 ? 'Enter the M1 demo ADMIN_TOKEN to view report content.' : `Could not load report (HTTP ${reportResponse.status}).`)
       return
     }
     setReport(await reportResponse.json() as Report)
   }, [id])
 
-  useEffect(() => { void load(sessionStorage.getItem(ADMIN_TOKEN_SESSION_KEY) || '').catch(() => setError('Dịch vụ report chưa sẵn sàng.')) }, [load])
+  useEffect(() => { void load(sessionStorage.getItem(ADMIN_TOKEN_SESSION_KEY) || '').catch(() => setError('Report service is unavailable.')) }, [load])
 
   function unlock() {
     sessionStorage.setItem(ADMIN_TOKEN_SESSION_KEY, token.trim())
-    void load(token.trim()).catch(() => setError('Dịch vụ report chưa sẵn sàng.'))
+    void load(token.trim()).catch(() => setError('Report service is unavailable.'))
   }
 
   return (
     <main className="dr-report-page">
-      <nav className="dr-report-page__nav"><a href="/scex">← Quay lại đấu trường KOL</a></nav>
-      <div className="dr-panel__banner">SOLANA DEVNET · BÁO CÁO NGHIÊN CỨU</div>
-      <h1>{report ? `Hồ sơ @${report.kolHandle}` : 'Deep Research report'}</h1>
-      {report && <p className="dr-report-page__meta">{report.templateSlug} · Nguồn SCEX đến {report.contextAsOf || 'không rõ'} · Tạo {new Date(report.createdAt).toLocaleString('vi-VN')} · {report.surfModel}</p>}
+      <nav className="dr-report-page__nav"><a href="/scex">← Back to the KOL arena</a></nav>
+      <div className="dr-panel__banner">SOLANA DEVNET · RESEARCH REPORT</div>
+      <h1>{report ? `Profile @${report.kolHandle}` : 'Deep Research report'}</h1>
+      {report && <p className="dr-report-page__meta">{report.templateSlug} · SCEX source as of {report.contextAsOf || 'unknown'} · Created {new Date(report.createdAt).toLocaleString('en-US')} · {report.surfModel}</p>}
       {verify && (
-        <section className="dr-verify" aria-label="Xác minh báo cáo">
-          <strong>{verify.recomputedHashMatch ? '✓ Hash nội dung khớp' : '⚠ Hash nội dung không khớp'}</strong>
+        <section className="dr-verify" aria-label="Report verification">
+          <strong>{verify.recomputedHashMatch ? '✓ Content hash matches' : '⚠ Content hash mismatch'}</strong>
           <code>SHA-256: {verify.contentHash}</code>
           {verify.evidenceTx && verify.explorerUrl ? (
             <a href={verify.explorerUrl} target="_blank" rel="noreferrer">
-              {verify.onChainMatch === true ? '✓ Memo devnet đã xác minh ↗' : verify.networkError ? 'Memo devnet: mạng chưa kiểm tra được ↗' : 'Memo devnet chưa xác minh ↗'}
+              {verify.onChainMatch === true ? '✓ Devnet memo verified ↗' : verify.networkError ? 'Devnet memo: network unavailable ↗' : 'Devnet memo not verified ↗'}
             </a>
-          ) : <span>Memo devnet đang chờ ghi.</span>}
+          ) : <span>Devnet memo pending.</span>}
         </section>
       )}
       {error && <p className="dr-panel__error" role="alert">{error}</p>}
@@ -80,7 +80,7 @@ export function ReportPage() {
           <label>ADMIN_TOKEN (demo M1)
             <input type="password" value={token} onChange={(event) => setToken(event.target.value)} autoComplete="off" />
           </label>
-          <button type="button" onClick={unlock}>Mở report</button>
+          <button type="button" onClick={unlock}>Open report</button>
         </div>
       )}
       {report && <article className="dr-report-page__content"><ReportMarkdown text={report.content} /></article>}

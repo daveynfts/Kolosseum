@@ -21,53 +21,22 @@ import {
   computeQuadrant,
 } from '../data/scexTracking'
 import { XProfileAvatar } from './XProfileAvatar'
-import { DaveysRadarLink } from './DaveysRadarLink'
+import { ARENA_ZONES, arenaQuadrantTitle, arenaSentimentLabel } from '../lib/kolosseumLabels'
 
 const STORY_TIP_KEY = 'scex-story-tip-v1'
 
-const STORY_ZONE: Record<
-  ScexQuadrant,
-  { title: string; hint: string; corner: 'tl' | 'tr' | 'bl' | 'br' }
-> = {
-  nurture: {
-    title: 'Có tiềm năng',
-    hint: 'Chất lượng cao · ít mention',
-    corner: 'tl',
-  },
-  stars: {
-    title: 'Ưu tiên hợp tác',
-    hint: 'Hay mention · chất lượng cao',
-    corner: 'tr',
-  },
-  ignore: {
-    title: 'Ít ưu tiên',
-    hint: 'Ít mention · chất lượng thấp',
-    corner: 'bl',
-  },
-  noise: {
-    title: 'Cần rà soát',
-    hint: 'Hay mention · chất lượng thấp',
-    corner: 'br',
-  },
-}
-
 function storyVolumePhrase(vol: number, split: number): string {
-  if (vol >= split * 1.2) return 'Hay mention'
-  if (vol >= split) return 'Mention khá'
-  if (vol >= split * 0.55) return 'Mention vừa'
-  return 'Ít mention'
+  if (vol >= split * 1.2) return 'Very frequent mentions'
+  if (vol >= split) return 'Frequent mentions'
+  if (vol >= split * 0.55) return 'Moderate mentions'
+  return 'Few mentions'
 }
 
 function storyQualityPhrase(q: number, split: number): string {
-  if (q >= split * 1.15) return 'Chất lượng cao'
-  if (q >= split) return 'Chất lượng khá'
-  if (q >= split * 0.7) return 'Chất lượng trung bình'
-  return 'Chất lượng thấp'
-}
-
-/** Partner-facing zone title (stable, never use stale/jargon config copy). */
-function partnerZoneTitle(key: ScexQuadrant): string {
-  return STORY_ZONE[key]?.title || key
+  if (q >= split * 1.15) return 'High credibility'
+  if (q >= split) return 'Good credibility'
+  if (q >= split * 0.7) return 'Moderate credibility'
+  return 'Low credibility'
 }
 
 /**
@@ -106,21 +75,10 @@ function zoneFromPixel(
   return 'ignore'
 }
 
-function normalizeSentimentLabel(raw: string): string {
-  const s = (raw || '').toLowerCase()
-  if (/bull|tích cực|positive/i.test(s)) return 'Tích cực'
-  if (/bear|tiêu cực|negative/i.test(s)) return 'Tiêu cực'
-  if (/neutral|trung lập|mixed|hỗn/i.test(s)) return 'Trung lập'
-  if (/shill/i.test(s)) return 'Shill'
-  if (/scam/i.test(s)) return 'Cảnh báo'
-  return raw || '—'
-}
-
 export type ScexMatrix2DProps = {
   actors: ScexActor[]
   config: ScexConfig
   selectedId: string | null
-  mapHandles: Set<string>
   onSelect: (actor: ScexActor | null) => void
   /** @deprecated FAB is always visible */
   showZoomControls?: boolean
@@ -326,7 +284,6 @@ export function ScexMatrix2D({
   actors,
   config,
   selectedId,
-  mapHandles,
   onSelect,
 }: ScexMatrix2DProps) {
   const plotRef = useRef<HTMLDivElement>(null)
@@ -548,9 +505,9 @@ export function ScexMatrix2D({
   const zones = (['nurture', 'stars', 'ignore', 'noise'] as const).map(
     (key) => ({
       key,
-      title: partnerZoneTitle(key),
-      hint: STORY_ZONE[key].hint,
-      corner: STORY_ZONE[key].corner,
+      title: arenaQuadrantTitle(key),
+      hint: ARENA_ZONES[key].hint,
+      corner: ARENA_ZONES[key].corner,
     }),
   )
 
@@ -561,10 +518,9 @@ export function ScexMatrix2D({
       {showStoryTip && (
         <div className="scex2d-story-tip" role="status">
           <div className="scex2d-story-tip__body">
-            <strong>Cách đọc nhanh</strong>
+            <strong>How to read the arena</strong>
             <p>
-              Trên = uy tín cao · Phải = nhiều bài · Dưới = uy tín thấp · Trái =
-              ít bài. Bấm avatar để xem KOL.
+              Top = higher credibility · Right = more posts · Bottom = lower credibility · Left = fewer posts. Select an avatar for details.
             </p>
           </div>
           <button
@@ -572,7 +528,7 @@ export function ScexMatrix2D({
             className="scex2d-story-tip__ok"
             onClick={dismissStoryTip}
           >
-            Đã hiểu
+            Got it
           </button>
         </div>
       )}
@@ -594,24 +550,24 @@ export function ScexMatrix2D({
           */}
           <div className="scex2d-axis-overlay">
             <div className="scex2d-axis-end scex2d-axis-end--n" aria-hidden>
-              <span className="scex2d-axis-end__text">Uy tín cao nhất</span>
+              <span className="scex2d-axis-end__text">Highest credibility</span>
             </div>
             <div className="scex2d-axis-end scex2d-axis-end--s" aria-hidden>
-              <span className="scex2d-axis-end__text">Uy tín thấp nhất</span>
+              <span className="scex2d-axis-end__text">Lowest credibility</span>
             </div>
             <div
               className="scex2d-axis-end scex2d-axis-end--w"
               tabIndex={0}
-              title="Rê chuột để đọc ngang"
+              title="Hover to read horizontally"
             >
-              <span className="scex2d-axis-end__text">Ít bài đăng nhất</span>
+              <span className="scex2d-axis-end__text">Fewest posts</span>
             </div>
             <div
               className="scex2d-axis-end scex2d-axis-end--e"
               tabIndex={0}
-              title="Rê chuột để đọc ngang"
+              title="Hover to scroll horizontally"
             >
-              <span className="scex2d-axis-end__text">Nhiều bài đăng nhất</span>
+              <span className="scex2d-axis-end__text">Most posts</span>
             </div>
           </div>
 
@@ -664,13 +620,8 @@ export function ScexMatrix2D({
                   config.sentimentLabels[a.sentiment]?.color || '#94a3b8'
                 const diam = b.r * 2
                 const selected = selectedId === a.id
-                const onMap = mapHandles.has(a.handle.toLowerCase())
                 const showTip = hoverId === a.id || selected
-                const sentLabel = normalizeSentimentLabel(
-                  config.sentimentLabels[a.sentiment]?.label ||
-                    a.sentiment ||
-                    '',
-                )
+                const sentLabel = arenaSentimentLabel(a.sentiment)
                 const vol = actorVolumeMetric(a, config)
                 const volPhrase = storyVolumePhrase(vol, config.volumeSplit)
                 const qualPhrase = storyQualityPhrase(
@@ -690,7 +641,7 @@ export function ScexMatrix2D({
                         splitYFromTopPct,
                       )
                     : zoneFromMetrics(a, config)
-                const zoneLabel = partnerZoneTitle(zoneKey)
+                const zoneLabel = arenaQuadrantTitle(zoneKey)
                 // Keep tip inside plot (overflow:hidden):
                 // top half → open downward; bottom half → open upward
                 const tipBelow = b.y <= plotSize.h * 0.5
@@ -704,10 +655,10 @@ export function ScexMatrix2D({
                 const sizeLabel =
                   config.sizeMetric === 'reach7d' ? 'Reach 7d' : 'Followers'
                 const tipRows: Array<[string, string]> = [
-                  ['Vùng', zoneLabel],
-                  ['Tần suất', volPhrase],
-                  ['Uy tín', qualPhrase],
-                  ['Góc nhìn', sentLabel],
+                  ['Zone', zoneLabel],
+                  ['Mentions', volPhrase],
+                  ['Credibility', qualPhrase],
+                  ['Sentiment', sentLabel],
                   [sizeLabel, `${formatCompact(sizeVal)}`],
                 ]
                 return (
@@ -717,7 +668,6 @@ export function ScexMatrix2D({
                     className={[
                       'scex-bubble',
                       selected ? 'is-selected' : '',
-                      onMap ? 'is-on-map' : '',
                       showTip ? 'is-tip' : '',
                       tipBelow ? 'is-tip-below' : '',
                       tipX === 'left' ? 'is-tip-left' : '',
@@ -759,11 +709,11 @@ export function ScexMatrix2D({
                       <XProfileAvatar
                         handle={a.handle}
                         name={a.displayName}
+                        avatarUrl={a.avatarUrl}
                         size={Math.max(24, Math.round(diam - 8))}
                         liveFallback
                       />
                     </span>
-                    {onMap && <span className="scex-bubble__map-dot" />}
                     <span className="scex-bubble__label">
                       @
                       {a.handle.length > 10
@@ -805,18 +755,14 @@ export function ScexMatrix2D({
         </div>
       </div>
 
-      <div className="scex2d-encode" aria-label="Chú thích ma trận">
+      <div className="scex2d-encode" aria-label="Matrix legend">
         <span>
           <i className="scex2d-encode__size" aria-hidden />
-          To hơn = nhiều followers
+          Larger = more followers
         </span>
         <span>
           <i className="scex2d-encode__ring" aria-hidden />
-          Viền = cảm xúc
-        </span>
-        <span>
-          <i className="scex2d-encode__map" aria-hidden />
-          Chấm xanh = Có trên <DaveysRadarLink>Radar gốc</DaveysRadarLink>
+          Border = sentiment
         </span>
       </div>
     </div>

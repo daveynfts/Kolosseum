@@ -4,9 +4,9 @@
  */
 import { applyDocumentSeo } from './seo'
 
-const TITLE = 'Kolosseum — Đấu trường KOL crypto Việt Nam'
+const TITLE = 'Kolosseum — The Vietnamese Crypto KOL Arena'
 const DESCRIPTION =
-  "Đấu trường ảnh hưởng KOL crypto Việt Nam: ma trận uy tín × tần suất, live feed X về SCEX và hồ sơ KOL từ dữ liệu gốc."
+  "Explore Vietnamese crypto KOLs through a credibility and volume matrix, live SCEX posts on X, and sourced KOL profiles."
 
 const CANONICAL = 'https://radar.daveynfts.com/scex'
 
@@ -14,8 +14,8 @@ export function applyScexSeo() {
   applyDocumentSeo({
     title: TITLE,
     description: DESCRIPTION,
-    ogTitle: 'Kolosseum — Đấu trường KOL crypto Việt Nam',
-    ogAlt: 'Kolosseum — đấu trường KOL crypto Việt Nam',
+    ogTitle: 'Kolosseum — The Vietnamese Crypto KOL Arena',
+    ogAlt: 'Kolosseum — Vietnamese crypto KOL arena',
     canonical: CANONICAL,
     ogImage: new URL('/kolosseum-og.png', window.location.origin).href,
     themeColor: '#211817',

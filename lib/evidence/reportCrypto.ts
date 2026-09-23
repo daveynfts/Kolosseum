@@ -1,6 +1,6 @@
 import { createCipheriv, createDecipheriv, createHash, randomBytes, timingSafeEqual } from 'node:crypto'
 
-export const REPORT_DISCLAIMER = 'Báo cáo này chỉ phục vụ nghiên cứu thông tin công khai, không phải lời khuyên đầu tư hoặc khuyến nghị mua/bán tài sản.'
+export const REPORT_DISCLAIMER = 'This report analyzes public information for research purposes only. It is not investment advice or a recommendation to buy or sell any asset.'
 
 export function sha256(text: string): string {
   return createHash('sha256').update(text, 'utf8').digest('hex')
@@ -34,9 +34,9 @@ export function hashesMatch(a: string, b: string): boolean {
 const ADVICE_LINE = /(?:\b(?:buy now|sell now|you should buy|you should sell|entry price|take profit|stop loss)\b|(?:^|[\s:])(?:nên|hãy|phải)\s+(?:mua|bán|long|short)\b|(?:điểm\s+(?:mua|bán|vào lệnh)))/i
 
 export function sanitizeResearch(markdown: string): string {
-  const withoutImages = markdown.replace(/!\[[^\]]*\]\([^)]*\)/g, '[Hình ảnh đã lược bỏ]')
+  const withoutImages = markdown.replace(/!\[[^\]]*\]\([^)]*\)/g, '[Image omitted]')
   const safeLines = withoutImages.split(/\r?\n/).map((line) =>
-    ADVICE_LINE.test(line) ? '[Đã lược bỏ câu mang tính khuyến nghị giao dịch.]' : line,
+    ADVICE_LINE.test(line) ? '[Trading recommendation removed.]' : line,
   )
   const body = safeLines.join('\n').trim()
   if (!body) throw new Error('Research body is empty after sanitization')

@@ -1,44 +1,48 @@
-# VN KOL Map (3D)
+# Kolosseum
 
-> **Kolosseum branch:** SCEX view giữ dữ liệu/luồng cũ và có skin đấu trường La Mã. M1 bổ sung Deep Research từ Radar + Surf thật, lưu PostgreSQL và xác minh Memo Solana devnet; cần cấu hình dịch vụ trước khi tạo report. Xem [M1 runbook](./docs/M1_RUNBOOK.md), [tạo database](./docs/DATABASE_SETUP.md), [Discovery](./docs/DISCOVERY.md) và [kế hoạch](./docs/PLAN.md). Payment x402/MPP và bán lại là các mốc sau M1, chưa hoạt động.
+Kolosseum presents the live Vietnamese crypto KOL matrix and SCEX X feed as a Roman arena. Select a KOL to inspect source posts and open Deep Research. The app keeps the existing KOL and post data pipelines; the former Radar map and Events pages are no longer public entry points.
 
-Interactive 3D bubble map of Vietnamese crypto KOLs (Tier 1–2 from curated Google Sheet).
+## Run locally
 
-> **Tiếp tục làm việc:** đọc [`SESSION.md`](./SESSION.md) trước (handoff phiên 2026-07-09).
+Node.js and npm are required.
 
-## Run
-
-```bash
-cd vn-kol-map
+~~~bash
 npm install
 npm run dev
-```
+~~~
 
-Open `http://localhost:5173/`.
+Open http://localhost:5173/scex. The root URL and old Events URLs open the arena. The data comes from the existing SCEX API when available, with the repository snapshot used by the app's existing fallback. X posts remain in their original language; interface labels and new research prompts are English.
 
-Ops (cron, CLI, data health): [`docs/OPS.md`](./docs/OPS.md).
+## Avatars
 
-## Data pipeline
+Avatars use the existing Cloudflare R2 bucket under radar/avatars/{handle}.jpg. The local Vite server proxies /r2/* to the configured RADAR_API_BASE, so an R2 URL works during local development. Each KOL's avatarUrl is preferred when present.
 
-```bash
-# 1) Pull Google Sheet → data/kols-from-sheet.json
-python scripts/fetch_sheet.py
+~~~bash
+npm run avatars:sync
+~~~
 
-# 2) Generate Tier 1–2 map data → src/data/sheetKols.ts
-python scripts/generate_tier12_data.py
+This read-only command audits every handle in the live /api/scex-tracking dataset. To upload only missing avatars, set FEED_ADMIN_TOKEN in .env.local and run:
 
-# 3) Download X avatars → public/avatars/{handle}.jpg
-python scripts/download_avatars.py
-```
+~~~bash
+npm run avatars:sync:apply
+~~~
 
-## What’s real vs mock
+The existing authenticated /api/avatar endpoint fetches the image and writes directly to the same R2 bucket. The sync script does not save image files locally. The existing weekly SCEX GitHub Actions refresh also runs it after updating the live dataset. See [avatar sync details](./docs/AVATARS.md).
 
-| Source | Fields |
-|--------|--------|
-| Google Sheet | name, handle, followers, tier, type |
-| X (cached) | profile photo (~90/105) |
-| Mock (until Surf) | smart followers, 24h engagement, hot pulse |
+## Deep Research status
 
-## Stack
+M1 code adds report templates, a Surf AI server client, encrypted reports, hash verification, and Solana devnet Memo evidence. Running that flow against live services requires PostgreSQL, a Surf API key, a report encryption key, an admin token, and a devnet operator keypair. The research routes are behind DEEP_RESEARCH_ENABLED; see the [M1 runbook](./docs/M1_RUNBOOK.md) and [database setup](./docs/DATABASE_SETUP.md).
 
-Vite · React · TypeScript · Three.js · React Three Fiber · Drei
+Wallet purchases, x402/MPP payment channels, votes, and resale are later milestones. The M1 demo does not charge funds or connect a wallet. Do not present an unavailable report as a completed Surf analysis.
+
+## Checks
+
+~~~bash
+npm run build
+npm run lint
+npm run research:typecheck
+npm test
+npm run research:check-secrets
+~~~
+
+The app uses Vite, React, TypeScript, the existing SCEX API and R2 store, and a separate Node research service.

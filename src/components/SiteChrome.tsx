@@ -2,16 +2,6 @@ import type { FormEvent, ReactNode } from 'react'
 
 export type SiteChromePage = 'map' | 'scex' | 'event'
 
-const TABS: Array<{ id: SiteChromePage; href: string; label: string }> = [
-  { id: 'map', href: '/', label: 'VN KOLs' },
-  { id: 'scex', href: '/scex', label: 'SCEX' },
-  {
-    id: 'event',
-    href: '/event',
-    label: 'Events',
-  },
-]
-
 type SearchProps = {
   value: string
   onChange: (value: string) => void
@@ -39,40 +29,25 @@ export function SiteChrome({ active, search, trailing, overlay }: Props) {
     >
       <a
         className="site-chrome__brand"
-        href={arena ? '/scex' : '/'}
-        title={arena ? 'Kolosseum' : "Davey's Radar"}
+        href="/scex"
+        title="Kolosseum"
       >
         <img
           className="site-chrome__mark"
-          src={arena ? '/kolosseum-mark.svg' : '/logo.jpg'}
+          src="/kolosseum-mark.svg"
           alt=""
           width={64}
           height={64}
           decoding="async"
         />
         <span className="site-chrome__name">
-          {arena ? 'KOLOSSEUM' : "Davey's Radar"}
+          KOLOSSEUM
         </span>
       </a>
 
-      {arena ? (
-        <span className="site-chrome__arena-inscription" aria-hidden="true">
-          THE KOL ARENA <i>✦</i> SOLANA DEVNET
-        </span>
-      ) : (
-        <nav className="site-chrome__tabs" aria-label="Sản phẩm">
-          {TABS.map((t) => (
-            <a
-              key={t.id}
-              href={t.href}
-              className={`site-chrome__tab ${active === t.id ? 'is-active' : ''}`}
-              aria-current={active === t.id ? 'page' : undefined}
-            >
-              {t.label}
-            </a>
-          ))}
-        </nav>
-      )}
+      <span className="site-chrome__arena-inscription" aria-hidden="true">
+        THE KOL ARENA <i>✦</i> SOLANA DEVNET
+      </span>
       {search ? (
         <form
           className={`site-chrome__search${overlay ? ' glass-fill' : ''}`}
@@ -85,8 +60,8 @@ export function SiteChrome({ active, search, trailing, overlay }: Props) {
             type="search"
             value={search.value}
             onChange={(e) => search.onChange(e.target.value)}
-            placeholder={search.placeholder || 'Tìm KOL, @handle…'}
-            aria-label="Tìm KOL"
+            placeholder={search.placeholder || 'Search KOL or @handle…'}
+            aria-label="Search KOLs"
             autoComplete="off"
             enterKeyHint="search"
           />
@@ -95,7 +70,7 @@ export function SiteChrome({ active, search, trailing, overlay }: Props) {
               type="button"
               className="site-chrome__search-clear"
               onClick={() => search.onChange('')}
-              title="Xóa"
+              title="Clear search"
             >
               ×
             </button>

@@ -19,3 +19,9 @@ Node 25 trên máy làm hỏng một test cache thuộc baseline; cùng bộ 153
 ## 2026-09-23 — Kolosseum là thương hiệu của trang đấu trường
 
 Theo yêu cầu mới, /scex và trang report dùng nhận diện Kolosseum: bỏ banner sự kiện, bỏ các tab VN KOLs/SCEX/Events ở header đấu trường, thay hero SCEX bằng biểu tượng và kiến trúc La Mã, đồng bộ title/OG/favicons của route. Ma trận, live feed, chỉ số, bộ lọc và URL nguồn vẫn giữ nguyên. SCEX chỉ còn là tên nguồn dữ liệu được theo dõi; liên kết tới Radar gốc vẫn còn để ghi nhận xuất xứ. Trang Radar/map và event cũ vẫn hoạt động qua URL riêng, không bị đổi dữ liệu hay luồng.
+
+## 2026-09-23 — English Kolosseum and retirement of public legacy pages
+
+The latest user request supersedes the earlier decision to keep public Radar and Events routes. The root and former Events URLs now open /scex, and the Kolosseum header has no legacy navigation or Radar attribution badge. Existing KOL/post data, scoring, storage, and the internal /admin editor remain intact. Original X post text, KOL names, notes, and previously published report content remain in their source language so research evidence is not silently altered. Kolosseum interface copy, new report templates, generation instructions, and the fixed disclaimer are English.
+
+Avatar reads keep using the same R2 bucket. Local Vite now proxies /r2/*, and the UI prefers existing avatarUrl values. The avatar sync script audits the live SCEX dataset and uploads only missing keys via the existing authenticated API. It does not create a local image store. A read-only audit found 561 of 597 handles in R2 and 36 missing. With the user-provided FEED_ADMIN_TOKEN in ignored .env.local, the existing API uploaded all 36; a second read-only audit confirmed 597/597 image keys and zero errors. The weekly SCEX refresh now runs the same --apply sync after data updates.

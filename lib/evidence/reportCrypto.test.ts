@@ -20,6 +20,6 @@ describe('research report integrity', () => {
     expect(clean).not.toContain('Nên mua')
     expect(clean).not.toContain('https://bad.test')
     expect(clean).toContain('Một nguồn khác.')
-    expect(clean).toContain('không phải lời khuyên đầu tư')
+    expect(clean).toContain('not investment advice')
   })
 })

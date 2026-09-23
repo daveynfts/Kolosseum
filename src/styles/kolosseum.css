@@ -1,0 +1,237 @@
+/* Kolosseum skin for the existing SCEX view. Geometry, data encodings and
+   controls remain in their original components; this file only changes paint. */
+.app-shell--arena {
+  --arena-gold: #d8ae68;
+  --arena-gold-light: #f3dba6;
+  --arena-stone: #bda98b;
+  --arena-crimson: #9d4939;
+  --arena-ink: #130f12;
+  --accent: var(--arena-gold-light);
+  background: #100d10;
+}
+
+.app-shell--arena .site-chrome:not(.site-chrome--overlay) {
+  background: linear-gradient(90deg, #21191a, #100e12 55%, #251a18);
+  border-bottom: 1px solid rgba(216, 174, 104, .42);
+  box-shadow: inset 0 -1px 0 rgba(0, 0, 0, .6);
+}
+
+.app-shell--arena .site-chrome__mark {
+  border: 1px solid rgba(239, 204, 144, .65);
+  box-shadow: 0 0 0 2px rgba(110, 66, 34, .35);
+}
+
+.app-shell--arena .site-chrome__name {
+  color: #f3e5cc;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-weight: 700;
+  letter-spacing: .01em;
+}
+
+.app-shell--arena .site-chrome__tabs {
+  background: rgba(31, 24, 23, .8);
+  border-color: rgba(216, 174, 104, .22);
+}
+
+.app-shell--arena .site-chrome__tab.is-active {
+  background: linear-gradient(155deg, #f2d49a, #b78343);
+  color: #2b190f;
+}
+
+.app-shell--arena .scex-page {
+  color: #f7eee0;
+  background:
+    radial-gradient(ellipse 55% 45% at 50% 5%, rgba(175, 99, 57, .17), transparent 78%),
+    radial-gradient(ellipse 75% 80% at 50% 115%, rgba(118, 49, 40, .16), transparent 70%),
+    repeating-linear-gradient(90deg, transparent 0 119px, rgba(219, 171, 104, .018) 120px 121px),
+    linear-gradient(180deg, #171217, #0e0c11 65%, #110d0d);
+}
+
+.app-shell--arena .scex-page__hero {
+  position: relative;
+  isolation: isolate;
+  border-color: rgba(216, 174, 104, .42);
+  background:
+    radial-gradient(ellipse 95% 180% at 50% -100%, rgba(246, 190, 110, .18), transparent 90%),
+    repeating-linear-gradient(90deg, rgba(235, 194, 129, .022) 0 1px, transparent 1px 38px),
+    linear-gradient(145deg, rgba(58, 37, 31, .96), rgba(25, 19, 22, .97) 56%, rgba(47, 27, 29, .94));
+  box-shadow: 0 14px 38px rgba(0, 0, 0, .36), inset 0 1px 0 rgba(255, 219, 157, .18);
+}
+
+.app-shell--arena .scex-page__hero::before {
+  content: '';
+  position: absolute;
+  inset: 4px;
+  z-index: -1;
+  border: 1px solid rgba(228, 183, 113, .12);
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+.app-shell--arena .scex-page__logo {
+  border-color: rgba(236, 194, 123, .7);
+  background: #291d1b;
+  box-shadow: 0 0 0 3px rgba(125, 69, 35, .34), 0 8px 26px rgba(0, 0, 0, .45);
+}
+
+.app-shell--arena .scex-page__name {
+  background: linear-gradient(120deg, #fff0ce, #dfb879 52%, #f4d9a5);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+}
+
+.app-shell--arena .scex-page__title,
+.app-shell--arena .scex-card__head h2,
+.app-shell--arena .scex-detail__head-text h2 {
+  font-family: Georgia, 'Times New Roman', serif;
+  letter-spacing: .005em;
+}
+
+.app-shell--arena .scex-page__stats {
+  background: rgba(14, 10, 11, .52);
+  border-color: rgba(216, 174, 104, .23);
+}
+
+.app-shell--arena .scex-stat + .scex-stat {
+  box-shadow: inset 1px 0 0 rgba(216, 174, 104, .18);
+}
+
+.app-shell--arena .scex-stat em,
+.app-shell--arena .scex-stat--accent em {
+  color: #efd09a;
+}
+
+.app-shell--arena .scex-card,
+.app-shell--arena .scex-detail--panel {
+  background: linear-gradient(152deg, rgba(52, 38, 34, .95), rgba(26, 21, 24, .97) 45%, rgba(38, 26, 26, .96));
+  border-color: rgba(216, 174, 104, .32);
+  box-shadow: 0 23px 55px rgba(0, 0, 0, .44), inset 0 1px 0 rgba(248, 217, 163, .11);
+}
+
+.app-shell--arena .scex-card__head h2 {
+  color: #f4ddba;
+}
+
+.app-shell--arena .scex-matrix-pill,
+.app-shell--arena .scex-feed__chip,
+.app-shell--arena .scex-detail__tab {
+  border-color: rgba(216, 174, 104, .28);
+}
+
+.app-shell--arena .scex-matrix-pill.is-active,
+.app-shell--arena .scex-detail__tab.is-active {
+  box-shadow: inset 0 0 0 1px rgba(238, 191, 112, .4);
+}
+
+.app-shell--arena .scex2d-stage,
+.app-shell--arena .scex2d-plot {
+  border-color: rgba(211, 171, 108, .36);
+}
+
+.app-shell--arena .scex2d-plot {
+  /* Terraced seating around a sand-colored floor; the original matrix,
+     quadrants and avatar positions render above this decorative surface. */
+  background:
+    radial-gradient(ellipse 30% 25% at 50% 50%, rgba(152, 103, 60, .19) 0 72%, transparent 74%),
+    radial-gradient(ellipse 48% 40% at 50% 50%, transparent 76%, rgba(224, 179, 108, .15) 77%, transparent 80%),
+    radial-gradient(ellipse 61% 52% at 50% 50%, transparent 76%, rgba(202, 150, 88, .12) 77%, transparent 80%),
+    radial-gradient(ellipse 75% 64% at 50% 50%, transparent 76%, rgba(188, 125, 75, .1) 77%, transparent 80%),
+    repeating-linear-gradient(0deg, rgba(207, 160, 99, .018) 0 1px, transparent 1px 6px),
+    linear-gradient(135deg, #1d1717, #30231d 48%, #1a1518);
+}
+
+.app-shell--arena .scex2d-wash--nurture { background: linear-gradient(135deg, rgba(86, 118, 137, .14), transparent 70%); }
+.app-shell--arena .scex2d-wash--stars { background: linear-gradient(225deg, rgba(121, 140, 89, .14), transparent 70%); }
+.app-shell--arena .scex2d-wash--ignore { background: linear-gradient(45deg, rgba(115, 102, 91, .13), transparent 70%); }
+.app-shell--arena .scex2d-wash--noise { background: linear-gradient(315deg, rgba(154, 89, 59, .14), transparent 70%); }
+
+.app-shell--arena .scex-bubble {
+  /* Keep the inline --ring sentiment color visible as the inner enamel rim. */
+  box-shadow:
+    0 6px 20px rgba(0, 0, 0, .62),
+    0 0 0 2px #3c2a1b,
+    0 0 0 4px rgba(214, 166, 92, .72),
+    0 0 0 5px rgba(49, 31, 22, .9);
+}
+
+.app-shell--arena .scex-bubble:hover,
+.app-shell--arena .scex-bubble.is-selected,
+.app-shell--arena .scex-bubble.is-tip {
+  box-shadow:
+    0 13px 30px rgba(0, 0, 0, .7),
+    0 0 0 2px #3c2a1b,
+    0 0 0 4px #f0c980,
+    0 0 24px color-mix(in srgb, var(--ring, #f0c980) 48%, transparent);
+}
+
+.app-shell--arena .scex-bubble__disc {
+  background: #281d1c;
+}
+
+.app-shell--arena .scex-bubble__tip,
+.app-shell--arena .scex2d-story-tip {
+  background: rgba(34, 24, 24, .97);
+  border-color: rgba(216, 174, 104, .5);
+}
+
+.app-shell--arena .scex-bubble__tip-handle {
+  color: #efcb91;
+}
+
+.app-shell--arena .scex-feed-card,
+.app-shell--arena .scex-detail__post {
+  border-color: rgba(209, 166, 102, .2);
+  background: linear-gradient(150deg, rgba(73, 52, 42, .2), rgba(21, 17, 20, .3));
+}
+
+.app-shell--arena .scex-feed-card:hover {
+  border-color: rgba(236, 194, 123, .44);
+}
+
+.app-shell--arena :is(button, a, input, textarea):focus-visible {
+  outline-color: #f2d49a;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-shell--arena .scex-bubble,
+  .app-shell--arena .scex-feed-card {
+    transition-duration: 0.01ms;
+  }
+}
+
+/* Bronze dossier surface for both the existing modal and docked KOL detail. */
+.app-shell--arena .scex-detail,
+.app-shell--arena .scex-detail.scex-detail--panel {
+  color: #f2e5d0;
+  border-color: rgba(216, 174, 104, .4);
+  background:
+    radial-gradient(ellipse 82% 38% at 50% 0%, rgba(201, 133, 73, .15), transparent 65%),
+    linear-gradient(155deg, #34251f, #181418 46%, #241b1b);
+}
+.app-shell--arena .scex-detail__head,
+.app-shell--arena .scex-detail__tabs { border-bottom-color: rgba(216, 174, 104, .2); }
+.app-shell--arena .scex-detail__avatar {
+  border-color: rgba(237, 188, 107, .55);
+  box-shadow: 0 0 0 3px rgba(98, 53, 32, .5);
+}
+.app-shell--arena .scex-detail__head h2,
+.app-shell--arena .scex-detail__quick strong,
+.app-shell--arena .scex-detail__stats strong { color: #f5e2c2; }
+.app-shell--arena .scex-detail__handle,
+.app-shell--arena .scex-detail__post-foot a,
+.app-shell--arena .scex-detail__post-more { color: #f0ca8a; }
+.app-shell--arena .scex-detail__quick > div,
+.app-shell--arena .scex-detail__stats > div {
+  border-color: rgba(216, 174, 104, .22);
+  background: rgba(16, 12, 15, .48);
+}
+.app-shell--arena .scex-detail__tab { background: rgba(216, 174, 104, .05); color: #cdbda5; }
+.app-shell--arena .scex-detail__tab.is-active {
+  background: rgba(216, 174, 104, .17);
+  border-color: rgba(216, 174, 104, .56);
+  color: #f5d49b;
+}
+.app-shell--arena .scex-detail__tab-n { background: rgba(216, 174, 104, .2); color: #f1ce91; }
+.app-shell--arena .scex-detail__x-logo,
+.app-shell--arena .scex-detail__close { border-color: rgba(216, 174, 104, .28); color: #ecd5b1; }

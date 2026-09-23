@@ -1,6 +1,6 @@
 # M1 — chạy Kolosseum với dữ liệu thật
 
-M1 hiện có mã cho report từ Surf, lưu PostgreSQL, hash + mã hóa và Memo devnet. **Chưa xác nhận end-to-end** vì `SURF_API_KEY` và `DATABASE_URL` chưa được cấu hình; ví operator cũng chưa có test SOL do RPC devnet trả 429 khi xin airdrop. Giao diện hiển thị lỗi 503 khi thiếu database, không dựng template/report giả.
+M1 hiện có mã cho report từ Surf, lưu PostgreSQL, hash + mã hóa và Memo devnet. **Chưa xác nhận end-to-end** vì `SURF_API_KEY` và `DATABASE_URL` chưa được cấu hình; ví operator đã có 5 test SOL trên devnet sau khi dùng faucet chính thức ngày 24/09/2026. Giao diện hiển thị lỗi 503 khi thiếu database, không dựng template/report giả.
 
 ## Chuẩn bị
 

@@ -27,3 +27,51 @@ Ngày cập nhật: 23/09/2026. Tài liệu này điều khiển phần bổ sun
 ## Cấu hình cần để chứng minh M1 hoàn chỉnh
 
 `SURF_API_KEY`, `DATABASE_URL` (Postgres), `REPORT_ENC_KEY` (32 byte ở hex), `SOLANA_RPC_URL` devnet, `OPERATOR_KEYPAIR_PATH` đến ví devnet có test SOL, `ADMIN_TOKEN`. Hiện user sẽ cung cấp Surf key sau; không dùng mock thay thế. Nếu các giá trị còn thiếu, chỉ báo các bài test đã chạy thật và giữ M1 ở trạng thái chưa đạt acceptance end-to-end.
+
+## M2 sandbox integration in progress (24 Sep 2026)
+
+The installed pay.sh CLI was verified with this exact command:
+
+~~~powershell
+npx --yes @solana/pay@1.0.26 --version
+# pay 0.26.0
+~~~
+
+The current paywall.yml uses the documented YAML fields from [pay.sh YAML specification](https://pay.sh/docs/building-with-pay/yaml-specification), [MPP sessions](https://pay.sh/docs/building-with-pay/payment-channels/sessions), and [x402 upto](https://pay.sh/docs/building-with-pay/payment-channels/upto). The gateway injects PAY_ORIGIN_TOKEN as an upstream HTTP header only after payment verification. Its essential meter settings are:
+
+~~~yaml
+session:
+  cap_usdc: 2.0
+  modes: [push]
+  close_delay_ms: 5000
+metering:
+  schemes: [x402-upto]
+  upto:
+    max_usd: 1.0
+    min_usd: 0.10
+    missing_usage: error
+    response_body:
+      mode: buffer
+      max_bytes: 1048576
+  dimensions:
+    - direction: usage
+      unit: quota_units
+      scale: 1
+      meter:
+        source: response_json
+        path: /surfUsage/creditsUsed
+      tiers:
+        - price_usd: 0.006
+~~~
+
+Quick reports use MPP session at $0.45 per report, above the documented $0.30 low-reasoning Surf cost. Deep reports authorize up to $1.00 and meter Surf credits at $0.006 each, with a $0.10 minimum. Missing credits cause an error before report storage; the gateway is configured to refund on missing usage. This pricing must be checked against a real Surf response before M2 is marked complete.
+
+The spec passed the actual sandbox validator and booted five endpoints (two metered, three free):
+
+~~~powershell
+npx --yes @solana/pay@1.0.26 --sandbox gate api paywall.yml --bind 127.0.0.1:1402
+~~~
+
+Observed HTTP results: GET /health returned 200 from the real sidecar; POST /research/quick returned 402 with an MPP session challenge, $0.45 request price, and a 2,000,000-micro-USDC channel cap; POST /research/deep returned 402 with x402 scheme upto and a 1,000,000-micro-USDC ceiling. With gateway mode enabled on a temporary origin, a direct call and the old M1 admin token each returned 401; the gateway secret reached the real handler and returned 503 because DATABASE_URL is still missing. A trading-advice prompt returned 400. No sandbox payment was made against an unavailable report service.
+
+Before a real paid test, set SURF_API_KEY and DATABASE_URL in the ignored .env.local, run the migration, set PAY_GATEWAY_ENABLED=true, start the research sidecar, then run npm run pay:sandbox. The launcher checks origin health and templates before it accepts payments. The operator devnet wallet has 5 test SOL from the official faucet; this is separate from pay.sh localnet sandbox funds. M2 still needs paid CLI purchases, actual receipt parsing, buyer/channel persistence, and the UI demo path.

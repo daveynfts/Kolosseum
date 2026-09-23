@@ -75,3 +75,20 @@ npx --yes @solana/pay@1.0.26 --sandbox gate api paywall.yml --bind 127.0.0.1:140
 Observed HTTP results: GET /health returned 200 from the real sidecar; POST /research/quick returned 402 with an MPP session challenge, $0.45 request price, and a 2,000,000-micro-USDC channel cap; POST /research/deep returned 402 with x402 scheme upto and a 1,000,000-micro-USDC ceiling. With gateway mode enabled on a temporary origin, a direct call and the old M1 admin token each returned 401; the gateway secret reached the real handler and returned 503 because DATABASE_URL is still missing. A trading-advice prompt returned 400. No sandbox payment was made against an unavailable report service.
 
 Before a real paid test, set SURF_API_KEY and DATABASE_URL in the ignored .env.local, run the migration, set PAY_GATEWAY_ENABLED=true, start the research sidecar, then run npm run pay:sandbox. The launcher checks origin health and templates before it accepts payments. The operator devnet wallet has 5 test SOL from the official faucet; this is separate from pay.sh localnet sandbox funds. M2 still needs paid CLI purchases, actual receipt parsing, buyer/channel persistence, and the UI demo path.
+
+### Sandbox payment observations (24 Sep 2026)
+
+The official bundled pay.sh debugger demo was run on port 1402. An unauthenticated `curl.exe` to `GET /api/v1/reports/usage` returned HTTP 402. The documented built-in client command succeeded:
+
+~~~powershell
+npx --yes @solana/pay@1.0.26 --sandbox fetch http://127.0.0.1:1402/api/v1/reports/usage
+# {"status":"ok"}
+npx --yes @solana/pay@1.0.26 --sandbox account list
+# sandbox buyer 999.99 USDC; gateway 1000.01 USDC
+~~~
+
+Both wallets began at 1000.00 sandbox USDC, so this confirms one $0.01 sandbox payment to the official demo, not a Kolosseum report purchase. On this Windows host, the documented `pay --sandbox curl` pass-through returns `Command not found: curl. Is it installed?` even though `curl.exe` exists in System32 and Git for Windows. Direct pay.exe, adding Git curl to PATH, and an extensionless curl copy did not fix it. Use documented `pay --sandbox fetch` for the working local client path until the Windows pass-through is resolved.
+
+A separate isolated payment test copied the current paywall spec to a temporary file and pointed it to a temporary local capture origin. `pay --sandbox fetch -X POST --content-type application/json --body ... http://127.0.0.1:1403/research/quick` opened a sandbox channel but ended with `Server returned 402 again after payment`; the origin saw no request. The buyer sandbox balance changed from 999.99 to 998.99 USDC and the gateway balance from 1000.01 to 1000.00 USDC, consistent with 1 USDC in the test channel escrow; there is no successful report charge or receipt. The session/CLI compatibility is unresolved. Both temporary servers were stopped. Do not present MPP quick purchases as working or enable real funds. The production project remains devnet/sandbox only.
+
+A successful Kolosseum paid report test additionally requires SURF_API_KEY and DATABASE_URL in ignored .env.local, migration, a real Surf report, and confirmed devnet Memo. The gateway launcher currently refuses to start without these dependencies. Receipt extraction, buyer wallet/channel persistence, and report UI purchase remain M2/M3 work.

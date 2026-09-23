@@ -25,6 +25,7 @@ import { AvatarImg } from './AvatarImg'
 import { BioRichText } from './BioRichText'
 import { RankBadge } from './RankBadge'
 import { SurfAnalysisMock } from './SurfAnalysisMock'
+import { DeepResearchPanel } from '../research/DeepResearchPanel'
 import { XProfileAvatar } from './XProfileAvatar'
 import { DaveysRadarLink } from './DaveysRadarLink'
 import { resolveMediaUrl } from '../lib/avatar'
@@ -295,8 +296,8 @@ export function ScexKolDetail({
           aria-selected={tab === 'analysis'}
           onClick={() => setTab('analysis')}
         >
-          Surf AI
-          {hasReport && <em className="scex-detail__tab-n">✓</em>}
+          {__DEEP_RESEARCH_ENABLED__ && actor.kind === 'kol' ? 'Deep Research' : 'Surf AI'}
+          {(!__DEEP_RESEARCH_ENABLED__ || actor.kind !== 'kol') && hasReport && <em className="scex-detail__tab-n">✓</em>}
         </button>
       </div>
 
@@ -560,7 +561,11 @@ export function ScexKolDetail({
 
         {tab === 'analysis' && (
           <div className="scex-detail__body scex-detail__body--surf">
-            <SurfAnalysisMock kol={surfKol} />
+            {__DEEP_RESEARCH_ENABLED__ && actor.kind === 'kol' ? (
+              <DeepResearchPanel kolHandle={actor.handle} />
+            ) : (
+              <SurfAnalysisMock kol={surfKol} />
+            )}
           </div>
         )}
       </div>

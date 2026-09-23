@@ -6,6 +6,7 @@ import { SceneErrorBoundary } from './components/SceneErrorBoundary'
 import { SiteChrome } from './components/SiteChrome'
 import { getAdminToken, setAdminToken } from './lib/feedStore'
 import './components/SiteChrome.css'
+import './styles/kolosseum.css'
 
 const App = lazy(() => import('./App.tsx'))
 const AdminDashboard = lazy(() =>
@@ -17,6 +18,9 @@ const ScexTrackingPage = lazy(() =>
   import('./pages/ScexTrackingPage.tsx').then((m) => ({
     default: m.ScexTrackingPage,
   })),
+)
+const ReportPage = lazy(() =>
+  import('./research/ReportPage.tsx').then((m) => ({ default: m.ReportPage })),
 )
 const EventHubPage = lazy(() =>
   import('./pages/EventHubPage.tsx').then((m) => ({
@@ -58,7 +62,7 @@ function normalizePathname(): string {
   return p || '/'
 }
 
-function getRoute(): 'map' | 'admin' | 'scex' | 'event' | 'event-hub' {
+function getRoute(): 'map' | 'admin' | 'scex' | 'event' | 'event-hub' | 'report' {
   const h = window.location.hash.replace(/^#\/?/, '').toLowerCase()
   const path = normalizePathname()
   // Admin hash/path always wins so /scex#/admin and /admin work.
@@ -71,6 +75,7 @@ function getRoute(): 'map' | 'admin' | 'scex' | 'event' | 'event-hub' {
   ) {
     return 'admin'
   }
+  if (__DEEP_RESEARCH_ENABLED__ && path.startsWith('/reports/')) return 'report'
   if (path === '/events' || path.startsWith('/events/')) return 'event-hub'
   if (path === '/event' || path.startsWith('/event/')) return 'event'
   if (path === '/scex' || path.startsWith('/scex/')) return 'scex'
@@ -254,11 +259,24 @@ function Root() {
     )
   }
 
+  if (route === 'report') {
+    return (
+      <Suspense fallback={<RouteFallback />}>
+        <SceneErrorBoundary title="Report page failed to render">
+          <div className="app-shell app-shell--arena">
+            <SiteChrome active="scex" />
+            <ReportPage />
+          </div>
+        </SceneErrorBoundary>
+      </Suspense>
+    )
+  }
+
   if (route === 'scex') {
     return (
       <Suspense fallback={<RouteFallback />}>
         <SceneErrorBoundary title="SCEX page failed to render">
-          <div className="app-shell">
+          <div className="app-shell app-shell--arena">
             <SiteChrome active="scex" />
             <ScexEventBanner />
             <ScexTrackingPage />

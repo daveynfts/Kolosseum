@@ -130,6 +130,10 @@
       "destination": "/"
     },
     {
+      "source": "/reports/:path*",
+      "destination": "/"
+    },
+    {
       "source": "/scex",
       "destination": "/"
     },

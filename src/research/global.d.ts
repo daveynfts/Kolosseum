@@ -1,0 +1,1 @@
+declare const __DEEP_RESEARCH_ENABLED__: boolean

@@ -15,3 +15,7 @@ Khi feature flag M1 bật, Vite development chuyển các request GET/HEAD `/api
 ## 2026-09-23 — Kiểm thử và funding devnet
 
 Node 25 trên máy làm hỏng một test cache thuộc baseline; cùng bộ 153 test đạt với Node 24 (CI nguồn cấu hình Node 22). RPC devnet trả 429 cho request airdrop 0,05 test SOL; không giả lập số dư, Memo hay explorer badge. Job evidence sẽ đợi ví operator được nạp test SOL thật.
+
+## 2026-09-23 — Kolosseum là thương hiệu của trang đấu trường
+
+Theo yêu cầu mới, /scex và trang report dùng nhận diện Kolosseum: bỏ banner sự kiện, bỏ các tab VN KOLs/SCEX/Events ở header đấu trường, thay hero SCEX bằng biểu tượng và kiến trúc La Mã, đồng bộ title/OG/favicons của route. Ma trận, live feed, chỉ số, bộ lọc và URL nguồn vẫn giữ nguyên. SCEX chỉ còn là tên nguồn dữ liệu được theo dõi; liên kết tới Radar gốc vẫn còn để ghi nhận xuất xứ. Trang Radar/map và event cũ vẫn hoạt động qua URL riêng, không bị đổi dữ liệu hay luồng.

@@ -261,3 +261,226 @@
   background: rgba(216, 174, 104, .11);
   border-color: rgba(216, 174, 104, .3);
 }
+
+/* Kolosseum identity and architectural arena. All matrix data encodings remain intact. */
+.app-shell--arena .site-chrome--arena {
+  min-height: 58px;
+  padding: 0 clamp(14px, 2.2vw, 32px);
+  gap: 18px;
+  border-bottom: 2px solid #8b5b3a;
+  background:
+    linear-gradient(90deg, rgba(242, 197, 132, .08), transparent 26%, transparent 74%, rgba(242, 197, 132, .07)),
+    repeating-linear-gradient(90deg, transparent 0 47px, rgba(235, 187, 117, .025) 48px 49px),
+    linear-gradient(180deg, #28201e, #151114 70%, #211817);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, .5), inset 0 1px 0 rgba(244, 204, 147, .19);
+}
+.app-shell--arena .site-chrome--arena .site-chrome__brand { gap: 12px; }
+.app-shell--arena .site-chrome--arena .site-chrome__mark {
+  width: 38px;
+  height: 38px;
+  border: 0;
+  border-radius: 50%;
+  box-shadow: 0 0 0 1px rgba(240, 197, 128, .45), 0 0 18px rgba(177, 102, 53, .28);
+}
+.app-shell--arena .site-chrome--arena .site-chrome__name {
+  display: inline;
+  color: #f3d9a8;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: clamp(.94rem, 1.35vw, 1.15rem);
+  font-weight: 700;
+  letter-spacing: .19em;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, .55);
+}
+.app-shell--arena .site-chrome__arena-inscription {
+  display: inline-flex;
+  align-items: center;
+  gap: 13px;
+  margin-left: auto;
+  color: #c8a577;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: .64rem;
+  font-weight: 700;
+  letter-spacing: .24em;
+  white-space: nowrap;
+}
+.app-shell--arena .site-chrome__arena-inscription::before,
+.app-shell--arena .site-chrome__arena-inscription::after {
+  content: '';
+  width: clamp(18px, 5vw, 80px);
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(227, 181, 108, .67), transparent);
+}
+.app-shell--arena .site-chrome__arena-inscription i { color: #e5bc7c; font-style: normal; font-size: .9rem; }
+.app-shell--arena .site-chrome--arena .site-chrome__spacer { display: none; }
+
+.app-shell--arena .scex-page {
+  padding: 16px clamp(12px, 2vw, 28px) 18px;
+  background:
+    radial-gradient(ellipse 72% 60% at 50% -8%, rgba(160, 96, 56, .22), transparent 75%),
+    repeating-linear-gradient(0deg, transparent 0 73px, rgba(223, 173, 106, .018) 74px 75px),
+    linear-gradient(180deg, #1b1516 0%, #100e10 60%, #17100f 100%);
+}
+.app-shell--arena .scex-page__hero {
+  position: relative;
+  min-height: 124px;
+  align-items: center;
+  margin-bottom: 17px;
+  padding: 18px clamp(16px, 2.4vw, 32px);
+  border: 1px solid rgba(229, 182, 111, .55);
+  border-radius: 10px;
+  overflow: hidden;
+  background:
+    repeating-linear-gradient(0deg, transparent 0 23px, rgba(231, 189, 128, .022) 24px 25px),
+    linear-gradient(115deg, #39271f, #241b1a 45%, #36231d 100%);
+  box-shadow: 0 18px 44px rgba(0, 0, 0, .48), inset 0 0 0 4px rgba(33, 22, 20, .9), inset 0 1px 0 rgba(255, 220, 156, .28);
+}
+.app-shell--arena .scex-page__hero::before {
+  inset: 7px;
+  z-index: 0;
+  border: 1px solid rgba(226, 180, 112, .24);
+  border-radius: 5px;
+}
+.app-shell--arena .scex-page__hero::after {
+  content: '';
+  position: absolute;
+  right: -2%;
+  bottom: -28px;
+  width: 65%;
+  height: 172px;
+  z-index: 0;
+  background: url('/kolosseum-arches.svg') right bottom / contain no-repeat;
+  opacity: .58;
+  mask-image: linear-gradient(90deg, transparent, #000 30%, #000 85%, transparent);
+  pointer-events: none;
+}
+.app-shell--arena .scex-page__hero > * { position: relative; z-index: 1; }
+.app-shell--arena .scex-page__brand { gap: 17px; max-width: min(100%, 38rem); }
+.app-shell--arena .scex-page__logo--kolosseum,
+.app-shell--arena .scex-page__hero--lite .scex-page__logo--kolosseum {
+  width: clamp(60px, 5.6vw, 78px);
+  height: clamp(60px, 5.6vw, 78px);
+  border: 0;
+  background: transparent;
+  box-shadow: 0 0 0 2px rgba(229, 180, 103, .4), 0 12px 24px rgba(0, 0, 0, .43);
+}
+.app-shell--arena .kolosseum-eyebrow {
+  color: #dbb780;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: .63rem;
+  font-weight: 700;
+  letter-spacing: .24em;
+}
+.app-shell--arena .kolosseum-eyebrow span { color: #f1d59a; padding-inline: 3px; }
+.app-shell--arena .scex-page__hero--lite .scex-page__title { font-size: clamp(1.9rem, 3vw, 2.75rem); line-height: 1; }
+.app-shell--arena .scex-page__name {
+  background: linear-gradient(180deg, #fff1c9 4%, #deb67c 52%, #ac7044 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-weight: 700;
+  letter-spacing: .055em;
+  text-transform: uppercase;
+  filter: drop-shadow(0 2px 2px rgba(0, 0, 0, .46));
+}
+.app-shell--arena .scex-page__legal { margin-top: 5px; color: #e9d6b8; font-size: .79rem; font-weight: 600; letter-spacing: .015em; }
+.app-shell--arena .scex-page__window { color: #cba777; font-size: .68rem; letter-spacing: .04em; }
+.app-shell--arena .scex-page__stats {
+  flex: 1 1 380px;
+  max-width: 680px;
+  margin-left: auto;
+  padding: 4px;
+  border: 1px solid rgba(232, 182, 107, .31);
+  border-radius: 6px;
+  background: rgba(19, 13, 14, .66);
+  box-shadow: inset 0 1px 0 rgba(250, 214, 153, .1), 0 8px 18px rgba(0, 0, 0, .2);
+  backdrop-filter: blur(7px);
+}
+.app-shell--arena .scex-stat { border-radius: 3px; }
+.app-shell--arena .scex-stat em,
+.app-shell--arena .scex-stat--muted em { color: #f1d3a2; font-family: Georgia, 'Times New Roman', serif; font-size: 1.45rem; }
+.app-shell--arena .scex-stat span { color: #bda687; letter-spacing: .16em; }
+
+.app-shell--arena .scex-card {
+  position: relative;
+  border: 1px solid rgba(206, 157, 89, .44);
+  border-radius: 12px;
+  background:
+    repeating-linear-gradient(108deg, transparent 0 94px, rgba(243, 196, 128, .018) 95px 96px),
+    linear-gradient(145deg, #332620, #1d191a 44%, #291e1b);
+  box-shadow: 0 22px 54px rgba(0, 0, 0, .45), inset 0 1px 0 rgba(246, 210, 152, .16);
+}
+.app-shell--arena .scex-card::before {
+  content: '';
+  position: absolute;
+  inset: 5px;
+  border: 1px solid rgba(214, 160, 90, .14);
+  border-radius: 8px;
+  pointer-events: none;
+}
+.app-shell--arena .scex-card__head {
+  padding: 15px 17px 10px;
+  border-bottom: 1px solid rgba(210, 161, 94, .2);
+  background: linear-gradient(180deg, rgba(201, 139, 71, .13), transparent);
+}
+.app-shell--arena .scex-card__head h2 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #f4d6a4;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 1.12rem;
+  font-weight: 700;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+}
+.app-shell--arena .scex-matrix .scex-card__head h2::before,
+.app-shell--arena .scex-feed .scex-card__head h2::before {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border: 1px solid rgba(231, 184, 113, .64);
+  border-radius: 50%;
+  color: #f3d4a1;
+  background: #453025;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: .83rem;
+  letter-spacing: 0;
+}
+.app-shell--arena .scex-matrix .scex-card__head h2::before { content: 'I'; }
+.app-shell--arena .scex-feed .scex-card__head h2::before { content: 'II'; }
+.app-shell--arena .scex-card__head p { color: #c8b69c; }
+.app-shell--arena .scex2d-plot { border-radius: 8px; border-color: rgba(230, 183, 108, .47); }
+.app-shell--arena .scex2d-plot::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: url('/kolosseum-arches.svg') center 110% / 90% auto no-repeat;
+  opacity: .14;
+  pointer-events: none;
+}
+.app-shell--arena .scex2d-zone strong { border-color: rgba(220, 170, 101, .4); background: rgba(39, 27, 23, .8); }
+.app-shell--arena .scex-matrix-pill.is-active,
+.app-shell--arena .scex-feed__chip.is-active { background: rgba(194, 126, 65, .3); color: #f3d5a3; border-color: rgba(231, 184, 111, .65); }
+
+@media (max-width: 900px) {
+  .app-shell--arena .scex-page__hero::after { width: 88%; opacity: .33; }
+  .app-shell--arena .scex-page__stats { max-width: none; }
+}
+@media (max-width: 640px) {
+  .app-shell--arena .site-chrome--arena { min-height: 54px; }
+  .app-shell--arena .site-chrome__arena-inscription { display: none; }
+  .app-shell--arena .scex-page__hero { padding: 14px 16px; gap: 15px; }
+  .app-shell--arena .scex-page__hero::after { width: 100%; opacity: .2; }
+  .app-shell--arena .scex-page__brand { gap: 12px; }
+  .app-shell--arena .scex-page__hero--lite .scex-page__title { font-size: clamp(1.65rem, 7vw, 2.25rem); }
+  .app-shell--arena .scex-page__legal { font-size: .7rem; }
+  .app-shell--arena .scex-page__window { white-space: normal; }
+  .app-shell--arena .scex-page__stats { flex-basis: 100%; }
+  .app-shell--arena .scex-stat em,
+  .app-shell--arena .scex-stat--muted em { font-size: 1.2rem; }
+  .app-shell--arena .scex-stat span { font-size: .52rem; letter-spacing: .06em; }
+}

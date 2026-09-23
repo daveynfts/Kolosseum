@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 340" fill="none">
+  <defs>
+    <linearGradient id="wall" x1="100" y1="90" x2="870" y2="265" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#d9af76" stop-opacity=".08"/>
+      <stop offset=".5" stop-color="#d7a667" stop-opacity=".55"/>
+      <stop offset="1" stop-color="#7e4931" stop-opacity=".13"/>
+    </linearGradient>
+    <linearGradient id="edge" x1="500" y1="10" x2="500" y2="290" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#f4d69e" stop-opacity=".72"/>
+      <stop offset="1" stop-color="#a86a43" stop-opacity=".23"/>
+    </linearGradient>
+    <pattern id="masonry" width="58" height="25" patternUnits="userSpaceOnUse">
+      <path d="M0 24.5H58M29 0v24M0 0h58" stroke="#e7bc81" stroke-opacity=".12" stroke-width="1"/>
+    </pattern>
+    <pattern id="arch" width="62" height="71" patternUnits="userSpaceOnUse">
+      <path d="M6 69V31a25 25 0 0 1 50 0v38" fill="#1d1416" fill-opacity=".72" stroke="#f2cd91" stroke-opacity=".68" stroke-width="3"/>
+      <path d="M13 68V31a18 18 0 0 1 36 0v37" stroke="#9e6947" stroke-opacity=".7" stroke-width="2"/>
+      <path d="M3 69h56" stroke="#e4b47a" stroke-opacity=".6" stroke-width="3"/>
+    </pattern>
+    <clipPath id="facade">
+      <path d="M82 246V121C253 55 523 27 879 115v129c-280 77-555 71-797 2Z"/>
+    </clipPath>
+  </defs>
+  <circle cx="496" cy="79" r="100" fill="#f1bc73" fill-opacity=".10"/>
+  <path d="M82 246V121C253 55 523 27 879 115v129c-280 77-555 71-797 2Z" fill="url(#wall)" stroke="url(#edge)" stroke-width="3"/>
+  <g clip-path="url(#facade)">
+    <path d="M50 80h860v210H50z" fill="url(#masonry)"/>
+    <path d="M84 112c235-74 528-81 792 0M72 175c255-68 525-63 819 0M77 240c245-62 511-61 810 0" stroke="#efc38c" stroke-opacity=".55" stroke-width="7"/>
+    <path d="M66 104h830v67H66zm0 67h830v70H66zm0 70h830v72H66z" fill="url(#arch)" opacity=".86"/>
+    <path d="M87 119c227-60 509-74 787 0M86 187c250-62 530-63 788 0M85 252c245-47 506-50 790 0" stroke="#f3d2a2" stroke-opacity=".25" stroke-width="2"/>
+  </g>
+  <path d="M67 244c240 83 550 88 827-1M89 252c223 74 539 80 790-2" stroke="#e5b87e" stroke-opacity=".65" stroke-width="3"/>
+  <path d="M120 274c241 54 515 61 757 0M152 289c219 45 461 48 697 1M187 303c198 33 413 35 626 1" stroke="#d0a16a" stroke-opacity=".29" stroke-width="2"/>
+  <path d="M75 117c185-80 536-97 811-2" stroke="#ffdfa9" stroke-opacity=".5" stroke-width="4"/>
+  <path d="m425 31 9-12 8 12m12-2 7-10 7 11" stroke="#f5d49d" stroke-opacity=".46" stroke-width="2"/>
+</svg>

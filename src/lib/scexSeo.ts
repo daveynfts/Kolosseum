@@ -4,21 +4,21 @@
  */
 import { applyDocumentSeo } from './seo'
 
-const TITLE = 'SCEX Radar — Ma trận KOL & Live Feed | DaveyNFTs'
+const TITLE = 'Kolosseum — Đấu trường KOL crypto Việt Nam'
 const DESCRIPTION =
-  "Ai đang nói về SCEX · ma trận KOL (uy tín × volume) + Live Feed X · On Davey's Radar."
-/** Cache-bust query when replacing the product screenshot OG card. */
-const OG_IMAGE = 'https://radar.daveynfts.com/og/scex-radar.jpg?v=20260811a'
+  "Đấu trường ảnh hưởng KOL crypto Việt Nam: ma trận uy tín × tần suất, live feed X về SCEX và hồ sơ KOL từ dữ liệu gốc."
+
 const CANONICAL = 'https://radar.daveynfts.com/scex'
 
 export function applyScexSeo() {
   applyDocumentSeo({
     title: TITLE,
     description: DESCRIPTION,
-    ogTitle: 'SCEX Radar — Ma trận KOL & Live Feed',
-    ogAlt: 'SCEX Radar — Ma trận SCEX & Live Feed',
+    ogTitle: 'Kolosseum — Đấu trường KOL crypto Việt Nam',
+    ogAlt: 'Kolosseum — đấu trường KOL crypto Việt Nam',
     canonical: CANONICAL,
-    ogImage: OG_IMAGE,
-    themeColor: '#05060a',
+    ogImage: new URL('/kolosseum-og.png', window.location.origin).href,
+    themeColor: '#211817',
+    siteName: 'Kolosseum',
   })
 }

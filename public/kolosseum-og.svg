@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 1200 630" width="1200" height="630">
+  <defs>
+    <radialGradient id="glow" cx=".78" cy=".42" r=".75">
+      <stop stop-color="#755039"/>
+      <stop offset=".52" stop-color="#2c1e1d"/>
+      <stop offset="1" stop-color="#120e12"/>
+    </radialGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="0" y2="1">
+      <stop stop-color="#fff0c7"/>
+      <stop offset=".53" stop-color="#ddb47a"/>
+      <stop offset="1" stop-color="#985c38"/>
+    </linearGradient>
+    <linearGradient id="fade" x1="0" y1="0" x2="1" y2="0">
+      <stop stop-color="#1b1417"/>
+      <stop offset=".47" stop-color="#1b1417" stop-opacity=".85"/>
+      <stop offset="1" stop-color="#1b1417" stop-opacity="0"/>
+    </linearGradient>
+    <pattern id="stone" width="72" height="34" patternUnits="userSpaceOnUse">
+      <path d="M0 33.5H72M36 0v33.5M0 0h72" stroke="#d8af79" stroke-opacity=".04"/>
+    </pattern>
+  </defs>
+  <path fill="url(#glow)" d="M0 0h1200v630H0z"/>
+  <path fill="url(#stone)" d="M0 0h1200v630H0z"/>
+  <image xlink:href="kolosseum-arches.svg" href="kolosseum-arches.svg" x="475" y="136" width="820" height="377" opacity=".78"/>
+  <path fill="url(#fade)" d="M0 0h990v630H0z"/>
+  <path fill="none" stroke="#c69458" stroke-width="2" d="M22 22h1156v586H22z"/>
+  <path fill="none" stroke="#c69458" stroke-opacity=".29" d="M32 32h1136v566H32z"/>
+  <path stroke="#c69458" stroke-opacity=".72" d="M70 122h550M70 475h640"/>
+  <image xlink:href="kolosseum-mark.svg" href="kolosseum-mark.svg" x="68" y="48" width="56" height="56"/>
+  <text x="145" y="82" fill="#e2bc84" font-family="Georgia, serif" font-size="24" font-weight="bold" letter-spacing="5">KOLOSSEUM</text>
+  <text x="70" y="207" fill="#d8a968" font-family="Georgia, serif" font-size="20" font-weight="bold" letter-spacing="5">THE KOL ARENA   ✦   MMXXVI</text>
+  <text x="68" y="313" fill="url(#gold)" font-family="Georgia, serif" font-size="83" font-weight="bold" letter-spacing="5">KOLOSSEUM</text>
+  <text x="70" y="378" fill="#f5e4c8" font-family="Arial, sans-serif" font-size="26" font-weight="bold" letter-spacing="2">ĐẤU TRƯỜNG KOL CRYPTO VIỆT NAM</text>
+  <text x="70" y="442" fill="#cbb79a" font-family="Arial, sans-serif" font-size="21">Uy tín × tần suất  ·  Phát ngôn theo thời gian thực</text>
+  <text x="70" y="538" fill="#e1ba7b" font-family="Georgia, serif" font-size="18" font-weight="bold" letter-spacing="3">MA TRẬN KOL    /    LIVE X FEED    /    DEEP RESEARCH</text>
+  <text x="1120" y="573" text-anchor="end" fill="#b59263" font-family="Georgia, serif" font-size="14" letter-spacing="2">SOLANA DEVNET</text>
+</svg>

@@ -10,6 +10,7 @@ export type DocumentSeo = {
   canonical: string
   ogImage: string
   themeColor?: string
+  siteName?: string
 }
 
 export function upsertMeta(
@@ -44,7 +45,7 @@ export function applyDocumentSeo(opts: DocumentSeo) {
   document.title = opts.title
   upsertMeta('name', 'description', opts.description)
   upsertMeta('name', 'theme-color', opts.themeColor || '#05060a')
-  upsertMeta('property', 'og:site_name', 'DaveyNFTs Radar')
+  upsertMeta('property', 'og:site_name', opts.siteName || 'DaveyNFTs Radar')
   upsertMeta('property', 'og:type', 'website')
   upsertMeta('property', 'og:url', opts.canonical)
   upsertMeta('property', 'og:title', opts.ogTitle)

@@ -32,25 +32,20 @@ const EventMapPage = lazy(() =>
     default: m.EventMapPage,
   })),
 )
-const ScexEventBanner = lazy(() =>
-  import('./components/ScexEventBanner.tsx').then((m) => ({
-    default: m.ScexEventBanner,
-  })),
-)
-
 function RouteFallback() {
+  const arena = getRoute() === 'scex' || getRoute() === 'report'
   return (
     <div className="boot-splash" aria-busy="true">
       <img
         className="boot-splash__mark"
-        src="/logo.jpg"
+        src={arena ? '/kolosseum-mark.svg' : '/logo.jpg'}
         alt=""
         width={64}
         height={64}
         decoding="async"
       />
-      <p className="boot-splash__title">Davey's Radar</p>
-      <small>Bấm avatar · Lọc rank · Mở Feed</small>
+      <p className="boot-splash__title">{arena ? 'Kolosseum' : "Davey's Radar"}</p>
+      <small>{arena ? 'Đấu trường KOL crypto Việt Nam' : 'Bấm avatar · Lọc rank · Mở Feed'}</small>
     </div>
   )
 }
@@ -278,7 +273,6 @@ function Root() {
         <SceneErrorBoundary title="SCEX page failed to render">
           <div className="app-shell app-shell--arena">
             <SiteChrome active="scex" />
-            <ScexEventBanner />
             <ScexTrackingPage />
           </div>
         </SceneErrorBoundary>

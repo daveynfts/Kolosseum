@@ -816,7 +816,7 @@ export function ScexMatrix2D({
         </span>
         <span>
           <i className="scex2d-encode__map" aria-hidden />
-          Chấm xanh = On <DaveysRadarLink />
+          Chấm xanh = Có trên <DaveysRadarLink>Radar gốc</DaveysRadarLink>
         </span>
       </div>
     </div>

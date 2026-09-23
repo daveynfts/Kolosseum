@@ -27,6 +27,7 @@ type Props = {
 }
 
 export function SiteChrome({ active, search, trailing, overlay }: Props) {
+  const arena = active === 'scex'
   const onSearchSubmit = (e: FormEvent) => {
     e.preventDefault()
     search?.onSubmit?.()
@@ -34,33 +35,44 @@ export function SiteChrome({ active, search, trailing, overlay }: Props) {
 
   return (
     <header
-      className={`site-chrome${overlay ? ' site-chrome--overlay glass-regular' : ''}`}
+      className={`site-chrome${overlay ? ' site-chrome--overlay glass-regular' : ''}${arena ? ' site-chrome--arena' : ''}`}
     >
-      <a className="site-chrome__brand" href="/" title="Davey's Radar">
+      <a
+        className="site-chrome__brand"
+        href={arena ? '/scex' : '/'}
+        title={arena ? 'Kolosseum' : "Davey's Radar"}
+      >
         <img
           className="site-chrome__mark"
-          src="/logo.jpg"
+          src={arena ? '/kolosseum-mark.svg' : '/logo.jpg'}
           alt=""
           width={64}
           height={64}
           decoding="async"
         />
-        <span className="site-chrome__name">Davey's Radar</span>
+        <span className="site-chrome__name">
+          {arena ? 'KOLOSSEUM' : "Davey's Radar"}
+        </span>
       </a>
 
-      <nav className="site-chrome__tabs" aria-label="Sản phẩm">
-        {TABS.map((t) => (
-          <a
-            key={t.id}
-            href={t.href}
-            className={`site-chrome__tab ${active === t.id ? 'is-active' : ''}`}
-            aria-current={active === t.id ? 'page' : undefined}
-          >
-            {t.label}
-          </a>
-        ))}
-      </nav>
-
+      {arena ? (
+        <span className="site-chrome__arena-inscription" aria-hidden="true">
+          THE KOL ARENA <i>✦</i> SOLANA DEVNET
+        </span>
+      ) : (
+        <nav className="site-chrome__tabs" aria-label="Sản phẩm">
+          {TABS.map((t) => (
+            <a
+              key={t.id}
+              href={t.href}
+              className={`site-chrome__tab ${active === t.id ? 'is-active' : ''}`}
+              aria-current={active === t.id ? 'page' : undefined}
+            >
+              {t.label}
+            </a>
+          ))}
+        </nav>
+      )}
       {search ? (
         <form
           className={`site-chrome__search${overlay ? ' glass-fill' : ''}`}

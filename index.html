@@ -76,6 +76,27 @@
         <small>Bấm avatar · Lọc rank · Mở Feed</small>
       </div>
     </div>
+    <script>
+      // Keep the legacy Radar entry point unchanged; brand the arena before React loads.
+      (() => {
+        const path = location.pathname.toLowerCase()
+        const arena = path === '/scex' || path.startsWith('/scex/') || path.startsWith('/reports/') || /^#\/?scex(?:[/?]|$)/i.test(location.hash)
+        if (!arena) return
+        document.title = 'Kolosseum — Đấu trường KOL crypto Việt Nam'
+        const mark = document.querySelector('.boot-splash__mark')
+        const title = document.querySelector('.boot-splash__title')
+        const hint = document.querySelector('.boot-splash small')
+        if (mark) mark.setAttribute('src', '/kolosseum-mark.svg')
+        if (title) title.textContent = 'Kolosseum'
+        if (hint) hint.textContent = 'Đấu trường KOL crypto Việt Nam'
+        for (const icon of document.querySelectorAll('link[rel~="icon"]')) {
+          icon.setAttribute('href', '/kolosseum-mark.svg')
+          icon.setAttribute('type', 'image/svg+xml')
+          icon.removeAttribute('sizes')
+        }
+        document.querySelector('link[rel="apple-touch-icon"]')?.setAttribute('href', '/kolosseum-icon-180.png')
+      })()
+    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

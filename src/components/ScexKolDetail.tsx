@@ -219,7 +219,7 @@ export function ScexKolDetail({
           <div className="scex-detail__head-badges">
             {mapKol ? (
               <span className="scex-detail__badge scex-detail__badge--map">
-                On <DaveysRadarLink />
+                Có trên <DaveysRadarLink>Radar gốc</DaveysRadarLink>
               </span>
             ) : (
               <span className="scex-detail__badge">Off-map</span>

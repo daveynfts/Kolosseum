@@ -31,6 +31,10 @@ export function ReportPage() {
   const [verify, setVerify] = useState<Verification | null>(null)
   const [error, setError] = useState('')
 
+  useEffect(() => {
+    document.title = report ? `Hồ sơ @${report.kolHandle} — Kolosseum` : 'Deep Research — Kolosseum'
+  }, [report])
+
   const load = useCallback(async (adminToken: string) => {
     setError('')
     const [reportResponse, verifyResponse] = await Promise.all([

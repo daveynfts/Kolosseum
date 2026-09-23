@@ -1,5 +1,5 @@
 /**
- * Public partner view — SCEX 2D mention matrix + livefeed (VI).
+ * Kolosseum arena view powered by the existing SCEX matrix and live feed (VI).
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
@@ -69,8 +69,8 @@ const MATRIX_FILTER_PILLS: Array<{
 }> = [
   {
     id: 'on_map',
-    label: "On Davey's Radar",
-    title: "KOL đã có trên Davey's Radar map",
+    label: 'Có trên Radar',
+    title: 'KOL đã có hồ sơ trên bản đồ Radar nguồn',
     tier: 'primary',
   },
   {
@@ -732,7 +732,6 @@ export function ScexTrackingPage() {
   }
 
   const totalFollowers = visible.reduce((s, a) => s + (a.followers || 0), 0)
-  const handle = config.brandHandle?.replace(/^@/, '') || 'scexofficial'
   const selectedMapKol = selectedActor
     ? mapByHandle.get(selectedActor.handle.toLowerCase()) || null
     : null
@@ -772,79 +771,37 @@ export function ScexTrackingPage() {
     <div className="scex-page">
       <header className="scex-page__hero scex-page__hero--lite">
         <div className="scex-page__brand">
-          <div className="scex-page__logo">
-            <XProfileAvatar
-              handle={handle}
-              name={config.brandName}
-              size={48}
-              liveFallback
+          <div
+            className="scex-page__logo scex-page__logo--kolosseum"
+            aria-hidden="true"
+          >
+            <img
+              src="/kolosseum-mark.svg"
+              alt=""
+              width={64}
+              height={64}
+              decoding="async"
             />
           </div>
           <div className="scex-page__brand-text">
+            <div className="kolosseum-eyebrow" aria-hidden="true">
+              <span>✦</span> ARENA KOL <span>·</span> MMXXVI
+            </div>
             <h1 className="scex-page__title">
-              <span className="scex-page__name">{config.brandName}</span>
+              <span className="scex-page__name">Kolosseum</span>
               <span className="scex-page__legal">
-                Công ty Cổ phần Sàn Giao dịch Tài sản Mã hóa Sacom
+                Đấu trường ảnh hưởng KOL crypto Việt Nam
               </span>
             </h1>
             <div className="scex-page__meta">
               <span className="scex-page__window">
-                {config.timeWindowDays} ngày gần đây
-                {dataset?.asOf
-                  ? ` · chốt ${dataset.asOf.slice(0, 10)}`
-                  : ''}
-              </span>
-              <span className="scex-page__socials" aria-label="Kênh SCEX">
-                <a
-                  className="scex-page__social"
-                  href={`https://x.com/${handle}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  title={`X · @${handle}`}
-                  aria-label={`SCEX trên X (@${handle})`}
-                >
-                  <svg viewBox="0 0 24 24" width="13" height="13" aria-hidden>
-                    <path
-                      fill="currentColor"
-                      d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.73-8.835L1.254 2.25H8.08l4.253 5.622L18.244 2.25zm-1.161 17.52h1.833L7.084 4.126H5.117L17.083 19.77z"
-                    />
-                  </svg>
-                </a>
-                <a
-                  className="scex-page__social"
-                  href="https://www.facebook.com/scexofficial"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  title="Facebook · SCEX"
-                  aria-label="SCEX trên Facebook"
-                >
-                  <svg viewBox="0 0 24 24" width="13" height="13" aria-hidden>
-                    <path
-                      fill="currentColor"
-                      d="M13.5 22v-8h2.7l.4-3.1h-3.1V9c0-.9.3-1.5 1.6-1.5H16.7V4.7c-.3 0-1.3-.1-2.5-.1-2.5 0-4.2 1.5-4.2 4.3v2.4H7.5V14h2.5v8h3.5z"
-                    />
-                  </svg>
-                </a>
-                <a
-                  className="scex-page__social"
-                  href="https://t.me/scexofficial_chat"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  title="Telegram · SCEX"
-                  aria-label="SCEX trên Telegram"
-                >
-                  <svg viewBox="0 0 24 24" width="13" height="13" aria-hidden>
-                    <path
-                      fill="currentColor"
-                      d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"
-                    />
-                  </svg>
-                </a>
+                Nguồn {config.brandName} · {config.timeWindowDays} ngày gần đây
+                {dataset?.asOf ? ` · chốt ${dataset.asOf.slice(0, 10)}` : ''}
               </span>
             </div>
           </div>
         </div>
-        <div className="scex-page__stats" aria-label="Chỉ số SCEX">
+        <div className="scex-page__stats" aria-label="Chỉ số KOL theo dõi SCEX">
           <div className="scex-stat">
             <em>
               {visible.length}
@@ -859,7 +816,7 @@ export function ScexTrackingPage() {
           <div className="scex-stat scex-stat--accent">
             <em>{onMapCount}</em>
             <span>
-              On <DaveysRadarLink />
+              Có trên <DaveysRadarLink>Radar gốc</DaveysRadarLink>
             </span>
           </div>
           <div className="scex-stat scex-stat--muted">
@@ -872,11 +829,11 @@ export function ScexTrackingPage() {
       <div className="scex-page__grid">
         <section
           className={`scex-card scex-matrix ${matrixFullscreen ? 'is-fullscreen' : ''}`}
-          aria-label="Ma trận SCEX"
+          aria-label="Đấu trường KOL theo dõi SCEX"
         >
           <div className="scex-card__head">
             <div>
-              <h2>Ma trận SCEX</h2>
+              <h2>Đấu trường KOL</h2>
               <p className="scex-card__sub">Bấm avatar để xem chi tiết</p>
             </div>
             <div className="scex-matrix__toolbar">
@@ -953,11 +910,11 @@ export function ScexTrackingPage() {
 
         <section
           className={`scex-card scex-feed ${feedFullscreen ? 'is-fullscreen' : ''}`}
-          aria-label="SCEX Live Feed"
+          aria-label="Dòng tin X nhắc đến SCEX"
         >
           <div className="scex-card__head">
             <div>
-              <h2>SCEX Live Feed</h2>
+              <h2>Dòng tin đấu trường</h2>
               <p>
                 {feedFullscreen ? (
                   <>
@@ -979,7 +936,7 @@ export function ScexTrackingPage() {
                   </>
                 ) : (
                   <>
-                    {filteredPosts.length}
+                    Bài X nhắc SCEX · {filteredPosts.length}
                     {feedFilter ||
                     feedQuery ||
                     feedSentiment !== 'all' ||
@@ -1488,7 +1445,7 @@ function ScexFeedCard({
           onClick={onOpenActor}
           title={
             onMap
-              ? "Xem chi tiết KOL On Davey's Radar"
+              ? 'Xem chi tiết KOL có hồ sơ trên Radar gốc'
               : 'Xem thống kê SCEX'
           }
         >
@@ -1507,7 +1464,7 @@ function ScexFeedCard({
               <strong>{actor?.displayName || post.handle}</strong>
               {onMap && (
                 <span className="scex-pill scex-pill--map">
-                  <DaveysRadarLink />
+                  <DaveysRadarLink>Radar gốc</DaveysRadarLink>
                 </span>
               )}
               {!fullMedia && actor?.tier && (

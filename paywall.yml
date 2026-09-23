@@ -1,0 +1,71 @@
+# yaml-language-server: $schema=https://pay.sh/docs-assets/provider.schema.json
+name: kolosseum
+subdomain: kolosseum
+title: Kolosseum Deep Research
+description: Evidence-backed research on Vietnamese crypto KOLs.
+category: data
+version: v1
+
+routing:
+  type: proxy
+  url: http://127.0.0.1:4174/
+  auth:
+    method: header
+    key: X-Kolosseum-Gateway
+    value_from_env: PAY_ORIGIN_TOKEN
+
+operator:
+  currencies:
+    usd: [USDC]
+  network: localnet
+  fee_payer: true
+
+session:
+  cap_usdc: 2.0
+  modes: [push]
+  close_delay_ms: 5000
+  # With no split, the gateway settlement signer receives the full amount.
+  # pay.sh rejects an explicit 100% split. Add partner aliases and splits later.
+
+endpoints:
+  - method: GET
+    path: health
+    description: Research service readiness.
+  - method: GET
+    path: templates
+    description: Available report templates.
+  - method: GET
+    path: reports/{id}/verify
+    description: Public report hash and devnet Memo verification.
+  - method: POST
+    path: research/quick
+    description: Fixed-price KOL report through an MPP session.
+    metering:
+      schemes: [mpp-session]
+      dimensions:
+        - direction: usage
+          unit: requests
+          scale: 1
+          tiers:
+            - price_usd: 0.45
+  - method: POST
+    path: research/deep
+    description: Custom KOL report billed from actual Surf credits.
+    metering:
+      schemes: [x402-upto]
+      upto:
+        max_usd: 1.0
+        min_usd: 0.10
+        missing_usage: error
+        response_body:
+          mode: buffer
+          max_bytes: 1048576
+      dimensions:
+        - direction: usage
+          unit: quota_units
+          scale: 1
+          meter:
+            source: response_json
+            path: /surfUsage/creditsUsed
+          tiers:
+            - price_usd: 0.006

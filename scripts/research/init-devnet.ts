@@ -30,6 +30,9 @@ const values: Record<string, string> = {
   OPERATOR_KEYPAIR_PATH: keyPath.replace(/\\/g, '/'),
   REPORT_ENC_KEY: randomBytes(32).toString('hex'),
   ADMIN_TOKEN: randomBytes(24).toString('base64url'),
+  PAY_MODE: 'sandbox',
+  PAY_GATEWAY_ENABLED: 'false',
+  PAY_ORIGIN_TOKEN: randomBytes(32).toString('base64url'),
 }
 const missing = Object.entries(values).filter(([name]) => !new RegExp(`^${name}=`, 'm').test(existingEnv))
 if (missing.length) {

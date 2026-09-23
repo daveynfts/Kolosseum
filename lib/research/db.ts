@@ -56,7 +56,7 @@ export async function getTemplate(slug: string): Promise<ResearchTemplate | null
 
 export async function insertReport(data: {
   kolRef: string
-  templateSlug: string
+  templateSlug: string | null
   promptHash: string
   contentEncrypted: string
   contentHash: string

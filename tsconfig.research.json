@@ -14,5 +14,5 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true
   },
-  "include": ["lib/research/**/*.ts", "lib/evidence/**/*.ts", "scripts/research/**/*.ts"]
+  "include": ["lib/research/**/*.ts", "lib/payments/**/*.ts", "lib/evidence/**/*.ts", "scripts/research/**/*.ts"]
 }

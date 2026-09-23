@@ -4,7 +4,7 @@ import { config as loadEnv } from 'dotenv'
 
 loadEnv({ path: '.env.local', quiet: true })
 
-const names = ['SURF_API_KEY', 'DATABASE_URL', 'REPORT_ENC_KEY', 'ADMIN_TOKEN'] as const
+const names = ['SURF_API_KEY', 'DATABASE_URL', 'REPORT_ENC_KEY', 'ADMIN_TOKEN', 'PAY_ORIGIN_TOKEN'] as const
 const secrets: Array<{ name: string; value: string }> = names.flatMap((name) => {
   const value = process.env[name]
   return value && value.length >= 16 ? [{ name, value }] : []

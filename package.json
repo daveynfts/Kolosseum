@@ -24,7 +24,8 @@
     "research:fund-devnet": "tsx scripts/research/fund-devnet.ts",
     "research:check-secrets": "tsx scripts/research/check-client-secrets.ts",
     "avatars:sync": "node scripts/warm_scex_avatars.mjs",
-    "avatars:sync:apply": "node scripts/warm_scex_avatars.mjs --apply"
+    "avatars:sync:apply": "node scripts/warm_scex_avatars.mjs --apply",
+    "pay:sandbox": "node scripts/research/pay-sandbox.mjs"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1084.0",

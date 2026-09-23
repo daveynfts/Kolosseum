@@ -46,7 +46,7 @@ GET http://127.0.0.1:4174/health → enabled=true; surfConfigured=false; databas
 GET http://127.0.0.1:5173/dr-api/templates → HTTP 503, vì chưa có DATABASE_URL
 ```
 
-Trang SCEX từ Chrome hiển thị 467 KOL sau bộ lọc mặc định và 1.023 mention; mở KOL từ feed được, tab Deep Research hiển thị đúng lỗi dịch vụ chưa sẵn sàng. Adapter server đọc Radar thật với KOL `phamduydong179`, nhận 11 bài SCEX và timestamp nguồn. Chưa có report Surf hoặc tx Memo thực tế.
+Trang SCEX từ Chrome hiển thị 467 KOL sau bộ lọc mặc định và 1.023 mention; mở KOL từ feed được, tab Deep Research hiển thị đúng lỗi dịch vụ chưa sẵn sàng. Khi chạy Vite riêng với `DEEP_RESEARCH_ENABLED=false`, `/api` và `/dr-api` không proxy; Chrome vẫn mở tab Surf AI cũ và có 0 panel Deep Research. Adapter server đọc Radar thật với KOL `phamduydong179`, nhận 11 bài SCEX và timestamp nguồn. Chưa có report Surf hoặc tx Memo thực tế.
 
 `npm run build`, `npm run lint -- --quiet`, `npm run research:typecheck` đều đạt. Vitest toàn bộ đạt **153/153** khi chạy bằng Node 24; Node 25 trên máy có một lỗi cache test đã có từ baseline (`convictionEventsStore.test.ts`). `npm run research:check-secrets` kiểm tra giá trị secret đã cấu hình không xuất hiện trong `dist`; khi Surf/database còn trống, hai giá trị đó chưa được kiểm tra.
 

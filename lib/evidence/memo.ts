@@ -73,7 +73,7 @@ export async function processEvidence(reportId: string): Promise<{ status: Evide
     return result.rows[0]
   }
   let job = await loadJob()
-  if (job.status === 'confirmed' || job.status === 'needs_review') {
+  if (job.status === 'confirmed') {
     return { status: job.status, signature: job.signature }
   }
   if (!job.signature) {
@@ -85,6 +85,10 @@ export async function processEvidence(reportId: string): Promise<{ status: Evide
         programId: MEMO_PROGRAM,
         data: Buffer.from(memoPayload(report), 'utf8'),
       }))
+    const fee = (await connection.getFeeForMessage(tx.compileMessage(), 'confirmed')).value
+    if (fee === null) throw new Error('Devnet could not estimate the Memo fee')
+    const balance = await connection.getBalance(keypair.publicKey, 'confirmed')
+    if (balance < fee) throw new Error('Operator needs devnet test SOL before signing Memo')
     tx.sign(keypair)
     if (!tx.signature) throw new Error('Memo signing failed')
     const signature = bs58.encode(tx.signature)
@@ -110,6 +114,9 @@ export async function processEvidence(reportId: string): Promise<{ status: Evide
     await markConfirmed(reportId, job.signature)
     return { status: 'confirmed', signature: job.signature }
   }
+  // A previously ambiguous broadcast may become visible later. Keep checking
+  // its original signature, but never sign another Memo automatically.
+  if (job.status === 'needs_review') return { status: 'needs_review', signature: job.signature }
   if (await connection.getBlockHeight('confirmed') > Number(job.last_valid_block_height)) {
     await db.query("UPDATE dr_evidence_jobs SET status = 'needs_review', last_error = 'Blockhash expired with uncertain landing', updated_at = now() WHERE report_id = $1", [reportId])
     return { status: 'needs_review', signature: job.signature }

@@ -13,8 +13,13 @@ if (await connection.getGenesisHash() !== 'EtWTRABZaYq6iMfeYKouRu166VU2xqa1wcaWo
 const keypair = Keypair.fromSecretKey(Uint8Array.from(JSON.parse(await readFile(keyPath, 'utf8')) as number[]))
 let balance = await connection.getBalance(keypair.publicKey, 'confirmed')
 if (balance < 0.01 * LAMPORTS_PER_SOL) {
-  const signature = await connection.requestAirdrop(keypair.publicKey, 0.05 * LAMPORTS_PER_SOL)
-  await connection.confirmTransaction(signature, 'confirmed')
-  balance = await connection.getBalance(keypair.publicKey, 'confirmed')
+  try {
+    const signature = await connection.requestAirdrop(keypair.publicKey, 0.05 * LAMPORTS_PER_SOL)
+    await connection.confirmTransaction(signature, 'confirmed')
+    balance = await connection.getBalance(keypair.publicKey, 'confirmed')
+  } catch {
+    process.stderr.write('Devnet RPC airdrop failed. Use the official https://faucet.solana.com/ with the public operator address below, then rerun this command.\n')
+    process.exitCode = 1
+  }
 }
 process.stdout.write(`Devnet operator ${keypair.publicKey.toBase58()}: ${balance / LAMPORTS_PER_SOL} test SOL\n`)

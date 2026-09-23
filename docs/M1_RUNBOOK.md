@@ -17,7 +17,7 @@ npm run research:migrate
 npm run research:fund-devnet
 ```
 
-`research:fund-devnet` chỉ xin **test SOL trên devnet**, có kiểm tra genesis hash. Nếu RPC báo 429 hoặc faucet hết, giữ nguyên ví; nạp test SOL bằng công cụ devnet của chính bạn vào địa chỉ public mà lệnh init đã in, rồi chạy lại `research:fund-devnet` để đọc số dư. Không dùng mainnet hoặc tiền thật.
+The `research:fund-devnet` command requests only devnet test SOL and checks the cluster genesis hash. If the public RPC rejects the airdrop (HTTP 429 or Internal error), the command still prints the public operator address. Enter that address at the [official Solana Devnet Faucet](https://faucet.solana.com/) and request devnet SOL, then rerun the command to check the balance. [Solana recommends the web faucet when RPC airdrops fail](https://solana.com/docs/intro/quick-start). Never use mainnet or real funds. The Memo worker estimates the fee and checks the balance before signing. Without enough test SOL, its job remains pending; rerun `npm run research:evidence` after funding. A previously ambiguous signed transaction is checked by its original signature and never signed again automatically.
 
 ## Chạy local
 

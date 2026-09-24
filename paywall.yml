@@ -23,6 +23,7 @@ operator:
 session:
   cap_usdc: 2.0
   modes: [push]
+  settlement_authority: delegated
   close_delay_ms: 5000
   # With no split, the gateway settlement signer receives the full amount.
   # pay.sh rejects an explicit 100% split. Add partner aliases and splits later.

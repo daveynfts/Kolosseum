@@ -43,6 +43,7 @@ The current paywall.yml uses the documented YAML fields from [pay.sh YAML specif
 session:
   cap_usdc: 2.0
   modes: [push]
+  settlement_authority: delegated
   close_delay_ms: 5000
 metering:
   schemes: [x402-upto]
@@ -74,7 +75,7 @@ npx --yes @solana/pay@1.0.26 --sandbox gate api paywall.yml --bind 127.0.0.1:140
 
 Observed HTTP results: GET /health returned 200 from the real sidecar; POST /research/quick returned 402 with an MPP session challenge, $0.45 request price, and a 2,000,000-micro-USDC channel cap; POST /research/deep returned 402 with x402 scheme upto and a 1,000,000-micro-USDC ceiling. With gateway mode enabled on a temporary origin, a direct call and the old M1 admin token each returned 401; the gateway secret reached the real handler and returned 503 because DATABASE_URL is still missing. A trading-advice prompt returned 400. No sandbox payment was made against an unavailable report service.
 
-Before a real paid test, set SURF_API_KEY and DATABASE_URL in the ignored .env.local, run the migration, set PAY_GATEWAY_ENABLED=true, start the research sidecar, then run npm run pay:sandbox. The launcher checks origin health and templates before it accepts payments. The operator devnet wallet has 5 test SOL from the official faucet; this is separate from pay.sh localnet sandbox funds. M2 still needs paid CLI purchases, actual receipt parsing, buyer/channel persistence, and the UI demo path.
+Before a real paid test, set SURF_API_KEY and DATABASE_URL in the ignored .env.local, run the migration, set PAY_GATEWAY_ENABLED=true, start the research sidecar, then run npm run pay:sandbox. The launcher checks origin health and templates before it accepts payments. The operator devnet wallet has 5 test SOL from the official faucet; this is separate from pay.sh localnet sandbox funds. M2 still needs paid CLI purchases against real Kolosseum reports, actual receipt parsing, verified payer/channel persistence, and the UI demo path.
 
 ### Sandbox payment observations (24 Sep 2026)
 
@@ -87,9 +88,9 @@ npx --yes @solana/pay@1.0.26 --sandbox account list
 # sandbox buyer 999.99 USDC; gateway 1000.01 USDC
 ~~~
 
-Both wallets began at 1000.00 sandbox USDC, so this confirms one $0.01 sandbox payment to the official demo, not a Kolosseum report purchase. On this Windows host, the documented `pay --sandbox curl` pass-through returns `Command not found: curl. Is it installed?` even though `curl.exe` exists in System32 and Git for Windows. Direct pay.exe, adding Git curl to PATH, and an extensionless curl copy did not fix it. Use documented `pay --sandbox fetch` for the working local client path until the Windows pass-through is resolved.
+Both wallets began at 1000.00 sandbox USDC, so this confirms one $0.01 sandbox payment to the official demo, not a Kolosseum report purchase. The first Windows `pay --sandbox curl` attempt reported `Command not found: curl. Is it installed?`. The pay CLI invokes the separate `which` utility to locate curl; Git for Windows provides `C:\Program Files\Git\usr\bin\which.exe`. Prepending that directory to PATH made `pay curl` work. The built-in `pay fetch` also works without it.
 
-A separate isolated payment test copied the current paywall spec to a temporary file and pointed it to a temporary local capture origin. `pay --sandbox fetch -X POST --content-type application/json --body ... http://127.0.0.1:1403/research/quick` opened a sandbox channel but ended with `Server returned 402 again after payment`; the origin saw no request. The buyer sandbox balance changed from 999.99 to 998.99 USDC and the gateway balance from 1000.01 to 1000.00 USDC, consistent with 1 USDC in the test channel escrow; there is no successful report charge or receipt. The session/CLI compatibility is unresolved. Both temporary servers were stopped. Do not present MPP quick purchases as working or enable real funds. The production project remains devnet/sandbox only.
+A separate isolated payment test copied the current paywall spec to a temporary file and pointed it to a temporary local capture origin. `pay --sandbox fetch -X POST --content-type application/json --body ... http://127.0.0.1:1403/research/quick` opened a sandbox channel but ended with `Server returned 402 again after payment`; the origin saw no request. The buyer sandbox balance changed from 999.99 to 998.99 USDC and the gateway balance from 1000.01 to 1000.00 USDC, consistent with 1 USDC in the test channel escrow; there is no successful report charge or receipt. The original push/client-voucher configuration was incompatible with the CLI single retry; the delegated-voucher fix is verified below. Both temporary servers were stopped. Do not present real Kolosseum quick purchases as working or enable real funds. The production project remains devnet/sandbox only.
 
 A successful Kolosseum paid report test additionally requires SURF_API_KEY and DATABASE_URL in ignored .env.local, migration, a real Surf report, and confirmed devnet Memo. The gateway launcher currently refuses to start without these dependencies. Receipt extraction, verified payer/channel persistence, and report UI purchase remain M2/M3 work.
 
@@ -97,6 +98,23 @@ A successful Kolosseum paid report test additionally requires SURF_API_KEY and D
 
 A second isolated protocol test used the current x402 upto gateway spec and a temporary local origin that returned `surfUsage.creditsUsed: 50`. This was a meter fixture, not a Surf report. `pay --sandbox fetch -X POST --content-type application/json --body '{}' http://127.0.0.1:1403/research/deep` returned HTTP 200 with the origin JSON. The sandbox balance check showed buyer 999.70 and gateway 1000.30 USDC after the call, consistent with the configured 50 × $0.006 = $0.30 charge. The origin received only standard HTTP headers plus `X-Kolosseum-Gateway`; it did not receive a buyer wallet, payment signature, channel ID, or receipt. Thus the pay.sh proxy can establish that a request passed payment verification, but cannot by itself populate a verified payer or channel record in this app. The temporary origin/gateway were stopped.
 
-For the next code increment, a paid generation request must supply a valid on-curve `buyerWallet`; the gateway still decides whether the request reaches the origin. That address is the selected **report owner**, not yet a verified payment payer. The content is returned in the successful purchase response for CLI clients and stored encrypted for later reads. A subsequent report read requires an Ed25519 signature from the owner wallet over the report ID and a timestamp valid for two minutes; the M1 admin path remains available. A Phantom/Solflare wallet-adapter connection and signed unlock button are present on the report page. These changes do not prove receipt, settlement, vote weight, resale rights, or MPP session success. Future receipt reconciliation must distinguish the report owner from the actual payment payer.
+For the next code increment, a paid generation request must supply a valid on-curve `buyerWallet`; the gateway still decides whether the request reaches the origin. That address is the selected **report owner**, not yet a verified payment payer. The content is returned in the successful purchase response for CLI clients and stored encrypted for later reads. A subsequent report read requires an Ed25519 signature from the owner wallet over the report ID and a timestamp valid for two minutes; the M1 admin path remains available. A Phantom/Solflare wallet-adapter connection and signed unlock button are present on the report page. These changes do not prove a receipt or settlement for a real Kolosseum report, vote weight, or resale rights. Future receipt reconciliation must distinguish the report owner from the actual payment payer.
 
 Validation for this increment: 162/162 Vitest tests on Node 24, research TypeScript check, lint, and production build passed. The bundle secret check scanned 288 files and found no configured secrets. Headless Chrome rendered the report page with both wallet connection buttons and no page errors while the research service was intentionally offline; it displayed HTTP 502 rather than a fabricated report.
+
+### MPP session protocol fix (24 Sep 2026)
+
+The [pay.sh provider schema](https://pay.sh/docs-assets/provider.schema.json) documents `session.settlement_authority: delegated` independently of `session.modes`. With `modes: [push]`, the buyer still funds a sandbox channel escrow; the operator can sign cumulative vouchers for successful metered responses. The previous default `client_voucher` returned another 402 after opening because a client voucher was needed. The CLI's one paid retry stopped there. A separate `modes: [pull]` experiment did not work without its additional `pull_voucher_strategy`; it was not adopted.
+
+The current `paywall.yml` sets `settlement_authority: delegated`. An isolated copy of this exact configuration, pointed at a temporary origin, completed two real pay.sh sandbox quick calls. The second used the documented curl pass-through and showed both receipt headers:
+
+~~~powershell
+$env:PATH = 'C:\Program Files\Git\usr\bin;' + $env:PATH
+npx --yes @solana/pay@1.0.26 --sandbox --no-dna curl -i -sS -X POST -H 'Content-Type: application/json' -d '{}' http://127.0.0.1:1403/research/quick
+# HTTP/1.1 200 OK
+# Payment-Receipt: present
+# Payment-Receipt-Url: present
+# {"ok":true,"originHeaderNames":["accept","content-type","user-agent","content-length","x-kolosseum-gateway","accept-encoding","host"]}
+~~~
+
+The temporary origin returned fixture JSON solely to verify the protocol, never as an app report. These calls prove gateway entry, one paid retry, origin forwarding, and receipt-header emission for MPP sessions. They do not prove a real Surf report purchase, on-chain close/settlement, receipt reconciliation, buyer/payer equality, or UI checkout. The two temporary processes were stopped. [pay.sh session docs](https://pay.sh/docs/building-with-pay/payment-channels/sessions) describe the off-chain voucher and idle-close settlement model; the actual close transaction must be inspected when the live report flow is available.

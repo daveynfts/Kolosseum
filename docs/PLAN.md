@@ -75,7 +75,7 @@ npx --yes @solana/pay@1.0.26 --sandbox gate api paywall.yml --bind 127.0.0.1:140
 
 Observed HTTP results: GET /health returned 200 from the real sidecar; POST /research/quick returned 402 with an MPP session challenge, $0.45 request price, and a 2,000,000-micro-USDC channel cap; POST /research/deep returned 402 with x402 scheme upto and a 1,000,000-micro-USDC ceiling. With gateway mode enabled on a temporary origin, a direct call and the old M1 admin token each returned 401; the gateway secret reached the real handler and returned 503 because DATABASE_URL is still missing. A trading-advice prompt returned 400. No sandbox payment was made against an unavailable report service.
 
-Before a real paid test, set SURF_API_KEY and DATABASE_URL in the ignored .env.local, run the migration, set PAY_GATEWAY_ENABLED=true, start the research sidecar, then run npm run pay:sandbox. The launcher checks origin health and templates before it accepts payments. The operator devnet wallet has 5 test SOL from the official faucet; this is separate from pay.sh localnet sandbox funds. M2 still needs paid CLI purchases against real Kolosseum reports, actual receipt parsing, verified payer/channel persistence, and the UI demo path.
+Before a real Kolosseum paid report test, set SURF_API_KEY and DATABASE_URL in the ignored .env.local, run the migration, set PAY_GATEWAY_ENABLED=true, start the research sidecar, then run npm run pay:sandbox. The launcher checks origin health and templates before it accepts payments. The operator devnet wallet has 5 test SOL from the official faucet; this is separate from pay.sh localnet sandbox funds. M2 still needs paid CLI purchases against real Kolosseum reports, actual receipt parsing, verified payer/channel persistence, and the UI demo path.
 
 ### Sandbox payment observations (24 Sep 2026)
 
@@ -118,3 +118,7 @@ npx --yes @solana/pay@1.0.26 --sandbox --no-dna curl -i -sS -X POST -H 'Content-
 ~~~
 
 The temporary origin returned fixture JSON solely to verify the protocol, never as an app report. These calls prove gateway entry, one paid retry, origin forwarding, and receipt-header emission for MPP sessions. They do not prove a real Surf report purchase, on-chain close/settlement, receipt reconciliation, buyer/payer equality, or UI checkout. The two temporary processes were stopped. [pay.sh session docs](https://pay.sh/docs/building-with-pay/payment-channels/sessions) describe the off-chain voucher and idle-close settlement model; the actual close transaction must be inspected when the live report flow is available.
+
+### Surf output rights before resale (24 Sep 2026)
+
+[Surf Terms of Service](https://asksurf.ai/terms-of-service), section 3(a), currently limits use of Output to personal or non-commercial purposes unless Surf gives prior written consent for commercial use. The terms expressly cover the API. Kolosseum's paid report and resale design is commercial in intent, even though current payment tests use worthless sandbox USDC. Keep resale disabled and do not claim commercial distribution rights until the project has written permission covering paid reports and downstream resale, or replaces the restricted output with an appropriately licensed source. This is a project dependency, not a substitute for the missing SURF_API_KEY/DATABASE_URL end-to-end checks.

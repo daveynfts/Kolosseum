@@ -45,3 +45,7 @@ A real sandbox x402 upto call with 50 fixture credits charged $0.30 and reached 
 ## 2026-09-24 — Use delegated vouchers for MPP quick reports
 
 The default client-voucher session opened escrow but the pay CLI stopped after its first paid retry received another 402. The official provider schema permits `settlement_authority: delegated` with client-funded `modes: [push]`. An isolated sandbox test of that configuration returned 200 from the origin with Payment-Receipt headers, so Kolosseum now uses delegated voucher authority. This does not change the sandbox-only policy or claim report-level settlement. Git for Windows `which.exe` must be in PATH for this version of `pay curl` on Windows; the built-in `pay fetch` avoids that dependency.
+
+## 2026-09-24 — Surf permission is required before commercial report distribution
+
+Surf's published terms currently permit Output for personal/non-commercial use and require prior written consent for commercial use. The API is included in those terms. Therefore the resale marketplace stays disabled until written permission covers sale and resale of Surf-assisted reports, or the report pipeline uses a commercially permitted alternative. Sandbox protocol tests do not establish output rights.

@@ -1,8 +1,8 @@
-# M1 — chạy Kolosseum với dữ liệu thật
+# M1 live-data runbook
 
-M1 hiện có mã cho report từ Surf, lưu PostgreSQL, hash + mã hóa và Memo devnet. **Chưa xác nhận end-to-end** vì `SURF_API_KEY` và `DATABASE_URL` chưa được cấu hình; ví operator đã có 5 test SOL trên devnet sau khi dùng faucet chính thức ngày 24/09/2026. Giao diện hiển thị lỗi 503 khi thiếu database, không dựng template/report giả.
+The code path reads real KOL and SCEX posts from the existing Radar API, calls Surf, stores an encrypted report in PostgreSQL, and writes a SHA-256 evidence Memo on Solana devnet. An end-to-end Kolosseum report has **not** been verified yet because `SURF_API_KEY` and `DATABASE_URL` are still pending. The app returns a service error when these are missing; it does not fabricate reports or templates.
 
-## Chuẩn bị
+## Prepare
 
 ```powershell
 cd D:\VibeCode\Kolosseum
@@ -10,44 +10,33 @@ npm ci
 npm run research:init-devnet
 ```
 
-Lệnh init tạo `.env.local` và `.operator-keypair.local` (cả hai được Git bỏ qua), in **chỉ** địa chỉ public của ví. Đọc [hướng dẫn tạo PostgreSQL](./DATABASE_SETUP.md), rồi điền `DATABASE_URL` vào `.env.local`. Điền `SURF_API_KEY` khi có key/credits Surf thật. Không gửi các giá trị này trong chat. `REPORT_ENC_KEY` và `ADMIN_TOKEN` đã được init sinh ngẫu nhiên; giữ nguyên sau khi có report, nếu đổi khóa sẽ không đọc được report cũ.
+The init command creates Git-ignored `.env.local` and `.operator-keypair.local` and prints only the operator public address. Follow [PostgreSQL setup](./DATABASE_SETUP.md), then put `DATABASE_URL` and a live `SURF_API_KEY` into `.env.local`. Keep the generated `REPORT_ENC_KEY` and `ADMIN_TOKEN` private. Retain the encryption key after reports exist; changing it prevents old reports from being read.
 
 ```powershell
 npm run research:migrate
 npm run research:fund-devnet
 ```
 
-The `research:fund-devnet` command requests only devnet test SOL and checks the cluster genesis hash. If the public RPC rejects the airdrop (HTTP 429 or Internal error), the command still prints the public operator address. Enter that address at the [official Solana Devnet Faucet](https://faucet.solana.com/) and request devnet SOL, then rerun the command to check the balance. [Solana recommends the web faucet when RPC airdrops fail](https://solana.com/docs/intro/quick-start). Never use mainnet or real funds. The Memo worker estimates the fee and checks the balance before signing. Without enough test SOL, its job remains pending; rerun `npm run research:evidence` after funding. A previously ambiguous signed transaction is checked by its original signature and never signed again automatically.
+The funding command checks the devnet cluster and requests test SOL. If the RPC airdrop is rate limited, use the [official Solana devnet faucet](https://faucet.solana.com/) with the printed operator address and rerun the balance check. Use devnet test funds only. The Memo worker checks the balance before signing. An ambiguous signed transaction is checked by its original signature instead of automatically signing a second Memo.
 
-## Chạy local
+## Run locally
 
-Terminal 1:
+Start the research sidecar and Vite in separate PowerShell terminals:
 
 ```powershell
 npm run research:dev
 ```
 
-Terminal 2:
-
 ```powershell
 npm run dev -- --host 127.0.0.1
 ```
 
-Mở `http://127.0.0.1:5173/scex`. Khi `DEEP_RESEARCH_ENABLED=true`, Vite local chuyển **GET/HEAD** `/api/*` tới Radar production để UI hiển thị dữ liệu thật; các method ghi bị chặn HTTP 405. Vite chuyển `/dr-api/*` tới research sidecar `127.0.0.1:4174`. Production Vercel hiện cần một sidecar research được host riêng và `VITE_RESEARCH_API_URL` trỏ đến nó; chưa có deployment M1.
+Open `http://127.0.0.1:5173/scex`. With `DEEP_RESEARCH_ENABLED=true`, the local Vite proxy forwards read-only Radar API requests and `/dr-api/*` research requests to the sidecar. The Radar write methods are blocked locally. A production deployment needs a separately hosted research sidecar and `VITE_RESEARCH_API_URL` pointing to it.
 
-Chọn một KOL từ live feed, mở tab **Deep Research**, chọn template và nhập `ADMIN_TOKEN` từ `.env.local` của bạn. M1 là demo riêng chưa thu phí; không chia sẻ token hoặc link report riêng. Sau khi Surf tạo report, mở `/reports/<id>`: trang hiển thị SHA-256 nội dung, trạng thái Memo, và link explorer devnet khi giao dịch đã xác nhận. `POST /research/evidence/run` có thể chạy lại bằng admin token nếu Memo đang chờ; job dùng lại giao dịch đã ký, không tự tạo Memo thứ hai sau tình huống broadcast mơ hồ.
+Select a KOL in the live feed, open Deep Research, choose a template, and enter your local `ADMIN_TOKEN` for the private M1 route. Once Surf generates a report, open `/reports/<id>` to inspect its content hash, Memo status, and devnet explorer link. If the evidence job remains pending, run `npm run research:evidence` or use the protected `POST /research/evidence/run` route. The job reuses a previously signed transaction.
 
-## Kiểm chứng đã chạy ngày 23/09/2026
+For the sandbox payment route, follow the [README demo steps](../README.md#deep-research-sandbox-demo). Do not treat a gateway protocol fixture as proof that a Kolosseum report has been purchased end to end.
 
-```text
-GET http://127.0.0.1:5173/api/scex-tracking → HTTP 200; actors=596; posts=1023; asOf=2026-09-20
-PUT http://127.0.0.1:5173/api/scex-tracking → HTTP 405; Local Radar proxy is read-only
-GET http://127.0.0.1:4174/health → enabled=true; surfConfigured=false; databaseConfigured=false; evidenceConfigured=true
-GET http://127.0.0.1:5173/dr-api/templates → HTTP 503, vì chưa có DATABASE_URL
-```
+## What has been checked
 
-Trang SCEX từ Chrome hiển thị 467 KOL sau bộ lọc mặc định và 1.023 mention; mở KOL từ feed được, tab Deep Research hiển thị đúng lỗi dịch vụ chưa sẵn sàng. Khi chạy Vite riêng với `DEEP_RESEARCH_ENABLED=false`, `/api` và `/dr-api` không proxy; Chrome vẫn mở tab Surf AI cũ và có 0 panel Deep Research. Adapter server đọc Radar thật với KOL `phamduydong179`, nhận 11 bài SCEX và timestamp nguồn. Chưa có report Surf hoặc tx Memo thực tế.
-
-`npm run build`, `npm run lint -- --quiet`, `npm run research:typecheck` đều đạt. Vitest toàn bộ đạt **155/155** khi chạy bằng Node 24; Node 25 trên máy có một lỗi cache test đã có từ baseline (`convictionEventsStore.test.ts`). `npm run research:check-secrets` kiểm tra giá trị secret đã cấu hình không xuất hiện trong `dist`; khi Surf/database còn trống, hai giá trị đó chưa được kiểm tra.
-
-Khi đã điền key/database, chạy lại migration, tạo report thật, chờ Memo devnet và kiểm tra verify trước khi đánh dấu M1 hoàn thành. Dừng để review M1 trước M2/payment.
+The local Radar proxy returned a real SCEX dataset and blocked write methods. The read-only KOL context adapter retrieved source posts for a live KOL. Build, lint, typecheck, unit tests, and client-secret scanning have passed. The paid gateway has separately passed MPP and x402 sandbox protocol fixtures. A live Surf report, its PostgreSQL row, settled purchase, and devnet Memo still require the missing Surf/database configuration before they can be claimed as verified together.

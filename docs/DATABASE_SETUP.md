@@ -1,11 +1,16 @@
-# Tạo PostgreSQL cho Kolosseum (M1)
+# PostgreSQL setup for Kolosseum
 
-Kolosseum dùng PostgreSQL riêng để lưu **chỉ** các bảng mới có tiền tố `dr_`. Dữ liệu KOL và bài đăng vẫn được đọc từ Radar thật; không import hoặc sửa dữ liệu Radar.
+Kolosseum stores reports, payment references, channels, and votes in new `dr_` tables. KOL and X post data remain in the existing Radar API and R2; the migration does not copy or modify them.
 
-1. Mở [Neon Console](https://console.neon.tech/), đăng ký/đăng nhập, chọn **Create project**. Đặt tên `kolosseum-demo`, chọn region gần nơi chạy app. Có thể giữ tên database mặc định `neondb`.
-2. Trong dashboard của project, bấm **Connect** và chọn database/branch vừa tạo. Sao chép **connection string** dạng `postgresql://USER:PASSWORD@HOST/DB?sslmode=require`. Dùng kết nối trực tiếp cho môi trường local M1; chế độ pooled có thể dùng sau cho triển khai serverless.
-3. Mở file `D:\VibeCode\Kolosseum\.env.local` đang được Git bỏ qua. Thêm hoặc điền đúng **một** dòng `DATABASE_URL=postgresql://...` bằng chuỗi vừa sao chép. Giữ nguyên các dòng `REPORT_ENC_KEY`, `ADMIN_TOKEN`, `OPERATOR_KEYPAIR_PATH` do `npm run research:init-devnet` đã tạo. Không gửi URL hoặc mật khẩu qua chat và không commit `.env.local`.
-4. Từ PowerShell tại `D:\VibeCode\Kolosseum`, chạy `npm run research:migrate`. Khi thành công, lệnh in `Applied dr_ migration and seeded three templates.` Migration chỉ tạo `dr_templates`, `dr_reports`, `dr_votes`, `dr_channels`, `dr_evidence_jobs` và 3 mẫu báo cáo.
-5. Chạy `npm run research:dev` trong một terminal khác, rồi mở `http://127.0.0.1:4174/templates`. Khi database kết nối thành công, API trả 3 template. Nếu báo lỗi kết nối, kiểm tra lại host, password và `sslmode=require` trên **máy của bạn**, không dán credential vào issue/chat.
+1. Create a PostgreSQL database with your provider. A name such as `kolosseum_demo` is suitable for the app. Copy its connection string in the form `postgresql://USER:PASSWORD@HOST/DB?sslmode=require` when your provider requires TLS.
+2. Add `DATABASE_URL=<your connection string>` to `D:\VibeCode\Kolosseum\.env.local`. The file is Git-ignored. Keep its existing `REPORT_ENC_KEY`, `ADMIN_TOKEN`, and `OPERATOR_KEYPAIR_PATH` values. Never commit or paste credentials into chat.
+3. From `D:\VibeCode\Kolosseum`, run `npm run research:migrate`. A successful run prints `Applied dr_ migration and seeded three templates.` The migration creates `dr_templates`, `dr_reports`, `dr_votes`, `dr_channels`, and `dr_evidence_jobs` only.
+4. Run `npm run research:dev` and open `http://127.0.0.1:4174/templates`. When the database is reachable, the API returns the three research templates.
 
-Theo [hướng dẫn tạo project của Neon](https://neon.com/blog/serverless-api-using-aws-lambda-cdk-and-neon), connection string xuất hiện sau khi tạo project và có thể lấy lại từ dashboard. [Neon cũng giải thích](https://neon.com/blog/postgres-support-case-recap) lựa chọn pooled connection trong phần Connection Details; M1 local không cần bật tuỳ chọn đó.
+For the purchase-backed vote integration test, create a **separate** disposable PostgreSQL database named exactly `kolosseum_test`. Put its connection string in `TEST_DATABASE_URL` in `.env.local`, then run:
+
+```powershell
+npx vitest run lib/research/db.vote.integration.test.ts
+```
+
+The test refuses a URL whose database name is not `kolosseum_test` or matches `DATABASE_URL`. It applies the same `dr_` migration to the test database, inserts one temporary report, verifies payment and vote constraints, and deletes that report and its vote afterward. It leaves the three seeded templates. Without `TEST_DATABASE_URL`, Vitest marks this one test as skipped. Do not point `TEST_DATABASE_URL` at your app database.

@@ -65,4 +65,6 @@ npm test
 npm run research:check-secrets
 ~~~
 
+The PostgreSQL vote-proof integration test is opt-in. Create a separate database named `kolosseum_test`, set `TEST_DATABASE_URL` in `.env.local`, and run `npx vitest run lib/research/db.vote.integration.test.ts`. The test skips when that database is absent; it must not use the app database. See [database setup](./docs/DATABASE_SETUP.md).
+
 The app uses Vite, React, TypeScript, the existing SCEX API and R2 store, and a separate Node research service.

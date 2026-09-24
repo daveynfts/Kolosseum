@@ -49,6 +49,8 @@ export default defineConfig(({ mode }) => {
         '/dr-api': {
           target: env.RESEARCH_PROXY_TARGET || 'http://127.0.0.1:4174',
           changeOrigin: true,
+          timeout: 300_000,
+          proxyTimeout: 300_000,
           rewrite: (path: string) => path.replace(/^\/dr-api/, ''),
         },
       } : undefined,

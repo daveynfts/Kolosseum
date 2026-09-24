@@ -3,7 +3,8 @@ import { createHash, timingSafeEqual } from 'node:crypto'
 import { config as loadEnv } from 'dotenv'
 import { decryptReport, hashesMatch, sha256 } from '../../lib/evidence/reportCrypto'
 import { processEvidence, verifyEvidence } from '../../lib/evidence/memo'
-import { generateDeepReport, generateQuickReport } from '../../lib/research/generate'
+import { generateDeepReport, generateQuickReport, normalizeDeepPrompt } from '../../lib/research/generate'
+import { IncompleteDemoPurchaseError, runDemoBuyer, type DemoBuyerResult } from './demoBuy'
 import { mayGenerateReport } from '../../lib/payments/originAuth'
 import { parseBuyerWallet, verifyDashboardAccess, verifyReportAccess } from '../../lib/payments/walletAccess'
 import { formatUsdc, verifyPaymentForReport } from '../../lib/payments/reconcile'
@@ -18,6 +19,12 @@ const uuid = '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}'
 const reportPath = new RegExp(`^/reports/(${uuid})(?:/(verify))?$`, 'i')
 const paymentPath = new RegExp(`^/reports/(${uuid})/payment$`, 'i')
 const votePath = new RegExp(`^/reports/(${uuid})/vote$`, 'i')
+const demoBuyEnabled = process.env.PAY_DEMO_BUY_ENABLED === 'true' &&
+  process.env.PAY_MODE === 'sandbox' && process.env.PAY_GATEWAY_ENABLED === 'true' &&
+  (host === '127.0.0.1' || host === 'localhost') && process.platform === 'win32'
+let demoPurchaseBusy = false
+let latestDemoPurchase: ({ status: 'running' | 'failed' | 'needs-review' | 'verified'; reportId?: string } &
+  Partial<DemoBuyerResult>) | null = null
 
 function send(res: ServerResponse, status: number, data: unknown) {
   res.writeHead(status, {
@@ -55,6 +62,7 @@ const server = createServer(async (req, res) => {
     return send(res, 200, {
       enabled,
       gatewayMode: process.env.PAY_GATEWAY_ENABLED === 'true',
+      demoBuyEnabled,
       radarConfigured: Boolean(process.env.RADAR_API_BASE || 'https://radar.daveynfts.com'),
       surfConfigured: Boolean(process.env.SURF_API_KEY),
       databaseConfigured: Boolean(process.env.DATABASE_URL),
@@ -72,6 +80,62 @@ const server = createServer(async (req, res) => {
       const wallet = verifyDashboardAccess(req.headers)
       if (!wallet) return send(res, 401, { error: 'Recent buyer wallet signature required' })
       return send(res, 200, await getBuyerDashboard(wallet))
+    }
+    if (req.method === 'GET' && pathname === '/research/demo-buy/latest') {
+      if (!demoBuyEnabled) return send(res, 404, { error: 'Local sandbox buyer is disabled' })
+      if (!isAdmin(req)) return send(res, 401, { error: 'Admin token required' })
+      return latestDemoPurchase
+        ? send(res, 200, latestDemoPurchase)
+        : send(res, 404, { error: 'No local demo purchase has run in this server session' })
+    }
+    if (req.method === 'POST' && pathname === '/research/demo-buy') {
+      if (!demoBuyEnabled) return send(res, 404, { error: 'Local sandbox buyer is disabled' })
+      if (!isAdmin(req)) return send(res, 401, { error: 'Admin token required' })
+      if (demoPurchaseBusy) return send(res, 409, { error: 'A sandbox demo purchase is already running' })
+      const body = await readJson(req)
+      if (typeof body.kolHandle !== 'string' || !/^[A-Za-z0-9_]{1,15}$/.test(body.kolHandle)) {
+        return send(res, 400, { error: 'Valid X handle is required' })
+      }
+      if ((body.prompt !== undefined && typeof body.prompt !== 'string') ||
+          (body.templateSlug !== undefined && typeof body.templateSlug !== 'string')) {
+        return send(res, 400, { error: 'Template and prompt must be strings' })
+      }
+      const isDeep = typeof body.prompt === 'string'
+      if (isDeep === (typeof body.templateSlug === 'string')) {
+        return send(res, 400, { error: 'Choose exactly one template or custom prompt' })
+      }
+      if (!process.env.SURF_API_KEY || !process.env.DATABASE_URL) {
+        return send(res, 503, { error: 'Live Surf and database connections are required' })
+      }
+      let input: { kolHandle: string; templateSlug?: string; prompt?: string }
+      if (isDeep) {
+        input = { kolHandle: body.kolHandle, prompt: normalizeDeepPrompt(body.prompt as string) }
+      } else {
+        const templateSlug = body.templateSlug as string
+        if (!(await listTemplates()).some((template) => template.slug === templateSlug)) {
+          return send(res, 400, { error: 'Unknown or disabled template' })
+        }
+        input = { kolHandle: body.kolHandle, templateSlug }
+      }
+      if (demoPurchaseBusy) return send(res, 409, { error: 'A sandbox demo purchase is already running' })
+      demoPurchaseBusy = true
+      latestDemoPurchase = { status: 'running' }
+      try {
+        const result = await runDemoBuyer(input)
+        latestDemoPurchase = { status: 'verified', ...result }
+        return send(res, 201, { ...latestDemoPurchase, reportUrl: '/reports/' + result.reportId })
+      } catch (cause) {
+        if (cause instanceof IncompleteDemoPurchaseError) {
+          latestDemoPurchase = { status: 'needs-review', reportId: cause.reportId }
+          return send(res, 202, { ...latestDemoPurchase,
+            reportUrl: '/reports/' + cause.reportId,
+            error: 'A sandbox purchase may have occurred. Inspect this report before trying again.' })
+        }
+        latestDemoPurchase = { status: 'failed' }
+        return send(res, 502, { error: 'Local sandbox buyer could not complete a verified report' })
+      } finally {
+        demoPurchaseBusy = false
+      }
     }
     if (req.method === 'POST' && pathname === '/research/quick') {
       if (!mayGenerateReport(req.headers)) return send(res, 401, { error: 'Research origin authorization required' })

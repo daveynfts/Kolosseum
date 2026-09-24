@@ -33,7 +33,7 @@ The existing authenticated /api/avatar endpoint fetches the image and writes dir
 
 The additive research service uses existing KOL/SCEX data, PostgreSQL `dr_` tables, the live Surf API, encrypted reports, Solana devnet Memo evidence, and a separate pay.sh sandbox gateway. The KOL panel offers template and custom research, exact quick-report pricing, custom-report ceiling/metering, and recorded channel status. `/me` lists reports, channels, and votes for a wallet after a short-lived signature. A settled purchase lets that buyer cast one weighted support or challenge vote.
 
-For a **real** local report, configure the ignored `.env.local` as described in the [M1 runbook](./docs/M1_RUNBOOK.md) and [database setup](./docs/DATABASE_SETUP.md). Set `SURF_API_KEY`, `DATABASE_URL`, `REPORT_ENC_KEY`, `ADMIN_TOKEN`, `OPERATOR_KEYPAIR_PATH`, devnet `SOLANA_RPC_URL`, `DEEP_RESEARCH_ENABLED=true`, `PAY_GATEWAY_ENABLED=true`, `PAY_MODE=sandbox`, and the public `PAY_GATEWAY_SIGNER_WALLET` printed by `pay --sandbox account list`. Then:
+For a **real** local report, configure the ignored `.env.local` as described in the [M1 runbook](./docs/M1_RUNBOOK.md) and [database setup](./docs/DATABASE_SETUP.md). Set `SURF_API_KEY`, `DATABASE_URL`, `REPORT_ENC_KEY`, `ADMIN_TOKEN`, `OPERATOR_KEYPAIR_PATH`, devnet `SOLANA_RPC_URL`, `DEEP_RESEARCH_ENABLED=true`, `PAY_GATEWAY_ENABLED=true`, `PAY_DEMO_BUY_ENABLED=true`, `PAY_MODE=sandbox`, and the public `PAY_GATEWAY_SIGNER_WALLET` printed by `pay --sandbox account list`. Then:
 
 ~~~powershell
 npm run research:migrate
@@ -44,14 +44,14 @@ npm run pay:sandbox
 npm run dev
 ~~~
 
-From the KOL panel, copy one of the sandbox demo buyer commands. The quick report uses an MPP session; a custom prompt uses x402 upto:
+With `PAY_DEMO_BUY_ENABLED=true` on this Windows loopback sidecar, the KOL panel also offers **Buy with local sandbox wallet** after you enter the admin token. The button runs the real guarded demo buyer; **Check last purchase** retrieves this server process’s latest result if the browser times out. Do not blindly repeat a request that may have already paid. You can alternatively copy and run either command below. Quick reports use an MPP session; custom prompts use x402 upto:
 
 ~~~powershell
 npm run pay:demo-buy -- -KolHandle <real-X-handle> -TemplateSlug risk-profile
 npm run pay:demo-buy -- -KolHandle <real-X-handle> -Prompt 'Which sourced public claims about this KOL can be verified?'
 ~~~
 
-The script fails before paying if real Surf/PostgreSQL readiness or the sandbox signer is missing. It pays through the pay.sh CLI's own sandbox wallet, claims the receipt after settlement, and verifies the report hash and devnet Memo. The CLI wallet remains the report owner; connecting a different Phantom/Solflare wallet in the browser does not transfer ownership. A buyer whose connected wallet paid and claimed a report can reopen it, see it in `/me`, and vote. This flow has not run against a Kolosseum report yet because Surf and PostgreSQL credentials are pending; isolated MPP/x402 protocol fixtures have passed. The browser itself does not initiate a pay.sh sandbox checkout.
+The script fails before paying if real Surf/PostgreSQL readiness or the sandbox signer is missing. It pays through the pay.sh CLI's own sandbox wallet, claims the receipt after settlement, and verifies the report hash and devnet Memo. The CLI wallet remains the report owner; connecting a different Phantom/Solflare wallet in the browser does not transfer ownership. A buyer whose connected wallet paid and claimed a report can reopen it, see it in `/me`, and vote. This flow has not run against a Kolosseum report yet because Surf and PostgreSQL credentials are pending; isolated MPP/x402 protocol fixtures have passed. The browser invokes the local admin-only CLI buyer; Phantom/Solflare do not directly fund the pay.sh sandbox checkout. Latest-purchase recovery is in memory and is lost if the sidecar restarts.
 
 Report resale remains disabled. [Surf's terms](https://asksurf.ai/terms-of-service) require written permission for commercial output use; downstream paid resale needs that permission or a replacement source with suitable rights.
 

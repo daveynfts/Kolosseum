@@ -104,3 +104,11 @@ if (-not ($verification.recomputedHashMatch -and $verification.onChainMatch)) {
 }
 Write-Host "Report: http://127.0.0.1:5173/reports/$($report.reportId)"
 Write-Host "Devnet Memo: $($verification.explorerUrl)"
+$demoResult = [ordered]@{
+  reportId = [string]$report.reportId
+  buyerWallet = $buyerWallet
+  protocol = $protocol
+  priceChargedUsdc = [string]$claim.priceChargedUsdc
+  explorerUrl = [string]$verification.explorerUrl
+}
+Write-Output ('DEMO_RESULT_JSON:' + ($demoResult | ConvertTo-Json -Compress))

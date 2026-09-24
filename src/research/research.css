@@ -273,3 +273,9 @@
   width: min(100%, 900px);
   margin-inline: auto;
 }
+
+.dr-panel__demo .dr-panel__buy {
+  border-color: #f5d192;
+  background: linear-gradient(150deg, #edc885, #ae713d);
+  color: #29180f;
+}

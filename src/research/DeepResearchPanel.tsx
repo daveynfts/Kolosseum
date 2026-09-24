@@ -15,6 +15,7 @@ type Template = {
 type Health = {
   enabled: boolean
   gatewayMode: boolean
+  demoBuyEnabled: boolean
   surfConfigured: boolean
   databaseConfigured: boolean
 }
@@ -40,6 +41,8 @@ export function DeepResearchPanel({ kolHandle }: { kolHandle: string }) {
   const [error, setError] = useState('')
   const [channelError, setChannelError] = useState('')
   const [copied, setCopied] = useState(false)
+  const [partialReportId, setPartialReportId] = useState<string | null>(null)
+  const [demoStatus, setDemoStatus] = useState('')
 
   useEffect(() => {
     let cancelled = false
@@ -63,6 +66,7 @@ export function DeepResearchPanel({ kolHandle }: { kolHandle: string }) {
   const selected = templates.find((template) => template.slug === templateSlug)
   const ready = Boolean(health?.enabled && health.surfConfigured && health.databaseConfigured)
   const gateway = Boolean(health?.gatewayMode)
+  const localDemoAvailable = Boolean(health?.demoBuyEnabled)
   const currentChannel = channel?.wallet === wallet.address ? channel.record : null
   const validPrompt = prompt.trim().length >= 20 && prompt.trim().length <= 2_000
   const demoCommand = mode === 'quick'
@@ -122,12 +126,65 @@ export function DeepResearchPanel({ kolHandle }: { kolHandle: string }) {
     }
   }
 
+  async function recoverDemo() {
+    if (!localDemoAvailable || !token.trim()) return
+    setError('')
+    setDemoStatus('')
+    setPartialReportId(null)
+    try {
+      const response = await fetch(researchApi('/research/demo-buy/latest'), {
+        headers: { Authorization: `Bearer ${token.trim()}` },
+      })
+      const result = await response.json() as { status?: string; reportId?: string; error?: string }
+      if (response.status === 404) { setDemoStatus('No purchase is recorded in this server session.'); return }
+      if (!response.ok) throw new Error(result.error || `Status check failed (HTTP ${response.status}).`)
+      if (result.reportId && /^[0-9a-f-]{36}$/i.test(result.reportId)) setPartialReportId(result.reportId)
+      if (result.status === 'running') setDemoStatus('The local sandbox purchase is still running. Do not start another purchase.')
+      else if (result.status === 'verified') setDemoStatus('The last sandbox purchase was verified. Open the report below.')
+      else if (result.status === 'needs-review') setError('The last purchase needs review. Open its report before trying again.')
+      else setError('The last local purchase did not return a verified report. Check the server before trying again.')
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Could not check the last purchase.')
+    }
+  }
+
+  async function buyDemo() {
+    if (!localDemoAvailable || !ready || !token.trim()) return
+    setLoading(true)
+    setError('')
+    setDemoStatus('')
+    setPartialReportId(null)
+    sessionStorage.setItem(ADMIN_TOKEN_SESSION_KEY, token.trim())
+    try {
+      const response = await fetch(researchApi('/research/demo-buy'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token.trim()}` },
+        body: JSON.stringify(mode === 'quick' ? { kolHandle, templateSlug } : { kolHandle, prompt: prompt.trim() }),
+      })
+      const result = await response.json() as { status?: string; reportId?: string; error?: string }
+      if (response.status === 202 && result.reportId && /^[0-9a-f-]{36}$/i.test(result.reportId)) {
+        setPartialReportId(result.reportId)
+        setError(result.error || 'A sandbox payment may have occurred. Inspect the report before trying again.')
+      } else if (!response.ok || result.status !== 'verified' || !result.reportId) {
+        throw new Error(result.error || `Sandbox purchase failed (HTTP ${response.status}).`)
+      } else {
+        window.location.assign(`/reports/${result.reportId}`)
+      }
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Could not complete sandbox purchase.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
   return (
     <form className="dr-panel" onSubmit={submit}>
       <div className="dr-panel__banner">SOLANA DEVNET / SANDBOX · NO REAL FUNDS</div>
       <h3>Deep Research: @{kolHandle}</h3>
       <p>Research from live KOL and SCEX posts, with Surf AI analysis, a content hash, and a devnet Memo.</p>
       {error && <p className="dr-panel__error" role="alert">{error}</p>}
+      {demoStatus && <p className="dr-panel__notice" role="status">{demoStatus}</p>}
+      {partialReportId && <a href={`/reports/${partialReportId}`}>Inspect report {partialReportId.slice(0, 8)}… →</a>}
       <div className="dr-panel__modes" role="group" aria-label="Research type">
         <button type="button" className={mode === 'quick' ? 'is-active' : ''} onClick={() => { setMode('quick'); setCopied(false) }}>Template report</button>
         <button type="button" className={mode === 'deep' ? 'is-active' : ''} onClick={() => { setMode('deep'); setCopied(false) }}>Custom research</button>
@@ -169,6 +226,18 @@ export function DeepResearchPanel({ kolHandle }: { kolHandle: string }) {
         <div className="dr-panel__demo">
           <strong>Sandbox purchase via local demo buyer</strong>
           <p>The pay.sh CLI pays from its own sandbox wallet, verifies the receipt, then checks the devnet Memo. A connected Phantom or Solflare wallet does not pay for this CLI purchase.</p>
+          {localDemoAvailable && (
+            <>
+              <label>ADMIN_TOKEN (local sandbox demo)
+                <input type="password" value={token} onChange={(event) => setToken(event.target.value)} autoComplete="off" />
+              </label>
+              <button type="button" className="dr-panel__buy" disabled={loading || !ready || !token.trim() || (mode === 'quick' ? !selected : !validPrompt)} onClick={() => { void buyDemo() }}>
+                {loading ? 'Buying and verifying…' : 'Buy with local sandbox wallet'}
+              </button>
+              <button type="button" disabled={!token.trim() || loading} onClick={() => { void recoverDemo() }}>Check last purchase</button>
+              <small>Sandbox USDC has no real value; the live Surf API may still charge your account for research. Each new purchase generates a new report.</small>
+            </>
+          )}
           <code>{demoCommand}</code>
           <button type="button" disabled={!ready || (mode === 'quick' ? !selected : !validPrompt)} onClick={() => { void copyCommand() }}>
             {copied ? 'Command copied' : 'Copy demo command'}

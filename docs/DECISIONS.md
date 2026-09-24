@@ -49,3 +49,9 @@ The default client-voucher session opened escrow but the pay CLI stopped after i
 ## 2026-09-24 — Surf permission is required before commercial report distribution
 
 Surf's published terms currently permit Output for personal/non-commercial use and require prior written consent for commercial use. The API is included in those terms. Therefore the resale marketplace stays disabled until written permission covers sale and resale of Surf-assisted reports, or the report pipeline uses a commercially permitted alternative. Sandbox protocol tests do not establish output rights.
+
+## 24 Sep 2026 — Record paid proofs only after sandbox chain reconciliation
+
+The pay.sh proxy adds receipt headers after the origin responds, so the origin cannot store a verified payer or price inside `POST /research/*`. The purchaser submits the header value afterward to `POST /reports/:id/payment`. The service verifies x402 settlement transaction and beneficiary USDC delta, or MPP channel payer/payee/cap/cumulative spend on the sandbox chain, then records one unique payment reference. For repeated MPP purchases, each claimed cumulative voucher must increase by exactly the report price; a settled channel total alone would allow fabricated overlapping claims. Reopening a paid-mode report requires this recorded proof. Browser checkout remains future M2 work.
+
+A fixed `operator.recipient` works for x402 payouts but did not change the MPP channel's payee in the tested sandbox. MPP verification uses the public gateway signer (`PAY_GATEWAY_SIGNER_WALLET`); the gateway prints it and `pay --sandbox account list` shows it. No private key or receipt is placed in the client bundle. The operator recipient receives sandbox settlement funds after a channel closes, so product copy must say the deposit is held in escrow **until settlement**, not that funds can never reach the operator.

@@ -8,22 +8,28 @@ import './research.css'
 type Report = {
   id: string
   kolHandle: string
-  templateSlug: string
+  templateSlug: string | null
   content: string
   contentHash: string
   evidenceTx: string | null
   contextAsOf: string | null
   createdAt: string
   surfModel: string
+  paymentRef: string | null
+  priceChargedUsdc: string
 }
 
 type Verification = {
+  templateSlug: string | null
   contentHash: string
   recomputedHashMatch: boolean
   evidenceTx: string | null
   onChainMatch: boolean | null
   networkError: boolean
   explorerUrl: string | null
+  paymentRequired: boolean
+  paymentVerified: boolean
+  priceChargedUsdc: string
 }
 
 export function ReportPage() {
@@ -31,7 +37,10 @@ export function ReportPage() {
   const wallet = useKolosseumWallet()
   const [token, setToken] = useState(() => sessionStorage.getItem(ADMIN_TOKEN_SESSION_KEY) || '')
   const [report, setReport] = useState<Report | null>(null)
-  const [verify, setVerify] = useState<Verification | null>(null)
+  const [verification, setVerification] = useState<Verification | null>(null)
+  const [receipt, setReceipt] = useState('')
+  const [claimState, setClaimState] = useState('')
+  const [claimBusy, setClaimBusy] = useState(false)
   const [error, setError] = useState('')
 
   useEffect(() => {
@@ -44,16 +53,23 @@ export function ReportPage() {
       fetch(researchApi(`/reports/${id}`), { headers: walletHeaders || (adminToken ? { Authorization: `Bearer ${adminToken}` } : {}) }),
       fetch(researchApi(`/reports/${id}/verify`)),
     ])
-    if (verifyResponse.ok) setVerify(await verifyResponse.json() as Verification)
+    if (verifyResponse.ok) setVerification(await verifyResponse.json() as Verification)
     if (!reportResponse.ok) {
       setReport(null)
-      setError(reportResponse.status === 401 ? 'Connect the report owner wallet and sign, or enter the M1 admin token.' : `Could not load report (HTTP ${reportResponse.status}).`)
+      setError(reportResponse.status === 401
+        ? 'Connect the report owner wallet and sign, or enter the M1 admin token.'
+        : reportResponse.status === 402
+          ? 'Attach a settled sandbox payment receipt to reopen this report.'
+          : `Could not load report (HTTP ${reportResponse.status}).`)
       return
     }
     setReport(await reportResponse.json() as Report)
   }, [id])
 
-  useEffect(() => { void load(sessionStorage.getItem(ADMIN_TOKEN_SESSION_KEY) || '').catch(() => setError('Report service is unavailable.')) }, [load])
+  useEffect(() => {
+    void load(sessionStorage.getItem(ADMIN_TOKEN_SESSION_KEY) || '')
+      .catch(() => setError('Report service is unavailable.'))
+  }, [load])
 
   function unlock() {
     sessionStorage.setItem(ADMIN_TOKEN_SESSION_KEY, token.trim())
@@ -69,24 +85,66 @@ export function ReportPage() {
     }
   }
 
+  async function attachReceipt() {
+    if (!verification || !receipt.trim()) return
+    setClaimBusy(true)
+    setClaimState('')
+    setError('')
+    try {
+      const adminToken = wallet.address ? '' : token.trim()
+      const headers = wallet.address
+        ? await wallet.signReportAccess(id)
+        : { Authorization: `Bearer ${adminToken}` }
+      const response = await fetch(researchApi(`/reports/${id}/payment`), {
+        method: 'POST',
+        headers: { ...headers, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          protocol: verification.templateSlug ? 'mpp-session' : 'x402-upto',
+          receipt: receipt.trim(),
+        }),
+      })
+      const result = await response.json() as {
+        error?: string
+        priceChargedUsdc?: string
+        channel?: { status: string; spentUsdc: string; remainingUsdc: string } | null
+      }
+      if (response.status === 202) {
+        setClaimState('Channel settlement is pending. Wait a few seconds, then verify again.')
+      } else if (!response.ok) {
+        setError(result.error || `Payment verification failed (HTTP ${response.status}).`)
+      } else {
+        setReceipt('')
+        setClaimState(`Payment verified: $${result.priceChargedUsdc} sandbox USDC.` +
+          (result.channel ? ` Channel ${result.channel.status}; spent $${result.channel.spentUsdc}, remaining $${result.channel.remainingUsdc}.` : ''))
+        await load(adminToken, adminToken ? undefined : headers)
+      }
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Could not verify payment receipt.')
+    } finally {
+      setClaimBusy(false)
+    }
+  }
+
   return (
     <main className="dr-report-page">
       <nav className="dr-report-page__nav"><a href="/scex">← Back to the KOL arena</a></nav>
-      <div className="dr-panel__banner">SOLANA DEVNET · RESEARCH REPORT</div>
+      <div className="dr-panel__banner">SOLANA DEVNET / SANDBOX · RESEARCH REPORT</div>
       <h1>{report ? `Profile @${report.kolHandle}` : 'Deep Research report'}</h1>
-      {report && <p className="dr-report-page__meta">{report.templateSlug} · SCEX source as of {report.contextAsOf || 'unknown'} · Created {new Date(report.createdAt).toLocaleString('en-US')} · {report.surfModel}</p>}
-      {verify && (
+      {report && <p className="dr-report-page__meta">{report.templateSlug || 'Custom research'} · SCEX source as of {report.contextAsOf || 'unknown'} · Created {new Date(report.createdAt).toLocaleString('en-US')} · {report.surfModel}</p>}
+      {verification && (
         <section className="dr-verify" aria-label="Report verification">
-          <strong>{verify.recomputedHashMatch ? '✓ Content hash matches' : '⚠ Content hash mismatch'}</strong>
-          <code>SHA-256: {verify.contentHash}</code>
-          {verify.evidenceTx && verify.explorerUrl ? (
-            <a href={verify.explorerUrl} target="_blank" rel="noreferrer">
-              {verify.onChainMatch === true ? '✓ Devnet memo verified ↗' : verify.networkError ? 'Devnet memo: network unavailable ↗' : 'Devnet memo not verified ↗'}
+          <strong>{verification.recomputedHashMatch ? '✓ Content hash matches' : '⚠ Content hash mismatch'}</strong>
+          <code>SHA-256: {verification.contentHash}</code>
+          {verification.paymentRequired && <span>{verification.paymentVerified ? `✓ Payment verified · $${verification.priceChargedUsdc} sandbox USDC` : 'Payment proof pending'}</span>}
+          {verification.evidenceTx && verification.explorerUrl ? (
+            <a href={verification.explorerUrl} target="_blank" rel="noreferrer">
+              {verification.onChainMatch === true ? '✓ Devnet memo verified ↗' : verification.networkError ? 'Devnet memo: network unavailable ↗' : 'Devnet memo not verified ↗'}
             </a>
           ) : <span>Devnet memo pending.</span>}
         </section>
       )}
       {error && <p className="dr-panel__error" role="alert">{error}</p>}
+      {claimState && <p className="dr-report-page__meta" role="status">{claimState}</p>}
       {!report && (
         <div className="dr-report-page__unlock">
           <WalletControls wallet={wallet} />
@@ -96,6 +154,16 @@ export function ReportPage() {
           </label>
           <button type="button" onClick={unlock}>Open report</button>
         </div>
+      )}
+      {verification?.paymentRequired && !verification.paymentVerified && (
+        <section className="dr-verify dr-payment-claim" aria-label="Attach sandbox payment receipt">
+          <strong>Attach sandbox payment proof</strong>
+          <p>Paste the Payment-Receipt or PAYMENT-RESPONSE header value returned by pay.sh after buying this report.</p>
+          <label>Receipt value
+            <input value={receipt} onChange={(event) => setReceipt(event.target.value)} autoComplete="off" />
+          </label>
+          <button type="button" disabled={claimBusy || !receipt.trim() || (!wallet.address && !token.trim())} onClick={() => { void attachReceipt() }}>Verify payment on Solana sandbox</button>
+        </section>
       )}
       {report && <article className="dr-report-page__content"><ReportMarkdown text={report.content} /></article>}
     </main>

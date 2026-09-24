@@ -21,6 +21,9 @@ const ScexTrackingPage = lazy(() =>
 const ReportPage = lazy(() =>
   import('./research/ReportPage.tsx').then((m) => ({ default: m.ReportPage })),
 )
+const BuyerPage = lazy(() =>
+  import('./research/BuyerPage.tsx').then((m) => ({ default: m.BuyerPage })),
+)
 function RouteFallback() {
   return (
     <div className="boot-splash" aria-busy="true">
@@ -45,7 +48,7 @@ function normalizePathname(): string {
   return p || '/'
 }
 
-function getRoute(): 'admin' | 'scex' | 'report' {
+function getRoute(): 'admin' | 'scex' | 'report' | 'me' {
   const h = window.location.hash.replace(/^#\/?/, '').toLowerCase()
   const path = normalizePathname()
   // Admin hash/path always wins so /scex#/admin and /admin work.
@@ -58,6 +61,7 @@ function getRoute(): 'admin' | 'scex' | 'report' {
   ) {
     return 'admin'
   }
+  if (__DEEP_RESEARCH_ENABLED__ && path === '/me') return 'me'
   if (__DEEP_RESEARCH_ENABLED__ && path.startsWith('/reports/')) return 'report'
   return 'scex'
 }
@@ -164,6 +168,19 @@ function Root() {
           <AdminGate>
             <AdminDashboard />
           </AdminGate>
+        </SceneErrorBoundary>
+      </Suspense>
+    )
+  }
+
+  if (route === 'me') {
+    return (
+      <Suspense fallback={<RouteFallback />}>
+        <SceneErrorBoundary title="Buyer page failed to render">
+          <div className="app-shell app-shell--arena">
+            <SiteChrome active="scex" />
+            <BuyerPage />
+          </div>
         </SceneErrorBoundary>
       </Suspense>
     )

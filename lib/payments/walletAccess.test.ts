@@ -1,7 +1,7 @@
 import { generateKeyPairSync, sign } from 'node:crypto'
 import bs58 from 'bs58'
 import { describe, expect, it } from 'vitest'
-import { parseBuyerWallet, reportAccessMessage, verifyReportAccess } from './walletAccess'
+import { dashboardAccessMessage, parseBuyerWallet, reportAccessMessage, verifyDashboardAccess, verifyReportAccess } from './walletAccess'
 
 function signedAccess(reportId: string, issuedAt: string) {
   const { publicKey, privateKey } = generateKeyPairSync('ed25519')
@@ -28,6 +28,24 @@ describe('buyer wallet access', () => {
     expect(verifyReportAccess(headers, '140e123f-2261-4d98-82ff-bf14019326fb', wallet, now)).toBe(false)
     expect(verifyReportAccess(headers, id, null, now)).toBe(false)
     expect(verifyReportAccess(headers, id, bs58.encode(Buffer.alloc(32, 2)), now)).toBe(false)
+  })
+
+  it('keeps buyer dashboard signatures separate from report access', () => {
+    const now = Date.parse('2026-09-24T12:00:00.000Z')
+    const issuedAt = new Date(now).toISOString()
+    const reportId = 'e92da370-50a7-4875-9191-5dc0e6916df0'
+    const { publicKey, privateKey } = generateKeyPairSync('ed25519')
+    const wallet = bs58.encode(publicKey.export({ format: 'der', type: 'spki' }).subarray(-32))
+    const headers = {
+      'x-kolosseum-wallet': wallet,
+      'x-kolosseum-issued-at': issuedAt,
+      'x-kolosseum-signature': bs58.encode(sign(null, Buffer.from(dashboardAccessMessage(wallet, issuedAt)), privateKey)),
+    }
+    expect(verifyDashboardAccess(headers, now)).toBe(wallet)
+    expect(verifyReportAccess(headers, reportId, wallet, now)).toBe(false)
+    expect(verifyDashboardAccess(headers, now + 120_001)).toBeNull()
+    expect(verifyDashboardAccess(signedAccess(reportId, issuedAt).headers, now)).toBeNull()
+    expect(verifyDashboardAccess({ ...headers, 'x-kolosseum-wallet': bs58.encode(Buffer.alloc(32, 2)) }, now)).toBeNull()
   })
 
   it('rejects expired, malformed, and altered claims', () => {

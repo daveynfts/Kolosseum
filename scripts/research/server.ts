@@ -5,9 +5,9 @@ import { decryptReport, hashesMatch, sha256 } from '../../lib/evidence/reportCry
 import { processEvidence, verifyEvidence } from '../../lib/evidence/memo'
 import { generateDeepReport, generateQuickReport } from '../../lib/research/generate'
 import { mayGenerateReport } from '../../lib/payments/originAuth'
-import { parseBuyerWallet, verifyReportAccess } from '../../lib/payments/walletAccess'
+import { parseBuyerWallet, verifyDashboardAccess, verifyReportAccess } from '../../lib/payments/walletAccess'
 import { formatUsdc, verifyPaymentForReport } from '../../lib/payments/reconcile'
-import { getReport, getResearchStats, listTemplates, recordReportPayment } from '../../lib/research/db'
+import { getBuyerDashboard, getReport, getResearchStats, getVoteSummary, listTemplates, recordPurchaseVote, recordReportPayment } from '../../lib/research/db'
 
 loadEnv({ path: '.env.local', quiet: true })
 
@@ -17,6 +17,7 @@ const host = process.env.RESEARCH_HOST || '127.0.0.1'
 const uuid = '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}'
 const reportPath = new RegExp(`^/reports/(${uuid})(?:/(verify))?$`, 'i')
 const paymentPath = new RegExp(`^/reports/(${uuid})/payment$`, 'i')
+const votePath = new RegExp(`^/reports/(${uuid})/vote$`, 'i')
 
 function send(res: ServerResponse, status: number, data: unknown) {
   res.writeHead(status, {
@@ -66,6 +67,11 @@ const server = createServer(async (req, res) => {
     if (req.method === 'GET' && pathname === '/templates') {
       const templates = (await listTemplates()).map(({ prompt_system: _system, prompt_user: _user, ...publicFields }) => publicFields)
       return send(res, 200, { templates })
+    }
+    if (req.method === 'GET' && pathname === '/me') {
+      const wallet = verifyDashboardAccess(req.headers)
+      if (!wallet) return send(res, 401, { error: 'Recent buyer wallet signature required' })
+      return send(res, 200, await getBuyerDashboard(wallet))
     }
     if (req.method === 'POST' && pathname === '/research/quick') {
       if (!mayGenerateReport(req.headers)) return send(res, 401, { error: 'Research origin authorization required' })
@@ -141,6 +147,20 @@ const server = createServer(async (req, res) => {
         } : null,
       })
     }
+    const voteMatch = votePath.exec(pathname)
+    if (voteMatch && req.method === 'POST') {
+      if (process.env.PAY_GATEWAY_ENABLED !== 'true') return send(res, 404, { error: 'Purchase-backed voting is disabled' })
+      const report = await getReport(voteMatch[1])
+      if (!report) return send(res, 404, { error: 'Report not found' })
+      if (!verifyReportAccess(req.headers, report.id, report.buyer_wallet)) {
+        return send(res, 401, { error: 'Buyer wallet signature required' })
+      }
+      const body = await readJson(req)
+      if (body.value !== 1 && body.value !== -1) return send(res, 400, { error: 'Vote value must be +1 or -1' })
+      const vote = await recordPurchaseVote(report.id, report.buyer_wallet!, body.value)
+      if (!vote) return send(res, 402, { error: 'Verified purchase required to vote' })
+      return send(res, 200, { ...vote, summary: await getVoteSummary(report.id) })
+    }
     const match = reportPath.exec(pathname)
     if (match && req.method === 'GET') {
       const report = await getReport(match[1])
@@ -161,6 +181,7 @@ const server = createServer(async (req, res) => {
           paymentRequired: process.env.PAY_GATEWAY_ENABLED === 'true',
           paymentVerified: Boolean(report.payment_ref), priceChargedUsdc: report.price_charged,
           evidenceTx: report.evidence_tx, onChainMatch, networkError,
+          votes: await getVoteSummary(report.id),
           explorerUrl: report.evidence_tx
             ? `https://explorer.solana.com/tx/${report.evidence_tx}?cluster=devnet` : null,
         })
@@ -179,6 +200,7 @@ const server = createServer(async (req, res) => {
         contextAsOf: report.context_as_of, createdAt: report.created_at,
         surfModel: report.surf_model, surfUsage: report.surf_usage,
         paymentRef: report.payment_ref, priceChargedUsdc: report.price_charged,
+        buyerWallet: report.buyer_wallet,
       })
     }
     if (req.method === 'GET' && pathname === '/research/admin/stats') {

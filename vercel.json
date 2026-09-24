@@ -130,6 +130,10 @@
       "destination": "/"
     },
     {
+      "source": "/me",
+      "destination": "/"
+    },
+    {
       "source": "/reports/:path*",
       "destination": "/"
     },

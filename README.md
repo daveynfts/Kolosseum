@@ -29,11 +29,31 @@ npm run avatars:sync:apply
 
 The existing authenticated /api/avatar endpoint fetches the image and writes directly to the same R2 bucket. The sync script does not save image files locally. The existing weekly SCEX GitHub Actions refresh also runs it after updating the live dataset. See [avatar sync details](./docs/AVATARS.md).
 
-## Deep Research status
+## Deep Research sandbox demo
 
-M1 code adds report templates, a Surf AI server client, encrypted reports, hash verification, and Solana devnet Memo evidence. Running that flow against live services requires PostgreSQL, a Surf API key, a report encryption key, an admin token, and a devnet operator keypair. The research routes are behind DEEP_RESEARCH_ENABLED; see the [M1 runbook](./docs/M1_RUNBOOK.md) and [database setup](./docs/DATABASE_SETUP.md).
+The additive research service uses existing KOL/SCEX data, PostgreSQL `dr_` tables, the live Surf API, encrypted reports, Solana devnet Memo evidence, and a separate pay.sh sandbox gateway. The KOL panel offers template and custom research, exact quick-report pricing, custom-report ceiling/metering, and recorded channel status. `/me` lists reports, channels, and votes for a wallet after a short-lived signature. A settled purchase lets that buyer cast one weighted support or challenge vote.
 
-Wallet purchases, x402/MPP payment channels, votes, and resale are later milestones. The M1 demo does not charge funds or connect a wallet. Do not present an unavailable report as a completed Surf analysis.
+For a **real** local report, configure the ignored `.env.local` as described in the [M1 runbook](./docs/M1_RUNBOOK.md) and [database setup](./docs/DATABASE_SETUP.md). Set `SURF_API_KEY`, `DATABASE_URL`, `REPORT_ENC_KEY`, `ADMIN_TOKEN`, `OPERATOR_KEYPAIR_PATH`, devnet `SOLANA_RPC_URL`, `DEEP_RESEARCH_ENABLED=true`, `PAY_GATEWAY_ENABLED=true`, `PAY_MODE=sandbox`, and the public `PAY_GATEWAY_SIGNER_WALLET` printed by `pay --sandbox account list`. Then:
+
+~~~powershell
+npm run research:migrate
+npm run research:dev
+# In a second terminal:
+npm run pay:sandbox
+# In a third terminal:
+npm run dev
+~~~
+
+From the KOL panel, copy one of the sandbox demo buyer commands. The quick report uses an MPP session; a custom prompt uses x402 upto:
+
+~~~powershell
+npm run pay:demo-buy -- -KolHandle <real-X-handle> -TemplateSlug risk-profile
+npm run pay:demo-buy -- -KolHandle <real-X-handle> -Prompt 'Which sourced public claims about this KOL can be verified?'
+~~~
+
+The script fails before paying if real Surf/PostgreSQL readiness or the sandbox signer is missing. It pays through the pay.sh CLI's own sandbox wallet, claims the receipt after settlement, and verifies the report hash and devnet Memo. The CLI wallet remains the report owner; connecting a different Phantom/Solflare wallet in the browser does not transfer ownership. A buyer whose connected wallet paid and claimed a report can reopen it, see it in `/me`, and vote. This flow has not run against a Kolosseum report yet because Surf and PostgreSQL credentials are pending; isolated MPP/x402 protocol fixtures have passed. The browser itself does not initiate a pay.sh sandbox checkout.
+
+Report resale remains disabled. [Surf's terms](https://asksurf.ai/terms-of-service) require written permission for commercial output use; downstream paid resale needs that permission or a replacement source with suitable rights.
 
 ## Checks
 

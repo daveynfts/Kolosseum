@@ -94,6 +94,104 @@ export async function getReport(id: string): Promise<StoredReport | null> {
   return result.rows[0] || null
 }
 
+export type BuyerDashboard = {
+  reports: Array<{
+    id: string
+    kol_ref: string
+    template_slug: string | null
+    content_hash: string
+    payment_ref: string | null
+    evidence_tx: string | null
+    price_charged: string
+    created_at: Date
+  }>
+  channels: Array<{
+    channel_id: string
+    cap_usdc: string
+    spent_usdc: string
+    claimed_usdc: string
+    status: string
+    opened_tx: string | null
+    settled_tx: string | null
+    created_at: Date
+  }>
+  votes: Array<{
+    report_id: string
+    value: number
+    weight_usdc: string
+    proof_tx: string
+    created_at: Date
+  }>
+}
+
+export async function getBuyerDashboard(wallet: string): Promise<BuyerDashboard> {
+  const db = getPool()
+  const [reports, channels, votes] = await Promise.all([
+    db.query<BuyerDashboard['reports'][number]>(
+      'SELECT id, kol_ref, template_slug, content_hash, payment_ref, evidence_tx, price_charged::text, created_at ' +
+      'FROM dr_reports WHERE buyer_wallet = $1 ORDER BY created_at DESC, id DESC LIMIT 100',
+      [wallet],
+    ),
+    db.query<BuyerDashboard['channels'][number]>(
+      'SELECT channel_id, cap_usdc::text, spent_usdc::text, claimed_usdc::text, status, opened_tx, settled_tx, created_at ' +
+      'FROM dr_channels WHERE wallet = $1 ORDER BY created_at DESC, channel_id DESC LIMIT 100',
+      [wallet],
+    ),
+    db.query<BuyerDashboard['votes'][number]>(
+      'SELECT report_id, value, weight_usdc::text, proof_tx, created_at ' +
+      'FROM dr_votes WHERE wallet = $1 ORDER BY created_at DESC, report_id DESC LIMIT 100',
+      [wallet],
+    ),
+  ])
+  return { reports: reports.rows, channels: channels.rows, votes: votes.rows }
+}
+
+export type VoteSummary = {
+  up: number
+  down: number
+  supportUsdc: string
+  challengeUsdc: string
+}
+
+export async function getVoteSummary(reportId: string): Promise<VoteSummary> {
+  const result = await getPool().query<{
+    up: string
+    down: string
+    support_usdc: string
+    challenge_usdc: string
+  }>(
+    'SELECT count(*) FILTER (WHERE value = 1) AS up, count(*) FILTER (WHERE value = -1) AS down, ' +
+    'coalesce(sum(weight_usdc) FILTER (WHERE value = 1), 0)::text AS support_usdc, ' +
+    'coalesce(sum(weight_usdc) FILTER (WHERE value = -1), 0)::text AS challenge_usdc ' +
+    'FROM dr_votes WHERE report_id = $1',
+    [reportId],
+  )
+  return {
+    up: Number(result.rows[0].up),
+    down: Number(result.rows[0].down),
+    supportUsdc: result.rows[0].support_usdc,
+    challengeUsdc: result.rows[0].challenge_usdc,
+  }
+}
+
+export async function recordPurchaseVote(
+  reportId: string,
+  buyerWallet: string,
+  value: 1 | -1,
+): Promise<{ value: 1 | -1; weightUsdc: string; proofRef: string } | null> {
+  const result = await getPool().query<{ value: 1 | -1; weight_usdc: string; proof_tx: string }>(
+    'INSERT INTO dr_votes (report_id, wallet, value, weight_usdc, proof_tx) ' +
+    'SELECT id, $2, $3, price_charged, payment_ref FROM dr_reports ' +
+    'WHERE id = $1 AND buyer_wallet = $2 AND payment_ref IS NOT NULL AND price_charged > 0 ' +
+    'ON CONFLICT (report_id, wallet) DO UPDATE SET value = EXCLUDED.value, ' +
+    'weight_usdc = EXCLUDED.weight_usdc, proof_tx = EXCLUDED.proof_tx, created_at = now() ' +
+    'RETURNING value, weight_usdc::text, proof_tx',
+    [reportId, buyerWallet, value],
+  )
+  const vote = result.rows[0]
+  return vote ? { value: vote.value, weightUsdc: vote.weight_usdc, proofRef: vote.proof_tx } : null
+}
+
 export async function getResearchStats(): Promise<{ reports: number; surfCredits: number | null; cacheHits: number }> {
   const result = await getPool().query<{
     reports: string

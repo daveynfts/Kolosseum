@@ -3,7 +3,7 @@ import bs58 from 'bs58'
 import { WalletAdapterNetwork } from '@solana/wallet-adapter-base'
 import { PhantomWalletAdapter } from '@solana/wallet-adapter-phantom'
 import { SolflareWalletAdapter } from '@solana/wallet-adapter-solflare'
-import { reportAccessMessage } from '../../lib/payments/reportAccessMessage'
+import { dashboardAccessMessage, reportAccessMessage } from '../../lib/payments/reportAccessMessage'
 
 export type KolosseumWalletKind = 'Phantom' | 'Solflare'
 const STORAGE_KEY = 'kolosseum.wallet.kind'
@@ -58,12 +58,20 @@ export function useKolosseumWallet() {
   }
 
   async function signReportAccess(reportId: string): Promise<Record<string, string>> {
-    if (!kind) throw new Error('Connect a wallet to open this report')
+    return signAccess((wallet, issuedAt) => reportAccessMessage(reportId, wallet, issuedAt))
+  }
+
+  async function signDashboardAccess(): Promise<Record<string, string>> {
+    return signAccess(dashboardAccessMessage)
+  }
+
+  async function signAccess(messageText: (wallet: string, issuedAt: string) => string): Promise<Record<string, string>> {
+    if (!kind) throw new Error('Connect a wallet to sign')
     const adapter = adapters[kind]
     const wallet = adapter.publicKey?.toBase58()
     if (!wallet) throw new Error('Wallet is disconnected')
     const issuedAt = new Date().toISOString()
-    const message = new TextEncoder().encode(reportAccessMessage(reportId, wallet, issuedAt))
+    const message = new TextEncoder().encode(messageText(wallet, issuedAt))
     const signature = await adapter.signMessage(message)
     return {
       'X-Kolosseum-Wallet': wallet,
@@ -72,5 +80,5 @@ export function useKolosseumWallet() {
     }
   }
 
-  return { kind, address, connecting, error, connect, disconnect, signReportAccess }
+  return { kind, address, connecting, error, connect, disconnect, signReportAccess, signDashboardAccess }
 }

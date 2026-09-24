@@ -59,3 +59,9 @@ A fixed `operator.recipient` works for x402 payouts but did not change the MPP c
 ## 24 Sep 2026 — Keep the demo buyer sandbox-only and fail before paying
 
 The current Windows demo buyer uses `pay --sandbox curl` to buy one quick report with the pay CLI's own sandbox address and uses the local admin token only for the receipt-claim step. It refuses remote gateway URLs, missing real Surf/PostgreSQL readiness, or a gateway signer mismatch before paying. This gives a real-data fallback when browser wallet payment is unavailable; it is not evidence of a completed report purchase until the missing credentials are configured and the script succeeds end-to-end.
+
+## 24 Sep 2026 — Buyer records and weighted votes use claimed payment proof
+
+The buyer dashboard uses a separate, short-lived wallet signature so a dashboard request cannot unlock a report. It returns only records tied to that wallet and never returns encrypted report content. Channel balances are labeled as the last verified database snapshot. The KOL panel continues to expose the private admin preview while gateway mode is off; when gateway mode is on, it shows a guarded local CLI demo command because Phantom/Solflare cannot currently fund the pay.sh sandbox channel in the browser.
+
+A report may receive a support/challenge vote only after its payment receipt has been reconciled against sandbox-chain state and stored with a unique payment reference. The server takes vote weight and proof from that stored report row, not from the user's request. The existing `proof_tx` column stores a prefixed x402 transaction or MPP channel/voucher reference. The same buyer can change their vote, but cannot multiply their weight across duplicate rows.

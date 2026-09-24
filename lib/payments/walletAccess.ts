@@ -2,8 +2,8 @@ import { createPublicKey, verify } from 'node:crypto'
 import type { IncomingHttpHeaders } from 'node:http'
 import bs58 from 'bs58'
 import { PublicKey } from '@solana/web3.js'
-import { reportAccessMessage } from './reportAccessMessage'
-export { reportAccessMessage } from './reportAccessMessage'
+import { dashboardAccessMessage, reportAccessMessage } from './reportAccessMessage'
+export { dashboardAccessMessage, reportAccessMessage } from './reportAccessMessage'
 
 const ED25519_SPKI_PREFIX = Buffer.from('302a300506032b6570032100', 'hex')
 const ACCESS_WINDOW_MS = 2 * 60 * 1000
@@ -30,10 +30,26 @@ export function verifyReportAccess(
   now = Date.now(),
 ): boolean {
   if (!buyerWallet) return false
+  return verifySignedWalletMessage(headers, buyerWallet, now, (wallet, issuedAt) =>
+    reportAccessMessage(reportId, wallet, issuedAt))
+}
+
+export function verifyDashboardAccess(headers: IncomingHttpHeaders, now = Date.now()): string | null {
+  const wallet = headers['x-kolosseum-wallet']
+  if (typeof wallet !== 'string') return null
+  return verifySignedWalletMessage(headers, wallet, now, dashboardAccessMessage) ? wallet : null
+}
+
+function verifySignedWalletMessage(
+  headers: IncomingHttpHeaders,
+  expectedWallet: string,
+  now: number,
+  message: (wallet: string, issuedAt: string) => string,
+): boolean {
   const wallet = headers['x-kolosseum-wallet']
   const issuedAt = headers['x-kolosseum-issued-at']
   const signature = headers['x-kolosseum-signature']
-  if (typeof wallet !== 'string' || wallet !== buyerWallet ||
+  if (typeof wallet !== 'string' || wallet !== expectedWallet ||
       typeof issuedAt !== 'string' || typeof signature !== 'string') return false
   const issuedMs = Date.parse(issuedAt)
   if (!Number.isFinite(issuedMs) || new Date(issuedMs).toISOString() !== issuedAt ||
@@ -46,7 +62,7 @@ export function verifyReportAccess(
       key: Buffer.concat([ED25519_SPKI_PREFIX, Buffer.from(publicBytes)]),
       format: 'der', type: 'spki',
     })
-    return verify(null, Buffer.from(reportAccessMessage(reportId, wallet, issuedAt), 'utf8'), key, signatureBytes)
+    return verify(null, Buffer.from(message(wallet, issuedAt), 'utf8'), key, signatureBytes)
   } catch {
     return false
   }

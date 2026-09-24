@@ -17,6 +17,7 @@ type Report = {
   surfModel: string
   paymentRef: string | null
   priceChargedUsdc: string
+  buyerWallet: string | null
 }
 
 type Verification = {
@@ -30,6 +31,7 @@ type Verification = {
   paymentRequired: boolean
   paymentVerified: boolean
   priceChargedUsdc: string
+  votes: { up: number; down: number; supportUsdc: string; challengeUsdc: string }
 }
 
 export function ReportPage() {
@@ -41,6 +43,8 @@ export function ReportPage() {
   const [receipt, setReceipt] = useState('')
   const [claimState, setClaimState] = useState('')
   const [claimBusy, setClaimBusy] = useState(false)
+  const [voteBusy, setVoteBusy] = useState(false)
+  const [voteStatus, setVoteStatus] = useState('')
   const [error, setError] = useState('')
 
   useEffect(() => {
@@ -57,7 +61,7 @@ export function ReportPage() {
     if (!reportResponse.ok) {
       setReport(null)
       setError(reportResponse.status === 401
-        ? 'Connect the report owner wallet and sign, or enter the M1 admin token.'
+        ? 'Connect the report owner wallet and sign, or enter the private-preview admin token.'
         : reportResponse.status === 402
           ? 'Attach a settled sandbox payment receipt to reopen this report.'
           : `Could not load report (HTTP ${reportResponse.status}).`)
@@ -125,6 +129,29 @@ export function ReportPage() {
     }
   }
 
+  async function submitVote(value: 1 | -1) {
+    if (!report || !wallet.address || wallet.address !== report.buyerWallet) return
+    setVoteBusy(true)
+    setVoteStatus('')
+    setError('')
+    try {
+      const headers = await wallet.signReportAccess(id)
+      const response = await fetch(researchApi(`/reports/${id}/vote`), {
+        method: 'POST',
+        headers: { ...headers, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ value }),
+      })
+      const result = await response.json() as { error?: string; summary?: Verification['votes'] }
+      if (!response.ok) throw new Error(result.error || `Vote failed (HTTP ${response.status}).`)
+      if (result.summary) setVerification((previous) => previous ? { ...previous, votes: result.summary! } : previous)
+      setVoteStatus(value === 1 ? 'Support vote recorded with your verified purchase.' : 'Challenge vote recorded with your verified purchase.')
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Could not record vote.')
+    } finally {
+      setVoteBusy(false)
+    }
+  }
+
   return (
     <main className="dr-report-page">
       <nav className="dr-report-page__nav"><a href="/scex">← Back to the KOL arena</a></nav>
@@ -149,7 +176,7 @@ export function ReportPage() {
         <div className="dr-report-page__unlock">
           <WalletControls wallet={wallet} />
           <button type="button" disabled={!wallet.address} onClick={() => { void unlockWithWallet() }}>Open with wallet</button>
-          <label>ADMIN_TOKEN (demo M1)
+          <label>ADMIN_TOKEN (private preview)
             <input type="password" value={token} onChange={(event) => setToken(event.target.value)} autoComplete="off" />
           </label>
           <button type="button" onClick={unlock}>Open report</button>
@@ -163,6 +190,21 @@ export function ReportPage() {
             <input value={receipt} onChange={(event) => setReceipt(event.target.value)} autoComplete="off" />
           </label>
           <button type="button" disabled={claimBusy || !receipt.trim() || (!wallet.address && !token.trim())} onClick={() => { void attachReceipt() }}>Verify payment on Solana sandbox</button>
+        </section>
+      )}
+      {verification?.paymentRequired && (
+        <section className="dr-verify dr-votes" aria-label="Purchase-backed reputation">
+          <strong>Purchase-backed reputation</strong>
+          <p>Support: {verification.votes.up} votes · ${verification.votes.supportUsdc} sandbox USDC weight<br />
+            Challenge: {verification.votes.down} votes · ${verification.votes.challengeUsdc} sandbox USDC weight</p>
+          {report && wallet.address === report.buyerWallet && verification.paymentVerified && (
+            <div className="dr-votes__actions">
+              <button type="button" disabled={voteBusy} onClick={() => { void submitVote(1) }}>▲ Support</button>
+              <button type="button" disabled={voteBusy} onClick={() => { void submitVote(-1) }}>▼ Challenge</button>
+            </div>
+          )}
+          {voteStatus && <small role="status">{voteStatus}</small>}
+          <small>Only the verified report buyer can vote. Weight equals this report's settled sandbox purchase price.</small>
         </section>
       )}
       {report && <article className="dr-report-page__content"><ReportMarkdown text={report.content} /></article>}

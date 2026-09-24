@@ -29,6 +29,8 @@ CREATE TABLE IF NOT EXISTS dr_reports (
   created_at timestamptz NOT NULL DEFAULT now()
 );
 CREATE INDEX IF NOT EXISTS dr_reports_kol_created_idx ON dr_reports(kol_ref, created_at DESC);
+CREATE UNIQUE INDEX IF NOT EXISTS dr_reports_payment_ref_unique_idx
+  ON dr_reports(payment_ref) WHERE payment_ref IS NOT NULL;
 
 CREATE TABLE IF NOT EXISTS dr_votes (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -47,12 +49,16 @@ CREATE TABLE IF NOT EXISTS dr_channels (
   channel_id text NOT NULL UNIQUE,
   cap_usdc numeric(12, 6) NOT NULL CHECK (cap_usdc >= 0),
   spent_usdc numeric(12, 6) NOT NULL DEFAULT 0 CHECK (spent_usdc >= 0),
+  claimed_usdc numeric(12, 6) NOT NULL DEFAULT 0 CHECK (claimed_usdc >= 0),
   status text NOT NULL CHECK (status IN ('open', 'settled', 'closed')),
   opened_tx text,
   settled_tx text,
   created_at timestamptz NOT NULL DEFAULT now(),
-  CHECK (spent_usdc <= cap_usdc)
+  CHECK (spent_usdc <= cap_usdc),
+  CHECK (claimed_usdc <= cap_usdc)
 );
+
+ALTER TABLE dr_channels ADD COLUMN IF NOT EXISTS claimed_usdc numeric(12, 6) NOT NULL DEFAULT 0;
 
 -- Signed transaction is persisted before broadcast. Retries replay the same
 -- signature; an ambiguous expired transaction requires manual review rather

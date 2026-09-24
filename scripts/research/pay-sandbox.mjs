@@ -1,7 +1,8 @@
 import { spawn } from 'node:child_process'
-import { existsSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { config as loadEnv } from 'dotenv'
+import { Keypair } from '@solana/web3.js'
 
 loadEnv({ path: '.env.local', quiet: true })
 
@@ -19,6 +20,9 @@ if (!process.env.PAY_ORIGIN_TOKEN || process.env.PAY_ORIGIN_TOKEN.length < 32) {
 if (!process.env.DATABASE_URL || !process.env.SURF_API_KEY) {
   fail('DATABASE_URL and SURF_API_KEY are required before accepting sandbox payments')
 }
+if (!process.env.OPERATOR_KEYPAIR_PATH || !existsSync(process.env.OPERATOR_KEYPAIR_PATH)) {
+  fail('OPERATOR_KEYPAIR_PATH is required for a fixed sandbox payout recipient')
+}
 
 try {
   const healthResponse = await fetch('http://127.0.0.1:4174/health', { signal: AbortSignal.timeout(4000) })
@@ -33,6 +37,12 @@ try {
   fail('Research sidecar is unreachable or its database is unavailable')
 }
 const env = { ...process.env }
+try {
+  const bytes = JSON.parse(readFileSync(process.env.OPERATOR_KEYPAIR_PATH, 'utf8'))
+  env.PAY_RECIPIENT_WALLET = Keypair.fromSecretKey(Uint8Array.from(bytes)).publicKey.toBase58()
+} catch {
+  fail('OPERATOR_KEYPAIR_PATH does not contain a valid Solana keypair')
+}
 if (process.platform === 'win32') {
   const unzip = 'C:/Program Files/Git/usr/bin'
   if (existsSync(join(unzip, 'unzip.exe'))) env.PATH = unzip + ';' + (env.PATH || '')

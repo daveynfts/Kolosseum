@@ -6,7 +6,8 @@ import { processEvidence, verifyEvidence } from '../../lib/evidence/memo'
 import { generateDeepReport, generateQuickReport } from '../../lib/research/generate'
 import { mayGenerateReport } from '../../lib/payments/originAuth'
 import { parseBuyerWallet, verifyReportAccess } from '../../lib/payments/walletAccess'
-import { getReport, getResearchStats, listTemplates } from '../../lib/research/db'
+import { formatUsdc, verifyPaymentForReport } from '../../lib/payments/reconcile'
+import { getReport, getResearchStats, listTemplates, recordReportPayment } from '../../lib/research/db'
 
 loadEnv({ path: '.env.local', quiet: true })
 
@@ -15,6 +16,7 @@ const port = Number(process.env.RESEARCH_PORT || 4174)
 const host = process.env.RESEARCH_HOST || '127.0.0.1'
 const uuid = '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}'
 const reportPath = new RegExp(`^/reports/(${uuid})(?:/(verify))?$`, 'i')
+const paymentPath = new RegExp(`^/reports/(${uuid})/payment$`, 'i')
 
 function send(res: ServerResponse, status: number, data: unknown) {
   res.writeHead(status, {
@@ -108,6 +110,37 @@ const server = createServer(async (req, res) => {
         surfUsage: report.surfUsage,
       })
     }
+    const paymentMatch = paymentPath.exec(pathname)
+    if (paymentMatch && req.method === 'POST') {
+      if (process.env.PAY_GATEWAY_ENABLED !== 'true') return send(res, 404, { error: 'Paid research is disabled' })
+      const report = await getReport(paymentMatch[1])
+      if (!report) return send(res, 404, { error: 'Report not found' })
+      if (!isAdmin(req) && !verifyReportAccess(req.headers, report.id, report.buyer_wallet)) {
+        return send(res, 401, { error: 'Report owner signature or admin token required' })
+      }
+      const body = await readJson(req)
+      if ((body.protocol !== 'mpp-session' && body.protocol !== 'x402-upto') ||
+          typeof body.receipt !== 'string' || body.receipt.length > 4096) {
+        return send(res, 400, { error: 'Valid protocol and receipt are required' })
+      }
+      const payment = await verifyPaymentForReport(report, { protocol: body.protocol, receipt: body.receipt })
+      if (!payment.settled) {
+        return send(res, 202, {
+          status: 'pending-settlement', channelId: payment.channel?.id,
+          onChainSpentUsdc: payment.channel ? formatUsdc(payment.channel.spentBaseUnits) : null,
+        })
+      }
+      const saved = await recordReportPayment(report.id, report.buyer_wallet!, payment)
+      return send(res, 200, {
+        status: 'verified', protocol: payment.protocol, paymentRef: saved.payment_ref,
+        priceChargedUsdc: saved.price_charged, channel: payment.channel ? {
+          id: payment.channel.id, status: payment.channel.status,
+          capUsdc: formatUsdc(payment.channel.capBaseUnits),
+          spentUsdc: formatUsdc(payment.channel.spentBaseUnits),
+          remainingUsdc: formatUsdc(payment.channel.remainingBaseUnits),
+        } : null,
+      })
+    }
     const match = reportPath.exec(pathname)
     if (match && req.method === 'GET') {
       const report = await getReport(match[1])
@@ -125,6 +158,8 @@ const server = createServer(async (req, res) => {
         return send(res, 200, {
           reportId: report.id, kolHandle: report.kol_ref, templateSlug: report.template_slug,
           contentHash: report.content_hash, recomputedHashMatch: hashMatch,
+          paymentRequired: process.env.PAY_GATEWAY_ENABLED === 'true',
+          paymentVerified: Boolean(report.payment_ref), priceChargedUsdc: report.price_charged,
           evidenceTx: report.evidence_tx, onChainMatch, networkError,
           explorerUrl: report.evidence_tx
             ? `https://explorer.solana.com/tx/${report.evidence_tx}?cluster=devnet` : null,
@@ -134,12 +169,16 @@ const server = createServer(async (req, res) => {
         verifyReportAccess(req.headers, report.id, report.buyer_wallet))) {
         return send(res, 401, { error: 'Wallet signature or admin token required' })
       }
+      if (process.env.PAY_GATEWAY_ENABLED === 'true' && !report.payment_ref && !isAdmin(req)) {
+        return send(res, 402, { error: 'Settled payment proof required to reopen report' })
+      }
       if (!hashMatch) return send(res, 409, { error: 'Stored report hash mismatch' })
       return send(res, 200, {
         id: report.id, kolHandle: report.kol_ref, templateSlug: report.template_slug,
         content, contentHash: report.content_hash, evidenceTx: report.evidence_tx,
         contextAsOf: report.context_as_of, createdAt: report.created_at,
         surfModel: report.surf_model, surfUsage: report.surf_usage,
+        paymentRef: report.payment_ref, priceChargedUsdc: report.price_charged,
       })
     }
     if (req.method === 'GET' && pathname === '/research/admin/stats') {
@@ -157,8 +196,9 @@ const server = createServer(async (req, res) => {
     send(res, 404, { error: 'Route not found' })
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error'
-    const status = /Invalid X handle|Expected |too large|Unknown or disabled template|Unexpected token|Prompt must|Trading recommendations|Valid buyerWallet/.test(message) ? 400 :
-      /not configured|Radar API|DATABASE_URL/.test(message) ? 503 : 502
+    const status = /Invalid X handle|Expected |too large|Unknown or disabled template|Unexpected token|Prompt must|Trading recommendations|Valid buyerWallet|receipt|payment channel|price mismatch|payer does not match|buyer does not match|requires an MPP|requires an x402/i.test(message) ? 400 :
+      /not configured|Radar API|DATABASE_URL/.test(message) ? 503 :
+      /already has a different payment|duplicate key/.test(message) ? 409 : 502
     // Do not echo provider bodies, keys or prompts in HTTP errors or logs.
     send(res, status, { error: status === 400 ? message : 'Research service unavailable', code: status })
   }

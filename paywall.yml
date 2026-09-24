@@ -17,6 +17,8 @@ routing:
 operator:
   currencies:
     usd: [USDC]
+  # Fixed sandbox payout recipient for on-chain x402 verification.
+  recipient: ${PAY_RECIPIENT_WALLET}
   network: localnet
   fee_payer: true
 

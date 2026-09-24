@@ -21,9 +21,10 @@ function renderTemplate(template: string, context: KolContext): string {
     .replaceAll('{{matrix}}', JSON.stringify(context.matrix))
 }
 
-export async function generateQuickReport(kolHandle: string, templateSlug: string): Promise<{
+export async function generateQuickReport(kolHandle: string, templateSlug: string, buyerWallet: string | null = null): Promise<{
   id: string
   contentHash: string
+  content: string
   surfUsage: ReturnType<typeof usageShape>
 }> {
   const encryptionKey = process.env.REPORT_ENC_KEY
@@ -50,6 +51,7 @@ export async function generateQuickReport(kolHandle: string, templateSlug: strin
   const encrypted = encryptReport(clean, encryptionKey)
   const stored = await insertReport({
     kolRef: context.actor.handle,
+    buyerWallet,
     templateSlug: template.slug,
     promptHash: sha256(`${instructions}\n${prompt}`),
     contentEncrypted: encrypted,
@@ -58,7 +60,7 @@ export async function generateQuickReport(kolHandle: string, templateSlug: strin
     surfUsage: surf.usage,
     contextAsOf: context.source.scexAsOf || null,
   })
-  return { id: stored.id, contentHash: stored.content_hash, surfUsage: usageShape(surf.usage) }
+  return { id: stored.id, contentHash: stored.content_hash, content: clean, surfUsage: usageShape(surf.usage) }
 }
 
 function usageShape(usage: { inputTokens: number | null; outputTokens: number | null; totalTokens: number | null; creditsUsed: number | null; cacheHit: boolean }) {
@@ -74,9 +76,10 @@ export function normalizeDeepPrompt(raw: string): string {
   return prompt
 }
 
-export async function generateDeepReport(kolHandle: string, rawPrompt: string): Promise<{
+export async function generateDeepReport(kolHandle: string, rawPrompt: string, buyerWallet: string | null = null): Promise<{
   id: string
   contentHash: string
+  content: string
   surfUsage: ReturnType<typeof usageShape>
 }> {
   const encryptionKey = process.env.REPORT_ENC_KEY
@@ -104,6 +107,7 @@ export async function generateDeepReport(kolHandle: string, rawPrompt: string): 
   if (missing.length) throw new Error('Surf report missing sections: ' + missing.join(', '))
   const stored = await insertReport({
     kolRef: context.actor.handle,
+    buyerWallet,
     templateSlug: null,
     promptHash: sha256(instructions + '\n' + input),
     contentEncrypted: encryptReport(clean, encryptionKey),
@@ -112,5 +116,5 @@ export async function generateDeepReport(kolHandle: string, rawPrompt: string): 
     surfUsage: surf.usage,
     contextAsOf: context.source.scexAsOf || null,
   })
-  return { id: stored.id, contentHash: stored.content_hash, surfUsage: usageShape(surf.usage) }
+  return { id: stored.id, contentHash: stored.content_hash, content: clean, surfUsage: usageShape(surf.usage) }
 }

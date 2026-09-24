@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useState } from 'react'
 import { ReportMarkdown } from '../components/ReportMarkdown'
 import { ADMIN_TOKEN_SESSION_KEY, researchApi } from './api'
+import { WalletControls } from './WalletControls'
+import { useKolosseumWallet } from './useKolosseumWallet'
 import './research.css'
 
 type Report = {
@@ -26,6 +28,7 @@ type Verification = {
 
 export function ReportPage() {
   const id = window.location.pathname.split('/').filter(Boolean)[1] || ''
+  const wallet = useKolosseumWallet()
   const [token, setToken] = useState(() => sessionStorage.getItem(ADMIN_TOKEN_SESSION_KEY) || '')
   const [report, setReport] = useState<Report | null>(null)
   const [verify, setVerify] = useState<Verification | null>(null)
@@ -35,16 +38,16 @@ export function ReportPage() {
     document.title = report ? `Profile @${report.kolHandle} — Kolosseum` : 'Deep Research — Kolosseum'
   }, [report])
 
-  const load = useCallback(async (adminToken: string) => {
+  const load = useCallback(async (adminToken: string, walletHeaders?: Record<string, string>) => {
     setError('')
     const [reportResponse, verifyResponse] = await Promise.all([
-      fetch(researchApi(`/reports/${id}`), { headers: { Authorization: `Bearer ${adminToken}` } }),
+      fetch(researchApi(`/reports/${id}`), { headers: walletHeaders || (adminToken ? { Authorization: `Bearer ${adminToken}` } : {}) }),
       fetch(researchApi(`/reports/${id}/verify`)),
     ])
     if (verifyResponse.ok) setVerify(await verifyResponse.json() as Verification)
     if (!reportResponse.ok) {
       setReport(null)
-      setError(reportResponse.status === 401 ? 'Enter the M1 demo ADMIN_TOKEN to view report content.' : `Could not load report (HTTP ${reportResponse.status}).`)
+      setError(reportResponse.status === 401 ? 'Connect the report owner wallet and sign, or enter the M1 admin token.' : `Could not load report (HTTP ${reportResponse.status}).`)
       return
     }
     setReport(await reportResponse.json() as Report)
@@ -55,6 +58,15 @@ export function ReportPage() {
   function unlock() {
     sessionStorage.setItem(ADMIN_TOKEN_SESSION_KEY, token.trim())
     void load(token.trim()).catch(() => setError('Report service is unavailable.'))
+  }
+
+  async function unlockWithWallet() {
+    try {
+      const headers = await wallet.signReportAccess(id)
+      await load('', headers)
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Could not sign with wallet.')
+    }
   }
 
   return (
@@ -77,6 +89,8 @@ export function ReportPage() {
       {error && <p className="dr-panel__error" role="alert">{error}</p>}
       {!report && (
         <div className="dr-report-page__unlock">
+          <WalletControls wallet={wallet} />
+          <button type="button" disabled={!wallet.address} onClick={() => { void unlockWithWallet() }}>Open with wallet</button>
           <label>ADMIN_TOKEN (demo M1)
             <input type="password" value={token} onChange={(event) => setToken(event.target.value)} autoComplete="off" />
           </label>

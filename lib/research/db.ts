@@ -56,6 +56,7 @@ export async function getTemplate(slug: string): Promise<ResearchTemplate | null
 
 export async function insertReport(data: {
   kolRef: string
+  buyerWallet: string | null
   templateSlug: string | null
   promptHash: string
   contentEncrypted: string
@@ -69,11 +70,11 @@ export async function insertReport(data: {
     await client.query('BEGIN')
     const result = await client.query<StoredReport>(
       `INSERT INTO dr_reports
-       (kol_ref, template_slug, prompt_hash, content_encrypted, content_hash, surf_model, surf_usage, context_as_of)
-       VALUES ($1, $2, $3, $4, $5, $6, $7::jsonb, $8::timestamptz)
+       (kol_ref, template_slug, prompt_hash, content_encrypted, content_hash, surf_model, surf_usage, context_as_of, buyer_wallet)
+       VALUES ($1, $2, $3, $4, $5, $6, $7::jsonb, $8::timestamptz, $9)
        RETURNING *`,
       [data.kolRef, data.templateSlug, data.promptHash, data.contentEncrypted, data.contentHash,
-        data.surfModel, JSON.stringify(data.surfUsage), data.contextAsOf],
+        data.surfModel, JSON.stringify(data.surfUsage), data.contextAsOf, data.buyerWallet],
     )
     await client.query('INSERT INTO dr_evidence_jobs (report_id) VALUES ($1)', [result.rows[0].id])
     await client.query('COMMIT')

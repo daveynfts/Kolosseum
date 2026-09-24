@@ -132,3 +132,8 @@
 .dr-report-page__content .report-md__inline-code { padding: 1px 4px; border-radius: 4px; background: rgba(216, 174, 104, .1); }
 .dr-report-page__content .report-md__img { display: block; max-width: 100%; height: auto; margin: .8em auto; border-radius: 10px; }
 .dr-report-page__content .report-md__spacer { height: .4em; }
+.dr-wallet { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; font-size: .78rem; color: #e5c99f; }
+.dr-wallet button { width: auto; padding: 7px 10px; border: 1px solid rgba(216, 174, 104, .5); border-radius: 8px; background: #2a2020; color: #f3d8a7; cursor: pointer; }
+.dr-wallet button:disabled { opacity: .55; cursor: wait; }
+.dr-report-page__unlock { flex-wrap: wrap; }
+.dr-report-page__unlock > .dr-wallet { flex-basis: 100%; }

@@ -5,6 +5,7 @@ import { decryptReport, hashesMatch, sha256 } from '../../lib/evidence/reportCry
 import { processEvidence, verifyEvidence } from '../../lib/evidence/memo'
 import { generateDeepReport, generateQuickReport } from '../../lib/research/generate'
 import { mayGenerateReport } from '../../lib/payments/originAuth'
+import { parseBuyerWallet, verifyReportAccess } from '../../lib/payments/walletAccess'
 import { getReport, getResearchStats, listTemplates } from '../../lib/research/db'
 
 loadEnv({ path: '.env.local', quiet: true })
@@ -70,7 +71,8 @@ const server = createServer(async (req, res) => {
       if (typeof body.kolHandle !== 'string' || typeof body.templateSlug !== 'string') {
         return send(res, 400, { error: 'kolHandle and templateSlug are required' })
       }
-      const report = await generateQuickReport(body.kolHandle, body.templateSlug)
+      const buyerWallet = process.env.PAY_GATEWAY_ENABLED === 'true' ? parseBuyerWallet(body.buyerWallet) : null
+      const report = await generateQuickReport(body.kolHandle, body.templateSlug, buyerWallet)
       let evidence: { status: string; signature: string | null } = { status: 'pending', signature: null }
       if (process.env.OPERATOR_KEYPAIR_PATH && process.env.SOLANA_RPC_URL) {
         try { evidence = await processEvidence(report.id) } catch { /* worker can retry */ }
@@ -79,6 +81,7 @@ const server = createServer(async (req, res) => {
         reportId: report.id,
         reportUrl: `/reports/${report.id}`,
         contentHash: report.contentHash,
+        content: report.content,
         evidence,
         surfUsage: report.surfUsage,
         chargedUsdc: process.env.PAY_GATEWAY_ENABLED === 'true' ? null : '0',
@@ -90,7 +93,8 @@ const server = createServer(async (req, res) => {
       if (typeof body.kolHandle !== 'string' || typeof body.prompt !== 'string') {
         return send(res, 400, { error: 'kolHandle and prompt are required' })
       }
-      const report = await generateDeepReport(body.kolHandle, body.prompt)
+      const buyerWallet = process.env.PAY_GATEWAY_ENABLED === 'true' ? parseBuyerWallet(body.buyerWallet) : null
+      const report = await generateDeepReport(body.kolHandle, body.prompt, buyerWallet)
       let evidence: { status: string; signature: string | null } = { status: 'pending', signature: null }
       if (process.env.OPERATOR_KEYPAIR_PATH && process.env.SOLANA_RPC_URL) {
         try { evidence = await processEvidence(report.id) } catch { /* worker can retry */ }
@@ -99,6 +103,7 @@ const server = createServer(async (req, res) => {
         reportId: report.id,
         reportUrl: '/reports/' + report.id,
         contentHash: report.contentHash,
+        content: report.content,
         evidence,
         surfUsage: report.surfUsage,
       })
@@ -125,7 +130,10 @@ const server = createServer(async (req, res) => {
             ? `https://explorer.solana.com/tx/${report.evidence_tx}?cluster=devnet` : null,
         })
       }
-      if (!isAdmin(req)) return send(res, 401, { error: 'Admin token required during M1' })
+      if (!isAdmin(req) && !(process.env.PAY_GATEWAY_ENABLED === 'true' &&
+        verifyReportAccess(req.headers, report.id, report.buyer_wallet))) {
+        return send(res, 401, { error: 'Wallet signature or admin token required' })
+      }
       if (!hashMatch) return send(res, 409, { error: 'Stored report hash mismatch' })
       return send(res, 200, {
         id: report.id, kolHandle: report.kol_ref, templateSlug: report.template_slug,
@@ -149,7 +157,7 @@ const server = createServer(async (req, res) => {
     send(res, 404, { error: 'Route not found' })
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error'
-    const status = /Invalid X handle|Expected |too large|Unknown or disabled template|Unexpected token|Prompt must|Trading recommendations/.test(message) ? 400 :
+    const status = /Invalid X handle|Expected |too large|Unknown or disabled template|Unexpected token|Prompt must|Trading recommendations|Valid buyerWallet/.test(message) ? 400 :
       /not configured|Radar API|DATABASE_URL/.test(message) ? 503 : 502
     // Do not echo provider bodies, keys or prompts in HTTP errors or logs.
     send(res, status, { error: status === 400 ? message : 'Research service unavailable', code: status })

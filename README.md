@@ -33,16 +33,13 @@ The existing authenticated /api/avatar endpoint fetches the image and writes dir
 
 The additive research service uses existing KOL/SCEX data, PostgreSQL `dr_` tables, the live Surf API, encrypted reports, Solana devnet Memo evidence, and a separate pay.sh sandbox gateway. The KOL panel offers template and custom research, exact quick-report pricing, custom-report ceiling/metering, and recorded channel status. `/me` lists reports, channels, and votes for a wallet after a short-lived signature. A settled purchase lets that buyer cast one weighted support or challenge vote.
 
-For a **real** local report, configure the ignored `.env.local` as described in the [M1 runbook](./docs/M1_RUNBOOK.md) and [database setup](./docs/DATABASE_SETUP.md). Set `SURF_API_KEY`, `DATABASE_URL`, `REPORT_ENC_KEY`, `ADMIN_TOKEN`, `OPERATOR_KEYPAIR_PATH`, devnet `SOLANA_RPC_URL`, `DEEP_RESEARCH_ENABLED=true`, `PAY_GATEWAY_ENABLED=true`, `PAY_DEMO_BUY_ENABLED=true`, `PAY_MODE=sandbox`, and the public `PAY_GATEWAY_SIGNER_WALLET` printed by `pay --sandbox account list`. Then:
+For a **real** local report, configure the ignored `.env.local` as described in the [M1 runbook](./docs/M1_RUNBOOK.md) and [database setup](./docs/DATABASE_SETUP.md). Set `SURF_API_KEY`, `DATABASE_URL`, `REPORT_ENC_KEY`, `ADMIN_TOKEN`, `PAY_ORIGIN_TOKEN`, `OPERATOR_KEYPAIR_PATH`, devnet `SOLANA_RPC_URL`, `DEEP_RESEARCH_ENABLED=true`, `PAY_GATEWAY_ENABLED=true`, `PAY_DEMO_BUY_ENABLED=true`, `PAY_MODE=sandbox`, and the public `PAY_GATEWAY_SIGNER_WALLET` printed by `pay --sandbox account list`. Then start the full local demo with one command:
 
 ~~~powershell
-npm run research:migrate
-npm run research:dev
-# In a second terminal:
-npm run pay:sandbox
-# In a third terminal:
-npm run dev
+npm run demo:start
 ~~~
+
+The launcher requires explicit sandbox/UI opt-in, a valid encryption key, and free local ports 4174, 1402, and 5173. It applies the additive `dr_` migration, starts the research sidecar, pay.sh sandbox gateway, and Vite, then waits for each health check. Open the printed arena URL and press Ctrl+C to stop its child processes. For separate terminals, run `npm run research:migrate`, `npm run research:dev`, `npm run pay:sandbox`, and `npm run dev` in that order.
 
 With `PAY_DEMO_BUY_ENABLED=true` on this Windows loopback sidecar, the KOL panel also offers **Buy with local sandbox wallet** after you enter the admin token. The button runs the real guarded demo buyer; **Check last purchase** retrieves this server process’s latest result if the browser times out. Do not blindly repeat a request that may have already paid. You can alternatively copy and run either command below. Quick reports use an MPP session; custom prompts use x402 upto:
 

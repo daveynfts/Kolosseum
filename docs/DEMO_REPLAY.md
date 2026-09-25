@@ -1,41 +1,41 @@
-# Recorded sandbox walkthrough
+# Recorded Kolosseum sandbox walkthrough
 
-The local walkthrough at `/demo/replay` replays an actual captured test. It does not create a report, call Surf, open a pay.sh channel, charge sandbox USDC, or submit a new Solana transaction. It is explicitly labeled **recorded**, with the Radar source date and the status of every stage. The UI uses the existing Kolosseum theme.
+On 25 September 2026, the live Radar snapshot dated 20 September contained 596 actors and 1,023 SCEX posts. The KOL with the most posts was @luong4101992 with 36. The research prompt used this KOL's 20 most recent posts, original X links, current matrix position, and source metadata. The snapshot is dated source data, not a live X firehose.
 
-## Current capture (25 September 2026)
+One successful surf-2.0 exchange-stance request produced a real English report. A count in the first Surf draft incorrectly said 21 sampled posts. The application now grounds that count to the 20 posts actually supplied before hashing and storing. The corrected report was generated from the encrypted hourly Surf cache, so that correction did not call Chat again. Its citations were checked against the supplied X URLs, and no direct buy/sell recommendation was found. The fixed research disclaimer is present.
 
-`npm run demo:record -- --surf-auth-invalid` selected `@luong4101992` by counting posts in the public SCEX feed: **36 of 1,023 posts** across **596 actors**. The source declares `asOf: 2026-09-20` and `updatedAt: 2026-09-22T03:44:12.438Z`; this is a real but dated snapshot, not a live X firehose. The recorder saved 20 recent posts, source URLs, template quote, matrix position, and an honest stage timeline to `.demo-captures/flow.json`.
+Two separate purchases then completed through the real pay.sh sandbox gateway:
 
-The saved key matched the masked key shown in the dashboard, but the Surf gateway rejected it: authenticated GET /v1/me/credit-balance and GET /v1/market/price?symbol=SOL both returned HTTP 401 UNAUTHORIZED with "invalid API key". The price endpoint returned 200 only without Authorization, using one anonymous free-tier credit. Surf Chat also returned 401 for full and minimal requests. The earlier Data API 200 did **not** validate the key. **No Kolosseum report row, sandbox purchase, receipt claim, or devnet Memo was produced.** See [Surf authentication diagnosis](./SURF_AUTH.md).
+| Path | Report | Sandbox payment | Surf credits for this invocation | Verification |
+| --- | --- | --- | --- | --- |
+| MPP session quick exchange-stance | a8f0d399-6f12-4c6e-b79a-1b2066f508b3 | $0.450000 USDC | 0 new credits; encrypted cache hit | Receipt reconciled, channel open, 0.550000 USDC remaining; SHA-256 and [devnet Memo](https://explorer.solana.com/tx/2ZeFWivoR3VvL5xn3GCk4bqXH55YEo1SwN8ciVqKRJNK1VQ1uettKt4SkVPuNu5PkWRZeL25YZrAqrwve71n9Di2?cluster=devnet) match |
+| x402 upto custom deep | c7d824e1-b5a4-4b57-91eb-772d5966ec67 | $0.120000 USDC | 20 by Surf's published none-effort rate; response omitted meta.credits_used | Settlement reconciled; SHA-256 and [devnet Memo](https://explorer.solana.com/tx/h7B1YGY11rbKn3WgfyRM2GPytRSzETSzHmPnaKQp5Rc75Gw2V16yQapmCgzwA5kxZAxPU1sbQwpEM8awtYixm7q?cluster=devnet) match |
 
-The first full request ran under the earlier 65-second/two-attempt client policy and produced no report. The client now waits up to 240 seconds, makes only one attempt by default to avoid an ambiguous duplicate charge, and can persist a completed Surf response in an encrypted local cache. An explicit retry option still exists for controlled tests. Local `SURF_REASONING_EFFORT=none` uses Surf's documented 20-credit `surf-2.0` mode; the application default remains `low` (50 credits). The provider's published [pricing](https://agents.asksurf.ai/docs/pricing) describes both rates. An attempt in 20-credit mode returned Chat HTTP 401 in about five seconds, so no cached Surf answer exists yet.
+The paid quick report has all eight required headings, cites 20 supplied post URLs, says 20 sampled posts and 36 posts in the full snapshot, and has no unknown post URL. The deep report has the same headings, cites six supplied posts, and has no unknown post URL. These checks establish source membership and report integrity, not the truth of every interpretation. Both reports remain private buyer/admin content.
 
-## Record the full path after Surf Chat works
+The following command results were observed, not simulated:
 
-1. Replace the gateway-rejected key, then run npm run research:check-surf-auth. Require an accepted authenticated balance check before spending 20 or more credits on a Chat request. Do not paste the key into chat or Git issues.
-2. Run `npm run research:migrate`, start `npm run research:dev`, and generate one real report for `@luong4101992` with the `exchange-stance` template. Use the private preview first or the sandbox gateway if its signer and paid-mode flags are configured.
-3. Confirm `/reports/<id>/verify` returns `recomputedHashMatch: true` and `onChainMatch: true`. For a full paid recording, claim the actual pay.sh sandbox receipt first and confirm `paymentVerified: true`. The local demo buyer and `npm run pay:sandbox` instructions remain in the README.
-4. Run `npm run demo:record -- --report <id>`. It refuses a report for a different KOL or one whose decrypted SHA-256 does not match. It records the source selection, encrypted report, Surf credits, verified sandbox payment/channel state if present, vote totals, and devnet Memo state. It never writes the Surf key, admin token, payment receipt header, or operator private key.
-5. With `DEMO_REPLAY_ENABLED=true`, `PAY_MODE=sandbox`, and the research sidecar bound to loopback, open `http://127.0.0.1:5173/demo/replay`. Enter `ADMIN_TOKEN`. The sidecar decrypts the captured report only for the local admin; the browser recomputes SHA-256. The Memo badge says **verified at capture**, since replay makes no new chain query.
+~~~text
+npm run research:check-surf-auth     authenticated Data API accepted the replacement key
+npm run pay:demo-buy -- -KolHandle luong4101992 -TemplateSlug exchange-stance
+  Purchased report a8f0d399-6f12-4c6e-b79a-1b2066f508b3
+  Payment verified: 0.450000 sandbox USDC. Channel open, remaining 0.550000.
+npm run pay:demo-buy -- -KolHandle luong4101992 -Prompt "Analyze this KOL's SCEX exchange stance using the supplied posts and explain credibility risks with source links."
+  Purchased report c7d824e1-b5a4-4b57-91eb-772d5966ec67
+  Payment verified: 0.120000 sandbox USDC.
+npm run demo:record -- --report a8f0d399-6f12-4c6e-b79a-1b2066f508b3
+  status=purchase-verified, paymentVerified=true, memoVerified=true
+npm run demo:record -- --report c7d824e1-b5a4-4b57-91eb-772d5966ec67 --output .demo-captures/flow-x402.json
+  status=purchase-verified, paymentVerified=true, memoVerified=true
+Chrome replay and paid report check: seven verified replay stages, browser SHA-256 match,
+  verified payment and Memo on the report page, zero page errors.
+~~~
 
-`SURF_CACHE_DIR=.demo-captures/surf-cache` is optional. It stores completed Surf responses encrypted with `REPORT_ENC_KEY` under the existing prompt/hour hash, so a restart within that bucket does not repeat the provider call. Keep this key stable. The capture directory is Git-ignored; do not commit or publish its contents. Surf's [terms](https://asksurf.ai/terms-of-service) require prior written consent for commercial use of Output, so a private replay is not permission to sell or publicly redistribute it.
+The default replay is .demo-captures/flow.json (MPP). A copy is saved as flow-mpp.json. The separate deep capture is flow-x402.json. All are Git-ignored, signed, and store report content encrypted with REPORT_ENC_KEY. They contain public source posts, a buyer public key, and verified payment references, but no Surf key, admin token, raw payment receipt, or operator secret key.
 
-## Verification run
+To open the saved flow without another Surf or pay.sh purchase, keep DEMO_REPLAY_ENABLED=true, PAY_MODE=sandbox, and the sidecar bound to loopback. Start npm run research:dev and npm run dev -- --host 127.0.0.1, then open http://127.0.0.1:5173/demo/replay and enter the local ADMIN_TOKEN. The browser recomputes the report SHA-256. The Memo badge reflects verification when the capture was saved; replay does not re-query Solana. To show the deep recording instead, set DEMO_REPLAY_FILE=.demo-captures/flow-x402.json in the ignored .env.local and restart the research sidecar. Restore the default file path afterward.
 
-```text
-Full Vitest suite (Node 24)               180 passed, including Surf auth and Neon vote tests
-npm run research:typecheck                 passed
-npm run build                              passed
-npm run lint -- --quiet                    passed
-npm run demo:record -- --surf-auth-invalid   status=source-ready, topKol=luong4101992, topPosts=36
-GET /research/demo-replay without token   401
-GET /research/demo-replay with admin      200; signed capture; 7 stages: 3 verified, 1 blocked, 3 pending
-Playwright /demo/replay                    7 stages, 1 blocked, 0 provider calls, 0 page errors
-Playwright top-KOL panel (images enabled)  Surf 401 notice, preview disabled, templates API 200, 0 page errors
-npm run research:check-surf-auth          HTTP 401 (expected for saved key); no Chat call
-Authorized POST /research/quick            HTTP 503; no report created or Surf call
-pay:sandbox launcher                       refused invalid Surf key before starting payment
-npm run research:check-secrets            6 configured secrets absent from 290 dist files
-```
+SURF_CACHE_DIR=.demo-captures/surf-cache separately stores completed provider responses encrypted for the current prompt/hour bucket. Reusing it can avoid a repeated Chat call, but a new prompt or hour can incur credits. Keep REPORT_ENC_KEY stable to read existing reports and captures. See [Surf authentication and usage metadata](./SURF_AUTH.md).
 
-This recorded state is suitable for a truthful workflow mockup, but it does not satisfy the real Surf report, paid purchase, or on-chain report acceptance checks yet.
+The browser wallet does not directly fund a pay.sh sandbox channel. The local Windows demo buyer uses the pay.sh CLI wallet; a different connected Phantom/Solflare wallet does not become that report's owner. Report resale remains disabled pending Surf commercial-use permission or a replacement data source with suitable rights.
+Final local checks: Node 24.19.0 ran 38 Vitest files and 182 tests successfully, including the dedicated PostgreSQL vote-proof integration test. npm run research:typecheck, npm run build, and npm run lint -- --quiet passed. npm run research:check-secrets found none of six configured secrets in 290 built files. Chrome opened the saved MPP replay and paid report page with seven verified stages, matching hashes, verified Memo/payment badges, and zero page errors. The global Node 25.8.0 binary still fails one pre-existing Events localStorage cache test; the same complete suite passes under Node 24.

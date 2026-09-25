@@ -1,6 +1,6 @@
 # M1 live-data runbook
 
-The code path reads real KOL and SCEX posts from the existing Radar API, calls Surf, stores an encrypted report in PostgreSQL, and writes a SHA-256 evidence Memo on Solana devnet. An end-to-end Kolosseum report has **not** been verified yet. PostgreSQL is migrated, but Surf rejects the saved key with HTTP 401 UNAUTHORIZED at the authenticated balance and Data endpoints. A Data API 200 without a key uses the anonymous free tier. Run npm run research:check-surf-auth after replacing the key; see [the diagnosis](./SURF_AUTH.md) and [recorded walkthrough](./DEMO_REPLAY.md). The app does not fabricate reports or templates.
+The code path reads real KOL and SCEX posts from the existing Radar API, calls Surf, stores an encrypted report in PostgreSQL, and writes a SHA-256 evidence Memo on Solana devnet. On 25 September 2026, both the private quick report and paid MPP/x402 reports were verified end to end for @luong4101992. The working replacement Surf key passes an authenticated Data preflight and real Chat; the documented balance route still returns HTTP 401 for that key. See [Surf API notes](./SURF_AUTH.md) and the [recorded walkthrough](./DEMO_REPLAY.md).
 
 ## Prepare
 
@@ -39,4 +39,4 @@ For the sandbox payment route, follow the [README demo steps](../README.md#deep-
 
 ## What has been checked
 
-The local Radar proxy returned a real SCEX dataset and blocked write methods. The read-only KOL context adapter retrieved source posts for a live KOL. Build, lint, typecheck, unit tests, and client-secret scanning have passed. The paid gateway has separately passed MPP and x402 sandbox protocol fixtures. A live Surf report, its PostgreSQL row, settled purchase, and devnet Memo remain unverified until Surf Chat accepts the configured key and one full path succeeds.
+The local Radar proxy returned real SCEX data and blocked write methods. The top-KOL context adapter supplied 20 real posts; Surf returned an English report; Neon stored encrypted content; hash and Solana devnet Memo matched. The paid MPP session and x402 upto paths both created Kolosseum reports and reconciled sandbox receipts. Build, lint, typecheck, unit tests, client-secret scanning, and Chrome UI checks are tracked in [the walkthrough](./DEMO_REPLAY.md).

@@ -2,7 +2,7 @@
 
 Ngày cập nhật: 23/09/2026. Tài liệu này điều khiển phần bổ sung trên bản sao Radar tại `D:/VibeCode/Kolosseum`; dữ liệu KOL/SCEX và thao tác cũ tiếp tục đọc từ nguồn hiện có. User đã yêu cầu thêm lớp hình ảnh đấu trường La Mã mà không đổi bố cục hay luồng thao tác.
 
-**Current status, 25 Sep 2026:** Neon is configured and migrated. The saved Surf key is rejected by the authenticated gateway (HTTP 401 UNAUTHORIZED); a Data API 200 without authentication used the anonymous free tier and did not validate it. No full Kolosseum report or paid purchase is verified. See [Surf authentication diagnosis](./SURF_AUTH.md) and [recorded walkthrough](./DEMO_REPLAY.md). Older entries below are dated test history.
+**Current status, 25 Sep 2026:** Neon is migrated, the replacement Surf key completed real Chat reports, and both MPP session ($0.45) and x402 upto ($0.12) sandbox purchases for the top SCEX KOL have verified receipts, hashes, and devnet Memos. Encrypted local recordings preserve the full flows for replay without new provider calls. Surf omitted credit metadata on the Chat response; deep metering uses its published fixed effort rate and labels that provenance. See [Surf API notes](./SURF_AUTH.md) and [recorded walkthrough](./DEMO_REPLAY.md). Older entries below are dated test history.
 
 ## Các bước và cổng kiểm chứng
 

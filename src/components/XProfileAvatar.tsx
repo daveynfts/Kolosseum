@@ -20,6 +20,38 @@ interface Props {
    * Default false — leave it off for lists that are expected to miss in bulk.
    */
   liveFallback?: boolean
+  /** Limit large avatar grids so research API requests retain browser connections. */
+  bulkLoad?: boolean
+}
+
+const BULK_IMAGE_MAX_CONCURRENT = 3
+let bulkImagesInFlight = 0
+const bulkImageWaiters: Array<() => void> = []
+
+function queueBulkImage(start: () => void): () => void {
+  let active = false
+  let cancelled = false
+  const begin = () => {
+    if (cancelled) return
+    active = true
+    bulkImagesInFlight += 1
+    start()
+  }
+  if (bulkImagesInFlight < BULK_IMAGE_MAX_CONCURRENT) begin()
+  else bulkImageWaiters.push(begin)
+  return () => {
+    if (cancelled) return
+    cancelled = true
+    if (!active) {
+      const index = bulkImageWaiters.indexOf(begin)
+      if (index >= 0) bulkImageWaiters.splice(index, 1)
+      return
+    }
+    bulkImagesInFlight -= 1
+    while (bulkImageWaiters.length && bulkImagesInFlight < BULK_IMAGE_MAX_CONCURRENT) {
+      bulkImageWaiters.shift()!()
+    }
+  }
 }
 
 function upgradeTwimg(url: string): string {
@@ -107,6 +139,7 @@ export function XProfileAvatar({
   size = 40,
   className = '',
   liveFallback = false,
+  bulkLoad = false,
 }: Props) {
   const clean = handle.replace(/^@/, '').trim()
   const [liveUrl, setLiveUrl] = useState<string | null>(null)
@@ -115,6 +148,8 @@ export function XProfileAvatar({
   const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading')
   const triedLive = useRef(false)
   const imgRef = useRef<HTMLImageElement | null>(null)
+  const releaseImageRef = useRef<(() => void) | null>(null)
+  const [queuedSrc, setQueuedSrc] = useState<string | null>(null)
 
   const sources = useMemo(() => {
     // R2 keys are case-sensitive (Lecter_XFinance.jpg ≠ lecter_xfinance.jpg).
@@ -144,11 +179,26 @@ export function XProfileAvatar({
     triedLive.current = false
   }, [clean, avatarUrl])
 
+  const src = sources[idx] || null
+  useEffect(() => {
+    if (!bulkLoad || !src) return
+    setQueuedSrc(null)
+    const release = queueBulkImage(() => setQueuedSrc(src))
+    releaseImageRef.current = release
+    return () => {
+      release()
+      if (releaseImageRef.current === release) releaseImageRef.current = null
+    }
+  }, [bulkLoad, src])
+
   useEffect(() => {
     const el = imgRef.current
     if (!el) return
-    if (el.complete && el.naturalWidth > 0) setStatus('ready')
-  }, [idx, sources])
+    if (el.complete && el.naturalWidth > 0) {
+      releaseImageRef.current?.()
+      setStatus('ready')
+    }
+  }, [idx, sources, queuedSrc])
 
   const tryLiveThenFail = async () => {
     if (!liveFallback || triedLive.current) {
@@ -223,7 +273,7 @@ export function XProfileAvatar({
           {initials(name || clean)}
         </span>
       )}
-      <img
+      {(!bulkLoad || queuedSrc === src) && <img
         key={sources[idx] ?? clean}
         ref={imgRef}
         className={`x-profile-avatar ${className}`}
@@ -231,11 +281,16 @@ export function XProfileAvatar({
         alt={`@${clean}`}
         width={size}
         height={size}
-        loading="lazy"
+        loading={bulkLoad ? 'eager' : 'lazy'}
+        fetchPriority={bulkLoad ? 'low' : undefined}
         decoding="async"
         referrerPolicy="no-referrer"
-        onLoad={() => setStatus('ready')}
+        onLoad={() => {
+          releaseImageRef.current?.()
+          setStatus('ready')
+        }}
         onError={() => {
+          releaseImageRef.current?.()
           if (idx + 1 < sources.length) {
             setIdx((i) => i + 1)
             setStatus('loading')
@@ -253,7 +308,7 @@ export function XProfileAvatar({
           position: status === 'ready' ? 'relative' : 'absolute',
           inset: 0,
         }}
-      />
+      />}
     </span>
   )
 }

@@ -712,6 +712,7 @@ export function ScexMatrix2D({
                         avatarUrl={a.avatarUrl}
                         size={Math.max(24, Math.round(diam - 8))}
                         liveFallback
+                        bulkLoad
                       />
                     </span>
                     <span className="scex-bubble__label">

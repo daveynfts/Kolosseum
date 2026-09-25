@@ -1,6 +1,6 @@
 # M1 live-data runbook
 
-The code path reads real KOL and SCEX posts from the existing Radar API, calls Surf, stores an encrypted report in PostgreSQL, and writes a SHA-256 evidence Memo on Solana devnet. An end-to-end Kolosseum report has **not** been verified yet. PostgreSQL is migrated and the configured Surf key works for Surf Data API, but Surf Chat `POST /v1/responses` returns HTTP 401 even for a minimal documented request. See [the recorded walkthrough](./DEMO_REPLAY.md) for the exact test and local replay. The app does not fabricate reports or templates.
+The code path reads real KOL and SCEX posts from the existing Radar API, calls Surf, stores an encrypted report in PostgreSQL, and writes a SHA-256 evidence Memo on Solana devnet. An end-to-end Kolosseum report has **not** been verified yet. PostgreSQL is migrated, but Surf rejects the saved key with HTTP 401 UNAUTHORIZED at the authenticated balance and Data endpoints. A Data API 200 without a key uses the anonymous free tier. Run npm run research:check-surf-auth after replacing the key; see [the diagnosis](./SURF_AUTH.md) and [recorded walkthrough](./DEMO_REPLAY.md). The app does not fabricate reports or templates.
 
 ## Prepare
 

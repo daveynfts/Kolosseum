@@ -18,6 +18,7 @@ type Health = {
   demoBuyEnabled: boolean
   demoReplayEnabled: boolean
   surfConfigured: boolean
+  surfAuthStatus: 'valid' | 'invalid' | 'no-credits' | 'missing' | 'unavailable'
   databaseConfigured: boolean
 }
 
@@ -65,7 +66,14 @@ export function DeepResearchPanel({ kolHandle }: { kolHandle: string }) {
   }, [])
 
   const selected = templates.find((template) => template.slug === templateSlug)
-  const ready = Boolean(health?.enabled && health.surfConfigured && health.databaseConfigured)
+  const ready = Boolean(health?.enabled && health.surfAuthStatus === 'valid' && health.databaseConfigured)
+  const readinessMessage = !health ? 'Checking research service…' :
+    health.surfAuthStatus === 'invalid' ? 'Surf rejected the saved API key (HTTP 401). Generate a new key in the Surf console, update .env.local, then restart the research service.' :
+    health.surfAuthStatus === 'no-credits' ? 'Surf accepted the key but this account has no available credits (HTTP 402).' :
+    health.surfAuthStatus === 'unavailable' ? 'Surf authentication could not be verified. Check the gateway connection and restart the research service.' :
+    !health.surfConfigured ? 'Live generation is waiting for SURF_API_KEY.' :
+    !health.databaseConfigured ? 'Live generation is waiting for DATABASE_URL.' :
+    'Research service is not ready.'
   const gateway = Boolean(health?.gatewayMode)
   const localDemoAvailable = Boolean(health?.demoBuyEnabled)
   const currentChannel = channel?.wallet === wallet.address ? channel.record : null
@@ -220,10 +228,7 @@ export function DeepResearchPanel({ kolHandle }: { kolHandle: string }) {
         {currentChannel && <small>Last verified channel: {currentChannel.status} · cap ${currentChannel.cap_usdc}, spent ${currentChannel.spent_usdc} sandbox USDC. <a href="/me">Details</a></small>}
         {channelError && <small className="dr-panel__error" role="status">{channelError}</small>}
       </div>
-      {!ready && <p className="dr-panel__notice" role="status">Live generation is waiting for {[
-        !health?.surfConfigured && 'SURF_API_KEY',
-        !health?.databaseConfigured && 'DATABASE_URL',
-      ].filter(Boolean).join(' and ') || 'the research service'}.</p>}
+      {!ready && <p className="dr-panel__notice" role="status">{readinessMessage}</p>}
       {gateway ? (
         <div className="dr-panel__demo">
           <strong>Sandbox purchase via local demo buyer</strong>

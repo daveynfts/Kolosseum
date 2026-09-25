@@ -128,7 +128,7 @@ export function RecordedDemoPage() {
             </div>
           </section>
           {capture.report?.content && <article className="dr-report-page__content"><ReportMarkdown text={capture.report.content} /></article>}
-          <small className="dr-replay-page__footnote">Read-only recording. Generate a new report through the live research panel when Surf Chat authentication works.</small>
+          <small className="dr-replay-page__footnote">Read-only recording. Generate a new report through the live research panel when the Surf API key authenticates.</small>
         </>
       )}
     </main>

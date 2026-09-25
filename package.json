@@ -20,6 +20,7 @@
     "research:migrate": "tsx scripts/research/migrate.ts",
     "research:evidence": "tsx scripts/research/evidence.ts",
     "research:typecheck": "tsc -p tsconfig.research.json",
+    "research:check-surf-auth": "tsx scripts/research/check-surf-auth.ts",
     "research:init-devnet": "tsx scripts/research/init-devnet.ts",
     "research:fund-devnet": "tsx scripts/research/fund-devnet.ts",
     "research:check-secrets": "tsx scripts/research/check-client-secrets.ts",

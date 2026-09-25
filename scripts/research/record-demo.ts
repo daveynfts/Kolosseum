@@ -12,7 +12,7 @@ import type { ScexDataset } from '../../src/data/scexTracking'
 loadEnv({ path: '.env.local', quiet: true })
 
 async function record(): Promise<void> {
-  const surfChatBlocked = process.argv.includes('--surf-chat-401')
+  const surfAuthInvalid = process.argv.includes('--surf-auth-invalid') || process.argv.includes('--surf-chat-401')
   const reportFlag = process.argv.indexOf('--report')
   const reportId = reportFlag >= 0 ? process.argv[reportFlag + 1] : null
   if (reportFlag >= 0 && !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(reportId || '')) {
@@ -42,15 +42,15 @@ async function record(): Promise<void> {
     signature: '',
     recordedAt: capturedAt,
     status: 'source-ready',
-    limitation: surfChatBlocked
-      ? 'Surf Chat /v1/responses returned HTTP 401 during the live test. No report or purchase has been recorded.'
+    limitation: surfAuthInvalid
+      ? 'Surf gateway rejected the saved API key (HTTP 401 UNAUTHORIZED). No report or purchase has been recorded.'
       : 'No real report has been recorded yet; research, payment, and evidence stages are pending.',
     steps: [
       { name: 'Radar source', status: 'verified', detail: `${dataset.posts.length} SCEX posts; source as of ${dataset.asOf}.` },
       { name: 'Top KOL selected', status: 'verified', detail: `@${topHandle} has ${topPostCount} SCEX posts in this snapshot.` },
       { name: 'Research quote', status: 'verified', detail: `${template.title}: $${template.price_usdc} sandbox USDC.` },
-      { name: 'Surf report', status: surfChatBlocked ? 'blocked' : 'pending', detail: surfChatBlocked
-        ? 'Surf Chat authentication returned HTTP 401.' : 'Awaiting one successful real Surf Chat report.' },
+      { name: 'Surf report', status: surfAuthInvalid ? 'blocked' : 'pending', detail: surfAuthInvalid
+        ? 'Authenticated Surf requests returned HTTP 401: invalid API key.' : 'Awaiting one successful real Surf Chat report.' },
       { name: 'Encrypted report and SHA-256', status: 'pending', detail: 'Waiting for a successful Surf response.' },
       { name: 'Sandbox purchase and receipt', status: 'pending', detail: 'No sandbox purchase was made for an unavailable report.' },
       { name: 'Devnet Memo', status: 'pending', detail: 'No report hash exists to anchor yet.' },

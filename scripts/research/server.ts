@@ -5,6 +5,7 @@ import { decryptReport, hashesMatch, sha256 } from '../../lib/evidence/reportCry
 import { processEvidence, verifyEvidence } from '../../lib/evidence/memo'
 import { generateDeepReport, generateQuickReport, normalizeDeepPrompt } from '../../lib/research/generate'
 import { openDemoCapture } from '../../lib/research/demoReplay'
+import { checkSurfAuth } from '../../lib/research/surfAuth'
 import { IncompleteDemoPurchaseError, runDemoBuyer, type DemoBuyerResult } from './demoBuy'
 import { mayGenerateReport } from '../../lib/payments/originAuth'
 import { parseBuyerWallet, verifyDashboardAccess, verifyReportAccess } from '../../lib/payments/walletAccess'
@@ -25,6 +26,11 @@ const demoReplayEnabled = enabled && process.env.DEMO_REPLAY_ENABLED === 'true' 
 const demoBuyEnabled = process.env.PAY_DEMO_BUY_ENABLED === 'true' &&
   process.env.PAY_MODE === 'sandbox' && process.env.PAY_GATEWAY_ENABLED === 'true' &&
   (host === '127.0.0.1' || host === 'localhost') && process.platform === 'win32'
+let surfAuthPromise: ReturnType<typeof checkSurfAuth> | null = null
+function surfAuthStatus() {
+  surfAuthPromise ||= checkSurfAuth()
+  return surfAuthPromise
+}
 let demoPurchaseBusy = false
 let latestDemoPurchase: ({ status: 'running' | 'failed' | 'needs-review' | 'verified'; reportId?: string } &
   Partial<DemoBuyerResult>) | null = null
@@ -62,6 +68,7 @@ async function readJson(req: IncomingMessage): Promise<Record<string, unknown>> 
 const server = createServer(async (req, res) => {
   const pathname = new URL(req.url || '/', `http://${host}:${port}`).pathname
   if (req.method === 'GET' && pathname === '/health') {
+    const surfAuth = enabled ? await surfAuthStatus() : 'missing'
     return send(res, 200, {
       enabled,
       gatewayMode: process.env.PAY_GATEWAY_ENABLED === 'true',
@@ -69,6 +76,7 @@ const server = createServer(async (req, res) => {
       demoReplayEnabled,
       radarConfigured: Boolean(process.env.RADAR_API_BASE || 'https://radar.daveynfts.com'),
       surfConfigured: Boolean(process.env.SURF_API_KEY),
+      surfAuthStatus: surfAuth,
       databaseConfigured: Boolean(process.env.DATABASE_URL),
       evidenceConfigured: Boolean(process.env.OPERATOR_KEYPAIR_PATH),
     })
@@ -125,6 +133,9 @@ const server = createServer(async (req, res) => {
       if (!process.env.SURF_API_KEY || !process.env.DATABASE_URL) {
         return send(res, 503, { error: 'Live Surf and database connections are required' })
       }
+      if (await surfAuthStatus() !== 'valid') {
+        return send(res, 503, { error: 'Surf API authentication is not ready; no sandbox purchase was started' })
+      }
       let input: { kolHandle: string; templateSlug?: string; prompt?: string }
       if (isDeep) {
         input = { kolHandle: body.kolHandle, prompt: normalizeDeepPrompt(body.prompt as string) }
@@ -157,6 +168,7 @@ const server = createServer(async (req, res) => {
     }
     if (req.method === 'POST' && pathname === '/research/quick') {
       if (!mayGenerateReport(req.headers)) return send(res, 401, { error: 'Research origin authorization required' })
+      if (await surfAuthStatus() !== 'valid') return send(res, 503, { error: 'Surf API authentication is not ready' })
       const body = await readJson(req)
       if (typeof body.kolHandle !== 'string' || typeof body.templateSlug !== 'string') {
         return send(res, 400, { error: 'kolHandle and templateSlug are required' })
@@ -179,6 +191,7 @@ const server = createServer(async (req, res) => {
     }
     if (req.method === 'POST' && pathname === '/research/deep') {
       if (!mayGenerateReport(req.headers)) return send(res, 401, { error: 'Research origin authorization required' })
+      if (await surfAuthStatus() !== 'valid') return send(res, 503, { error: 'Surf API authentication is not ready' })
       const body = await readJson(req)
       if (typeof body.kolHandle !== 'string' || typeof body.prompt !== 'string') {
         return send(res, 400, { error: 'kolHandle and prompt are required' })

@@ -35,7 +35,8 @@ if ($gatewayUri.Scheme -ne 'http' -or $gatewayUri.Host -notin @('127.0.0.1', 'lo
 }
 $researchPort = if ($settings['RESEARCH_PORT']) { [int]$settings['RESEARCH_PORT'] } else { 4174 }
 $researchUrl = "http://127.0.0.1:$researchPort"
-$health = Invoke-RestMethod -Uri "$researchUrl/health" -TimeoutSec 5
+$health = Invoke-RestMethod -Uri "$researchUrl/health" -TimeoutSec 10
+if ($health.surfAuthStatus -ne 'valid') { throw 'Surf API key is not authenticated. Run npm run research:check-surf-auth before buying.' }
 if (-not ($health.enabled -and $health.gatewayMode -and $health.surfConfigured -and $health.databaseConfigured)) {
   throw 'Research sidecar is not ready for a paid report.'
 }

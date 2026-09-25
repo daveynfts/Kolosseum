@@ -4,6 +4,7 @@ import { createServer } from 'node:net'
 import { resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { config as loadEnv } from 'dotenv'
+import { checkSurfAuth } from '../../lib/research/surfAuth'
 
 const root = resolve(import.meta.dirname, '../..')
 const required = [
@@ -144,6 +145,12 @@ async function main() {
   }
   if (errors.length) {
     process.stderr.write('[demo] Setup required:\n' + errors.map((error) => '  - ' + error).join('\n') + '\n')
+    process.exitCode = 1
+    return
+  }
+  const surfStatus = await checkSurfAuth()
+  if (surfStatus !== 'valid') {
+    process.stderr.write('[demo] Surf API authentication is ' + surfStatus + '. Run npm run research:check-surf-auth before starting a paid demo.\n')
     process.exitCode = 1
     return
   }

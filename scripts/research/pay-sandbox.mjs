@@ -25,9 +25,10 @@ if (!process.env.OPERATOR_KEYPAIR_PATH || !existsSync(process.env.OPERATOR_KEYPA
 }
 
 try {
-  const healthResponse = await fetch('http://127.0.0.1:4174/health', { signal: AbortSignal.timeout(4000) })
+  const healthResponse = await fetch('http://127.0.0.1:4174/health', { signal: AbortSignal.timeout(10000) })
   if (!healthResponse.ok) fail('Research sidecar health check failed')
   const health = await healthResponse.json()
+  if (health.surfAuthStatus !== 'valid') fail('Surf rejected the API key or authentication could not be checked; run npm run research:check-surf-auth before accepting payments')
   if (!health.enabled || !health.gatewayMode || !health.surfConfigured || !health.databaseConfigured) {
     fail('Research sidecar is not ready for paid sandbox requests')
   }

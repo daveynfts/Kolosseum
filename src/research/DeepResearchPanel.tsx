@@ -191,7 +191,13 @@ export function DeepResearchPanel({ kolHandle }: { kolHandle: string }) {
       <div className="dr-panel__banner">SOLANA DEVNET / SANDBOX · NO REAL FUNDS</div>
       <h3>Deep Research: @{kolHandle}</h3>
       <p>Research from the latest Radar KOL and SCEX post snapshot, with Surf AI analysis, a content hash, and a devnet Memo.</p>
-      {health?.demoReplayEnabled && <p><a href="/demo/replay">Open recorded walkthrough (no new API or payment calls) →</a></p>}
+      {health?.demoReplayEnabled && (
+        <div className="dr-panel__recorded">
+          <strong>{kolHandle.toLowerCase() === 'luong4101992' ? 'Try the nbaluong report flow' : 'Recorded KOL demo: nbaluong'}</strong>
+          <small>The verified @luong4101992 snapshot can be replayed without a new Surf request or sandbox payment.</small>
+          <a href="/demo/replay">Open free report creation replay →</a>
+        </div>
+      )}
       {error && <p className="dr-panel__error" role="alert">{error}</p>}
       {demoStatus && <p className="dr-panel__notice" role="status">{demoStatus}</p>}
       {partialReportId && <a href={`/reports/${partialReportId}`}>Inspect report {partialReportId.slice(0, 8)}… →</a>}

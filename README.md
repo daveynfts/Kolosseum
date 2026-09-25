@@ -31,7 +31,7 @@ The existing authenticated /api/avatar endpoint fetches the image and writes dir
 
 ## Deep Research sandbox demo
 
-The 25 September live test selected the top SCEX poster, @luong4101992 (36 posts), and completed real Surf-backed MPP and x402 sandbox purchases with verified receipts, hashes, and devnet Memos. The local [recorded walkthrough](./docs/DEMO_REPLAY.md) preserves both paths without another provider call or payment. The [Surf API notes](./docs/SURF_AUTH.md) explain the working replacement key and the published-rate fallback when Surf omits credit metadata.
+The 25 September live test selected the top SCEX poster, @luong4101992 (36 posts), and completed real Surf-backed MPP and x402 sandbox purchases with verified receipts, hashes, and devnet Memos. The local [recorded walkthrough](./docs/DEMO_REPLAY.md) preserves both paths without another provider call or payment. Open http://127.0.0.1:5173/demo/replay for an interactive nbaluong (@luong4101992) creation replay: connect Phantom or Solflare if desired, then reveal the saved seven-stage flow. The connected wallet is separate from the recorded sandbox buyer. The [Surf API notes](./docs/SURF_AUTH.md) explain the working replacement key and the published-rate fallback when Surf omits credit metadata.
 
 The additive research service uses existing KOL/SCEX data, PostgreSQL `dr_` tables, the live Surf API, encrypted reports, Solana devnet Memo evidence, and a separate pay.sh sandbox gateway. The KOL panel offers template and custom research, exact quick-report pricing, custom-report ceiling/metering, and recorded channel status. `/me` lists reports, channels, and votes for a wallet after a short-lived signature. A settled purchase lets that buyer cast one weighted support or challenge vote.
 

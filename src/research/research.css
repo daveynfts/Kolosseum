@@ -290,3 +290,48 @@
 .dr-replay-steps__blocked b { color: #f5a79a; }
 .dr-replay-page__footnote { display: block; width: min(100%, 900px); margin: 20px auto 40px; color: #cbbba5; }
 @media (max-width: 640px) { .dr-replay-steps li { grid-template-columns: 26px minmax(0, 1fr); } .dr-replay-steps b { grid-column: 2; } }
+
+.dr-panel__recorded {
+  display: grid;
+  gap: 6px;
+  padding: 14px;
+  border: 1px solid rgba(232, 184, 105, .5);
+  border-radius: 12px;
+  background: linear-gradient(115deg, rgba(137, 78, 44, .34), rgba(28, 20, 22, .76));
+}
+.dr-panel__recorded strong { color: #f4d9aa; }
+.dr-panel__recorded small { color: #d8c4a9; }
+.dr-panel__recorded a { width: fit-content; color: #f7d69c; font-weight: 750; }
+
+.dr-replay-kol {
+  display: grid;
+  gap: 18px;
+  padding: clamp(18px, 3vw, 27px);
+  border: 1px solid rgba(232, 184, 105, .52);
+  border-radius: 18px;
+  background: linear-gradient(135deg, rgba(93, 56, 41, .7), rgba(27, 20, 22, .94));
+}
+.dr-replay-kol__identity { display: flex; align-items: center; gap: 16px; }
+.dr-replay-kol__identity small { color: #d9b981; font-size: .7rem; font-weight: 750; letter-spacing: .12em; }
+.dr-replay-kol__identity h2 { margin: 3px 0; color: #f4d9aa; font: 700 clamp(1.35rem, 3vw, 2rem) Georgia, serif; }
+.dr-replay-kol__identity a { color: #f4d39c; }
+.dr-replay-kol__stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 9px; }
+.dr-replay-kol__stats span { display: grid; gap: 4px; padding: 10px; border: 1px solid rgba(216, 174, 104, .24); border-radius: 10px; color: #cbbba5; font-size: .75rem; }
+.dr-replay-kol__stats b { color: #f4d9aa; font-size: 1.1rem; }
+.dr-replay-kol p { margin: 0; color: #d5c5b1; line-height: 1.5; }
+
+.dr-replay-setup { display: grid; gap: 11px; }
+.dr-replay-setup > p { margin: 0; }
+.dr-replay-setup__wallet { display: grid; gap: 9px; padding: 14px; border: 1px solid rgba(216, 174, 104, .28); border-radius: 12px; background: rgba(18, 14, 18, .52); }
+.dr-replay-setup__wallet strong { color: #f4d9aa; }
+.dr-replay-setup__wallet small, .dr-replay-setup > small { color: #cbbba5; line-height: 1.5; overflow-wrap: anywhere; }
+.dr-replay-controls { display: flex; flex-wrap: wrap; gap: 9px; }
+.dr-replay-controls button { border: 1px solid #f5d192; border-radius: 10px; padding: 10px 15px; background: linear-gradient(150deg, #edc885, #ae713d); color: #29180f; font-weight: 750; cursor: pointer; }
+.dr-replay-controls .dr-replay-controls__secondary { border-color: rgba(216, 174, 104, .5); background: #2a2020; color: #f3d8a7; }
+.dr-replay-controls button:disabled { opacity: .55; cursor: wait; }
+.dr-replay-progress { color: #e9c996; font-weight: 650; }
+
+@media (max-width: 680px) {
+  .dr-replay-kol__stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .dr-replay-kol__identity { align-items: flex-start; }
+}

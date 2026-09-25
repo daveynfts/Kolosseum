@@ -1,6 +1,6 @@
 # Kolosseum
 
-Kolosseum presents the live Vietnamese crypto KOL matrix and SCEX X feed as a Roman arena. Select a KOL to inspect source posts and open Deep Research. The app keeps the existing KOL and post data pipelines; the former Radar map and Events pages are no longer public entry points.
+Kolosseum presents the latest available Vietnamese crypto KOL matrix and SCEX X feed as a Roman arena. Select a KOL to inspect source posts and open Deep Research. The app keeps the existing KOL and post data pipelines; the former Radar map and Events pages are no longer public entry points.
 
 ## Run locally
 
@@ -31,6 +31,8 @@ The existing authenticated /api/avatar endpoint fetches the image and writes dir
 
 ## Deep Research sandbox demo
 
+The 25 September live test selected the top SCEX poster, @luong4101992 (36 posts), and saved a local [recorded walkthrough](./docs/DEMO_REPLAY.md). Surf Data API accepts the configured key, but its Chat API currently returns HTTP 401, so a report and paid end-to-end demo are not yet verified. The /demo/replay page shows the real source and clearly marks unfinished stages; it makes no new Surf or pay.sh calls.
+
 The additive research service uses existing KOL/SCEX data, PostgreSQL `dr_` tables, the live Surf API, encrypted reports, Solana devnet Memo evidence, and a separate pay.sh sandbox gateway. The KOL panel offers template and custom research, exact quick-report pricing, custom-report ceiling/metering, and recorded channel status. `/me` lists reports, channels, and votes for a wallet after a short-lived signature. A settled purchase lets that buyer cast one weighted support or challenge vote.
 
 For a **real** local report, configure the ignored `.env.local` as described in the [M1 runbook](./docs/M1_RUNBOOK.md) and [database setup](./docs/DATABASE_SETUP.md). Set `SURF_API_KEY`, `DATABASE_URL`, `REPORT_ENC_KEY`, `ADMIN_TOKEN`, `PAY_ORIGIN_TOKEN`, `OPERATOR_KEYPAIR_PATH`, devnet `SOLANA_RPC_URL`, `DEEP_RESEARCH_ENABLED=true`, `PAY_GATEWAY_ENABLED=true`, `PAY_DEMO_BUY_ENABLED=true`, `PAY_MODE=sandbox`, and the public `PAY_GATEWAY_SIGNER_WALLET` printed by `pay --sandbox account list`. Then start the full local demo with one command:
@@ -48,7 +50,7 @@ npm run pay:demo-buy -- -KolHandle <real-X-handle> -TemplateSlug risk-profile
 npm run pay:demo-buy -- -KolHandle <real-X-handle> -Prompt 'Which sourced public claims about this KOL can be verified?'
 ~~~
 
-The script fails before paying if real Surf/PostgreSQL readiness or the sandbox signer is missing. It pays through the pay.sh CLI's own sandbox wallet, claims the receipt after settlement, and verifies the report hash and devnet Memo. The CLI wallet remains the report owner; connecting a different Phantom/Solflare wallet in the browser does not transfer ownership. A buyer whose connected wallet paid and claimed a report can reopen it, see it in `/me`, and vote. This flow has not run against a Kolosseum report yet because Surf and PostgreSQL credentials are pending; isolated MPP/x402 protocol fixtures have passed. The browser invokes the local admin-only CLI buyer; Phantom/Solflare do not directly fund the pay.sh sandbox checkout. Latest-purchase recovery is in memory and is lost if the sidecar restarts.
+The script fails before paying if real Surf/PostgreSQL readiness or the sandbox signer is missing. It pays through the pay.sh CLI's own sandbox wallet, claims the receipt after settlement, and verifies the report hash and devnet Memo. The CLI wallet remains the report owner; connecting a different Phantom/Solflare wallet in the browser does not transfer ownership. A buyer whose connected wallet paid and claimed a report can reopen it, see it in `/me`, and vote. This flow has not run against a Kolosseum report yet because Surf Chat returns HTTP 401 with the configured active key; Neon is configured and migrated, and isolated MPP/x402 protocol fixtures have passed. The browser invokes the local admin-only CLI buyer; Phantom/Solflare do not directly fund the pay.sh sandbox checkout. Latest-purchase recovery is in memory and is lost if the sidecar restarts.
 
 Report resale remains disabled. [Surf's terms](https://asksurf.ai/terms-of-service) require written permission for commercial output use; downstream paid resale needs that permission or a replacement source with suitable rights.
 

@@ -24,6 +24,10 @@ const ReportPage = lazy(() =>
 const BuyerPage = lazy(() =>
   import('./research/BuyerPage.tsx').then((m) => ({ default: m.BuyerPage })),
 )
+const RecordedDemoPage = lazy(() =>
+  import('./research/RecordedDemoPage.tsx').then((m) => ({ default: m.RecordedDemoPage })),
+)
+
 function RouteFallback() {
   return (
     <div className="boot-splash" aria-busy="true">
@@ -48,7 +52,7 @@ function normalizePathname(): string {
   return p || '/'
 }
 
-function getRoute(): 'admin' | 'scex' | 'report' | 'me' {
+function getRoute(): 'admin' | 'scex' | 'report' | 'me' | 'replay' {
   const h = window.location.hash.replace(/^#\/?/, '').toLowerCase()
   const path = normalizePathname()
   // Admin hash/path always wins so /scex#/admin and /admin work.
@@ -61,6 +65,7 @@ function getRoute(): 'admin' | 'scex' | 'report' | 'me' {
   ) {
     return 'admin'
   }
+  if (__DEEP_RESEARCH_ENABLED__ && path === '/demo/replay') return 'replay'
   if (__DEEP_RESEARCH_ENABLED__ && path === '/me') return 'me'
   if (__DEEP_RESEARCH_ENABLED__ && path.startsWith('/reports/')) return 'report'
   return 'scex'
@@ -168,6 +173,19 @@ function Root() {
           <AdminGate>
             <AdminDashboard />
           </AdminGate>
+        </SceneErrorBoundary>
+      </Suspense>
+    )
+  }
+
+  if (route === 'replay') {
+    return (
+      <Suspense fallback={<RouteFallback />}>
+        <SceneErrorBoundary title="Recorded demo failed to render">
+          <div className="app-shell app-shell--arena">
+            <SiteChrome active="scex" />
+            <RecordedDemoPage />
+          </div>
         </SceneErrorBoundary>
       </Suspense>
     )

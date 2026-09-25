@@ -1,6 +1,6 @@
 # M1 live-data runbook
 
-The code path reads real KOL and SCEX posts from the existing Radar API, calls Surf, stores an encrypted report in PostgreSQL, and writes a SHA-256 evidence Memo on Solana devnet. An end-to-end Kolosseum report has **not** been verified yet because `SURF_API_KEY` and `DATABASE_URL` are still pending. The app returns a service error when these are missing; it does not fabricate reports or templates.
+The code path reads real KOL and SCEX posts from the existing Radar API, calls Surf, stores an encrypted report in PostgreSQL, and writes a SHA-256 evidence Memo on Solana devnet. An end-to-end Kolosseum report has **not** been verified yet. PostgreSQL is migrated and the configured Surf key works for Surf Data API, but Surf Chat `POST /v1/responses` returns HTTP 401 even for a minimal documented request. See [the recorded walkthrough](./DEMO_REPLAY.md) for the exact test and local replay. The app does not fabricate reports or templates.
 
 ## Prepare
 
@@ -39,4 +39,4 @@ For the sandbox payment route, follow the [README demo steps](../README.md#deep-
 
 ## What has been checked
 
-The local Radar proxy returned a real SCEX dataset and blocked write methods. The read-only KOL context adapter retrieved source posts for a live KOL. Build, lint, typecheck, unit tests, and client-secret scanning have passed. The paid gateway has separately passed MPP and x402 sandbox protocol fixtures. A live Surf report, its PostgreSQL row, settled purchase, and devnet Memo still require the missing Surf/database configuration before they can be claimed as verified together.
+The local Radar proxy returned a real SCEX dataset and blocked write methods. The read-only KOL context adapter retrieved source posts for a live KOL. Build, lint, typecheck, unit tests, and client-secret scanning have passed. The paid gateway has separately passed MPP and x402 sandbox protocol fixtures. A live Surf report, its PostgreSQL row, settled purchase, and devnet Memo remain unverified until Surf Chat accepts the configured key and one full path succeeds.

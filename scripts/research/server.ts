@@ -4,6 +4,7 @@ import { config as loadEnv } from 'dotenv'
 import { decryptReport, hashesMatch, sha256 } from '../../lib/evidence/reportCrypto'
 import { processEvidence, verifyEvidence } from '../../lib/evidence/memo'
 import { generateDeepReport, generateQuickReport, normalizeDeepPrompt } from '../../lib/research/generate'
+import { openDemoCapture } from '../../lib/research/demoReplay'
 import { IncompleteDemoPurchaseError, runDemoBuyer, type DemoBuyerResult } from './demoBuy'
 import { mayGenerateReport } from '../../lib/payments/originAuth'
 import { parseBuyerWallet, verifyDashboardAccess, verifyReportAccess } from '../../lib/payments/walletAccess'
@@ -19,6 +20,8 @@ const uuid = '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}'
 const reportPath = new RegExp(`^/reports/(${uuid})(?:/(verify))?$`, 'i')
 const paymentPath = new RegExp(`^/reports/(${uuid})/payment$`, 'i')
 const votePath = new RegExp(`^/reports/(${uuid})/vote$`, 'i')
+const demoReplayEnabled = enabled && process.env.DEMO_REPLAY_ENABLED === 'true' &&
+  process.env.PAY_MODE === 'sandbox' && (host === '127.0.0.1' || host === 'localhost')
 const demoBuyEnabled = process.env.PAY_DEMO_BUY_ENABLED === 'true' &&
   process.env.PAY_MODE === 'sandbox' && process.env.PAY_GATEWAY_ENABLED === 'true' &&
   (host === '127.0.0.1' || host === 'localhost') && process.platform === 'win32'
@@ -63,6 +66,7 @@ const server = createServer(async (req, res) => {
       enabled,
       gatewayMode: process.env.PAY_GATEWAY_ENABLED === 'true',
       demoBuyEnabled,
+      demoReplayEnabled,
       radarConfigured: Boolean(process.env.RADAR_API_BASE || 'https://radar.daveynfts.com'),
       surfConfigured: Boolean(process.env.SURF_API_KEY),
       databaseConfigured: Boolean(process.env.DATABASE_URL),
@@ -72,6 +76,20 @@ const server = createServer(async (req, res) => {
   if (!enabled) return send(res, 404, { error: 'Deep Research is disabled' })
 
   try {
+    if (req.method === 'GET' && pathname === '/research/demo-replay') {
+      if (!demoReplayEnabled) return send(res, 404, { error: 'Recorded demo is disabled' })
+      if (!isAdmin(req)) return send(res, 401, { error: 'Admin token required' })
+      const { capture, content } = await openDemoCapture(
+        process.env.DEMO_REPLAY_FILE || '.demo-captures/flow.json',
+        process.env.REPORT_ENC_KEY || '',
+      )
+      const report = capture.report
+      return send(res, 200, { ...capture, report: report ? {
+        id: report.id, contentHash: report.contentHash, promptHash: report.promptHash,
+        surfModel: report.surfModel, surfUsage: report.surfUsage,
+        createdAt: report.createdAt, contextAsOf: report.contextAsOf, content,
+      } : null })
+    }
     if (req.method === 'GET' && pathname === '/templates') {
       const templates = (await listTemplates()).map(({ prompt_system: _system, prompt_user: _user, ...publicFields }) => publicFields)
       return send(res, 200, { templates })
@@ -285,6 +303,11 @@ const server = createServer(async (req, res) => {
     const status = /Invalid X handle|Expected |too large|Unknown or disabled template|Unexpected token|Prompt must|Trading recommendations|Valid buyerWallet|receipt|payment channel|price mismatch|payer does not match|buyer does not match|requires an MPP|requires an x402/i.test(message) ? 400 :
       /not configured|Radar API|DATABASE_URL/.test(message) ? 503 :
       /already has a different payment|duplicate key/.test(message) ? 409 : 502
+    const causeCode = message === 'Surf request failed or timed out' ? 'surf-timeout' :
+      /^Surf returned HTTP [0-9]{3}$/.test(message) ? message.toLowerCase().replaceAll(' ', '-') :
+      message.startsWith('Surf report missing sections:') ? 'surf-missing-sections' :
+      message === 'Surf returned no research text' ? 'surf-empty' : 'internal'
+    process.stderr.write('[research] ' + causeCode + '\n')
     // Do not echo provider bodies, keys or prompts in HTTP errors or logs.
     send(res, status, { error: status === 400 ? message : 'Research service unavailable', code: status })
   }

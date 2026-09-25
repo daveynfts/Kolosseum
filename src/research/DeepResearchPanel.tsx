@@ -16,6 +16,7 @@ type Health = {
   enabled: boolean
   gatewayMode: boolean
   demoBuyEnabled: boolean
+  demoReplayEnabled: boolean
   surfConfigured: boolean
   databaseConfigured: boolean
 }
@@ -181,7 +182,8 @@ export function DeepResearchPanel({ kolHandle }: { kolHandle: string }) {
     <form className="dr-panel" onSubmit={submit}>
       <div className="dr-panel__banner">SOLANA DEVNET / SANDBOX · NO REAL FUNDS</div>
       <h3>Deep Research: @{kolHandle}</h3>
-      <p>Research from live KOL and SCEX posts, with Surf AI analysis, a content hash, and a devnet Memo.</p>
+      <p>Research from the latest Radar KOL and SCEX post snapshot, with Surf AI analysis, a content hash, and a devnet Memo.</p>
+      {health?.demoReplayEnabled && <p><a href="/demo/replay">Open recorded walkthrough (no new API or payment calls) →</a></p>}
       {error && <p className="dr-panel__error" role="alert">{error}</p>}
       {demoStatus && <p className="dr-panel__notice" role="status">{demoStatus}</p>}
       {partialReportId && <a href={`/reports/${partialReportId}`}>Inspect report {partialReportId.slice(0, 8)}… →</a>}

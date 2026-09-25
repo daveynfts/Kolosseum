@@ -2,6 +2,8 @@
 
 Ngày cập nhật: 23/09/2026. Tài liệu này điều khiển phần bổ sung trên bản sao Radar tại `D:/VibeCode/Kolosseum`; dữ liệu KOL/SCEX và thao tác cũ tiếp tục đọc từ nguồn hiện có. User đã yêu cầu thêm lớp hình ảnh đấu trường La Mã mà không đổi bố cục hay luồng thao tác.
 
+**Current status, 25 Sep 2026:** Neon is configured and migrated; the Surf key works for Data API but Chat `/v1/responses` returns HTTP 401. No full Kolosseum report or paid purchase is verified. See [recorded walkthrough](./DEMO_REPLAY.md). Older entries below are dated test history and may describe dependencies that have since been configured.
+
 ## Các bước và cổng kiểm chứng
 
 1. **M1 — nghiên cứu thật, chưa thu tiền:** Postgres chỉ chứa bảng `dr_`; adapter đọc SCEX/KOL từ API Radar thật; Surf gọi server-side; report có hash nội dung, mã hóa AES-256-GCM, trang đọc/verify và Memo trên Solana devnet. Endpoint tạo report chỉ mở khi `DEEP_RESEARCH_ENABLED=true` và có `ADMIN_TOKEN` trong M1. Thay skin SCEX theo chủ đề arena, giữ tọa độ, nguồn dữ liệu, bộ lọc, layout và thao tác. Chạy lint/test/build, kiểm thử adapter với live API, và end-to-end Surf/devnet khi có cấu hình thật. Dừng cho review.

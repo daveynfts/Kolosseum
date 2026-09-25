@@ -216,7 +216,7 @@ export function DeepResearchPanel({ kolHandle }: { kolHandle: string }) {
         </label>
       )}
       {mode === 'quick' && selected && <p className="dr-panel__quote">{selected.description}<br />Sandbox price: ${selected.price_usdc} USDC per report.</p>}
-      {mode === 'deep' && <p className="dr-panel__quote">Authorize up to $1.00 sandbox USDC. Actual charge follows Surf credits used at $0.006 per credit, with a $0.10 minimum.</p>}
+      {mode === 'deep' && <p className="dr-panel__quote">Authorize up to $1.00 sandbox USDC. Charge uses Surf-reported credits, or its published fixed rate when usage metadata is missing, at $0.006 per credit with a $0.10 minimum.</p>}
       <div className="dr-panel__wallet">
         <WalletControls wallet={wallet} />
         <div className="dr-panel__wallet-actions">

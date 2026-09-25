@@ -21,9 +21,24 @@ describe('Surf client', () => {
     const first = await askSurf(options)
     const second = await askSurf(options)
     expect(fetcher).toHaveBeenCalledTimes(2)
-    expect(first.usage).toMatchObject({ creditsUsed: 50, cacheHit: false, totalTokens: 30 })
-    expect(second.usage).toMatchObject({ creditsUsed: 0, cacheHit: true })
+    expect(first.usage).toMatchObject({ creditsUsed: 50, creditsSource: 'provider', cacheHit: false, totalTokens: 30 })
+    expect(second.usage).toMatchObject({ creditsUsed: 0, creditsSource: 'cache', cacheHit: true })
     expect(second.text).toBe(first.text)
+  })
+
+  it('uses the published fixed credit rate when Surf omits meta.credits_used', async () => {
+    const fetcher = vi.fn(async () => new Response(JSON.stringify({
+      status: 'completed', model: 'surf-2.0', output_text: 'Evidence-backed report',
+      usage: { input_tokens: 12, output_tokens: 18, total_tokens: 30 },
+    }), { status: 200 }))
+    const result = await askSurf({
+      cacheIdentity: 'missing-credit-metadata', input: 'sample', instructions: 'system',
+      apiKey: 'test-key', baseUrl: 'http://127.0.0.1:9999', fetcher: fetcher as typeof fetch,
+      effort: 'none', now: 1_800_000_000_000,
+    })
+    expect(result.usage).toMatchObject({
+      creditsUsed: 20, creditsSource: 'published-rate', cacheHit: false, totalTokens: 30,
+    })
   })
 
   it('does not retry an ambiguous timeout by default', async () => {

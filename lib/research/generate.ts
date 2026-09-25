@@ -8,6 +8,14 @@ const REQUIRED_SECTIONS = [
   'Red flags', 'Amplifier network', 'Sources',
 ]
 
+export function groundSamplePostCount(markdown: string, sampleCount: number): string {
+  if (!Number.isSafeInteger(sampleCount) || sampleCount < 0) throw new Error('Invalid sample count')
+  return markdown.replace(
+    /((?:the\s+)?(?:supplied|provided|input)\s+(?:record|sample|dataset)\s+(?:contains|includes)\s+\*{0,2})\d+(\s+SCEX-related posts\*{0,2})/gi,
+    (_match, prefix: string, suffix: string) => prefix + sampleCount + suffix,
+  )
+}
+
 function renderTemplate(template: string, context: KolContext): string {
   const kol = {
     ...context.actor,
@@ -45,7 +53,7 @@ export async function generateQuickReport(kolHandle: string, templateSlug: strin
     input: prompt,
     instructions,
   })
-  const clean = sanitizeResearch(surf.text)
+  const clean = groundSamplePostCount(sanitizeResearch(surf.text), context.posts.length)
   const missing = REQUIRED_SECTIONS.filter((section) => !clean.includes(`## ${section}`))
   if (missing.length) throw new Error(`Surf report missing sections: ${missing.join(', ')}`)
   const encrypted = encryptReport(clean, encryptionKey)
@@ -63,7 +71,7 @@ export async function generateQuickReport(kolHandle: string, templateSlug: strin
   return { id: stored.id, contentHash: stored.content_hash, content: clean, surfUsage: usageShape(surf.usage) }
 }
 
-function usageShape(usage: { inputTokens: number | null; outputTokens: number | null; totalTokens: number | null; creditsUsed: number | null; cacheHit: boolean }) {
+function usageShape(usage: { inputTokens: number | null; outputTokens: number | null; totalTokens: number | null; creditsUsed: number | null; creditsSource: 'provider' | 'published-rate' | 'cache'; cacheHit: boolean }) {
   return { ...usage }
 }
 
@@ -102,7 +110,7 @@ export async function generateDeepReport(kolHandle: string, rawPrompt: string, b
     instructions,
   })
   if (surf.usage.creditsUsed === null) throw new Error('Surf usage credits are unavailable for metered billing')
-  const clean = sanitizeResearch(surf.text)
+  const clean = groundSamplePostCount(sanitizeResearch(surf.text), context.posts.length)
   const missing = REQUIRED_SECTIONS.filter((section) => !clean.includes('## ' + section))
   if (missing.length) throw new Error('Surf report missing sections: ' + missing.join(', '))
   const stored = await insertReport({

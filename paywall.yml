@@ -53,7 +53,7 @@ endpoints:
             - price_usd: 0.45
   - method: POST
     path: research/deep
-    description: Custom KOL report billed from actual Surf credits.
+    description: Custom KOL report billed from Surf-reported credits or its published fixed rate when omitted.
     metering:
       schemes: [x402-upto]
       upto:

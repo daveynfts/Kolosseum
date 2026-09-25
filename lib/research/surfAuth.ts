@@ -11,7 +11,7 @@ export async function checkSurfAuth(options: {
   const base = (options.baseUrl || process.env.SURF_API_BASE_URL || 'https://api.asksurf.ai/gateway').replace(/\/+$/, '')
   let endpoint: URL
   try {
-    endpoint = new URL(base + '/v1/me/credit-balance')
+    endpoint = new URL(base + '/v1/market/price?symbol=SOL')
   } catch {
     return 'unavailable'
   }

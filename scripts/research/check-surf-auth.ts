@@ -4,7 +4,7 @@ import { checkSurfAuth } from '../../lib/research/surfAuth'
 loadEnv({ path: '.env.local', quiet: true })
 const status = await checkSurfAuth()
 if (status === 'valid') {
-  process.stdout.write('Surf API key accepted by the authenticated balance endpoint.\n')
+  process.stdout.write('Surf API key accepted by an authenticated Data API request (SOL price).\n')
 } else if (status === 'invalid') {
   process.stderr.write('Surf rejected SURF_API_KEY (HTTP 401). Generate a new key in the Surf console, update .env.local, and retry. Do not paste the key into chat or logs.\n')
   process.exitCode = 1

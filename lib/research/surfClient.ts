@@ -8,6 +8,7 @@ export type SurfUsage = {
   outputTokens: number | null
   totalTokens: number | null
   creditsUsed: number | null
+  creditsSource: 'provider' | 'published-rate' | 'cache'
   cacheHit: boolean
 }
 
@@ -26,6 +27,9 @@ type SurfResponse = {
 
 const resultCache = new Map<string, SurfResult>()
 const MAX_CACHE_ITEMS = 100
+const PUBLISHED_CREDITS: Record<SurfEffort, number> = {
+  none: 20, minimal: 30, low: 50, medium: 120, high: 150, xhigh: 200,
+}
 
 function extractText(data: SurfResponse): string {
   if (typeof data.output_text === 'string' && data.output_text.trim()) return data.output_text.trim()
@@ -42,7 +46,7 @@ function sleep(ms: number): Promise<void> {
 }
 
 function cached(result: SurfResult): SurfResult {
-  return { ...result, usage: { ...result.usage, cacheHit: true, creditsUsed: 0 } }
+  return { ...result, usage: { ...result.usage, cacheHit: true, creditsUsed: 0, creditsSource: 'cache' } }
 }
 
 async function loadDiskCache(directory: string, key: string, encryptionKey: string): Promise<SurfResult | null> {
@@ -166,7 +170,8 @@ export async function askSurf(options: {
         inputTokens: Number.isFinite(data.usage?.input_tokens) ? data.usage!.input_tokens! : null,
         outputTokens: Number.isFinite(data.usage?.output_tokens) ? data.usage!.output_tokens! : null,
         totalTokens: Number.isFinite(data.usage?.total_tokens) ? data.usage!.total_tokens! : null,
-        creditsUsed: Number.isFinite(data.meta?.credits_used) ? data.meta!.credits_used! : null,
+        creditsUsed: Number.isFinite(data.meta?.credits_used) ? data.meta!.credits_used! : PUBLISHED_CREDITS[effort as SurfEffort],
+        creditsSource: Number.isFinite(data.meta?.credits_used) ? 'provider' : 'published-rate',
         cacheHit: false,
       },
     }

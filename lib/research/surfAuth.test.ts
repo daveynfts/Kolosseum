@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest'
 import { checkSurfAuth } from './surfAuth'
 
 describe('Surf authentication preflight', () => {
-  it('checks the documented gateway balance endpoint with Bearer auth', async () => {
+  it('checks an authenticated Data API route with Bearer auth', async () => {
     const fetcher = vi.fn(async () => new Response('{}', { status: 200 }))
     expect(await checkSurfAuth({
       apiKey: 'test-only-key',
@@ -10,7 +10,7 @@ describe('Surf authentication preflight', () => {
       fetcher: fetcher as typeof fetch,
     })).toBe('valid')
     const [url, init] = fetcher.mock.calls[0] as unknown as [URL, RequestInit]
-    expect(url.href).toBe('https://api.asksurf.ai/gateway/v1/me/credit-balance')
+    expect(url.href).toBe('https://api.asksurf.ai/gateway/v1/market/price?symbol=SOL')
     expect(init.headers).toMatchObject({ Authorization: 'Bearer test-only-key' })
   })
 

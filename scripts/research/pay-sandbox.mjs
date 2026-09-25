@@ -45,8 +45,11 @@ try {
   fail('OPERATOR_KEYPAIR_PATH does not contain a valid Solana keypair')
 }
 if (process.platform === 'win32') {
+  const pathKeys = Object.keys(env).filter((key) => key.toLowerCase() === 'path')
+  const systemPath = pathKeys.map((key) => env[key]).find(Boolean) || ''
+  for (const key of pathKeys) delete env[key]
   const unzip = 'C:/Program Files/Git/usr/bin'
-  if (existsSync(join(unzip, 'unzip.exe'))) env.PATH = unzip + ';' + (env.PATH || '')
+  env.Path = existsSync(join(unzip, 'unzip.exe')) ? unzip + ';' + systemPath : systemPath
 }
 const windows = process.platform === 'win32'
 const child = spawn(

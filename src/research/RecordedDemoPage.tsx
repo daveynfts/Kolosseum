@@ -13,7 +13,7 @@ type Replay = {
   kol: { handle: string; displayName: string; followers: number; qualityScore: number; postsVolume: number; matrix: { x: number; y: number } }
   posts: Array<{ id: string; url: string; text: string; postedAt: string }>
   template: { slug: string; title: string; description: string; priceUsdc: string }
-  report: null | { id: string; content: string; contentHash: string; surfModel: string; surfUsage: { creditsUsed: number | null; cacheHit: boolean }; createdAt: string }
+  report: null | { id: string; content: string; contentHash: string; surfModel: string; surfUsage: { creditsUsed: number | null; creditsSource?: 'provider' | 'published-rate' | 'cache'; cacheHit: boolean }; createdAt: string }
   payment: null | { protocol: string; buyerWallet: string; priceChargedUsdc: string; channel: null | { id: string; capUsdc: string; spentUsdc: string; remainingUsdc: string; status: string } }
   verification: null | { onChainMatch: boolean | null; evidenceTx: string | null; explorerUrl: string | null; votes: { up: number; down: number; supportUsdc: string; challengeUsdc: string } }
 }
@@ -79,7 +79,7 @@ export function RecordedDemoPage() {
             <strong>@{capture.kol.handle} · {capture.kol.displayName}</strong>
             <span>Captured {new Date(capture.recordedAt).toLocaleString('en-US')} · Radar data as of {capture.source.asOf}</span>
             <span>{capture.source.topKolPostCount} SCEX posts by this KOL · {capture.source.postCount} posts in the snapshot · {capture.source.actorCount} actors</span>
-            <span>Template: {capture.template.title} · quoted ${capture.template.priceUsdc} sandbox USDC</span>
+            <span>Template: {capture.template.title} · {capture.template.slug === 'custom-deep' ? 'maximum' : 'quoted'} ${capture.template.priceUsdc} sandbox USDC</span>
             {capture.limitation && <span className="dr-panel__notice">{capture.limitation}</span>}
           </section>
           <section className="dr-me__section" aria-label="Recorded flow">
@@ -105,7 +105,7 @@ export function RecordedDemoPage() {
             <section className="dr-verify" aria-label="Recorded report verification">
               <strong>{hashMatch ? '✓ Report SHA-256 matches in this browser' : '⚠ Report hash could not be confirmed'}</strong>
               <code>SHA-256: {capture.report.contentHash}</code>
-              <span>{capture.report.surfModel} · {capture.report.surfUsage.creditsUsed ?? 'unknown'} recorded credits</span>
+              <span>{capture.report.surfModel} · {capture.report.surfUsage.cacheHit ? 'reused encrypted cache · 0 new Surf credits' : (capture.report.surfUsage.creditsUsed ?? 'unknown') + ' Surf credits (' + (capture.report.surfUsage.creditsSource ?? 'source unknown') + ')'}</span>
               {capture.verification?.explorerUrl && safeHref(capture.verification.explorerUrl) && (
                 <a href={capture.verification.explorerUrl} target="_blank" rel="noreferrer">
                   {capture.verification.onChainMatch ? '✓ Devnet Memo verified at capture ↗' : 'Devnet Memo link (not verified at capture) ↗'}
@@ -128,7 +128,7 @@ export function RecordedDemoPage() {
             </div>
           </section>
           {capture.report?.content && <article className="dr-report-page__content"><ReportMarkdown text={capture.report.content} /></article>}
-          <small className="dr-replay-page__footnote">Read-only recording. Generate a new report through the live research panel when the Surf API key authenticates.</small>
+          <small className="dr-replay-page__footnote">Read-only recording. A new live report requires a separate Surf request and sandbox payment.</small>
         </>
       )}
     </main>

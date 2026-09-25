@@ -1,5 +1,5 @@
 import { mkdir, writeFile } from 'node:fs/promises'
-import { dirname, resolve } from 'node:path'
+import { dirname, resolve, sep } from 'node:path'
 import { config as loadEnv } from 'dotenv'
 import { decryptReport, hashesMatch, sha256 } from '../../lib/evidence/reportCrypto'
 import { verifyEvidence } from '../../lib/evidence/memo'
@@ -15,6 +15,12 @@ async function record(): Promise<void> {
   const surfAuthInvalid = process.argv.includes('--surf-auth-invalid') || process.argv.includes('--surf-chat-401')
   const reportFlag = process.argv.indexOf('--report')
   const reportId = reportFlag >= 0 ? process.argv[reportFlag + 1] : null
+  const outputFlag = process.argv.indexOf('--output')
+  const captureDirectory = resolve('.demo-captures')
+  const destination = outputFlag >= 0 ? resolve(process.argv[outputFlag + 1] || '') : resolve('.demo-captures/flow.json')
+  if (!destination.startsWith(captureDirectory + sep) || !destination.endsWith('.json')) {
+    throw new Error('Demo output must be a JSON file within .demo-captures')
+  }
   if (reportFlag >= 0 && !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(reportId || '')) {
     throw new Error('Use --report followed by a report UUID')
   }
@@ -86,6 +92,19 @@ async function record(): Promise<void> {
     const report = await getReport(reportId)
     if (!report) throw new Error('Report not found')
     if (report.kol_ref.toLowerCase() !== topHandle) throw new Error('Report is not for the top SCEX KOL')
+    if (report.template_slug === null) {
+      capture.template = {
+        slug: 'custom-deep',
+        title: 'Custom deep research',
+        description: 'Buyer-defined, source-backed research angle.',
+        priceUsdc: '1.00',
+      }
+      capture.steps[2] = {
+        name: 'Research quote',
+        status: 'verified',
+        detail: 'x402 upto capped at $1.00 sandbox USDC; settled $' + report.price_charged + '.',
+      }
+    }
     const key = process.env.REPORT_ENC_KEY
     if (!key) throw new Error('REPORT_ENC_KEY is required')
     const plaintext = decryptReport(report.content_encrypted, key)
@@ -105,6 +124,7 @@ async function record(): Promise<void> {
       surfUsage: {
         creditsUsed: report.surf_usage.creditsUsed,
         cacheHit: report.surf_usage.cacheHit,
+        creditsSource: report.surf_usage.creditsSource,
       },
       createdAt: report.created_at.toISOString(),
       contextAsOf: report.context_as_of?.toISOString() || null,
@@ -118,7 +138,7 @@ async function record(): Promise<void> {
     }
     capture.status = 'report-ready'
     capture.limitation = 'This snapshot contains a real private report; a sandbox purchase has not been verified.'
-    capture.steps[3] = { name: 'Surf report', status: 'verified', detail: `${report.surf_model} completed; ${report.surf_usage.creditsUsed ?? 'unknown'} credits recorded.` }
+    capture.steps[3] = { name: 'Surf report', status: 'verified', detail: report.surf_usage.cacheHit ? 'Encrypted Surf result reused from cache; 0 new credits.' : report.surf_model + ' completed; ' + (report.surf_usage.creditsUsed ?? 'unknown') + ' credits (' + (report.surf_usage.creditsSource ?? 'unknown source') + ').' }
     capture.steps[4] = { name: 'Encrypted report and SHA-256', status: 'verified', detail: `Stored report ${report.id}; SHA-256 matches.` }
     capture.steps[6] = report.evidence_tx && onChainMatch
       ? { name: 'Devnet Memo', status: 'verified', detail: 'The report hash was verified on Solana devnet at capture time.' }
@@ -154,7 +174,6 @@ async function record(): Promise<void> {
   const captureKey = process.env.REPORT_ENC_KEY
   if (!captureKey) throw new Error('REPORT_ENC_KEY is required for a signed capture')
   capture.signature = signDemoCapture(capture, captureKey)
-  const destination = resolve('.demo-captures/flow.json')
   await mkdir(dirname(destination), { recursive: true })
   await writeFile(destination, JSON.stringify(capture, null, 2) + '\n', { encoding: 'utf8', mode: 0o600 })
   process.stdout.write(JSON.stringify({ path: destination, status: capture.status, topKol: topHandle,

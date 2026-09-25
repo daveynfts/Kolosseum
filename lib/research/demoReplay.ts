@@ -27,7 +27,7 @@ export type DemoCapture = {
     contentHash: string
     promptHash: string
     surfModel: string
-    surfUsage: { creditsUsed: number | null; cacheHit: boolean }
+    surfUsage: { creditsUsed: number | null; creditsSource?: 'provider' | 'published-rate' | 'cache'; cacheHit: boolean }
     createdAt: string
     contextAsOf: string | null
   }

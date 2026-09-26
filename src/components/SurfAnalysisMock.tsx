@@ -63,8 +63,7 @@ export function SurfAnalysisMock({ kol }: { kol: Kol }) {
           </button>
         ) : (
           <p className="surf-analysis__hint">
-            No public report is available for @{kol.handle}.
-            {loading ? '' : ' An admin can publish one from the KOL Reports editor.'}
+            {loading ? `Checking for a report for @${kol.handle}…` : `No public report is available for @${kol.handle} yet.`}
           </p>
         )}
         {!loading && !report && (

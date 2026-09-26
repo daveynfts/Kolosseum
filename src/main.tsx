@@ -7,6 +7,8 @@ import { SiteChrome } from './components/SiteChrome'
 import { getAdminToken, setAdminToken } from './lib/feedStore'
 import './components/SiteChrome.css'
 import './styles/kolosseum.css'
+import './styles/premium.css'
+import { KolosseumWalletProvider } from './research/KolosseumWalletProvider'
 
 const AdminDashboard = lazy(() =>
   import('./pages/AdminDashboard.tsx').then((m) => ({
@@ -66,7 +68,7 @@ function getRoute(): 'admin' | 'scex' | 'report' | 'me' | 'replay' {
     return 'admin'
   }
   if (__DEEP_RESEARCH_ENABLED__ && path === '/demo/replay') return 'replay'
-  if (__DEEP_RESEARCH_ENABLED__ && path === '/me') return 'me'
+  if ((__DEEP_RESEARCH_ENABLED__ || __SURF_DEMO_ENABLED__) && path === '/me') return 'me'
   if (__DEEP_RESEARCH_ENABLED__ && path.startsWith('/reports/')) return 'report'
   return 'scex'
 }
@@ -231,6 +233,6 @@ function Root() {
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <Root />
+    <KolosseumWalletProvider><Root /></KolosseumWalletProvider>
   </StrictMode>,
 )

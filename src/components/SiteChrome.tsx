@@ -1,4 +1,5 @@
 import type { FormEvent, ReactNode } from 'react'
+import { WalletButton } from '../research/WalletButton'
 
 export type SiteChromePage = 'map' | 'scex' | 'event'
 
@@ -45,9 +46,7 @@ export function SiteChrome({ active, search, trailing, overlay }: Props) {
         </span>
       </a>
 
-      <span className="site-chrome__arena-inscription" aria-hidden="true">
-        THE KOL ARENA <i>✦</i> SOLANA DEVNET
-      </span>
+      {arena && <nav className="premium-nav" aria-label="Main navigation"><a href="/scex" aria-current={window.location.pathname === '/scex' ? 'page' : undefined}>Arena</a>{(__SURF_DEMO_ENABLED__ || __DEEP_RESEARCH_ENABLED__) && <a href="/me" aria-current={window.location.pathname === '/me' ? 'page' : undefined}>My Reports</a>}</nav>}
       {search ? (
         <form
           className={`site-chrome__search${overlay ? ' glass-fill' : ''}`}
@@ -83,6 +82,7 @@ export function SiteChrome({ active, search, trailing, overlay }: Props) {
       {trailing ? (
         <div className="site-chrome__trailing">{trailing}</div>
       ) : null}
+      {arena && <div className="premium-header-wallet"><span className="premium-network"><i /> Solana Devnet</span><WalletButton /></div>}
     </header>
   )
 }

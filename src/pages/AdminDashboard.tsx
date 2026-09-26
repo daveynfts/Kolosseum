@@ -57,6 +57,7 @@ import { AdminBannerEditor } from './AdminBannerEditor'
 import { AdminConvictionEventsEditor } from './AdminConvictionEventsEditor'
 import { AdminOpsHealth } from './AdminOpsHealth'
 import './AdminDashboard.css'
+import { DeepResearchPanel } from '../research/DeepResearchPanel'
 
 type Tab =
   | 'list'
@@ -69,6 +70,7 @@ type Tab =
   | 'reports'
   | 'events'
   | 'ops'
+  | 'research'
   | 'legend'
 
 const TAB_HASH: Record<Tab, string> = {
@@ -82,6 +84,7 @@ const TAB_HASH: Record<Tab, string> = {
   reports: '#/admin/reports',
   events: '#/admin/events',
   ops: '#/admin/ops',
+  research: '#/admin/research',
   legend: '#/admin/legend',
 }
 
@@ -620,6 +623,7 @@ export function AdminDashboard() {
           >
             Ops
           </button>
+          <button type="button" className={'admin-tab ' + (tab === 'research' ? 'is-active' : '')} onClick={() => goTab('research')}>Research</button>
         </div>
       </nav>
       </div>
@@ -655,6 +659,7 @@ export function AdminDashboard() {
       {tab === 'events' && <AdminConvictionEventsEditor onToast={flash} />}
 
       {tab === 'ops' && <AdminOpsHealth onToast={flash} />}
+      {tab === 'research' && <section className="admin-research"><h2>Research operations</h2><p>Private generation and local sandbox purchases.</p><DeepResearchPanel kolHandle={kols.find(k => k.id === selectedId)?.handle || 'luong4101992'} /></section>}
 
       {tab === 'legend' && <FieldLegend />}
 

@@ -3,6 +3,9 @@ import { researchApi } from './api'
 import { useKolosseumWallet } from './useKolosseumWallet'
 import { WalletControls } from './WalletControls'
 import './research.css'
+import { readDemoProgress } from './demoStore'
+import { DEMO_URL } from './demoConfig'
+import { XProfileAvatar } from '../components/XProfileAvatar'
 
 type BuyerDashboard = {
   reports: Array<{
@@ -41,13 +44,15 @@ function usdc(value: string): string {
 
 export function BuyerPage() {
   const wallet = useKolosseumWallet()
+  const [demo, setDemo] = useState(readDemoProgress)
+  useEffect(() => { const refresh = () => setDemo(readDemoProgress()); window.addEventListener('kolosseum-demo-progress', refresh); return () => window.removeEventListener('kolosseum-demo-progress', refresh) }, [])
   const [loadedWallet, setLoadedWallet] = useState<string | null>(null)
   const [dashboard, setDashboard] = useState<BuyerDashboard | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const current = wallet.address && wallet.address === loadedWallet ? dashboard : null
 
-  useEffect(() => { document.title = 'My research — Kolosseum' }, [])
+  useEffect(() => { document.title = 'My Reports — Kolosseum' }, [])
 
   async function loadDashboard() {
     if (!wallet.address) return
@@ -72,23 +77,26 @@ export function BuyerPage() {
   return (
     <main className="dr-report-page dr-me">
       <nav className="dr-report-page__nav"><a href="/scex">← Back to the KOL arena</a></nav>
-      <div className="dr-panel__banner">SOLANA DEVNET / SANDBOX · BUYER RECORD</div>
-      <h1>My research</h1>
-      <p className="dr-report-page__meta">Sign with the wallet that paid for a report to view its purchases and recorded payment channels.</p>
-      <section className="dr-verify dr-me__access">
+      <div className="dr-panel__banner">YOUR RESEARCH LIBRARY · SOLANA DEVNET</div>
+      <h1>My Reports</h1>
+      {__SURF_DEMO_ENABLED__ && <section className="dr-me__section"><h2>Viewed demos</h2><p className="premium-caption">Saved in this browser session. Demo views are not purchases or proof of ownership.</p>{demo.completedAt ? <article className="premium-demo-card"><XProfileAvatar handle="luong4101992" name="nbaluong" size={48} /><div><strong>nbaluong · Exchange stance</strong><small>Recorded demo · source 20 Sep 2026</small></div><a href={DEMO_URL}>Read report →</a></article> : <p>No demos viewed yet. <a href={DEMO_URL}>Explore nbaluong →</a></p>}</section>}
+      <div className="premium-purchased"><h2>Purchased reports</h2></div>
+      {!__DEEP_RESEARCH_ENABLED__ && <p>Purchased reports are not enabled in this demo environment.</p>}
+      {__DEEP_RESEARCH_ENABLED__ && <p className="dr-report-page__meta">Sign with the wallet that paid for a report to view its purchases and recorded payment channels.</p>}
+      {__DEEP_RESEARCH_ENABLED__ && <section className="dr-verify dr-me__access">
         <WalletControls wallet={wallet} />
         <button type="button" disabled={!wallet.address || loading} onClick={() => { void loadDashboard() }}>
           {loading ? 'Checking purchases…' : current ? 'Refresh with wallet signature' : 'Show my purchases'}
         </button>
         <small>This signature does not send a transaction or spend funds.</small>
-      </section>
+      </section>}
       {error && <p className="dr-panel__error" role="alert">{error}</p>}
       {current && (
         <>
           <section className="dr-me__section">
             <h2>Reports <span>{current.reports.length}</span></h2>
             {current.reports.length === 0 ? (
-              <p>No reports are recorded for this wallet. The local demo buyer uses its own sandbox wallet.</p>
+              <p>No purchases are recorded for this wallet.</p>
             ) : (
               <div className="dr-me__list">
                 {current.reports.map((report) => (

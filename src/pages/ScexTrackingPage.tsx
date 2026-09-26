@@ -27,6 +27,10 @@ import { arenaSentimentLabel } from '../lib/kolosseumLabels'
 import { applyScexSeo } from '../lib/scexSeo'
 import { safeHref } from '../lib/safeUrl'
 import './ScexTrackingPage.css'
+import { navigateArena, readArenaSelection } from '../lib/arenaNavigation'
+import { DEMO_HANDLE } from '../research/demoConfig'
+import { DEMO_ACTOR } from '../research/demoActor'
+import { preloadSurfDemo } from '../research/SurfAiExperience'
 
 const FILTER_KEY = 'scex-matrix-filters-v1'
 
@@ -250,6 +254,18 @@ export function ScexTrackingPage() {
   const [mapKols, setMapKols] = useState<Kol[]>([])
   const [expanded, setExpanded] = useState<Record<string, boolean>>({})
   const [selectedActor, setSelectedActor] = useState<ScexActor | null>(null)
+  const [kolQuery, setKolQuery] = useState('')
+  const [mobileView, setMobileView] = useState<'arena' | 'feed'>('arena')
+  const [dataSource, setDataSource] = useState('snapshot')
+  useEffect(() => {
+    const sync = () => {
+      const { handle } = readArenaSelection()
+      setSelectedActor(handle ? dataset?.actors.find(a => !a.isDenylisted && a.handle.toLowerCase() === handle) || (__SURF_DEMO_ENABLED__ && handle === DEMO_HANDLE ? DEMO_ACTOR : null) : null)
+    }
+    sync()
+    window.addEventListener('popstate', sync)
+    return () => window.removeEventListener('popstate', sync)
+  }, [dataset])
   /** Livefeed filter: null = all, or lowercase handle */
   const [feedFilter, setFeedFilter] = useState<string | null>(null)
   const [feedQuery, setFeedQuery] = useState('')
@@ -308,6 +324,7 @@ export function ScexTrackingPage() {
         .then(([scex, kols]) => {
           if (cancelled || n !== seq) return
           const list = kols.kols || []
+          setDataSource(scex.source)
           setMapKols(list)
           setDataset(recomputeScexScores(scex.dataset, list))
         })
@@ -351,11 +368,12 @@ export function ScexTrackingPage() {
     const onKey = (e: KeyboardEvent) => {
       if (e.key !== 'Escape') return
       // Modal detail has its own Esc; panel mode clears selection here first
+      if (document.querySelector('[data-wallet-dialog]')) return
       if (selectedActor) {
         if (feedFullscreen) {
           e.preventDefault()
           e.stopPropagation()
-          setSelectedActor(null)
+          navigateArena(null)
         }
         return
       }
@@ -668,6 +686,8 @@ export function ScexTrackingPage() {
 
   /** Matrix select opens detail only — do not auto-filter livefeed (Lite Partner) */
   const onSelectActor = (actor: ScexActor | null) => {
+    if (actor?.handle.toLowerCase() === DEMO_HANDLE && __SURF_DEMO_ENABLED__) preloadSurfDemo()
+    navigateArena(actor?.handle || null)
     setSelectedActor(actor)
   }
 
@@ -737,7 +757,7 @@ export function ScexTrackingPage() {
   }
 
   return (
-    <div className="scex-page">
+    <div className={'scex-page premium-arena-page premium-mobile-' + mobileView}>
       <header className="scex-page__hero scex-page__hero--lite">
         <div className="scex-page__brand">
           <div
@@ -793,6 +813,17 @@ export function ScexTrackingPage() {
         </div>
       </header>
 
+      <div className="premium-discovery">
+        {__SURF_DEMO_ENABLED__ && <button className="premium-featured" onMouseEnter={preloadSurfDemo} onFocus={preloadSurfDemo} onClick={() => { const actor = dataset.actors.find(a => !a.isDenylisted && a.handle.toLowerCase() === DEMO_HANDLE) || DEMO_ACTOR; onSelectActor(actor) }}>
+          <XProfileAvatar handle={DEMO_HANDLE} name="nbaluong" size={52} />
+          <span><small>FEATURED DEMO · SNAPSHOT 20 SEP 2026</small><strong>Enter the arena with nbaluong</strong><em>@luong4101992 · Explore a saved SurfAI analysis</em></span><b aria-hidden="true">↗</b>
+        </button>}
+        <div className="premium-kol-search"><label htmlFor="arena-kol-search">Find your next perspective</label><input id="arena-kol-search" type="search" placeholder="Search KOL or @handle…" value={kolQuery} onChange={e => setKolQuery(e.target.value)} autoComplete="off" />
+          {kolQuery.trim() && <div className="premium-search-results" aria-label="KOL search results">{dataset.actors.filter(a => !a.isDenylisted && (a.displayName + ' ' + a.handle).toLowerCase().includes(kolQuery.trim().replace(/^@/, '').toLowerCase())).slice(0, 8).map(actor => <button key={actor.id} onClick={() => { onSelectActor(actor); setKolQuery('') }}><XProfileAvatar handle={actor.handle} name={actor.displayName} size={32} /><span>{actor.displayName}<small>@{actor.handle}</small></span><span>↗</span></button>)}{!dataset.actors.some(a => !a.isDenylisted && (a.displayName + ' ' + a.handle).toLowerCase().includes(kolQuery.trim().replace(/^@/, '').toLowerCase())) && <p>No matching KOLs. Try another name.</p>}</div>}
+        </div>
+      </div>
+      <div className="premium-mobile-tabs" role="group" aria-label="Arena views"><button aria-pressed={mobileView === 'arena'} onClick={() => setMobileView('arena')}>Arena matrix</button><button aria-pressed={mobileView === 'feed'} onClick={() => setMobileView('feed')}>Source feed</button></div>
+      <div className="premium-source-note">SCEX snapshot · {dataset.asOf.slice(0,10)} · {dataSource === 'server' ? 'Latest available source' : dataSource === 'cache' ? 'Saved cache' : 'Bundled snapshot'}</div>
       <div className="scex-page__grid">
         <section
           className={`scex-card scex-matrix ${matrixFullscreen ? 'is-fullscreen' : ''}`}
@@ -948,7 +979,7 @@ export function ScexTrackingPage() {
                   <button
                     type="button"
                     className="scex-feed__viewing-close"
-                    onClick={() => setSelectedActor(null)}
+                    onClick={() => navigateArena(null)}
                     title="Deselect"
                     aria-label="Deselect KOL"
                   >
@@ -1228,7 +1259,7 @@ export function ScexTrackingPage() {
                     type="button"
                     className="scex-feed__fs-scrim"
                     aria-label="Close KOL details"
-                    onClick={() => setSelectedActor(null)}
+                    onClick={() => navigateArena(null)}
                   />
                   <aside
                     className="scex-feed__fs-side"
@@ -1243,7 +1274,7 @@ export function ScexTrackingPage() {
                           p.handle.toLowerCase() ===
                           selectedActor.handle.toLowerCase(),
                       )}
-                      onClose={() => setSelectedActor(null)}
+                      onClose={() => navigateArena(null)}
                       variant="panel"
                     />
                   </aside>
@@ -1324,7 +1355,7 @@ export function ScexTrackingPage() {
             type="button"
             className="scex-detail-scrim"
             aria-label="Close details"
-            onClick={() => setSelectedActor(null)}
+            onClick={() => navigateArena(null)}
           />
           <ScexKolDetail
             actor={selectedActor}
@@ -1335,7 +1366,7 @@ export function ScexTrackingPage() {
                 p.handle.toLowerCase() ===
                 selectedActor.handle.toLowerCase(),
             )}
-            onClose={() => setSelectedActor(null)}
+            onClose={() => navigateArena(null)}
           />
         </>
       )}

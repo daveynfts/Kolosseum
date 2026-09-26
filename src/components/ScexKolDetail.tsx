@@ -2,7 +2,7 @@
  * Near-fullscreen KOL panel for SCEX matrix.
  * SCEX tab: stats + feed of this KOL's SCEX mentions.
  */
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import type { Kol } from '../types'
 import {
   formatStatus,
@@ -21,7 +21,10 @@ import { loadPublicReportForHandle } from '../lib/kolReportsStore'
 import { BioRichText } from './BioRichText'
 import { RankBadge } from './RankBadge'
 import { SurfAnalysisMock } from './SurfAnalysisMock'
-import { DeepResearchPanel } from '../research/DeepResearchPanel'
+import { SurfAiExperience, preloadSurfDemo } from '../research/SurfAiExperience'
+import { DEMO_HANDLE, DEMO_URL } from '../research/demoConfig'
+import { navigateArena, readArenaSelection } from '../lib/arenaNavigation'
+import { useDialogFocus } from '../lib/useDialogFocus'
 import { XProfileAvatar } from './XProfileAvatar'
 import { resolveMediaUrl } from '../lib/avatar'
 import { arenaQuadrantTitle, arenaSentimentLabel } from '../lib/kolosseumLabels'
@@ -90,7 +93,10 @@ export function ScexKolDetail({
    */
   variant?: 'modal' | 'panel'
 }) {
-  const [tab, setTab] = useState<Tab>('scex')
+  const [tab, setCurrentTab] = useState<Tab>(() => { const t = readArenaSelection().tab; return t === 'surfai' ? 'analysis' : t === 'posts' ? 'scex' : 'overview' })
+  const panelRef = useRef<HTMLElement>(null)
+  useDialogFocus(panelRef, variant === 'modal')
+  const setTab = (next: Tab) => { setCurrentTab(next); navigateArena(actor.handle, next === 'analysis' ? 'surfai' : next === 'scex' ? 'posts' : 'overview') }
   const [expanded, setExpanded] = useState<Record<string, boolean>>({})
   const [pubReport, setPubReport] = useState<KolReport | null>(null)
   const [reportLoading, setReportLoading] = useState(false)
@@ -104,10 +110,14 @@ export function ScexKolDetail({
   )
 
   useEffect(() => {
-    setTab('scex')
+    const sync = () => { const t = readArenaSelection().tab; setCurrentTab(t === 'surfai' ? 'analysis' : t === 'posts' ? 'scex' : 'overview') }
+    sync()
+    if (__SURF_DEMO_ENABLED__ && actor.handle.toLowerCase() === DEMO_HANDLE) preloadSurfDemo()
+    window.addEventListener('popstate', sync)
     setExpanded({})
     setPubReport(null)
-  }, [actor.id])
+    return () => window.removeEventListener('popstate', sync)
+  }, [actor.id, actor.handle])
 
   useEffect(() => {
     let cancelled = false
@@ -149,6 +159,8 @@ export function ScexKolDetail({
 
   return (
     <aside
+      ref={panelRef}
+      tabIndex={-1}
       className={`scex-detail glass ${isPanel ? 'scex-detail--panel' : ''}`}
       role={isPanel ? 'region' : 'dialog'}
       aria-modal={isPanel ? undefined : true}
@@ -256,43 +268,11 @@ export function ScexKolDetail({
         </div>
       </div>
 
-      <div className="scex-detail__tabs" role="tablist">
-        <button
-          type="button"
-          role="tab"
-          className={`scex-detail__tab ${tab === 'scex' ? 'is-active' : ''}`}
-          aria-selected={tab === 'scex'}
-          onClick={() => setTab('scex')}
-        >
-          SCEX
-          {sortedPosts.length > 0 && (
-            <em className="scex-detail__tab-n">{sortedPosts.length}</em>
-          )}
-        </button>
-        {(mapKol || hasReport || reportLoading) && (
-          <button
-            type="button"
-            role="tab"
-            className={`scex-detail__tab ${tab === 'overview' ? 'is-active' : ''}`}
-            aria-selected={tab === 'overview'}
-            onClick={() => setTab('overview')}
-          >
-            Overview
-          </button>
-        )}
-        <button
-          type="button"
-          role="tab"
-          className={`scex-detail__tab ${tab === 'analysis' ? 'is-active' : ''}`}
-          aria-selected={tab === 'analysis'}
-          onClick={() => setTab('analysis')}
-        >
-          {__DEEP_RESEARCH_ENABLED__ && actor.kind === 'kol' ? 'Deep Research' : 'Surf AI'}
-          {(!__DEEP_RESEARCH_ENABLED__ || actor.kind !== 'kol') && hasReport && <em className="scex-detail__tab-n">✓</em>}
-        </button>
+      <div className="scex-detail__tabs" role="tablist" aria-label="KOL profile">
+        {([{ id: 'overview', label: 'Overview' }, { id: 'scex', label: 'Posts' }, { id: 'analysis', label: 'SurfAI' }] as const).map((item, index, items) => <button key={item.id} id={'kol-tab-' + item.id} type="button" role="tab" aria-controls={'kol-panel-' + item.id} aria-selected={tab === item.id} tabIndex={tab === item.id ? 0 : -1} className={'scex-detail__tab ' + (tab === item.id ? 'is-active' : '')} onClick={() => setTab(item.id)} onKeyDown={event => { let next = index; if (event.key === 'ArrowRight') next = (index + 1) % 3; else if (event.key === 'ArrowLeft') next = (index + 2) % 3; else if (event.key === 'Home') next = 0; else if (event.key === 'End') next = 2; else return; event.preventDefault(); setTab(items[next].id); document.getElementById('kol-tab-' + items[next].id)?.focus() }}>{item.label}{item.id === 'analysis' && <span className="surf-tab-star">✦</span>}</button>)}
       </div>
 
-      <div className="scex-detail__scroll">
+      <div className="scex-detail__scroll" role="tabpanel" id={'kol-panel-' + tab} aria-labelledby={'kol-tab-' + tab}>
         {tab === 'scex' && (
           <div className="scex-detail__body">
             <div className="scex-detail__stats">
@@ -445,7 +425,7 @@ export function ScexKolDetail({
                   className="scex-detail__open-report"
                   onClick={() => setTab('analysis')}
                 >
-                  View full report in the Surf AI tab →
+                  Explore the SurfAI report →
                 </button>
               </>
             ) : (
@@ -463,8 +443,7 @@ export function ScexKolDetail({
                     />
                   ) : (
                     <p className="scex-detail__feed-empty">
-                      Publish a public report in Admin → KOL Reports to show
-                      a summary here.
+                      Explore this KOL’s source posts, or open SurfAI for available research.
                     </p>
                   )}
                 </>
@@ -552,10 +531,10 @@ export function ScexKolDetail({
 
         {tab === 'analysis' && (
           <div className="scex-detail__body scex-detail__body--surf">
-            {__DEEP_RESEARCH_ENABLED__ && actor.kind === 'kol' ? (
-              <DeepResearchPanel kolHandle={actor.handle} />
+            {__SURF_DEMO_ENABLED__ && actor.handle.toLowerCase() === DEMO_HANDLE ? (
+              <SurfAiExperience />
             ) : (
-              <SurfAnalysisMock kol={surfKol} />
+              <><SurfAnalysisMock kol={surfKol} />{__SURF_DEMO_ENABLED__ && <a className="premium-demo-link" href={DEMO_URL}>Explore the nbaluong SurfAI demo →</a>}</>
             )}
           </div>
         )}

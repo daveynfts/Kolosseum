@@ -41,7 +41,9 @@ export default defineConfig(({ mode }) => {
     // Only the boolean enters the client bundle; secrets stay in the sidecar.
     define: {
       __DEEP_RESEARCH_ENABLED__: JSON.stringify(researchEnabled),
+      __SURF_DEMO_ENABLED__: JSON.stringify(env.SURF_DEMO_ENABLED !== 'false'),
     },
+    resolve: { alias: [{ find: /^buffer$/, replacement: 'buffer/' }] },
     server: {
       proxy: researchEnabled ? {
         '/api': radarProxy,

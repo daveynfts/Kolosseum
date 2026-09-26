@@ -1,4 +1,5 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
+import { useDialogFocus } from '../lib/useDialogFocus'
 import { createPortal } from 'react-dom'
 import type { KolReport } from '../data/kolReports'
 import { ReportMarkdown } from './ReportMarkdown'
@@ -21,6 +22,8 @@ interface Props {
  * (z-index 20050+) or overflow:hidden ancestors.
  */
 export function KolReportViewer({ report, avatarHandle, onClose }: Props) {
+  const dialog = useRef<HTMLDivElement>(null)
+  useDialogFocus(dialog)
   const handle = resolveAvatarHandle(
     avatarHandle || report.handle,
     avatarHandle ? [{ handle: avatarHandle }] : undefined,
@@ -58,7 +61,7 @@ export function KolReportViewer({ report, avatarHandle, onClose }: Props) {
         aria-label="Close"
         onClick={onClose}
       />
-      <div className="kol-report-viewer__panel glass">
+      <div ref={dialog} className="kol-report-viewer__panel glass">
         <header className="kol-report-viewer__top">
           <div className="kol-report-viewer__brand">
             <img

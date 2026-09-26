@@ -1,29 +1,33 @@
 /**
  * KOL avatars on Cloudflare R2 (prefix radar/avatars).
  *
- * - DOM <img>: same-origin /r2/* (proxied via /api/media)
- * - WebGL textures: same-origin /r2/* rewrite (TextureLoader CORS)
+ * - DOM <img>: Radar's public media route in production, local /r2/* in dev
+ * - WebGL textures: the same route (Radar sends CORS headers)
  * - Optional per-KOL `avatarUrl` override (admin-edited R2 link)
  *
  * Override CDN: VITE_R2_PUBLIC_URL (must not be a pub-*.r2.dev host)
  */
 
 const RADAR_PREFIX = 'radar'
+const RADAR_PUBLIC_MEDIA_BASE = 'https://radar.daveynfts.com/r2'
 
-/** Public R2 / custom CDN base (no trailing slash). Never default to pub-*.r2.dev. */
+/** Public R2 / custom CDN base (no trailing slash). Never use pub-*.r2.dev directly. */
 export function r2PublicBase(): string {
   const fromEnv =
     (import.meta.env.VITE_R2_PUBLIC_URL as string | undefined) ||
     (import.meta.env.VITE_AVATAR_CDN_BASE as string | undefined) ||
     ''
   const raw = String(fromEnv).replace(/\/$/, '')
-  if (!raw) return ''
-  try {
-    if (new URL(raw).hostname.toLowerCase().endsWith('.r2.dev')) return ''
-  } catch {
-    return ''
+  if (raw) {
+    try {
+      if (!new URL(raw).hostname.toLowerCase().endsWith('.r2.dev')) return raw
+    } catch {
+      /* use the Radar media proxy below */
+    }
   }
-  return raw
+  // Kolosseum's Vercel app has no private R2 credentials. Radar's public
+  // media route reads the same bucket and caches successful images at its edge.
+  return import.meta.env.PROD ? RADAR_PUBLIC_MEDIA_BASE : ''
 }
 
 /**
@@ -59,34 +63,28 @@ export function avatarHandleVariants(handle: string): string[] {
   return [...out]
 }
 
-/** Same-origin /r2 path, or custom CDN when VITE_R2_PUBLIC_URL is set. */
+/** Direct public media route in production, local /r2 proxy in development. */
 export function xAvatarUrl(handle: string): string {
   const key = avatarObjectKey(handle)
   const base = r2PublicBase()
   return base ? `${base}/${key}` : `/r2/${key}`
 }
 
-/**
- * Ordered R2 (+ proxy) candidates across casing variants.
- * Prefer exact handle first, then common X-style variants.
- */
+/** Ordered R2 candidates across casing variants; avoid the unconfigured Vercel proxy. */
 export function xAvatarUrlCandidates(handle: string): string[] {
   const base = r2PublicBase()
   const urls: string[] = []
   for (const h of avatarHandleVariants(handle)) {
     const key = avatarObjectKey(h)
     if (base) urls.push(`${base}/${key}`)
-    urls.push(`/r2/${key}`)
+    if (!base || base !== RADAR_PUBLIC_MEDIA_BASE) urls.push(`/r2/${key}`)
   }
   return [...new Set(urls)]
 }
 
-/**
- * Same-origin path proxied to R2 (vercel.json rewrite).
- * WebGL TextureLoader + DOM fallback.
- */
+/** Public image path shared by WebGL TextureLoader and DOM fallbacks. */
 export function xAvatarTextureUrl(handle: string): string {
-  return `/r2/${avatarObjectKey(handle)}`
+  return xAvatarUrl(handle)
 }
 
 /**
@@ -126,7 +124,7 @@ export function resolveKolAvatarUrl(kol: {
 }
 
 /**
- * URL safe for WebGL TextureLoader (prefer same-origin /r2 when possible).
+ * URL safe for WebGL TextureLoader (Radar's public route allows CORS).
  */
 export function resolveKolAvatarTextureUrl(kol: {
   handle: string
@@ -138,8 +136,8 @@ export function resolveKolAvatarTextureUrl(kol: {
 }
 
 /**
- * Rewrite known R2 / radar paths to same-origin /r2/* for TextureLoader CORS.
- * Absolute third-party URLs left as-is (need CORS on that host).
+ * Rewrite known R2 / radar paths to the configured public media route.
+ * Absolute third-party URLs are left as-is (need CORS on that host).
  */
 export function toTextureSafeUrl(pathOrUrl: string, fallbackHandle?: string): string {
   const raw = (pathOrUrl || '').trim()
@@ -147,11 +145,10 @@ export function toTextureSafeUrl(pathOrUrl: string, fallbackHandle?: string): st
     return fallbackHandle ? xAvatarTextureUrl(fallbackHandle) : ''
   }
 
-  // Already same-origin proxy
-  if (raw.startsWith('/r2/')) return raw
+  if (raw.startsWith('/r2/')) return resolveMediaUrl(raw)
 
   // /radar/avatars/foo.jpg → /r2/radar/avatars/foo.jpg
-  if (raw.startsWith('/radar/')) return `/r2${raw}`
+  if (raw.startsWith('/radar/')) return resolveMediaUrl(raw)
 
   // /avatars/handle.jpg → /r2/radar/avatars/handle.jpg
   const localAv = raw.match(/^\/avatars\/([^/?#]+)$/i)
@@ -165,15 +162,15 @@ export function toTextureSafeUrl(pathOrUrl: string, fallbackHandle?: string): st
       const u = new URL(raw)
       if (u.hostname.toLowerCase().endsWith('.r2.dev')) {
         const key = u.pathname.replace(/^\/+/, '')
-        return `/r2/${key}${u.search}`
+        const base = r2PublicBase()
+        return base ? `${base}/${key}${u.search}` : `/r2/${key}${u.search}`
       }
       const base = r2PublicBase()
       if (base && raw.startsWith(base + '/')) {
-        const key = raw.slice(base.length + 1)
-        return `/r2/${key}`
+        return raw
       }
       const m = u.pathname.match(/\/(radar\/avatars\/[^/?#]+)$/i)
-      if (m) return `/r2/${m[1]}`
+      if (m) return base ? `${base}/${m[1]}${u.search}` : `/r2/${m[1]}${u.search}`
     } catch {
       /* keep absolute */
     }
@@ -194,7 +191,8 @@ export function resolveMediaUrl(path: string): string {
       const u = new URL(path)
       if (u.hostname.toLowerCase().endsWith('.r2.dev')) {
         const key = u.pathname.replace(/^\/+/, '')
-        return `/r2/${key}${u.search}`
+        const base = r2PublicBase()
+        return base ? `${base}/${key}${u.search}` : `/r2/${key}${u.search}`
       }
     } catch {
       /* keep */

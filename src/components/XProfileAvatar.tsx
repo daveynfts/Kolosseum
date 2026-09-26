@@ -24,7 +24,7 @@ interface Props {
   bulkLoad?: boolean
 }
 
-const BULK_IMAGE_MAX_CONCURRENT = 3
+const BULK_IMAGE_MAX_CONCURRENT = 12
 let bulkImagesInFlight = 0
 const bulkImageWaiters: Array<() => void> = []
 

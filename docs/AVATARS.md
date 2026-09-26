@@ -4,7 +4,7 @@ Kolosseum reuses the existing Radar Cloudflare R2 bucket. This is an internal ob
 
 - Live source: GET /api/scex-tracking on RADAR_API_BASE.
 - R2 key: radar/avatars/{X handle}.jpg (R2 keys are case-sensitive).
-- Browser read path: /r2/radar/avatars/{handle}.jpg. Vite proxies this path to RADAR_API_BASE locally.
+- Browser read path: the public Radar media route at https://radar.daveynfts.com/r2/radar/avatars/{handle}.jpg in production; local Vite proxies /r2/radar/avatars/{handle}.jpg to the same source. Successful images are cached for one week. A custom CDN can replace this with VITE_R2_PUBLIC_URL.
 - Write path: authenticated PUT /api/avatar?handle={handle}; the existing server fetches the current X avatar and writes it to R2. No new local image files are created.
 
 The sync command first checks the actor's existing avatarUrl key, then the handle's exact-case and lowercase R2 keys. A successful image HEAD means no upload. A 404 means that key is absent. Other HTTP statuses are errors, never treated as an invitation to overwrite.

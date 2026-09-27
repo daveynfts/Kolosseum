@@ -1,8 +1,10 @@
-import { Suspense, useEffect, useLayoutEffect, useMemo, useRef, useState, type RefObject } from 'react'
+import { Suspense, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type RefObject } from 'react'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import { OrbitControls, PerformanceMonitor } from '@react-three/drei'
 import { Color, DoubleSide, ExtrudeGeometry, Group, InstancedMesh, Object3D, Path, Shape } from 'three'
 import type { OrbitControls as Controls } from 'three-stdlib'
+import { combatPose } from './combatTimeline'
+import { CombatEffects } from './CombatEffects'
 
 const GOLD = '#b88c4c', STEEL = '#d7ccaa', LEATHER = '#35231e'
 function Architecture() {
@@ -51,21 +53,29 @@ function JointLimb({ leg = false }: { leg?: boolean }) {
 }
 function Fighter({ side, clock }: { side: number; clock: RefObject<number> }) {
   const root = useRef<Group>(null), chest = useRef<Group>(null), sword = useRef<Group>(null), shield = useRef<Group>(null), leftLeg = useRef<Group>(null), rightLeg = useRef<Group>(null), cape = useRef<Group>(null)
+  const slash = useRef<Group>(null)
+  const elbow = useRef<Group>(null)
   useFrame(() => {
-    const phase = (clock.current % 6) / 6
-    const pulse = (center: number, width: number) => Math.max(0, 1 - Math.abs(phase - center) / width)
-    const approach = Math.sin(phase * Math.PI) ** 2
-    const strike = side < 0 ? pulse(.35,.15) : pulse(.7,.14)
-    const block = side < 0 ? pulse(.7,.14) : pulse(.35,.15)
-    root.current!.position.set(side * (1.45 - approach * .33), Math.sin(phase * Math.PI * 4) * .035, 0)
-    chest.current!.rotation.z = side * strike * .12
-    chest.current!.rotation.y = strike * .35 - block * .15
-    sword.current!.rotation.x = -.5 - Math.sin(strike * Math.PI) * 1.7 + strike * 1.1
-    sword.current!.rotation.z = -.22 - strike * .45
-    shield.current!.rotation.x = -.4 - block * .8
-    leftLeg.current!.rotation.x = Math.sin(phase * Math.PI * 4) * .22
-    rightLeg.current!.rotation.x = -Math.sin(phase * Math.PI * 4) * .22
-    cape.current!.rotation.x = .12 + Math.sin(phase * Math.PI * 4 + side) * .09
+
+    const p = combatPose(clock.current, side)
+    root.current!.position.set(side * (1.8 - p.approach * .43 - p.lunge * .4 + p.recoil * .24), p.bounce + p.lunge * .1, 0)
+    root.current!.rotation.y = (side < 0 ? Math.PI / 2 : -Math.PI / 2) + p.wind * .16 - p.swing * .18
+    root.current!.scale.set(1.18, 1.18 - p.wind * .055 + p.lunge * .05, 1.18)
+    chest.current!.rotation.x = p.lunge * .18 - p.recoil * .22
+    chest.current!.rotation.z = -p.wind * .16 + p.swing * .13
+    chest.current!.rotation.y = -p.wind * .35 + p.swing * .45
+    // Wind the blade overhead, then cut forward through the defender's shield.
+    sword.current!.rotation.x = -1.05 - p.wind * 1.8 + p.swing * .3
+    sword.current!.rotation.z = -.22 - p.wind * .35 + p.swing * .25
+    elbow.current!.rotation.x = -.5 - p.wind * .5 - p.swing * .2
+    shield.current!.rotation.x = -.65 - p.block * .75 + p.recoil * .16
+    shield.current!.rotation.z = .15 + p.block * .18
+    leftLeg.current!.rotation.x = Math.sin(p.t * Math.PI * 4) * .15 + p.lunge * .48 - p.recoil * .2
+    rightLeg.current!.rotation.x = -Math.sin(p.t * Math.PI * 4) * .15 - p.lunge * .4 + p.recoil * .25
+    cape.current!.rotation.x = .2 + p.lunge * .5 + p.recoil * .2 + Math.sin(p.t * Math.PI * 4 + side) * .12
+    slash.current!.visible = p.trail > .02
+    slash.current!.scale.setScalar(.8 + p.trail * .25)
+
   })
   return <group ref={root} rotation={[0, side < 0 ? Math.PI / 2 : -Math.PI / 2,0]} scale={1.18}>
     <group position={[0,1.1,0]}><mesh castShadow><cylinderGeometry args={[.29,.35,.35,10]} /><meshStandardMaterial color={LEATHER} /></mesh><mesh position={[0,.12,0]} castShadow><cylinderGeometry args={[.32,.32,.12,12]} /><meshStandardMaterial color={GOLD} metalness={.7} roughness={.3} /></mesh>
@@ -75,8 +85,12 @@ function Fighter({ side, clock }: { side: number; clock: RefObject<number> }) {
       <mesh position={[0,.2,0]} castShadow><cylinderGeometry args={[.48,.29,.69,10]} /><meshStandardMaterial color={side < 0 ? '#ad8545' : '#657476'} metalness={.78} roughness={.32} /></mesh>
       <mesh position={[0,.2,.36]} castShadow><sphereGeometry args={[.18,10,8]} /><meshStandardMaterial color={GOLD} metalness={.8} roughness={.3} /></mesh>
       <group position={[0,.76,0]}><mesh castShadow><sphereGeometry args={[.26,16,12]} /><meshStandardMaterial color="#b18b6c" roughness={.8} /></mesh><mesh position={[0,.07,-.035]} castShadow><sphereGeometry args={[.285,16,12,0,Math.PI * 2,0,Math.PI * .7]} /><meshStandardMaterial color={GOLD} metalness={.8} roughness={.3} /></mesh><mesh position={[0,.025,.237]}><boxGeometry args={[.38,.065,.07]} /><meshStandardMaterial color="#141315" /></mesh><mesh position={[0,-.065,.245]} castShadow><boxGeometry args={[.075,.25,.09]} /><meshStandardMaterial color={GOLD} metalness={.8} roughness={.3} /></mesh><mesh position={[0,.3,-.04]} castShadow><boxGeometry args={[.085,.24,.42]} /><meshStandardMaterial color={side < 0 ? '#922d32' : '#172c37'} roughness={.92} /></mesh></group>
+      <group ref={slash} position={[.25,.1,.85]} rotation={[0,Math.PI / 2,0]} visible={false}>
+        <mesh rotation={[0,0,-.8]}><ringGeometry args={[.72,.85,32,1,0,Math.PI * .95]} /><meshBasicMaterial color={side < 0 ? '#ffe4a2' : '#a9edff'} transparent opacity={.68} side={DoubleSide} depthWrite={false} toneMapped={false} /></mesh>
+        <mesh rotation={[0,0,-.7]}><ringGeometry args={[.88,.91,32,1,0,Math.PI * .78]} /><meshBasicMaterial color="#fff3d8" transparent opacity={.8} side={DoubleSide} depthWrite={false} toneMapped={false} /></mesh>
+      </group>
       <group ref={cape} position={[0,.45,-.25]}><mesh position={[0,-.55,-.12]} rotation={[.15,0,0]} castShadow><boxGeometry args={[.65,1.28,.045]} /><meshStandardMaterial color={side < 0 ? '#852c35' : '#223e49'} side={DoubleSide} roughness={.9} /></mesh></group>
-      <group ref={sword} position={[.5,.4,0]}><mesh castShadow><sphereGeometry args={[.22,10,8]} /><meshStandardMaterial color={GOLD} metalness={.7} roughness={.4} /></mesh><JointLimb /><group position={[0,-.48,0]} rotation={[-.8,0,0]}><JointLimb /><group position={[0,-.43,0]} rotation={[0,0,-.12]}><mesh castShadow><cylinderGeometry args={[.055,.055,.24,8]} /><meshStandardMaterial color={LEATHER} /></mesh><mesh position={[0,-.14,0]} castShadow><boxGeometry args={[.3,.065,.1]} /><meshStandardMaterial color={GOLD} metalness={.8} roughness={.2} /></mesh><mesh position={[0,-.64,0]} castShadow><boxGeometry args={[.105,.95,.04]} /><meshStandardMaterial color={STEEL} metalness={.9} roughness={.18} /></mesh><mesh position={[0,-1.17,0]} rotation={[0,0,Math.PI]} castShadow><coneGeometry args={[.07,.14,4]} /><meshStandardMaterial color={STEEL} metalness={.9} roughness={.18} /></mesh></group></group></group>
+      <group ref={sword} position={[.5,.4,0]}><mesh castShadow><sphereGeometry args={[.22,10,8]} /><meshStandardMaterial color={GOLD} metalness={.7} roughness={.4} /></mesh><JointLimb /><group ref={elbow} position={[0,-.48,0]} rotation={[-.8,0,0]}><JointLimb /><group position={[0,-.43,0]} rotation={[0,0,-.12]}><mesh castShadow><cylinderGeometry args={[.055,.055,.24,8]} /><meshStandardMaterial color={LEATHER} /></mesh><mesh position={[0,-.14,0]} castShadow><boxGeometry args={[.3,.065,.1]} /><meshStandardMaterial color={GOLD} metalness={.8} roughness={.2} /></mesh><mesh position={[0,-.64,0]} castShadow><boxGeometry args={[.105,.95,.04]} /><meshStandardMaterial color={STEEL} metalness={.9} roughness={.18} /></mesh><mesh position={[0,-1.17,0]} rotation={[0,0,Math.PI]} castShadow><coneGeometry args={[.07,.14,4]} /><meshStandardMaterial color={STEEL} metalness={.9} roughness={.18} /></mesh></group></group></group>
       <group ref={shield} position={[-.5,.35,0]}><mesh castShadow><sphereGeometry args={[.22,10,8]} /><meshStandardMaterial color={GOLD} metalness={.7} roughness={.4} /></mesh><JointLimb /><group position={[0,-.4,.22]}><mesh rotation={[Math.PI / 2,0,0]} scale={[1,1,1.3]} castShadow><cylinderGeometry args={[.47,.47,.085,24]} /><meshStandardMaterial color={side < 0 ? '#772c2d' : '#273d43'} metalness={.3} roughness={.5} /></mesh><mesh position={[0,0,.06]} scale={[1,1.3,1]}><torusGeometry args={[.45,.045,8,24]} /><meshStandardMaterial color={GOLD} metalness={.8} roughness={.25} /></mesh><mesh position={[0,0,.1]}><sphereGeometry args={[.13,12,8]} /><meshStandardMaterial color={GOLD} metalness={.85} roughness={.22} /></mesh></group></group>
     </group>
   </group>
@@ -85,8 +99,14 @@ function World({ paused, resetCamera, low, onLost }: { paused: boolean; resetCam
   const clock = useRef(0), controls = useRef<Controls>(null)
   const { camera, gl } = useThree()
   useFrame((_, delta) => { if (!paused) clock.current += Math.min(delta, .05) })
-  useEffect(() => { camera.position.set(6.8,5.2,8.4); controls.current?.target.set(0,1.5,0); controls.current?.update() }, [camera,resetCamera])
-  useEffect(() => { const lost = (e: Event) => { e.preventDefault(); onLost() }; gl.domElement.addEventListener('webglcontextlost',lost); return () => gl.domElement.removeEventListener('webglcontextlost',lost) }, [gl,onLost])
+  useEffect(() => { camera.position.set(4.8,3.5,6); controls.current?.target.set(0,1.5,0); controls.current?.update() }, [camera,resetCamera])
+  useEffect(() => {
+    const element = gl.domElement
+    if (!element) return
+    const lost = (e: Event) => { e.preventDefault(); onLost() }
+    element.addEventListener('webglcontextlost', lost)
+    return () => element.removeEventListener('webglcontextlost', lost)
+  }, [gl, onLost])
   return <>
     <color attach="background" args={['#16151a']} /><fog attach="fog" args={['#20191a',15,36]} />
     <ambientLight intensity={.8} color="#d3b491" /><hemisphereLight args={['#edd3a5','#272330',1.5]} />
@@ -94,14 +114,15 @@ function World({ paused, resetCamera, low, onLost }: { paused: boolean; resetCam
     <directionalLight position={[4,5,-6]} color="#adc2da" intensity={2.3} />
     <mesh rotation={[-Math.PI / 2,0,0]} receiveShadow><circleGeometry args={[14,64]} /><meshStandardMaterial color="#9e7b50" roughness={1} /></mesh>
     {[5.5,6,7.4].map(r => <mesh key={r} rotation={[-Math.PI / 2,0,0]} position={[0,.008,0]}><ringGeometry args={[r,r + .025,64]} /><meshStandardMaterial color="#c5a473" roughness={1} /></mesh>)}
-    <Architecture /><Fighter side={-1} clock={clock} /><Fighter side={1} clock={clock} />
+    <Architecture /><Fighter side={-1} clock={clock} /><Fighter side={1} clock={clock} /><CombatEffects clock={clock} low={low} />
     <OrbitControls ref={controls} target={[0,1.5,0]} enablePan={false} enableZoom={false} minPolarAngle={.9} maxPolarAngle={1.25} minAzimuthAngle={.25} maxAzimuthAngle={1.05} autoRotate={!paused} autoRotateSpeed={.15} enableDamping dampingFactor={.08} />
   </>
 }
 export default function ColosseumScene({ paused, resetCamera }: { paused: boolean; resetCamera: number }) {
   const [low,setLow] = useState(() => window.innerWidth < 768), [lost,setLost] = useState(false)
+  const onLost = useCallback(() => setLost(true), [])
   if (lost) return <div className="arena-poster"><img src="/demo/arena-poster.jpg" alt="Colosseum" /><span>KOLOSSEUM</span></div>
-  return <Canvas className="colosseum-canvas" aria-label="Two gladiators sparring in a Roman Colosseum" shadows={!low} dpr={low ? 1 : [1,1.5]} camera={{ position:[6.8,5.2,8.4],fov:42,near:.1,far:60 }} frameloop={paused ? 'demand' : 'always'} gl={{ antialias:true,alpha:false,powerPreference:'high-performance' }} fallback={<div className="arena-poster"><img src="/demo/arena-poster.jpg" alt="Colosseum" /></div>}>
-    <Suspense fallback={null}><World paused={paused} resetCamera={resetCamera} low={low} onLost={() => setLost(true)} /><PerformanceMonitor onDecline={() => setLow(true)} flipflops={2} onFallback={() => setLow(true)} /></Suspense>
+  return <Canvas className="colosseum-canvas" aria-label="Two gladiators sparring in a Roman Colosseum" shadows={!low} dpr={low ? 1 : [1,1.5]} camera={{ position:[4.8,3.5,6],fov:42,near:.1,far:60 }} frameloop={paused ? 'demand' : 'always'} gl={{ antialias:true,alpha:false,powerPreference:'high-performance' }} fallback={<div className="arena-poster"><img src="/demo/arena-poster.jpg" alt="Colosseum" /></div>}>
+    <Suspense fallback={null}><World paused={paused} resetCamera={resetCamera} low={low} onLost={onLost} /><PerformanceMonitor onDecline={() => setLow(true)} flipflops={2} onFallback={() => setLow(true)} /></Suspense>
   </Canvas>
 }

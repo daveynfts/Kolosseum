@@ -1,0 +1,72 @@
+[
+  {
+    "id": "01-rome",
+    "description": "Rome Colosseum, Italy. Interior from the arena floor, towering stacked Roman arches around the ellipse, intact imagined ancient setting. Deep midnight blue, bronze torchlight, crimson banners, shafts of moonlight through smoke. Dramatic low-angle composition.",
+    "width": 3840,
+    "height": 2160,
+    "upscaled": true
+  },
+  {
+    "id": "02-pula",
+    "description": "Pula amphitheatre, Croatia. Elevated exterior three-quarter view of pale limestone ellipse and its open arcade walls beside the Adriatic coastline. Turquoise twilight sea, copper sunset on stone, dramatic indigo clouds, coastal grandeur.",
+    "width": 3840,
+    "height": 2160,
+    "upscaled": true
+  },
+  {
+    "id": "03-verona",
+    "description": "Verona Arena, Italy. Elevated interior view of the immense oval amphitheatre prepared for an open-air opera: restrained crimson stage curtains at one end, warm rows of tiny amber lights around ancient pale stone seating, purple-blue twilight. Elegant monumental atmosphere.",
+    "width": 3840,
+    "height": 2160,
+    "upscaled": true
+  },
+  {
+    "id": "04-nimes",
+    "description": "Nimes amphitheatre, France. Street-level low-angle exterior of its two tiers of perfectly rhythmic Roman arcades, rain-darkened plaza reflecting bronze torchlike architectural lights, storm clearing into deep blue dusk. Powerful symmetry.",
+    "width": 3840,
+    "height": 2160,
+    "upscaled": true
+  },
+  {
+    "id": "05-arles",
+    "description": "Arles amphitheatre, France. Elevated three-quarter aerial view of the oval Roman arena and its distinctive medieval stone towers, ochre Provencal rooftops surrounding it, blazing orange sunset with violet shadows. Cinematic atmospheric haze.",
+    "width": 3840,
+    "height": 2160,
+    "upscaled": true
+  },
+  {
+    "id": "06-el-djem",
+    "description": "El Djem amphitheatre, Tunisia. Monumental golden sandstone elliptical arcade exterior rising from a quiet North African town. Wide low viewpoint, copper desert sunset, windblown sand haze, immense dark arched openings, spectacular monumental scale.",
+    "width": 3840,
+    "height": 2160,
+    "upscaled": true
+  },
+  {
+    "id": "07-pompeii",
+    "description": "Pompeii amphitheatre, Italy. Broad elevated interior view of a low ancient oval bowl of stone seats and grassy outer banks, Vesuvius looming in the distant mist. Dawn amber light, dark cypress silhouettes, rich crimson clouds, solemn cinematic grandeur. Do not depict a tall multistorey Colosseum facade.",
+    "width": 3840,
+    "height": 2160,
+    "upscaled": true
+  },
+  {
+    "id": "08-capua",
+    "description": "Capua amphitheatre, Italy. Atmospheric view through weathered Roman stone arch ruins into the exposed underground passage grid of the arena, surviving arcades and cypress landscape, blue hour and warm slanting sunlight. Archaeological grandeur, majestic broken architecture.",
+    "width": 3840,
+    "height": 2160,
+    "upscaled": true
+  },
+  {
+    "id": "09-avenches",
+    "description": "Avenches amphitheatre, Switzerland. Elevated wide view of the small oval amphitheatre, grassy banks, low stone seating, distinctive medieval square tower overlooking the arena, distant Swiss hills. Misty emerald landscape, golden dawn against indigo sky. No giant Roman facade.",
+    "width": 3840,
+    "height": 2160,
+    "upscaled": true
+  },
+  {
+    "id": "10-uthina",
+    "description": "Uthina amphitheatre, Tunisia. Elevated wide view of an ancient oval bowl partly cut into a hillside, low weathered sandstone seating and open arena, rolling North African countryside. Dramatic copper and violet sunset, cinematic dusty atmosphere. No intact towering Colosseum facade.",
+    "width": 3840,
+    "height": 2160,
+    "upscaled": true
+  }
+]

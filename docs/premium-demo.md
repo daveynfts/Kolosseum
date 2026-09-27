@@ -10,7 +10,7 @@ The replay takes 12 seconds. Pausing stops animation only; closing the profile o
 
 `npm run demo:export-public` verifies and decrypts the private `.demo-captures/flow-mpp.json` locally using `REPORT_ENC_KEY` from `.env.local`, then exports only approved public fields to `public/demo/nbaluong.json`. Never publish the private capture or environment file. The browser verifies the exact report content's SHA-256 before showing it. The fixture records 25 September 2026, source snapshot 20 September, 20 cited posts out of 36, and all eight original sections.
 
-The Three.js scene is a separate lazy chunk. It is prefetched only when the featured demo is focused/hovered or nbaluong is selected. The static poster is captured from that scene. Reduced motion, WebGL creation failure and context loss preserve the independent HTML progress and report controls. Low quality starts on mobile; performance monitoring lowers resolution and disables shadows when necessary.
+The loading screen is a ten-image cinematic tour with sourced amphitheatre facts. Images advance every five seconds; Previous/Next pauses the tour for reading. Reduced motion disables automatic rotation and image movement. Artwork errors never block the report. See loading-artwork.md for the responsive assets, 4K export details and gallery.
 
 ## Validation
 
@@ -24,6 +24,6 @@ npm test
 npm run research:check-secrets
 ```
 
-With a dev server at `http://127.0.0.1:5173` and Chrome installed, run `npm run test:premium`. This uses the real Phantom adapter with an injected test provider; it never accesses a personal wallet. Screenshots are saved to the OS temporary directory under `kolosseum-premium-review`. `--capture-poster` passed to the script refreshes the public arena poster.
+With a dev server at `http://127.0.0.1:5173` and Chrome installed, run `npm run test:premium`. This uses the real Phantom adapter with an injected test provider; it never accesses a personal wallet. Screenshots are saved to the OS temporary directory under `kolosseum-premium-review`.
 
-Before release, manually approve/reject connections with both real Phantom and Solflare, including their mobile browsers. Measure FPS on the actual desktop/mobile hardware; software-rendered headless Chrome is not a hardware performance certification. The existing DOCX test skips content verification when its sample file is absent.
+Before release, manually approve/reject connections with both real Phantom and Solflare, including their mobile browsers. The existing DOCX test skips content verification when its sample file is absent.

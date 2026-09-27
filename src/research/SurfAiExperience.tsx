@@ -1,18 +1,13 @@
-import { Component, Suspense, lazy, useEffect, useRef, useState, type ReactNode } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { ReportMarkdown } from '../components/ReportMarkdown'
 import { WalletButton } from './WalletButton'
 import { useKolosseumWallet } from './useKolosseumWallet'
 import { DEMO_DURATION } from './demoConfig'
 import { loadDemoReport, type DemoReport } from './demoReport'
 import { readDemoProgress, saveDemoProgress } from './demoStore'
-const Arena = lazy(() => import('./arena/ColosseumScene'))
-export function preloadSurfDemo() { void loadDemoReport().catch(() => {}); void import('./arena/ColosseumScene').catch(() => {}) }
-function ArenaPoster() { return <div className="arena-poster" role="img" aria-label="Golden light over the Colosseum arena"><img src="/demo/arena-poster.jpg" alt="" /><span>KOLOSSEUM</span><small>THE ART OF CONVICTION</small></div> }
-class ArenaBoundary extends Component<{ children: ReactNode }, { failed: boolean }> {
-  state = { failed: false }
-  static getDerivedStateFromError() { return { failed: true } }
-  render() { return this.state.failed ? <ArenaPoster /> : this.props.children }
-}
+import { ArenaSlideshow } from './arena/ArenaSlideshow'
+import { preloadLoadingArt } from './arena/loadingArt'
+export function preloadSurfDemo() { void loadDemoReport().catch(() => {}); preloadLoadingArt() }
 export function SurfAiExperience() {
   const wallet = useKolosseumWallet()
   const [report, setReport] = useState<DemoReport | null>(null)
@@ -22,7 +17,6 @@ export function SurfAiExperience() {
   const [paused, setPaused] = useState(false)
   const [visible, setVisible] = useState(!document.hidden)
   const [reduced, setReduced] = useState(() => matchMedia('(prefers-reduced-motion: reduce)').matches)
-  const [resetCamera, setResetCamera] = useState(0)
   const reportHeading = useRef<HTMLHeadingElement>(null)
   const surface = useRef<HTMLElement>(null)
   const complete = elapsed >= DEMO_DURATION
@@ -65,12 +59,12 @@ export function SurfAiExperience() {
   const stage = elapsed < 4000 ? 0 : elapsed < 9000 ? 1 : 2
   return <section ref={surface} className="surf-experience surf-loading" aria-busy="true">
     <div className="surf-loading__head"><span className="premium-eyebrow">SURFAI / RECORDED DEMO</span><span className="premium-network">nbaluong · 20 source posts</span></div>
-    <h3>Conviction meets evidence.</h3><p>Your saved analysis is taking its place in the arena.</p>
-    <div className="surf-arena"><ArenaBoundary>{reduced || !visible ? <ArenaPoster /> : <Suspense fallback={<ArenaPoster />}><Arena paused={paused} resetCamera={resetCamera} /></Suspense>}</ArenaBoundary><div className="surf-arena__caption">COLOSSEUM · ROMA <span>Drag to explore</span></div></div>
+    <h3>History meets insight.</h3>
+    <ArenaSlideshow paused={paused} reduced={reduced} visible={visible} />
     <div className="surf-stage-status" role="status" aria-live="polite">{report ? ['Source snapshot', 'Analysis replay', 'Preparing report'][stage] : 'Opening saved report…'}</div>
     <div className="surf-progress" role="progressbar" aria-label="Recorded demo progress" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(elapsed / DEMO_DURATION * 100)}><i style={{ width: `${elapsed / DEMO_DURATION * 100}%` }} /></div>
     <ol className="surf-stages">{['Source snapshot', 'Analysis replay', 'Preparing report'].map((label, i) => <li className={i <= stage ? 'is-active' : ''} key={label}><span>{i < stage ? '✓' : `0${i + 1}`}</span>{label}</li>)}</ol>
-    <div className="surf-actions"><button disabled={reduced} onClick={() => setPaused(p => !p)}>{paused ? 'Resume animation' : 'Pause animation'}</button><button onClick={() => setResetCamera(n => n + 1)} disabled={reduced}>Reset view</button><button className="premium-primary" disabled={!report} onClick={() => { saveDemoProgress(DEMO_DURATION); setElapsed(DEMO_DURATION) }}>Show report now →</button></div>
-    <small className="premium-caption">A 12-second replay of a saved SurfAI analysis. No new research or payment.</small>
+    <div className="surf-actions"><button disabled={reduced} onClick={() => setPaused(p => !p)}>{paused ? 'Resume slideshow' : 'Pause slideshow'}</button><button className="premium-primary" disabled={!report} onClick={() => { saveDemoProgress(DEMO_DURATION); setElapsed(DEMO_DURATION) }}>Show report now →</button></div>
+    <small className="premium-caption">A 12-second replay of a saved SurfAI analysis. No new research or payment. <a href="/arena/loading/index.html" target="_blank" rel="noreferrer">Explore all 10 arenas ↗</a></small>
   </section>
 }

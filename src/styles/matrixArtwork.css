@@ -1,0 +1,15 @@
+/* Decorative scene stays behind the data and never intercepts matrix gestures. */
+.app-shell--arena .scex2d-plot::before {
+  background:
+    linear-gradient(180deg, rgba(12, 11, 17, .12), rgba(12, 11, 17, .35)),
+    url('/arena/matrix-colosseum-night.webp') center center / cover no-repeat;
+  opacity: .9;
+  pointer-events: none;
+}
+.app-shell--arena .scex2d-plot {
+  border-color: rgba(209, 164, 87, .42);
+  box-shadow: inset 0 0 70px rgba(0, 0, 0, .35);
+}
+@media (max-width: 640px) {
+  .app-shell--arena .scex2d-plot::before { background-position: center, 50% 45%; }
+}

@@ -1,0 +1,47 @@
+import { EventEmitter } from 'node:events'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+const mock = vi.hoisted(() => ({ request: vi.fn() }))
+vi.mock('node:https', () => ({ request: mock.request }))
+import { longResearchFetch } from './longFetch'
+describe('long research HTTPS transport', () => {
+  beforeEach(() => { mock.request.mockReset() })
+  it('uses a 30-minute socket timeout and retains the absolute abort signal', async () => {
+    const signal = AbortSignal.timeout(1_800_000)
+    const response = Object.assign(new EventEmitter(), { statusCode: 200 })
+    const req = Object.assign(new EventEmitter(), { setTimeout: vi.fn(), destroy: vi.fn(), end: vi.fn(() => { queueMicrotask(() => { response.emit('data', Buffer.from('{"output_text":"complete"}')); response.emit('end') }) }) })
+    mock.request.mockImplementation((_url, options, callback) => { expect(options.signal).toBe(signal); callback(response); return req })
+    const result = await longResearchFetch('https://example.com/research', { method: 'POST', body: '{}', signal })
+    expect(req.setTimeout).toHaveBeenCalledWith(1_800_000, expect.any(Function))
+    expect(await result.json()).toEqual({ output_text: 'complete' })
+    expect(req.end).toHaveBeenCalledWith('{}')
+  })
+  it('does not downgrade HTTPS or follow a redirect with credentials', async () => {
+    await expect(longResearchFetch('http://example.com/research')).rejects.toThrow('HTTPS')
+    expect(mock.request).not.toHaveBeenCalled()
+    const response = Object.assign(new EventEmitter(), { statusCode: 302 })
+    const req = Object.assign(new EventEmitter(), { setTimeout: vi.fn(), end: vi.fn(() => queueMicrotask(() => response.emit('end'))) })
+    mock.request.mockImplementation((_url, _options, callback) => { callback(response); return req })
+    expect((await longResearchFetch('https://example.com/research')).status).toBe(302)
+    expect(mock.request).toHaveBeenCalledTimes(1)
+  })
+  it('returns SSE headers before completion and rejects an interrupted body', async () => {
+    const response = Object.assign(new EventEmitter(), { statusCode: 200, headers: { 'content-type': 'text/event-stream', 'x-request-id': 'request-1' }, destroy: vi.fn() })
+    const req = Object.assign(new EventEmitter(), { setTimeout: vi.fn(), end: vi.fn(), destroy: vi.fn() })
+    mock.request.mockImplementation((_url, _options, callback) => { callback(response); return req })
+    const result = await longResearchFetch('https://example.com/research')
+    expect(result.headers.get('x-request-id')).toBe('request-1')
+    const body = result.text()
+    response.emit('data', Buffer.from('data: partial\n\n'))
+    response.emit('aborted')
+    await expect(body).rejects.toThrow('interrupted')
+  })
+  it('cancels the upstream response when the reader closes early', async () => {
+    const response = Object.assign(new EventEmitter(), { statusCode: 200, destroy: vi.fn() })
+    const req = Object.assign(new EventEmitter(), { setTimeout: vi.fn(), end: vi.fn() })
+    mock.request.mockImplementation((_url, _options, callback) => { callback(response); return req })
+    const result = await longResearchFetch('https://example.com/research')
+    await result.body!.cancel()
+    expect(response.destroy).toHaveBeenCalledOnce()
+    expect(() => response.emit('data', Buffer.from('late event'))).not.toThrow()
+  })
+})

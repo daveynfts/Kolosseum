@@ -531,7 +531,7 @@ export function ScexKolDetail({
 
         {tab === 'analysis' && (
           <div className="scex-detail__body scex-detail__body--surf">
-            {__SURF_DEMO_ENABLED__ && actor.handle.toLowerCase() === DEMO_HANDLE ? (
+            {(__SURF_DEMO_ENABLED__ || __SURF_NFT_ENABLED__) && actor.handle.toLowerCase() === DEMO_HANDLE ? (
               <SurfAiExperience />
             ) : (
               <><SurfAnalysisMock kol={surfKol} />{__SURF_DEMO_ENABLED__ && <a className="premium-demo-link" href={DEMO_URL}>Explore the nbaluong SurfAI demo →</a>}</>

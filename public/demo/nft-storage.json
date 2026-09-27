@@ -1,0 +1,10 @@
+{
+  "imageUri": "https://gateway.irys.xyz/5Y5XxCwqxwpkGEy8NicJhd6knjtbNwmS5QYD3SfQqwzn",
+  "reportUri": "https://gateway.irys.xyz/J3MbjocZdkyAWYMdBnoYMEiw2S6qUamHutGeZYzsFH9i",
+  "metadataUri": "https://gateway.irys.xyz/EnZvCF8x4eMdsBMk8gAJBEW2S3bh5tP51CTUjFXmNkWj",
+  "contentHash": "16e129fa4c7f821be0294cece79d57c5a0d65ca8675532f84b7b92a1e017c293",
+  "metadataHash": "5d2a6a2b79dd20dd60c81b6834c83be5b5b4e78c5c6f75b7efc93ad05349fd57",
+  "storage": "irys-devnet",
+  "uploadedAt": "2026-09-27T14:09:33.363Z",
+  "note": "Devnet storage is for testing; migrate to durable storage before a mainnet launch."
+}

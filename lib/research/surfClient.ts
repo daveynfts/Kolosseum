@@ -90,6 +90,8 @@ export async function askSurf(options: {
   cacheDir?: string
   encryptionKey?: string
   effort?: SurfEffort
+  stream?: boolean
+  requestId?: string
 }): Promise<SurfResult> {
   const key = options.apiKey || process.env.SURF_API_KEY
   if (!key) throw new Error('SURF_API_KEY is not configured')
@@ -133,14 +135,15 @@ export async function askSurf(options: {
         headers: {
           Authorization: `Bearer ${key}`,
           'Content-Type': 'application/json',
-          Accept: 'application/json',
+          Accept: options.stream ? 'text/event-stream, application/json' : 'application/json',
         },
         body: JSON.stringify({
           model,
           input: options.input,
           instructions: options.instructions,
           ...(effort === 'none' ? {} : { reasoning: { effort } }),
-          stream: false,
+          stream: options.stream ?? false,
+          ...(options.requestId ? { metadata: { request_id: options.requestId } } : {}),
         }),
         signal: AbortSignal.timeout(options.timeoutMs ?? 240_000),
       })

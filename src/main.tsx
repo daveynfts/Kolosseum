@@ -70,7 +70,7 @@ function getRoute(): 'admin' | 'scex' | 'report' | 'me' | 'replay' {
     return 'admin'
   }
   if (__DEEP_RESEARCH_ENABLED__ && path === '/demo/replay') return 'replay'
-  if ((__DEEP_RESEARCH_ENABLED__ || __SURF_DEMO_ENABLED__) && path === '/me') return 'me'
+  if ((__DEEP_RESEARCH_ENABLED__ || __SURF_DEMO_ENABLED__ || __SURF_NFT_ENABLED__) && path === '/me') return 'me'
   if (__DEEP_RESEARCH_ENABLED__ && path.startsWith('/reports/')) return 'report'
   return 'scex'
 }

@@ -8,6 +8,8 @@ import { getAdminToken, setAdminToken } from './lib/feedStore'
 import './components/SiteChrome.css'
 import './styles/kolosseum.css'
 import './styles/premium.css'
+import './styles/matrixResponsive.css'
+import './styles/matrixArtwork.css'
 import { KolosseumWalletProvider } from './research/KolosseumWalletProvider'
 
 const AdminDashboard = lazy(() =>

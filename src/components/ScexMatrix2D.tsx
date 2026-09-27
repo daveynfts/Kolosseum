@@ -11,7 +11,6 @@ import {
   useState,
   type CSSProperties,
   type PointerEvent as ReactPointerEvent,
-  type WheelEvent as ReactWheelEvent,
 } from 'react'
 import type { ScexActor, ScexConfig, ScexQuadrant } from '../data/scexTracking'
 import {
@@ -80,7 +79,7 @@ export type ScexMatrix2DProps = {
   config: ScexConfig
   selectedId: string | null
   onSelect: (actor: ScexActor | null) => void
-  /** @deprecated FAB is always visible */
+  /** Fullscreen interaction: zoom/pan controls; inline view scrolls with the page. */
   showZoomControls?: boolean
 }
 
@@ -285,6 +284,7 @@ export function ScexMatrix2D({
   config,
   selectedId,
   onSelect,
+  showZoomControls = false,
 }: ScexMatrix2DProps) {
   const plotRef = useRef<HTMLDivElement>(null)
   const [plotSize, setPlotSize] = useState({ w: 0, h: 0 })
@@ -414,27 +414,27 @@ export function ScexMatrix2D({
     [clampPanTo, plotSize.w, plotSize.h, zoomI, flashZoomHud],
   )
 
-  const onWheel = (e: ReactWheelEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
+  useEffect(() => {
+    if (!showZoomControls) { setZoomI(DEFAULT_ZOOM_I); setPan({ x: 0, y: 0 }) }
+  }, [showZoomControls])
+
+  useEffect(() => {
     const el = plotRef.current
-    if (!el) return
-    const rect = el.getBoundingClientRect()
-    const focus = {
-      x: e.clientX - rect.left,
-      y: e.clientY - rect.top,
+    if (!el || !showZoomControls) return
+    const wheel = (e: WheelEvent) => {
+      e.preventDefault()
+      const rect = el.getBoundingClientRect()
+      goZoom(zoomI + (e.deltaY > 0 ? -1 : 1), { x: e.clientX - rect.left, y: e.clientY - rect.top })
     }
-    const dir = e.deltaY > 0 ? -1 : 1
-    goZoom(zoomI + dir, focus)
-  }
+    el.addEventListener('wheel', wheel, { passive: false })
+    return () => el.removeEventListener('wheel', wheel)
+  }, [showZoomControls, goZoom, zoomI])
 
   const onPointerDown = (e: ReactPointerEvent) => {
     if (e.button !== 0) return
-    if ((e.target as HTMLElement).closest('.scex-bubble')) return
-    if (zoomRef.current <= 1) return
+    if (!showZoomControls || zoomRef.current <= 1) return
     const el = plotRef.current
     if (!el) return
-    el.setPointerCapture(e.pointerId)
     dragRef.current = {
       pid: e.pointerId,
       sx: e.clientX,
@@ -450,7 +450,11 @@ export function ScexMatrix2D({
     if (!d || d.pid !== e.pointerId) return
     const dx = e.clientX - d.sx
     const dy = e.clientY - d.sy
-    if (Math.hypot(dx, dy) > 3) d.moved = true
+    if (Math.hypot(dx, dy) > 5) {
+      d.moved = true
+      plotRef.current?.setPointerCapture(e.pointerId)
+    }
+    if (!d.moved) return
     const el = plotRef.current
     const w = el?.clientWidth || plotSize.w
     const h = el?.clientHeight || plotSize.h
@@ -465,7 +469,7 @@ export function ScexMatrix2D({
     } catch {
       /* ignore */
     }
-    if (d.moved) suppressClickRef.current = true
+    if (d.moved && e.type === 'pointerup') suppressClickRef.current = true
     dragRef.current = null
   }
 
@@ -574,7 +578,14 @@ export function ScexMatrix2D({
           <div
             className={`scex-matrix__plot scex2d-plot scex2d-plot--story ${zoom > 1 ? 'is-zoomed' : ''}`}
             ref={plotRef}
-            onWheel={onWheel}
+            style={{ touchAction: showZoomControls && zoom > 1 ? 'none' : 'pan-y pinch-zoom' }}
+            onClickCapture={e => {
+              if (suppressClickRef.current) {
+                suppressClickRef.current = false
+                e.preventDefault()
+                e.stopPropagation()
+              }
+            }}
             onPointerDown={onPointerDown}
             onPointerMove={onPointerMove}
             onPointerUp={endDrag}
@@ -766,6 +777,12 @@ export function ScexMatrix2D({
           Border = sentiment
         </span>
       </div>
+      {showZoomControls && <div className="scex2d-controls" aria-label="Matrix zoom controls">
+        <button type="button" aria-label="Zoom out" disabled={zoomI === 0} onClick={() => goZoom(zoomI - 1)}>−</button>
+        <button type="button" onClick={() => goZoom(DEFAULT_ZOOM_I)}>Fit · {zoomPct}%</button>
+        <button type="button" aria-label="Zoom in" disabled={zoomI === ZOOM_STEPS.length - 1} onClick={() => goZoom(zoomI + 1)}>+</button>
+        <span>{zoom > 1 ? 'Drag to explore' : 'Zoom in to explore'}</span>
+      </div>}
     </div>
   )
 }

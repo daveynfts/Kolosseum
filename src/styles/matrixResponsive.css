@@ -1,0 +1,63 @@
+/* The page owns inline scrolling; only the fullscreen matrix captures gestures. */
+.app-shell--arena .scex-page__grid {
+  flex: none;
+  max-height: none;
+  min-height: 0;
+}
+.app-shell--arena .scex-page__grid > .scex-matrix:not(.is-fullscreen) {
+  height: auto;
+  min-height: 0;
+  max-height: none;
+}
+.app-shell--arena .scex-matrix:not(.is-fullscreen) .scex-matrix__body--2d,
+.app-shell--arena .scex-matrix:not(.is-fullscreen) .scex2d-root {
+  flex: none;
+  height: auto;
+}
+.app-shell--arena .scex-matrix:not(.is-fullscreen) .scex2d-stage {
+  flex: none;
+  height: clamp(300px, 55dvh, 620px);
+  min-height: 0;
+}
+.app-shell--arena .scex-page__grid > .scex-feed:not(.is-fullscreen) {
+  height: min(78dvh, 850px);
+  min-height: 300px;
+  max-height: none;
+}
+.app-shell--arena .premium-arena-page > :not(.scex-detail):not(.scex-detail-scrim) {
+  flex-shrink: 0;
+}
+.scex2d-encode, .scex2d-controls, .scex2d-story-tip { flex-shrink: 0; }
+.scex2d-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0 max(4px, env(safe-area-inset-bottom));
+}
+.scex2d-controls button {
+  min-width: 44px;
+  min-height: 44px;
+  padding: 8px 12px;
+  border: 1px solid #806b48;
+  border-radius: 8px;
+  color: #f4ebdd;
+  background: #242127;
+  cursor: pointer;
+}
+.scex2d-controls button:disabled { opacity: .4; cursor: default; }
+.scex2d-controls span { color: #b7aca0; font-size: 10px; }
+.app-shell--arena .scex-matrix.is-fullscreen .scex2d-story-tip { display: none; }
+.app-shell--arena .scex-matrix.is-fullscreen .scex2d-plot-shell { min-height: 0; }
+@media (max-width: 980px) {
+  .app-shell--arena .scex-page__grid { grid-template-columns: minmax(0, 1fr); }
+  .app-shell--arena .scex-matrix__body--2d { padding-inline: 8px; }
+  .app-shell--arena .scex-matrix-pill { min-height: 44px; }
+  .app-shell--arena .scex2d-zone { padding: 4px; }
+  .app-shell--arena .scex2d-zone span { display: none; }
+}
+@media (max-height: 500px) {
+  .app-shell--arena .scex-matrix.is-fullscreen .scex-card__head { padding: 6px 12px; }
+  .app-shell--arena .scex-matrix.is-fullscreen .scex-card__head p,
+  .app-shell--arena .scex-matrix.is-fullscreen .scex2d-encode { display: none; }
+  .app-shell--arena .scex-matrix.is-fullscreen .scex-matrix__filters { padding-block: 4px; }
+}

@@ -7,8 +7,14 @@ import { loadDemoReport, type DemoReport } from './demoReport'
 import { readDemoProgress, saveDemoProgress } from './demoStore'
 import { ArenaSlideshow } from './arena/ArenaSlideshow'
 import { preloadLoadingArt } from './arena/loadingArt'
+import { NftCheckout } from './NftCheckout'
 export function preloadSurfDemo() { void loadDemoReport().catch(() => {}); preloadLoadingArt() }
 export function SurfAiExperience() {
+  const [replay, setReplay] = useState(false)
+  if (__SURF_NFT_ENABLED__ && !replay) return <NftCheckout onReplay={() => setReplay(true)} />
+  return <><p className="premium-caption"><a href="/demo/nbaluong-premium.html" target="_blank" rel="noreferrer">Read the new Surf 2.0 xhigh dossier · 36 sources ↗</a></p>{__SURF_NFT_ENABLED__ && <button onClick={() => setReplay(false)}>← Report NFT checkout</button>}<RecordedSurfAiExperience /></>
+}
+function RecordedSurfAiExperience() {
   const wallet = useKolosseumWallet()
   const [report, setReport] = useState<DemoReport | null>(null)
   const [error, setError] = useState('')

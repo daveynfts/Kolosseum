@@ -1,5 +1,6 @@
 import { createServer, type IncomingMessage, type ServerResponse } from 'node:http'
 import { createHash, timingSafeEqual } from 'node:crypto'
+import { nftRoutes } from '../../lib/payments/nftRoutes'
 import { config as loadEnv } from 'dotenv'
 import { decryptReport, hashesMatch, sha256 } from '../../lib/evidence/reportCrypto'
 import { processEvidence, verifyEvidence } from '../../lib/evidence/memo'
@@ -67,6 +68,7 @@ async function readJson(req: IncomingMessage): Promise<Record<string, unknown>> 
 
 const server = createServer(async (req, res) => {
   const pathname = new URL(req.url || '/', `http://${host}:${port}`).pathname
+  if (await nftRoutes(req, res, pathname, readJson, send)) return
   if (req.method === 'GET' && pathname === '/health') {
     const surfAuth = enabled ? await surfAuthStatus() : 'missing'
     return send(res, 200, {

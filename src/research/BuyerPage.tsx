@@ -6,6 +6,7 @@ import './research.css'
 import { readDemoProgress } from './demoStore'
 import { DEMO_URL } from './demoConfig'
 import { XProfileAvatar } from '../components/XProfileAvatar'
+import { NftCheckout } from './NftCheckout'
 
 type BuyerDashboard = {
   reports: Array<{
@@ -79,6 +80,7 @@ export function BuyerPage() {
       <nav className="dr-report-page__nav"><a href="/scex">← Back to the KOL arena</a></nav>
       <div className="dr-panel__banner">YOUR RESEARCH LIBRARY · SOLANA DEVNET</div>
       <h1>My Reports</h1>
+      {__SURF_NFT_ENABLED__ && <NftCheckout library />}
       {__SURF_DEMO_ENABLED__ && <section className="dr-me__section"><h2>Viewed demos</h2><p className="premium-caption">Saved in this browser session. Demo views are not purchases or proof of ownership.</p>{demo.completedAt ? <article className="premium-demo-card"><XProfileAvatar handle="luong4101992" name="nbaluong" size={48} /><div><strong>nbaluong · Exchange stance</strong><small>Recorded demo · source 20 Sep 2026</small></div><a href={DEMO_URL}>Read report →</a></article> : <p>No demos viewed yet. <a href={DEMO_URL}>Explore nbaluong →</a></p>}</section>}
       <div className="premium-purchased"><h2>Purchased reports</h2></div>
       {!__DEEP_RESEARCH_ENABLED__ && <p>Purchased reports are not enabled in this demo environment.</p>}

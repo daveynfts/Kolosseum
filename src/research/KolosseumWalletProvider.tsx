@@ -3,7 +3,7 @@ import type { BaseMessageSignerWalletAdapter } from '@solana/wallet-adapter-base
 import { dashboardAccessMessage, reportAccessMessage } from '../../lib/payments/reportAccessMessage'
 export type WalletKind = 'Phantom' | 'Solflare'
 const KEY = 'kolosseum.wallet.kind'
-type State = { kind: WalletKind | null; address: string | null; connecting: boolean; error: string; connect: (kind: WalletKind) => Promise<void>; disconnect: () => Promise<void>; signReportAccess: (id: string) => Promise<Record<string, string>>; signDashboardAccess: () => Promise<Record<string, string>> }
+type State = { kind: WalletKind | null; address: string | null; connecting: boolean; error: string; connect: (kind: WalletKind) => Promise<void>; disconnect: () => Promise<void>; signReportAccess: (id: string) => Promise<Record<string, string>>; signDashboardAccess: () => Promise<Record<string, string>>; signNftTransaction: (transaction: string, buyer: string) => Promise<string> }
 export const WalletContext = createContext<State | null>(null)
 export function KolosseumWalletProvider({ children }: { children: ReactNode }) {
   const [kind, setKind] = useState<WalletKind | null>(null)
@@ -57,5 +57,17 @@ export function KolosseumWalletProvider({ children }: { children: ReactNode }) {
     const { default: bs58 } = await import('bs58')
     return { 'X-Kolosseum-Wallet': wallet, 'X-Kolosseum-Issued-At': at, 'X-Kolosseum-Signature': bs58.encode(signature) }
   }
-  return <WalletContext.Provider value={{ kind, address, connecting, error, connect, disconnect, signReportAccess: id => sign((wallet, at) => reportAccessMessage(id, wallet, at)), signDashboardAccess: () => sign(dashboardAccessMessage) }}>{children}</WalletContext.Provider>
+  async function signNftTransaction(encoded: string, buyer: string) {
+    const current = adapter.current
+    if (!current || current.publicKey?.toBase58() !== buyer) throw new Error('Wallet changed. Request a new quote.')
+    const { Transaction } = await import('@solana/web3.js')
+    const transaction = Transaction.from(Uint8Array.from(atob(encoded), c => c.charCodeAt(0)))
+    if (transaction.feePayer?.toBase58() !== buyer) throw new Error('Quote does not match this wallet')
+    const originalMessage = transaction.serializeMessage().toString('base64')
+    const signed = await current.signTransaction(transaction)
+    if (current !== adapter.current || current.publicKey?.toBase58() !== buyer) throw new Error('Wallet changed before submission')
+    if (signed.serializeMessage().toString('base64') !== originalMessage) throw new Error('Wallet modified the quoted transaction')
+    return signed.serialize().toString('base64')
+  }
+  return <WalletContext.Provider value={{ kind, address, connecting, error, connect, disconnect, signReportAccess: id => sign((wallet, at) => reportAccessMessage(id, wallet, at)), signDashboardAccess: () => sign(dashboardAccessMessage), signNftTransaction }}>{children}</WalletContext.Provider>
 }

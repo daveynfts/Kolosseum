@@ -23,6 +23,7 @@ const radarReadOnlyPlugin: Plugin = {
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '')
   const researchEnabled = env.DEEP_RESEARCH_ENABLED === 'true'
+  const sidecarEnabled = researchEnabled || env.SURF_NFT_ENABLED === 'true'
   const radarProxy: ProxyOptions = {
     target: env.RADAR_API_BASE || 'https://radar.daveynfts.com',
     changeOrigin: true,
@@ -37,15 +38,16 @@ export default defineConfig(({ mode }) => {
 
   return {
     base: base.endsWith('/') ? base : `${base}/`,
-    plugins: [react(), ...(researchEnabled ? [radarReadOnlyPlugin] : [])],
+    plugins: [react(), ...(sidecarEnabled ? [radarReadOnlyPlugin] : [])],
     // Only the boolean enters the client bundle; secrets stay in the sidecar.
     define: {
       __DEEP_RESEARCH_ENABLED__: JSON.stringify(researchEnabled),
       __SURF_DEMO_ENABLED__: JSON.stringify(env.SURF_DEMO_ENABLED !== 'false'),
+      __SURF_NFT_ENABLED__: JSON.stringify(env.SURF_NFT_ENABLED === 'true'),
     },
     resolve: { alias: [{ find: /^buffer$/, replacement: 'buffer/' }] },
     server: {
-      proxy: researchEnabled ? {
+      proxy: sidecarEnabled ? {
         '/api': radarProxy,
         '/r2': radarProxy,
         '/dr-api': {

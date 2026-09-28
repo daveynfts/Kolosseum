@@ -1,4 +1,5 @@
-import { Fragment, type ReactNode } from 'react'
+import * as React from 'react'
+import { type ReactNode } from 'react'
 import { isGenericImageAlt } from '../lib/imageAlt'
 import { isSafeHttpUrl, isSafeImageUrl as isSafeUrl } from '../lib/safeUrl'
 
@@ -326,7 +327,7 @@ function renderInline(text: string): ReactNode {
   while ((m = re.exec(text)) !== null) {
     if (m.index > last) {
       nodes.push(
-        <Fragment key={key++}>{text.slice(last, m.index)}</Fragment>,
+        <React.Fragment key={key++}>{text.slice(last, m.index)}</React.Fragment>,
       )
     }
     if (m[0].startsWith('![')) {
@@ -343,7 +344,7 @@ function renderInline(text: string): ReactNode {
           />,
         )
       } else {
-        nodes.push(<Fragment key={key++}>{m[0]}</Fragment>)
+        nodes.push(<React.Fragment key={key++}>{m[0]}</React.Fragment>)
       }
     } else if (m[0].startsWith('[')) {
       const label = m[4] || ''
@@ -361,7 +362,7 @@ function renderInline(text: string): ReactNode {
           </a>,
         )
       } else {
-        nodes.push(<Fragment key={key++}>{label}</Fragment>)
+        nodes.push(<React.Fragment key={key++}>{label}</React.Fragment>)
       }
     } else if (m[0].startsWith('**')) {
       nodes.push(<strong key={key++}>{m[6]}</strong>)
@@ -377,7 +378,7 @@ function renderInline(text: string): ReactNode {
     last = m.index + m[0].length
   }
   if (last < text.length) {
-    nodes.push(<Fragment key={key++}>{text.slice(last)}</Fragment>)
+    nodes.push(<React.Fragment key={key++}>{text.slice(last)}</React.Fragment>)
   }
   return nodes.length === 1 ? nodes[0] : nodes
 }

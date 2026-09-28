@@ -1,0 +1,13 @@
+.nft-checkout { color: #e8dfce; overflow-wrap: anywhere; }
+.nft-checkout h3 { font-family: Georgia, serif; font-size: clamp(26px, 3vw, 38px); }
+.nft-checkout p { line-height: 1.7; }
+.nft-tier,.nft-quote,.nft-library-item { padding: 20px; margin: 20px 0; border: 1px solid #6d5737; border-radius: 14px; background: linear-gradient(130deg,#32291e,#171518); }
+.nft-tier { display: grid; gap: 12px; }.nft-tier strong { font-size: 23px; color: #ddbb79; }
+.nft-checkout small { display: block; color: #b7ab98; line-height: 1.6; }
+.nft-links { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin: 18px 0; }
+.nft-checkout button,.nft-links a { min-height: 44px; padding: 12px 16px; }
+.nft-checkout button { border: 1px solid #685438; border-radius: 9px; color: #ead7b2; background: #282329; cursor: pointer; }
+.nft-checkout button:disabled { opacity: .5; cursor: not-allowed; }.nft-checkout .premium-primary { background: #c8a86c; color: #171319; width: 100%; margin: 18px 0 10px; }
+.nft-quote dl { display: grid; grid-template-columns: 1fr auto; gap: 12px; }.nft-quote dd { margin: 0; text-align: right; }.nft-checkout code { display: block; font-size: 11px; margin: 12px 0; overflow-wrap: anywhere; }
+.nft-library-item { display: grid; gap: 12px; }.nft-checkout :focus-visible { outline: 2px solid #e5c57e; outline-offset: 3px; }
+@media(max-width:640px) { .nft-tier,.nft-quote { padding: 16px; }.nft-quote dl { font-size: 12px; } }

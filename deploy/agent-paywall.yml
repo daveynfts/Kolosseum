@@ -1,0 +1,44 @@
+name: kolosseum-agent
+subdomain: kolosseum-agent
+title: Kolosseum Agent Research Sandbox
+description: Purchase one medium KOL research job with x402 sandbox USDC.
+category: finance
+version: v1
+routing:
+  type: proxy
+  url: https://surfai-api-production.up.railway.app/
+  auth:
+    method: header
+    key: X-Kolosseum-Agent-Gateway
+    value_from_env: AGENT_ORIGIN_TOKEN
+operator:
+  currencies:
+    usd: [USDC]
+  network: localnet
+  fee_payer: true
+  recipient: ${AGENT_PAYEE}
+  signer:
+    backend: env
+    value_from_env: PAY_OPERATOR_KEYPAIR
+endpoints:
+  - method: POST
+    path: live/agent/orders/{id}/purchase
+    description: Pay once for a prepared medium research order. Submit the settlement receipt to start research.
+    metering:
+      schemes: [x402-upto]
+      upto:
+        max_usd: 0.72
+        min_usd: 0.72
+        missing_usage: error
+        response_body:
+          mode: buffer
+          max_bytes: 32768
+      dimensions:
+        - direction: usage
+          unit: quota_units
+          scale: 1
+          meter:
+            source: response_json
+            path: /surfUsage/creditsUsed
+          tiers:
+            - price_usd: 0.006

@@ -1,0 +1,10 @@
+FROM ghcr.io/solana-foundation/pay:0.28.0
+USER root
+RUN install -d -o pay -g pay /home/pay && chown pay:pay /app
+USER pay
+WORKDIR /app
+ENV HOME=/home/pay XDG_CONFIG_HOME=/home/pay/.config XDG_DATA_HOME=/home/pay/.local/share XDG_CACHE_HOME=/home/pay/.cache
+COPY deploy/agent-paywall.yml /app/paywall.yml
+COPY deploy/start-agent-gateway.sh /app/start-agent-gateway.sh
+ENTRYPOINT ["/bin/sh", "/app/start-agent-gateway.sh"]
+CMD ["--sandbox", "gate", "api", "/app/paywall.yml", "--bind", "0.0.0.0:8080"]

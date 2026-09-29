@@ -22,6 +22,7 @@ import { BioRichText } from './BioRichText'
 import { RankBadge } from './RankBadge'
 import { SurfAnalysisMock } from './SurfAnalysisMock'
 import { SurfAiExperience, preloadSurfDemo } from '../research/SurfAiExperience'
+import { LiveResearchPanel } from '../research/LiveResearchPanel'
 import { DEMO_HANDLE, DEMO_URL } from '../research/demoConfig'
 import { navigateArena, readArenaSelection } from '../lib/arenaNavigation'
 import { useDialogFocus } from '../lib/useDialogFocus'
@@ -531,6 +532,7 @@ export function ScexKolDetail({
 
         {tab === 'analysis' && (
           <div className="scex-detail__body scex-detail__body--surf">
+            <LiveResearchPanel key={actor.handle} handle={actor.handle} />
             {(__SURF_DEMO_ENABLED__ || __SURF_NFT_ENABLED__) && actor.handle.toLowerCase() === DEMO_HANDLE ? (
               <SurfAiExperience />
             ) : (

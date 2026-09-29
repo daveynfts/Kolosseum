@@ -26,6 +26,10 @@
   ],
   "rewrites": [
     {
+      "source": "/dr-api/live/:path*",
+      "destination": "https://surfai-api-production.up.railway.app/live/:path*"
+    },
+    {
       "source": "/api/feed",
       "destination": "/api/json?route=feed"
     },

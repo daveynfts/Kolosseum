@@ -1,6 +1,9 @@
 import { createServer, type IncomingMessage, type ServerResponse } from 'node:http'
 import { createHash, timingSafeEqual } from 'node:crypto'
 import { nftRoutes } from '../../lib/payments/nftRoutes'
+import { liveRoutes } from '../../lib/research/liveRoutes'
+import { agentRoutes } from '../../lib/research/agentRoutes'
+import { startLiveWorker } from '../../lib/research/liveWorker'
 import { config as loadEnv } from 'dotenv'
 import { decryptReport, hashesMatch, sha256 } from '../../lib/evidence/reportCrypto'
 import { processEvidence, verifyEvidence } from '../../lib/evidence/memo'
@@ -16,7 +19,7 @@ import { getBuyerDashboard, getReport, getResearchStats, getVoteSummary, listTem
 loadEnv({ path: '.env.local', quiet: true })
 
 const enabled = process.env.DEEP_RESEARCH_ENABLED === 'true'
-const port = Number(process.env.RESEARCH_PORT || 4174)
+const port = Number(process.env.PORT || process.env.RESEARCH_PORT || 4174)
 const host = process.env.RESEARCH_HOST || '127.0.0.1'
 const uuid = '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}'
 const reportPath = new RegExp(`^/reports/(${uuid})(?:/(verify))?$`, 'i')
@@ -68,6 +71,22 @@ async function readJson(req: IncomingMessage): Promise<Record<string, unknown>> 
 
 const server = createServer(async (req, res) => {
   const pathname = new URL(req.url || '/', `http://${host}:${port}`).pathname
+  if (pathname === '/healthz' && req.method === 'GET') return send(res, 200, { ok: true })
+  if (pathname.startsWith('/live/')) {
+    const origin = req.headers.origin
+    const allowed = (process.env.RESEARCH_ALLOWED_ORIGINS || 'http://127.0.0.1:5173,http://localhost:5173,http://127.0.0.1:5175').split(',').map(s => s.trim())
+    if (origin && !allowed.includes(origin)) {
+      if (req.method === 'GET' && pathname.endsWith('/metadata')) res.setHeader('Access-Control-Allow-Origin', '*')
+      else return send(res, 403, { error: 'Origin not allowed' })
+    } else if (origin) { res.setHeader('Access-Control-Allow-Origin', origin); res.setHeader('Vary', 'Origin') }
+    if (req.method === 'OPTIONS') {
+      res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
+      res.setHeader('Access-Control-Allow-Headers', 'Content-Type, X-Kolosseum-Wallet, X-Kolosseum-Issued-At, X-Kolosseum-Signature, X-Kolosseum-Agent')
+      res.writeHead(204); res.end(); return
+    }
+  }
+  if (await agentRoutes(req, res, pathname, readJson, send)) return
+  if (await liveRoutes(req, res, pathname, readJson, send)) return
   if (await nftRoutes(req, res, pathname, readJson, send)) return
   if (req.method === 'GET' && pathname === '/health') {
     const surfAuth = enabled ? await surfAuthStatus() : 'missing'
@@ -329,5 +348,6 @@ const server = createServer(async (req, res) => {
 })
 
 server.listen(port, host, () => {
+  if (process.env.SURF_LIVE_ENABLED === 'true') startLiveWorker()
   process.stdout.write(`Research sidecar listening on http://${host}:${port}\n`)
 })

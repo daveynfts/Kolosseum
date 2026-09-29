@@ -2,7 +2,7 @@ import { createPublicKey, verify } from 'node:crypto'
 import type { IncomingHttpHeaders } from 'node:http'
 import bs58 from 'bs58'
 import { PublicKey } from '@solana/web3.js'
-import { dashboardAccessMessage, reportAccessMessage } from './reportAccessMessage'
+import { dashboardAccessMessage, reportAccessMessage, liveAccessMessage } from './reportAccessMessage'
 export { dashboardAccessMessage, reportAccessMessage } from './reportAccessMessage'
 
 const ED25519_SPKI_PREFIX = Buffer.from('302a300506032b6570032100', 'hex')
@@ -45,6 +45,7 @@ function verifySignedWalletMessage(
   expectedWallet: string,
   now: number,
   message: (wallet: string, issuedAt: string) => string,
+  windowMs = ACCESS_WINDOW_MS,
 ): boolean {
   const wallet = headers['x-kolosseum-wallet']
   const issuedAt = headers['x-kolosseum-issued-at']
@@ -53,7 +54,7 @@ function verifySignedWalletMessage(
       typeof issuedAt !== 'string' || typeof signature !== 'string') return false
   const issuedMs = Date.parse(issuedAt)
   if (!Number.isFinite(issuedMs) || new Date(issuedMs).toISOString() !== issuedAt ||
-      Math.abs(now - issuedMs) > ACCESS_WINDOW_MS) return false
+      Math.abs(now - issuedMs) > windowMs || issuedMs > now + ACCESS_WINDOW_MS) return false
   try {
     const publicBytes = bs58.decode(parseBuyerWallet(wallet))
     const signatureBytes = bs58.decode(signature)
@@ -66,4 +67,9 @@ function verifySignedWalletMessage(
   } catch {
     return false
   }
+}
+
+export function verifyLiveAccess(headers: IncomingHttpHeaders, now = Date.now()): string | null {
+  const wallet = headers['x-kolosseum-wallet']
+  return typeof wallet === 'string' && verifySignedWalletMessage(headers, wallet, now, liveAccessMessage, 45 * 60_000) ? wallet : null
 }

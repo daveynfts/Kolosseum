@@ -18,7 +18,7 @@ export function applyScexSeo() {
     ogAlt: 'Kolosseum — Vietnamese crypto KOL arena',
     canonical: CANONICAL,
     ogImage: new URL('/kolosseum-og.png', window.location.origin).href,
-    themeColor: '#211817',
+    themeColor: '#100f12',
     siteName: 'Kolosseum',
   })
 }

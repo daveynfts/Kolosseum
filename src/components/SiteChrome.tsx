@@ -32,6 +32,7 @@ export function SiteChrome({ active, search, trailing, overlay }: Props) {
         className="site-chrome__brand"
         href="/scex"
         title="Kolosseum"
+        aria-label="Kolosseum home"
       >
         <img
           className="site-chrome__mark"

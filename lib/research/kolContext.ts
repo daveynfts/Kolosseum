@@ -29,7 +29,7 @@ async function fetchJson(url: string, fetcher: FetchLike, timeoutMs: number): Pr
 
 export async function loadKolContext(
   rawHandle: string,
-  options: { baseUrl?: string; fetcher?: FetchLike; postLimit?: number; timeoutMs?: number } = {},
+  options: { baseUrl?: string; fetcher?: FetchLike; postLimit?: number; timeoutMs?: number; includeTrackedAccounts?: boolean } = {},
 ): Promise<KolContext> {
   const handle = rawHandle.trim().replace(/^@/, '').toLowerCase()
   if (!/^[a-z0-9_]{1,15}$/.test(handle)) throw new Error('Invalid X handle')
@@ -53,7 +53,7 @@ export async function loadKolContext(
     throw new Error('Radar data lists are missing')
   }
   const scored = recomputeScexScores(scex, kols.kols)
-  const actor = scored.actors.find((a) => a.handle.toLowerCase() === handle && a.kind === 'kol')
+  const actor = scored.actors.find((a) => a.handle.toLowerCase() === handle && (a.kind === 'kol' || options.includeTrackedAccounts))
   if (!actor) throw new Error('KOL not found in the live SCEX dataset')
   const mapKol = kols.kols.find((k) => k.handle.replace(/^@/, '').toLowerCase() === handle)
   const postLimit = Math.min(50, Math.max(1, options.postLimit ?? 20))

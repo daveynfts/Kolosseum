@@ -1,9 +1,9 @@
 import { createContext, useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import type { BaseMessageSignerWalletAdapter } from '@solana/wallet-adapter-base'
-import { dashboardAccessMessage, reportAccessMessage } from '../../lib/payments/reportAccessMessage'
+import { dashboardAccessMessage, reportAccessMessage, liveAccessMessage } from '../../lib/payments/reportAccessMessage'
 export type WalletKind = 'Phantom' | 'Solflare'
 const KEY = 'kolosseum.wallet.kind'
-type State = { kind: WalletKind | null; address: string | null; connecting: boolean; error: string; connect: (kind: WalletKind) => Promise<void>; disconnect: () => Promise<void>; signReportAccess: (id: string) => Promise<Record<string, string>>; signDashboardAccess: () => Promise<Record<string, string>>; signNftTransaction: (transaction: string, buyer: string) => Promise<string> }
+type State = { kind: WalletKind | null; address: string | null; connecting: boolean; error: string; connect: (kind: WalletKind) => Promise<void>; disconnect: () => Promise<void>; signReportAccess: (id: string) => Promise<Record<string, string>>; signDashboardAccess: () => Promise<Record<string, string>>; signLiveAccess: () => Promise<Record<string, string>>; signNftTransaction: (transaction: string, buyer: string) => Promise<string> }
 export const WalletContext = createContext<State | null>(null)
 export function KolosseumWalletProvider({ children }: { children: ReactNode }) {
   const [kind, setKind] = useState<WalletKind | null>(null)
@@ -69,5 +69,5 @@ export function KolosseumWalletProvider({ children }: { children: ReactNode }) {
     if (signed.serializeMessage().toString('base64') !== originalMessage) throw new Error('Wallet modified the quoted transaction')
     return signed.serialize().toString('base64')
   }
-  return <WalletContext.Provider value={{ kind, address, connecting, error, connect, disconnect, signReportAccess: id => sign((wallet, at) => reportAccessMessage(id, wallet, at)), signDashboardAccess: () => sign(dashboardAccessMessage), signNftTransaction }}>{children}</WalletContext.Provider>
+  return <WalletContext.Provider value={{ kind, address, connecting, error, connect, disconnect, signReportAccess: id => sign((wallet, at) => reportAccessMessage(id, wallet, at)), signDashboardAccess: () => sign(dashboardAccessMessage), signLiveAccess: () => sign(liveAccessMessage), signNftTransaction }}>{children}</WalletContext.Provider>
 }

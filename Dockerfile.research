@@ -1,0 +1,13 @@
+FROM node:24-bookworm-slim
+WORKDIR /app
+COPY package.json package-lock.json ./
+RUN npm ci
+COPY lib ./lib
+COPY scripts/research ./scripts/research
+COPY dr_migrations ./dr_migrations
+COPY src ./src
+COPY public/demo ./public/demo
+COPY tsconfig*.json ./
+ENV NODE_ENV=production RESEARCH_HOST=0.0.0.0
+EXPOSE 4174
+CMD ["sh", "-c", "npm run research:migrate && npm run research:dev"]

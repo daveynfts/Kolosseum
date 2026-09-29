@@ -23,7 +23,7 @@ const radarReadOnlyPlugin: Plugin = {
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '')
   const researchEnabled = env.DEEP_RESEARCH_ENABLED === 'true'
-  const sidecarEnabled = researchEnabled || env.SURF_NFT_ENABLED === 'true'
+  const sidecarEnabled = researchEnabled || env.SURF_NFT_ENABLED === 'true' || env.SURF_LIVE_ENABLED === 'true'
   const radarProxy: ProxyOptions = {
     target: env.RADAR_API_BASE || 'https://radar.daveynfts.com',
     changeOrigin: true,
@@ -50,6 +50,11 @@ export default defineConfig(({ mode }) => {
       proxy: sidecarEnabled ? {
         '/api': radarProxy,
         '/r2': radarProxy,
+        '/dr-api/live': {
+          target: env.LIVE_RESEARCH_PROXY_TARGET || env.RESEARCH_PROXY_TARGET || 'http://127.0.0.1:4174',
+          changeOrigin: true,
+          rewrite: (path: string) => path.replace(/^\/dr-api/, ''),
+        },
         '/dr-api': {
           target: env.RESEARCH_PROXY_TARGET || 'http://127.0.0.1:4174',
           changeOrigin: true,

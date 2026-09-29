@@ -10,6 +10,7 @@ import './styles/kolosseum.css'
 import './styles/premium.css'
 import './styles/matrixResponsive.css'
 import './styles/matrixArtwork.css'
+import './styles/arenaRefinement.css'
 import { KolosseumWalletProvider } from './research/KolosseumWalletProvider'
 
 const AdminDashboard = lazy(() =>

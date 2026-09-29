@@ -19,6 +19,7 @@ import {
 } from '../lib/scexStore'
 import { KOLS_EVENT, loadKolsWithSource } from '../lib/kolStore'
 import type { Kol } from '../types'
+import { ArenaSearch } from '../components/ArenaSearch'
 import { XProfileAvatar } from '../components/XProfileAvatar'
 import { ScexMatrix2D } from '../components/ScexMatrix2D'
 import { ScexKolDetail } from '../components/ScexKolDetail'
@@ -254,7 +255,6 @@ export function ScexTrackingPage() {
   const [mapKols, setMapKols] = useState<Kol[]>([])
   const [expanded, setExpanded] = useState<Record<string, boolean>>({})
   const [selectedActor, setSelectedActor] = useState<ScexActor | null>(null)
-  const [kolQuery, setKolQuery] = useState('')
   const [mobileView, setMobileView] = useState<'arena' | 'feed'>('arena')
   const [dataSource, setDataSource] = useState('snapshot')
   useEffect(() => {
@@ -757,46 +757,22 @@ export function ScexTrackingPage() {
   }
 
   return (
-    <div className={'scex-page premium-arena-page premium-mobile-' + mobileView}>
+    <main id="arena-content" tabIndex={-1} className={'scex-page premium-arena-page premium-mobile-' + mobileView}>
       <header className="scex-page__hero scex-page__hero--lite">
         <div className="scex-page__brand">
-          <div
-            className="scex-page__logo scex-page__logo--kolosseum"
-            aria-hidden="true"
-          >
-            <img
-              src="/kolosseum-mark.svg"
-              alt=""
-              width={64}
-              height={64}
-              decoding="async"
-            />
-          </div>
           <div className="scex-page__brand-text">
-            <div className="kolosseum-eyebrow" aria-hidden="true">
-              <span>✦</span> ARENA KOL <span>·</span> MMXXVI
-            </div>
-            <h1 className="scex-page__title">
-              <span className="scex-page__name">Kolosseum</span>
-              <span className="scex-page__legal">
-                The Vietnamese crypto KOL arena
-              </span>
-            </h1>
-            <div className="scex-page__meta">
-              <span className="scex-page__window">
-                Source: {config.brandName} · Last {config.timeWindowDays} days
-                {dataset?.asOf ? ` · as of ${dataset.asOf.slice(0, 10)}` : ''}
-              </span>
-            </div>
+            <p className="arena-eyebrow">THE VIETNAMESE CRYPTO KOL ARENA</p>
+            <h1 className="scex-page__title arena-headline">Discover voices.<br /><span>Find perspective.</span></h1>
+            <p className="arena-intro">Explore the people, conversations, and conviction behind crypto.</p>
           </div>
         </div>
         <div className="scex-page__stats" aria-label="SCEX KOL tracking metrics">
           <div className="scex-stat">
             <em>
               {visible.length}
-              {matrixFilters.size ? `/${baseVisible.length}` : ''}
+              {matrixFilters.size > 0 && <small className="arena-stat-total">of {baseVisible.length}</small>}
             </em>
-            <span>KOL</span>
+            <span>{matrixFilters.size ? 'KOLs shown' : 'KOLs tracked'}</span>
           </div>
           <div className="scex-stat">
             <em>{allPosts.length}</em>
@@ -808,22 +784,20 @@ export function ScexTrackingPage() {
           </div>
           <div className="scex-stat scex-stat--muted">
             <em>{formatCompact(totalFollowers)}</em>
-            <span>Reach</span>
+            <span>Combined followers</span>
           </div>
         </div>
       </header>
 
-      <div className="premium-discovery">
+      <div className={`premium-discovery${__SURF_DEMO_ENABLED__ ? '' : ' premium-discovery--search-only'}`}>
         {__SURF_DEMO_ENABLED__ && <button className="premium-featured" onMouseEnter={preloadSurfDemo} onFocus={preloadSurfDemo} onClick={() => { const actor = dataset.actors.find(a => !a.isDenylisted && a.handle.toLowerCase() === DEMO_HANDLE) || DEMO_ACTOR; onSelectActor(actor) }}>
           <XProfileAvatar handle={DEMO_HANDLE} name="nbaluong" size={52} />
-          <span><small>FEATURED DEMO · SNAPSHOT 20 SEP 2026</small><strong>Enter the arena with nbaluong</strong><em>@luong4101992 · Explore a saved SurfAI analysis</em></span><b aria-hidden="true">↗</b>
+          <span><small>FEATURED RESEARCH · SAVED DEMO</small><strong>A closer look at nbaluong</strong><em>@luong4101992 · SurfAI analysis · 20 Sep 2026</em></span><b aria-hidden="true">↗</b>
         </button>}
-        <div className="premium-kol-search"><label htmlFor="arena-kol-search">Find your next perspective</label><input id="arena-kol-search" type="search" placeholder="Search KOL or @handle…" value={kolQuery} onChange={e => setKolQuery(e.target.value)} autoComplete="off" />
-          {kolQuery.trim() && <div className="premium-search-results" aria-label="KOL search results">{dataset.actors.filter(a => !a.isDenylisted && (a.displayName + ' ' + a.handle).toLowerCase().includes(kolQuery.trim().replace(/^@/, '').toLowerCase())).slice(0, 8).map(actor => <button key={actor.id} onClick={() => { onSelectActor(actor); setKolQuery('') }}><XProfileAvatar handle={actor.handle} name={actor.displayName} size={32} /><span>{actor.displayName}<small>@{actor.handle}</small></span><span>↗</span></button>)}{!dataset.actors.some(a => !a.isDenylisted && (a.displayName + ' ' + a.handle).toLowerCase().includes(kolQuery.trim().replace(/^@/, '').toLowerCase())) && <p>No matching KOLs. Try another name.</p>}</div>}
-        </div>
+        <ArenaSearch actors={dataset.actors} onSelect={onSelectActor} />
       </div>
       <div className="premium-mobile-tabs" role="group" aria-label="Arena views"><button aria-pressed={mobileView === 'arena'} onClick={() => setMobileView('arena')}>Arena matrix</button><button aria-pressed={mobileView === 'feed'} onClick={() => setMobileView('feed')}>Source feed</button></div>
-      <div className="premium-source-note">SCEX snapshot · {dataset.asOf.slice(0,10)} · {dataSource === 'server' ? 'Latest available source' : dataSource === 'cache' ? 'Saved cache' : 'Bundled snapshot'}</div>
+      <div className="premium-source-note"><span><i aria-hidden="true" />{config.brandName} snapshot · {dataset.asOf.slice(0, 10)}</span><span>Last {config.timeWindowDays} days · {dataSource === 'server' ? 'Latest available source' : dataSource === 'cache' ? 'Saved cache' : 'Bundled snapshot'}</span></div>
       <div className="scex-page__grid">
         <section
           className={`scex-card scex-matrix ${matrixFullscreen ? 'is-fullscreen' : ''}`}
@@ -832,7 +806,7 @@ export function ScexTrackingPage() {
           <div className="scex-card__head">
             <div>
               <h2>The KOL Arena</h2>
-              <p className="scex-card__sub">Select an avatar to see details</p>
+              <p className="scex-card__sub">Explore credibility and activity. Select a KOL to learn more.</p>
             </div>
             <div className="scex-matrix__toolbar">
               <button
@@ -863,6 +837,7 @@ export function ScexTrackingPage() {
               className={`scex-matrix-pill ${matrixFilters.size === 0 ? 'is-active' : ''}`}
               onClick={clearMatrixFilters}
               title="Show all KOLs"
+              aria-pressed={matrixFilters.size === 0}
             >
               All
               <span className="scex-matrix-pill__n">{baseVisible.length}</span>
@@ -1370,7 +1345,7 @@ export function ScexTrackingPage() {
           />
         </>
       )}
-    </div>
+    </main>
   )
 }
 
